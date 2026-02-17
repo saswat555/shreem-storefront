@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
-import 'store/store_page.dart';
-import 'blog/blog_page.dart';
 
-enum AppSection { store, blog }
+import '../config.dart';
+import 'account/account_page.dart';
+import 'blog/blog_page.dart';
+import 'store/order_tracking_page.dart';
+import 'store/store_page.dart';
+
+enum AppSection { store, orders, blog, account }
 
 class AppShell extends StatefulWidget {
   const AppShell({super.key});
@@ -14,62 +18,78 @@ class AppShell extends StatefulWidget {
 class _AppShellState extends State<AppShell> {
   AppSection _section = AppSection.store;
 
-  String get _title =>
-      _section == AppSection.store ? 'Shreem Dairy' : 'Shreem Blog';
-
   @override
   Widget build(BuildContext context) {
-    final body = _section == AppSection.store
-        ? const StorePage()
-        : const BlogPage();
+    final body = switch (_section) {
+      AppSection.store => const StorePage(),
+      AppSection.orders => const OrderTrackingPage(),
+      AppSection.blog => const BlogPage(),
+      AppSection.account => const AccountPage(),
+    };
 
-    // Mobile-first web layout: constrain width so web looks like mobile view
+    final title = switch (_section) {
+      AppSection.store => 'Shreem Dairy',
+      AppSection.orders => 'Order Tracking',
+      AppSection.blog => 'Learn',
+      AppSection.account => 'Account',
+    };
+
     return Scaffold(
-      appBar: AppBar(title: Text(_title)),
-      drawer: Drawer(
-        child: SafeArea(
-          child: Column(
-            children: [
-              const ListTile(
-                title: Text('Shreem Dairy'),
-                subtitle: Text('Farm fresh products'),
+      appBar: AppBar(
+        titleSpacing: 12,
+        title: Row(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.asset(
+                AppConfig.logoAssetPath,
+                width: 36,
+                height: 36,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => const Icon(Icons.eco_outlined),
               ),
-              const Divider(),
-              ListTile(
-                leading: const Icon(Icons.storefront),
-                title: const Text('Store'),
-                selected: _section == AppSection.store,
-                onTap: () {
-                  setState(() => _section = AppSection.store);
-                  Navigator.of(context).pop();
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.article_outlined),
-                title: const Text('Blog'),
-                selected: _section == AppSection.blog,
-                onTap: () {
-                  setState(() => _section = AppSection.blog);
-                  Navigator.of(context).pop();
-                },
-              ),
-              const Spacer(),
-              const Padding(
-                padding: EdgeInsets.all(12),
-                child: Text(
-                  '© Shreem Farm Products',
-                  style: TextStyle(fontSize: 12),
-                ),
-              ),
-            ],
-          ),
+            ),
+            const SizedBox(width: 10),
+            Text(title),
+          ],
         ),
       ),
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 430),
-          child: body,
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 250),
+            child: KeyedSubtree(key: ValueKey(_section), child: body),
+          ),
         ),
+      ),
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: _section.index,
+        onDestinationSelected: (index) {
+          setState(() => _section = AppSection.values[index]);
+        },
+        destinations: const [
+          NavigationDestination(
+            icon: Icon(Icons.storefront_outlined),
+            selectedIcon: Icon(Icons.storefront),
+            label: 'Store',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.local_shipping_outlined),
+            selectedIcon: Icon(Icons.local_shipping),
+            label: 'Orders',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.menu_book_outlined),
+            selectedIcon: Icon(Icons.menu_book),
+            label: 'Learn',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.person_outline),
+            selectedIcon: Icon(Icons.person),
+            label: 'Account',
+          ),
+        ],
       ),
     );
   }

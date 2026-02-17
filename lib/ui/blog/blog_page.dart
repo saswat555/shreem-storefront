@@ -5,45 +5,40 @@ class BlogPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final posts = const [
-      {
-        'title': 'Why A2 Milk is Easier to Digest',
-        'excerpt': 'A simple explanation of A2 vs A1 proteins and digestion...',
-      },
-      {
-        'title': 'Bilona Ghee: Traditional Method Explained',
-        'excerpt': 'From curd to makkhan to ghee — step-by-step.',
-      },
-      {
-        'title': 'How We Feed Our Desi Cows',
-        'excerpt': 'Green fodder, clean water, and stress-free care at Shreem.',
-      },
+    const posts = [
+      (
+        'A2 Milk vs A1: What your gut feels',
+        'Understand protein types and why many households prefer A2 for daily use.',
+      ),
+      (
+        'Bilona Ghee: Premium process',
+        'From curd culturing to hand-churned makkhan and slow-fired ghee.',
+      ),
+      (
+        'How fresh paneer reaches your kitchen',
+        'Cold-chain + same-day prep for softness and nutrition.',
+      ),
     ];
 
     return ListView(
       padding: const EdgeInsets.all(12),
       children: [
-        Text('Blog (Dummy)', style: Theme.of(context).textTheme.titleMedium),
-        const SizedBox(height: 8),
-        ...posts.map((p) {
-          return Card(
+        Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: Colors.amber.shade50,
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: const Text('Shreem Journal\nFarm stories, nutrition and traditional dairy wisdom.'),
+        ),
+        const SizedBox(height: 10),
+        ...posts.map(
+          (p) => Card(
             child: ListTile(
-              title: Text(p['title']!),
-              subtitle: Text(p['excerpt']!),
+              title: Text(p.$1),
+              subtitle: Text(p.$2),
               trailing: const Icon(Icons.chevron_right),
-              onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Open blog: ${p['title']} (later)')),
-                );
-              },
             ),
-          );
-        }),
-        const SizedBox(height: 24),
-        const Center(
-          child: Text(
-            'This page is placeholder.\nNext: connect to Medusa blog CMS or markdown.',
-            textAlign: TextAlign.center,
           ),
         ),
       ],
