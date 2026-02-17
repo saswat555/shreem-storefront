@@ -1,0 +1,1031 @@
+SHREEM STOREFRONT SOURCE EXPORT
+Generated: 2026-02-17 14:40:25
+Project root: /Users/saswatpandey/shreem-d2c/shreem_storefront
+
+Included files:
+ - README.md
+ - analysis_options.yaml
+ - lib/config.dart
+ - lib/main.dart
+ - lib/medusa_api.dart
+ - lib/state/store_state.dart
+ - lib/ui/app_shell.dart
+ - lib/ui/blog/blog_page.dart
+ - lib/ui/store/cart_page.dart
+ - lib/ui/store/store_page.dart
+ - pubspec.yaml
+
+====================================================================================================
+
+
+####################################################################################################
+# FILE: README.md
+####################################################################################################
+
+# shreem_storefront
+
+A new Flutter project.
+
+## Getting Started
+
+This project is a starting point for a Flutter application.
+
+A few resources to get you started if this is your first Flutter project:
+
+- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
+- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+
+For help getting started with Flutter development, view the
+[online documentation](https://docs.flutter.dev/), which offers tutorials,
+samples, guidance on mobile development, and a full API reference.
+
+
+####################################################################################################
+# FILE: analysis_options.yaml
+####################################################################################################
+
+# This file configures the analyzer, which statically analyzes Dart code to
+# check for errors, warnings, and lints.
+#
+# The issues identified by the analyzer are surfaced in the UI of Dart-enabled
+# IDEs (https://dart.dev/tools#ides-and-editors). The analyzer can also be
+# invoked from the command line by running `flutter analyze`.
+
+# The following line activates a set of recommended lints for Flutter apps,
+# packages, and plugins designed to encourage good coding practices.
+include: package:flutter_lints/flutter.yaml
+
+linter:
+  # The lint rules applied to this project can be customized in the
+  # section below to disable rules from the `package:flutter_lints/flutter.yaml`
+  # included above or to enable additional rules. A list of all available lints
+  # and their documentation is published at https://dart.dev/lints.
+  #
+  # Instead of disabling a lint rule for the entire project in the
+  # section below, it can also be suppressed for a single line of code
+  # or a specific dart file by using the `// ignore: name_of_lint` and
+  # `// ignore_for_file: name_of_lint` syntax on the line or in the file
+  # producing the lint.
+  rules:
+    # avoid_print: false  # Uncomment to disable the `avoid_print` rule
+    # prefer_single_quotes: true  # Uncomment to enable the `prefer_single_quotes` rule
+
+# Additional information about this file can be found at
+# https://dart.dev/guides/language/analysis-options
+
+
+####################################################################################################
+# FILE: lib/config.dart
+####################################################################################################
+
+class AppConfig {
+  // Use localhost for Flutter Web
+  static const String medusaBaseUrl = 'http://localhost:9000';
+
+  // Put your publishable key here for now (local dev).
+  // Later we’ll move it to a safer runtime config / remote config.
+  static const String publishableKey =
+      'pk_c777a2b90a0b0c21983634384cb7206de0b70fd396b43ba32da7219fabfa28ec';
+  static const String? salesChannelId = null;
+
+  // Used only for display formatting; Medusa pricing is returned by region
+  static const String currencyCode = 'inr';
+}
+
+
+####################################################################################################
+# FILE: lib/main.dart
+####################################################################################################
+
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import 'medusa_api.dart';
+import 'state/store_state.dart';
+import 'ui/app_shell.dart';
+
+void main() {
+  runApp(const ShreemApp());
+}
+
+class ShreemApp extends StatelessWidget {
+  const ShreemApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final api = MedusaApi();
+
+    return ChangeNotifierProvider(
+      create: (_) => StoreState(api)..init(),
+      child: MaterialApp(
+        title: 'Shreem Dairy',
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(useMaterial3: true),
+        home: const AppShell(),
+      ),
+    );
+  }
+}
+
+
+####################################################################################################
+# FILE: lib/medusa_api.dart
+####################################################################################################
+
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'config.dart';
+
+class MedusaApi {
+  final String baseUrl;
+  MedusaApi({this.baseUrl = AppConfig.medusaBaseUrl});
+
+  Map<String, String> _headers({bool json = true}) => {
+    'x-publishable-api-key': AppConfig.publishableKey,
+    if (AppConfig.salesChannelId != null)
+      'x-sales-channel-id': AppConfig.salesChannelId!,
+    if (json) 'Content-Type': 'application/json',
+  };
+
+  Future<Map<String, dynamic>> _get(String path) async {
+    final res = await http.get(Uri.parse('$baseUrl$path'), headers: _headers());
+    if (res.statusCode < 200 || res.statusCode >= 300) {
+      throw Exception('GET $path failed: ${res.statusCode} ${res.body}');
+    }
+    return jsonDecode(res.body) as Map<String, dynamic>;
+  }
+
+  Future<Map<String, dynamic>> _post(
+    String path,
+    Map<String, dynamic> body,
+  ) async {
+    final res = await http.post(
+      Uri.parse('$baseUrl$path'),
+      headers: _headers(),
+      body: jsonEncode(body),
+    );
+    if (res.statusCode < 200 || res.statusCode >= 300) {
+      throw Exception('POST $path failed: ${res.statusCode} ${res.body}');
+    }
+    return jsonDecode(res.body) as Map<String, dynamic>;
+  }
+
+  Future<Map<String, dynamic>> _delete(String path) async {
+    final res = await http.delete(
+      Uri.parse('$baseUrl$path'),
+      headers: _headers(),
+    );
+    if (res.statusCode < 200 || res.statusCode >= 300) {
+      throw Exception('DELETE $path failed: ${res.statusCode} ${res.body}');
+    }
+    return jsonDecode(res.body) as Map<String, dynamic>;
+  }
+
+  // ---------- Regions ----------
+  Future<List<Map<String, dynamic>>> getRegions() async {
+    final data = await _get('/store/regions');
+    final list = (data['regions'] as List? ?? const [])
+        .cast<Map>()
+        .map((e) => Map<String, dynamic>.from(e))
+        .toList();
+    return list;
+  }
+
+  // ---------- Products (region-aware pricing) ----------
+  /// IMPORTANT: pass regionId so Medusa returns calculated prices for variants.
+  Future<List<Map<String, dynamic>>> getProducts({
+    required String regionId,
+  }) async {
+    // Using region_id enables calculated prices in v2
+    final data = await _get('/store/products?region_id=$regionId');
+    final list = (data['products'] as List? ?? const [])
+        .cast<Map>()
+        .map((e) => Map<String, dynamic>.from(e))
+        .toList();
+    return list;
+  }
+
+  // ---------- Cart ----------
+  Future<Map<String, dynamic>> createCart({required String regionId}) async {
+    final data = await _post('/store/carts', {'region_id': regionId});
+    return Map<String, dynamic>.from(data['cart'] as Map);
+  }
+
+  Future<Map<String, dynamic>> getCart(String cartId) async {
+    final data = await _get('/store/carts/$cartId');
+    return Map<String, dynamic>.from(data['cart'] as Map);
+  }
+
+  Future<Map<String, dynamic>> addToCart({
+    required String cartId,
+    required String variantId,
+    int quantity = 1,
+  }) async {
+    final data = await _post('/store/carts/$cartId/line-items', {
+      'variant_id': variantId,
+      'quantity': quantity,
+    });
+    return Map<String, dynamic>.from(data['cart'] as Map);
+  }
+
+  Future<Map<String, dynamic>> updateLineItem({
+    required String cartId,
+    required String lineItemId,
+    required int quantity,
+  }) async {
+    final data = await _post('/store/carts/$cartId/line-items/$lineItemId', {
+      'quantity': quantity,
+    });
+    return Map<String, dynamic>.from(data['cart'] as Map);
+  }
+
+  Future<Map<String, dynamic>> removeLineItem({
+    required String cartId,
+    required String lineItemId,
+  }) async {
+    final data = await _delete('/store/carts/$cartId/line-items/$lineItemId');
+    return Map<String, dynamic>.from(data['cart'] as Map);
+  }
+}
+
+
+####################################################################################################
+# FILE: lib/state/store_state.dart
+####################################################################################################
+
+import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../medusa_api.dart';
+
+class StoreState extends ChangeNotifier {
+  final MedusaApi api;
+  StoreState(this.api);
+
+  String? regionId;
+  String? cartId;
+  Map<String, dynamic>? cart;
+
+  List<Map<String, dynamic>> products = [];
+
+  bool loading = false;
+  String? error;
+
+  Future<void> init() async {
+    loading = true;
+    error = null;
+    notifyListeners();
+
+    try {
+      final regions = await api.getRegions();
+      if (regions.isEmpty) {
+        throw Exception('No regions found in Medusa. Create Region in Admin.');
+      }
+      regionId = regions.first['id']?.toString();
+
+      final prefs = await SharedPreferences.getInstance();
+      final savedCartId = prefs.getString('cart_id');
+
+      if (savedCartId != null && savedCartId.isNotEmpty) {
+        cartId = savedCartId;
+        cart = await api.getCart(cartId!);
+      } else {
+        cart = await api.createCart(regionId: regionId!);
+        cartId = cart!['id']?.toString();
+        await prefs.setString('cart_id', cartId!);
+      }
+
+      await loadProducts();
+    } catch (e) {
+      error = e.toString();
+    } finally {
+      loading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> loadProducts() async {
+    if (regionId == null) return;
+
+    loading = true;
+    error = null;
+    notifyListeners();
+
+    try {
+      products = await api.getProducts(regionId: regionId!);
+    } catch (e) {
+      error = e.toString();
+    } finally {
+      loading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> addVariant(String variantId, {int qty = 1}) async {
+    if (cartId == null) return;
+    loading = true;
+    error = null;
+    notifyListeners();
+
+    try {
+      cart = await api.addToCart(
+        cartId: cartId!,
+        variantId: variantId,
+        quantity: qty,
+      );
+    } catch (e) {
+      error = e.toString();
+    } finally {
+      loading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> updateQty(String lineItemId, int qty) async {
+    if (cartId == null) return;
+    loading = true;
+    error = null;
+    notifyListeners();
+
+    try {
+      cart = await api.updateLineItem(
+        cartId: cartId!,
+        lineItemId: lineItemId,
+        quantity: qty,
+      );
+    } catch (e) {
+      error = e.toString();
+    } finally {
+      loading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> removeItem(String lineItemId) async {
+    if (cartId == null) return;
+    loading = true;
+    error = null;
+    notifyListeners();
+
+    try {
+      cart = await api.removeLineItem(cartId: cartId!, lineItemId: lineItemId);
+    } catch (e) {
+      error = e.toString();
+    } finally {
+      loading = false;
+      notifyListeners();
+    }
+  }
+
+  int cartCount() {
+    final items = cart?['items'];
+    if (items is List) return items.length;
+    return 0;
+  }
+}
+
+
+####################################################################################################
+# FILE: lib/ui/app_shell.dart
+####################################################################################################
+
+import 'package:flutter/material.dart';
+import 'store/store_page.dart';
+import 'blog/blog_page.dart';
+
+enum AppSection { store, blog }
+
+class AppShell extends StatefulWidget {
+  const AppShell({super.key});
+
+  @override
+  State<AppShell> createState() => _AppShellState();
+}
+
+class _AppShellState extends State<AppShell> {
+  AppSection _section = AppSection.store;
+
+  String get _title =>
+      _section == AppSection.store ? 'Shreem Dairy' : 'Shreem Blog';
+
+  @override
+  Widget build(BuildContext context) {
+    final body = _section == AppSection.store
+        ? const StorePage()
+        : const BlogPage();
+
+    // Mobile-first web layout: constrain width so web looks like mobile view
+    return Scaffold(
+      appBar: AppBar(title: Text(_title)),
+      drawer: Drawer(
+        child: SafeArea(
+          child: Column(
+            children: [
+              const ListTile(
+                title: Text('Shreem Dairy'),
+                subtitle: Text('Farm fresh products'),
+              ),
+              const Divider(),
+              ListTile(
+                leading: const Icon(Icons.storefront),
+                title: const Text('Store'),
+                selected: _section == AppSection.store,
+                onTap: () {
+                  setState(() => _section = AppSection.store);
+                  Navigator.of(context).pop();
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.article_outlined),
+                title: const Text('Blog'),
+                selected: _section == AppSection.blog,
+                onTap: () {
+                  setState(() => _section = AppSection.blog);
+                  Navigator.of(context).pop();
+                },
+              ),
+              const Spacer(),
+              const Padding(
+                padding: EdgeInsets.all(12),
+                child: Text(
+                  '© Shreem Farm Products',
+                  style: TextStyle(fontSize: 12),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 430),
+          child: body,
+        ),
+      ),
+    );
+  }
+}
+
+
+####################################################################################################
+# FILE: lib/ui/blog/blog_page.dart
+####################################################################################################
+
+import 'package:flutter/material.dart';
+
+class BlogPage extends StatelessWidget {
+  const BlogPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final posts = const [
+      {
+        'title': 'Why A2 Milk is Easier to Digest',
+        'excerpt': 'A simple explanation of A2 vs A1 proteins and digestion...',
+      },
+      {
+        'title': 'Bilona Ghee: Traditional Method Explained',
+        'excerpt': 'From curd to makkhan to ghee — step-by-step.',
+      },
+      {
+        'title': 'How We Feed Our Desi Cows',
+        'excerpt': 'Green fodder, clean water, and stress-free care at Shreem.',
+      },
+    ];
+
+    return ListView(
+      padding: const EdgeInsets.all(12),
+      children: [
+        Text('Blog (Dummy)', style: Theme.of(context).textTheme.titleMedium),
+        const SizedBox(height: 8),
+        ...posts.map((p) {
+          return Card(
+            child: ListTile(
+              title: Text(p['title']!),
+              subtitle: Text(p['excerpt']!),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Open blog: ${p['title']} (later)')),
+                );
+              },
+            ),
+          );
+        }),
+        const SizedBox(height: 24),
+        const Center(
+          child: Text(
+            'This page is placeholder.\nNext: connect to Medusa blog CMS or markdown.',
+            textAlign: TextAlign.center,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+
+####################################################################################################
+# FILE: lib/ui/store/cart_page.dart
+####################################################################################################
+
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../state/store_state.dart';
+
+class CartPage extends StatelessWidget {
+  const CartPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final state = context.watch<StoreState>();
+    final items = (state.cart?['items'] as List?) ?? const [];
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('Cart')),
+      body: state.error != null
+          ? Center(child: Text(state.error!))
+          : items.isEmpty
+          ? const Center(child: Text('Cart is empty'))
+          : ListView.separated(
+              padding: const EdgeInsets.all(12),
+              itemCount: items.length,
+              separatorBuilder: (_, __) => const Divider(),
+              itemBuilder: (_, i) {
+                final it = items[i] as Map;
+                final title = (it['title'] ?? 'Item').toString();
+                final qty = (it['quantity'] ?? 1) as int;
+                final id = it['id'].toString();
+
+                return ListTile(
+                  title: Text(title),
+                  subtitle: Text('Qty: $qty'),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        onPressed: qty <= 1
+                            ? null
+                            : () => state.updateQty(id, qty - 1),
+                        icon: const Icon(Icons.remove),
+                      ),
+                      IconButton(
+                        onPressed: () => state.updateQty(id, qty + 1),
+                        icon: const Icon(Icons.add),
+                      ),
+                      IconButton(
+                        onPressed: () => state.removeItem(id),
+                        icon: const Icon(Icons.delete_outline),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+    );
+  }
+}
+
+
+####################################################################################################
+# FILE: lib/ui/store/store_page.dart
+####################################################################################################
+
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../state/store_state.dart';
+import 'cart_page.dart';
+
+class StorePage extends StatefulWidget {
+  const StorePage({super.key});
+
+  @override
+  State<StorePage> createState() => _StorePageState();
+}
+
+class _StorePageState extends State<StorePage> {
+  final PageController _pageController = PageController();
+  int _pageIndex = 0;
+
+  // Keep the current banner UI (later we can make it backend-driven)
+  final List<_HeroBanner> banners = const [
+    _HeroBanner(
+      title: 'A2 Milk • Fresh Daily',
+      subtitle: 'Pure desi cow milk from Shreem Dairy',
+      cta: 'Shop Now',
+    ),
+    _HeroBanner(
+      title: 'Bilona A2 Ghee',
+      subtitle: 'Traditional churning + slow heating',
+      cta: 'Explore Ghee',
+    ),
+    _HeroBanner(
+      title: 'Malai Paneer',
+      subtitle: 'Soft, fresh, farm-made',
+      cta: 'Order Paneer',
+    ),
+  ];
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final state = context.watch<StoreState>();
+
+    return RefreshIndicator(
+      onRefresh: () => state.loadProducts(),
+      child: ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(12, 12, 12, 24),
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Store', style: Theme.of(context).textTheme.titleMedium),
+              _CartButton(
+                count: state.cartCount(),
+                onTap: () => Navigator.of(
+                  context,
+                ).push(MaterialPageRoute(builder: (_) => const CartPage())),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+
+          _HeroSlider(
+            controller: _pageController,
+            banners: banners,
+            pageIndex: _pageIndex,
+            onPageChanged: (i) => setState(() => _pageIndex = i),
+          ),
+          const SizedBox(height: 14),
+
+          if (state.error != null)
+            Text(
+              'Error: ${state.error}',
+              style: const TextStyle(color: Colors.red),
+            ),
+
+          if (state.loading) ...[
+            const SizedBox(height: 8),
+            const LinearProgressIndicator(),
+          ],
+
+          const SizedBox(height: 10),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Products', style: Theme.of(context).textTheme.titleMedium),
+              TextButton.icon(
+                onPressed: state.loadProducts,
+                icon: const Icon(Icons.refresh),
+                label: const Text('Refresh'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+
+          if (!state.loading && state.products.isEmpty)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 40),
+              child: Center(
+                child: Text(
+                  'No products found. Check Sales Channel + Region in Admin.',
+                ),
+              ),
+            )
+          else
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: state.products.length,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                mainAxisSpacing: 12,
+                crossAxisSpacing: 12,
+                childAspectRatio: 0.72,
+              ),
+              itemBuilder: (context, index) {
+                final p = state.products[index];
+                return _ProductCard(
+                  product: p,
+                  onAdd: () {
+                    final variantId = _firstVariantId(p);
+                    if (variantId == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('No variant found for this product'),
+                        ),
+                      );
+                      return;
+                    }
+                    state.addVariant(variantId);
+                  },
+                );
+              },
+            ),
+        ],
+      ),
+    );
+  }
+
+  String? _firstVariantId(Map<String, dynamic> p) {
+    final variants = p['variants'];
+    if (variants is List && variants.isNotEmpty) {
+      final first = variants.first;
+      if (first is Map && first['id'] != null) return first['id'].toString();
+    }
+    return null;
+  }
+}
+
+class _CartButton extends StatelessWidget {
+  final int count;
+  final VoidCallback onTap;
+
+  const _CartButton({required this.count, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        IconButton(
+          onPressed: onTap,
+          icon: const Icon(Icons.shopping_cart_outlined),
+        ),
+        if (count > 0)
+          Positioned(
+            right: 6,
+            top: 6,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primary,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                '$count',
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onPrimary,
+                  fontSize: 11,
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+class _HeroBanner {
+  final String title;
+  final String subtitle;
+  final String cta;
+  const _HeroBanner({
+    required this.title,
+    required this.subtitle,
+    required this.cta,
+  });
+}
+
+class _HeroSlider extends StatelessWidget {
+  final PageController controller;
+  final List<_HeroBanner> banners;
+  final int pageIndex;
+  final ValueChanged<int> onPageChanged;
+
+  const _HeroSlider({
+    required this.controller,
+    required this.banners,
+    required this.pageIndex,
+    required this.onPageChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        SizedBox(
+          height: 160,
+          child: PageView.builder(
+            controller: controller,
+            itemCount: banners.length,
+            onPageChanged: onPageChanged,
+            itemBuilder: (context, i) {
+              final b = banners[i];
+              return Container(
+                padding: const EdgeInsets.all(14),
+                margin: const EdgeInsets.only(right: 2),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Theme.of(context).dividerColor),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      b.title,
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      b.subtitle,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                    const Spacer(),
+                    Align(
+                      alignment: Alignment.bottomRight,
+                      child: FilledButton(onPressed: () {}, child: Text(b.cta)),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: List.generate(
+            banners.length,
+            (i) => AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              margin: const EdgeInsets.symmetric(horizontal: 4),
+              height: 8,
+              width: pageIndex == i ? 18 : 8,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                color: pageIndex == i
+                    ? Theme.of(context).colorScheme.primary
+                    : Theme.of(context).dividerColor,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ProductCard extends StatelessWidget {
+  final Map<String, dynamic> product;
+  final VoidCallback onAdd;
+
+  const _ProductCard({required this.product, required this.onAdd});
+
+  @override
+  Widget build(BuildContext context) {
+    final title = (product['title'] ?? 'Untitled').toString();
+    final subtitle = (product['subtitle'] ?? '').toString();
+
+    String? imageUrl;
+    final images = product['images'];
+    if (images is List && images.isNotEmpty) {
+      final first = images.first;
+      if (first is Map && first['url'] != null) {
+        imageUrl = first['url'].toString();
+      }
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Theme.of(context).dividerColor),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                width: double.infinity,
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                child: imageUrl == null
+                    ? const Center(
+                        child: Icon(Icons.image_not_supported_outlined),
+                      )
+                    : Image.network(imageUrl, fit: BoxFit.cover),
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(title, maxLines: 2, overflow: TextOverflow.ellipsis),
+          if (subtitle.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Text(subtitle, maxLines: 1, overflow: TextOverflow.ellipsis),
+          ],
+          const SizedBox(height: 8),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton.icon(
+              onPressed: onAdd,
+              icon: const Icon(Icons.add_shopping_cart),
+              label: const Text('Add'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+
+####################################################################################################
+# FILE: pubspec.yaml
+####################################################################################################
+
+name: shreem_storefront
+description: "A new Flutter project."
+# The following line prevents the package from being accidentally published to
+# pub.dev using `flutter pub publish`. This is preferred for private packages.
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+
+# The following defines the version and build number for your application.
+# A version number is three numbers separated by dots, like 1.2.43
+# followed by an optional build number separated by a +.
+# Both the version and the builder number may be overridden in flutter
+# build by specifying --build-name and --build-number, respectively.
+# In Android, build-name is used as versionName while build-number used as versionCode.
+# Read more about Android versioning at https://developer.android.com/studio/publish/versioning
+# In iOS, build-name is used as CFBundleShortVersionString while build-number is used as CFBundleVersion.
+# Read more about iOS versioning at
+# https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
+# In Windows, build-name is used as the major, minor, and patch parts
+# of the product and file versions while build-number is used as the build suffix.
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.9.0-333.2.beta
+
+# Dependencies specify other packages that your package needs in order to work.
+# To automatically upgrade your package dependencies to the latest versions
+# consider running `flutter pub upgrade --major-versions`. Alternatively,
+# dependencies can be manually updated by changing the version numbers below to
+# the latest version available on pub.dev. To see which dependencies have newer
+# versions available, run `flutter pub outdated`.
+dependencies:
+  flutter:
+    sdk: flutter
+  http: ^1.2.0
+  shared_preferences: ^2.2.3
+  provider: ^6.1.2
+  intl: ^0.19.0
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  # The "flutter_lints" package below contains a set of recommended lints to
+  # encourage good coding practices. The lint set provided by the package is
+  # activated in the `analysis_options.yaml` file located at the root of your
+  # package. See that file for information about deactivating specific lint
+  # rules and activating additional ones.
+  flutter_lints: ^5.0.0
+
+# For information on the generic Dart part of this file, see the
+# following page: https://dart.dev/tools/pub/pubspec
+
+# The following section is specific to Flutter packages.
+flutter:
+
+  # The following line ensures that the Material Icons font is
+  # included with your application, so that you can use the icons in
+  # the material Icons class.
+  uses-material-design: true
+
+  # To add assets to your application, add an assets section, like this:
+  # assets:
+  #   - images/a_dot_burr.jpeg
+  #   - images/a_dot_ham.jpeg
+
+  # An image asset can refer to one or more resolution-specific "variants", see
+  # https://flutter.dev/to/resolution-aware-images
+
+  # For details regarding adding assets from package dependencies, see
+  # https://flutter.dev/to/asset-from-package
+
+  # To add custom fonts to your application, add a fonts section here,
+  # in this "flutter" section. Each entry in this list should have a
+  # "family" key with the font family name, and a "fonts" key with a
+  # list giving the asset and other descriptors for the font. For
+  # example:
+  # fonts:
+  #   - family: Schyler
+  #     fonts:
+  #       - asset: fonts/Schyler-Regular.ttf
+  #       - asset: fonts/Schyler-Italic.ttf
+  #         style: italic
+  #   - family: Trajan Pro
+  #     fonts:
+  #       - asset: fonts/TrajanPro.ttf
+  #       - asset: fonts/TrajanPro_Bold.ttf
+  #         weight: 700
+  #
+  # For details regarding fonts from package dependencies,
+  # see https://flutter.dev/to/font-from-package
