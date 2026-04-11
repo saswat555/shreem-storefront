@@ -10,10 +10,12 @@ import CountrySelect from "../country-select"
 import LanguageSelect from "../language-select"
 import { HttpTypes } from "@medusajs/types"
 import { Locale } from "@lib/data/locales"
+import BrandLogo from "../brand-logo"
 
 const SideMenuItems = {
   Home: "/",
   Store: "/store",
+  Gaatha: "/gaatha",
   Account: "/account",
   Cart: "/cart",
 }
@@ -37,7 +39,7 @@ const SideMenu = ({ regions, locales, currentLocale }: SideMenuProps) => {
               <div className="relative flex h-full">
                 <Popover.Button
                   data-testid="nav-menu-button"
-                  className="relative h-full flex items-center transition-all ease-out duration-200 focus:outline-none hover:text-ui-fg-base"
+                  className="brand-outline-button h-auto px-4 py-2.5 text-[13px] font-semibold uppercase tracking-[0.14em] text-white focus:outline-none"
                 >
                   Menu
                 </Popover.Button>
@@ -55,29 +57,37 @@ const SideMenu = ({ regions, locales, currentLocale }: SideMenuProps) => {
                 show={open}
                 as={Fragment}
                 enter="transition ease-out duration-150"
-                enterFrom="opacity-0"
-                enterTo="opacity-100 backdrop-blur-2xl"
+                enterFrom="opacity-0 translate-y-4"
+                enterTo="opacity-100 translate-y-0 backdrop-blur-2xl"
                 leave="transition ease-in duration-150"
-                leaveFrom="opacity-100 backdrop-blur-2xl"
-                leaveTo="opacity-0"
+                leaveFrom="opacity-100 translate-y-0 backdrop-blur-2xl"
+                leaveTo="opacity-0 translate-y-2"
               >
-                <PopoverPanel className="flex flex-col absolute w-full pr-4 sm:pr-0 sm:w-1/3 2xl:w-1/4 sm:min-w-min h-[calc(100vh-1rem)] z-[51] inset-x-0 text-sm text-ui-fg-on-color m-2 backdrop-blur-2xl">
+                <PopoverPanel className="absolute inset-x-0 z-[51] m-2 flex h-[calc(100vh-1rem)] w-full pr-0 text-sm text-ui-fg-on-color backdrop-blur-2xl sm:w-[420px]">
                   <div
                     data-testid="nav-menu-popup"
-                    className="flex flex-col h-full bg-[rgba(3,7,18,0.5)] rounded-rounded justify-between p-6"
+                    className="flex h-full w-full flex-col justify-between rounded-[32px] border border-white/10 bg-[linear-gradient(180deg,rgba(33,24,18,0.94),rgba(24,17,13,0.88))] p-6 text-white shadow-[0_28px_80px_rgba(0,0,0,0.28)]"
                   >
-                    <div className="flex justify-end" id="xmark">
-                      <button data-testid="close-menu-button" onClick={close}>
+                    <div className="flex items-center justify-between gap-4">
+                      <BrandLogo size="medium" theme="dark" />
+                      <button
+                        data-testid="close-menu-button"
+                        onClick={close}
+                        className="flex h-12 w-12 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/80 hover:bg-white/10 hover:text-white"
+                      >
                         <XMark />
                       </button>
                     </div>
-                    <ul className="flex flex-col gap-6 items-start justify-start">
+                    <div className="mt-10 brand-pill w-fit border-white/15 bg-white/5 text-white/65">
+                      A2 rituals from desi cows
+                    </div>
+                    <ul className="mt-8 flex flex-col items-start justify-start gap-6">
                       {Object.entries(SideMenuItems).map(([name, href]) => {
                         return (
                           <li key={name}>
                             <LocalizedClientLink
                               href={href}
-                              className="text-3xl leading-10 hover:text-ui-fg-disabled"
+                              className="text-[2.2rem] leading-[1.1] text-white transition-transform duration-300 hover:translate-x-1 hover:text-white/75"
                               onClick={close}
                               data-testid={`${name.toLowerCase()}-link`}
                             >
@@ -87,10 +97,10 @@ const SideMenu = ({ regions, locales, currentLocale }: SideMenuProps) => {
                         )
                       })}
                     </ul>
-                    <div className="flex flex-col gap-y-6">
+                    <div className="mt-10 flex flex-col gap-y-6 border-t border-white/10 pt-6 text-white/75">
                       {!!locales?.length && (
                         <div
-                          className="flex justify-between"
+                          className="flex justify-between gap-4"
                           onMouseEnter={languageToggleState.open}
                           onMouseLeave={languageToggleState.close}
                         >
@@ -108,7 +118,7 @@ const SideMenu = ({ regions, locales, currentLocale }: SideMenuProps) => {
                         </div>
                       )}
                       <div
-                        className="flex justify-between"
+                        className="flex justify-between gap-4"
                         onMouseEnter={countryToggleState.open}
                         onMouseLeave={countryToggleState.close}
                       >
@@ -126,8 +136,7 @@ const SideMenu = ({ regions, locales, currentLocale }: SideMenuProps) => {
                         />
                       </div>
                       <Text className="flex justify-between txt-compact-small">
-                        © {new Date().getFullYear()} Medusa Store. All rights
-                        reserved.
+                        © {new Date().getFullYear()} Shreem. All rights reserved.
                       </Text>
                     </div>
                   </div>

@@ -21,12 +21,18 @@ export default function CollectionTemplate({
   const sort = sortBy || "created_at"
 
   return (
-    <div className="flex flex-col small:flex-row small:items-start py-6 content-container">
-      <RefinementList sortBy={sort} />
-      <div className="w-full">
-        <div className="mb-8 text-2xl-semi">
-          <h1>{collection.title}</h1>
-        </div>
+    <div className="content-container py-8 small:py-12">
+      <div className="brand-surface mb-6 px-5 py-6 small:px-8 small:py-8">
+        <p className="brand-kicker">Shreem collection</p>
+        <h1 className="mt-3 text-[2.5rem] leading-none text-[var(--shreem-ink)] small:text-[3.6rem]">
+          {collection.title}
+        </h1>
+        <p className="mt-4 max-w-[38rem] text-sm leading-6 text-[var(--shreem-muted)] small:text-base">
+          Browse products grouped together for easier discovery and comparison.
+        </p>
+      </div>
+      <div className="flex flex-col gap-5">
+        <RefinementList sortBy={sort} />
         <Suspense
           fallback={
             <SkeletonProductGrid

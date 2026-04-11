@@ -14,18 +14,18 @@ type ProductTabsProps = {
 const ProductTabs = ({ product }: ProductTabsProps) => {
   const tabs = [
     {
-      label: "Product Information",
+      label: "Details",
       component: <ProductInfoTab product={product} />,
     },
     {
-      label: "Shipping & Returns",
+      label: "Delivery & Care",
       component: <ShippingInfoTab />,
     },
   ]
 
   return (
     <div className="w-full">
-      <Accordion type="multiple">
+      <Accordion type="multiple" className="flex flex-col gap-3">
         {tabs.map((tab, i) => (
           <Accordion.Item
             key={i}
@@ -42,76 +42,71 @@ const ProductTabs = ({ product }: ProductTabsProps) => {
 }
 
 const ProductInfoTab = ({ product }: ProductTabsProps) => {
+  const detailPairs = [
+    ["Material", product.material || "-"],
+    ["Country of origin", product.origin_country || "-"],
+    ["Type", product.type?.value || "-"],
+    ["Weight", product.weight ? `${product.weight} g` : "-"],
+    [
+      "Dimensions",
+      product.length && product.width && product.height
+        ? `${product.length}L x ${product.width}W x ${product.height}H`
+        : "-",
+    ],
+  ]
+
   return (
-    <div className="text-small-regular py-8">
-      <div className="grid grid-cols-2 gap-x-8">
-        <div className="flex flex-col gap-y-4">
-          <div>
-            <span className="font-semibold">Material</span>
-            <p>{product.material ? product.material : "-"}</p>
-          </div>
-          <div>
-            <span className="font-semibold">Country of origin</span>
-            <p>{product.origin_country ? product.origin_country : "-"}</p>
-          </div>
-          <div>
-            <span className="font-semibold">Type</span>
-            <p>{product.type ? product.type.value : "-"}</p>
-          </div>
+    <div className="grid gap-3 py-4">
+      {detailPairs.map(([label, value]) => (
+        <div
+          key={label}
+          className="flex items-start justify-between gap-4 rounded-[20px] bg-[linear-gradient(135deg,rgba(240,248,246,0.78),rgba(255,249,240,0.72))] px-4 py-3 text-sm"
+        >
+          <span className="font-medium text-[var(--shreem-ink)]">{label}</span>
+          <span className="text-right text-[var(--shreem-muted)]">{value}</span>
         </div>
-        <div className="flex flex-col gap-y-4">
-          <div>
-            <span className="font-semibold">Weight</span>
-            <p>{product.weight ? `${product.weight} g` : "-"}</p>
-          </div>
-          <div>
-            <span className="font-semibold">Dimensions</span>
-            <p>
-              {product.length && product.width && product.height
-                ? `${product.length}L x ${product.width}W x ${product.height}H`
-                : "-"}
-            </p>
-          </div>
-        </div>
-      </div>
+      ))}
     </div>
   )
 }
 
 const ShippingInfoTab = () => {
   return (
-    <div className="text-small-regular py-8">
-      <div className="grid grid-cols-1 gap-y-8">
-        <div className="flex items-start gap-x-2">
-          <FastDelivery />
-          <div>
-            <span className="font-semibold">Fast delivery</span>
-            <p className="max-w-sm">
-              Your package will arrive in 3-5 business days at your pick up
-              location or in the comfort of your home.
-            </p>
-          </div>
+    <div className="grid grid-cols-1 gap-y-4 py-4">
+      <div className="flex items-start gap-x-3 rounded-[20px] bg-[linear-gradient(135deg,rgba(240,248,246,0.78),rgba(255,249,240,0.72))] px-4 py-4">
+        <FastDelivery />
+        <div>
+          <span className="font-semibold text-[var(--shreem-ink)]">
+            Packed with care
+          </span>
+          <p className="mt-1 max-w-sm text-sm leading-6 text-[var(--shreem-muted)]">
+            Orders are packed thoughtfully so natural products arrive cleanly
+            and with the right presentation.
+          </p>
         </div>
-        <div className="flex items-start gap-x-2">
-          <Refresh />
-          <div>
-            <span className="font-semibold">Simple exchanges</span>
-            <p className="max-w-sm">
-              Is the fit not quite right? No worries - we&apos;ll exchange your
-              product for a new one.
-            </p>
-          </div>
+      </div>
+      <div className="flex items-start gap-x-3 rounded-[20px] bg-[linear-gradient(135deg,rgba(240,248,246,0.78),rgba(255,249,240,0.72))] px-4 py-4">
+        <Refresh />
+        <div>
+          <span className="font-semibold text-[var(--shreem-ink)]">
+            Storage guidance
+          </span>
+          <p className="mt-1 max-w-sm text-sm leading-6 text-[var(--shreem-muted)]">
+            Keep natural products away from excess heat and moisture to preserve
+            their best everyday use.
+          </p>
         </div>
-        <div className="flex items-start gap-x-2">
-          <Back />
-          <div>
-            <span className="font-semibold">Easy returns</span>
-            <p className="max-w-sm">
-              Just return your product and we&apos;ll refund your money. No
-              questions asked – we&apos;ll do our best to make sure your return
-              is hassle-free.
-            </p>
-          </div>
+      </div>
+      <div className="flex items-start gap-x-3 rounded-[20px] bg-[linear-gradient(135deg,rgba(240,248,246,0.78),rgba(255,249,240,0.72))] px-4 py-4">
+        <Back />
+        <div>
+          <span className="font-semibold text-[var(--shreem-ink)]">
+            Need help choosing?
+          </span>
+          <p className="mt-1 max-w-sm text-sm leading-6 text-[var(--shreem-muted)]">
+            If you are comparing products for ritual, kitchen, or farm use, the
+            Shreem team can guide the selection.
+          </p>
         </div>
       </div>
     </div>

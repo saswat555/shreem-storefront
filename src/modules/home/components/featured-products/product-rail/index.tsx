@@ -1,16 +1,16 @@
 import { listProducts } from "@lib/data/products"
 import { HttpTypes } from "@medusajs/types"
-import { Text } from "@medusajs/ui"
-
 import InteractiveLink from "@modules/common/components/interactive-link"
 import ProductPreview from "@modules/products/components/product-preview"
 
 export default async function ProductRail({
   collection,
   region,
+  index,
 }: {
   collection: HttpTypes.StoreCollection
   region: HttpTypes.StoreRegion
+  index: number
 }) {
   const {
     response: { products: pricedProducts },
@@ -26,22 +26,39 @@ export default async function ProductRail({
     return null
   }
 
+  const accentClass =
+    index % 2 === 0
+      ? "bg-[linear-gradient(180deg,rgba(255,251,245,0.92),rgba(239,248,245,0.88)),radial-gradient(circle_at_top_right,rgba(13,129,126,0.1),transparent_25%)]"
+      : "bg-[linear-gradient(180deg,rgba(255,249,243,0.92),rgba(245,246,251,0.88)),radial-gradient(circle_at_top_right,rgba(212,161,38,0.14),transparent_25%)]"
+
   return (
-    <div className="content-container py-12 small:py-24">
-      <div className="flex justify-between mb-8">
-        <Text className="txt-xlarge">{collection.title}</Text>
-        <InteractiveLink href={`/collections/${collection.handle}`}>
-          View all
-        </InteractiveLink>
-      </div>
-      <ul className="grid grid-cols-2 small:grid-cols-3 gap-x-6 gap-y-24 small:gap-y-36">
-        {pricedProducts &&
-          pricedProducts.map((product) => (
+    <section className="content-container py-8 small:py-12">
+      <div className={`brand-surface px-5 py-6 small:px-8 small:py-8 ${accentClass}`}>
+        <div className="mb-8 flex flex-col gap-3 small:flex-row small:items-end small:justify-between">
+          <header>
+            <p className="brand-kicker">Collection {`${index + 1}`.padStart(2, "0")}</p>
+            <h2 className="mt-2 text-3xl text-[var(--shreem-ink)] small:text-[2.6rem]">
+              {collection.title}
+            </h2>
+          </header>
+          <p className="max-w-[28rem] text-sm leading-6 text-[var(--shreem-muted)]">
+            A composed edit of pieces chosen for their warmth, richness, and
+            effortless presence.
+          </p>
+        </div>
+        <div className="mb-8 flex justify-end">
+          <InteractiveLink href={`/collections/${collection.handle}`}>
+            View collection
+          </InteractiveLink>
+        </div>
+        <ul className="grid grid-cols-2 gap-x-4 gap-y-6 small:grid-cols-4 small:gap-x-5 small:gap-y-8">
+          {pricedProducts.slice(0, 4).map((product) => (
             <li key={product.id}>
               <ProductPreview product={product} region={region} isFeatured />
             </li>
           ))}
-      </ul>
-    </div>
+        </ul>
+      </div>
+    </section>
   )
 }

@@ -35,9 +35,15 @@ export function Pagination({
   ) => (
     <button
       key={p}
-      className={clx("txt-xlarge-plus text-ui-fg-muted", {
-        "text-ui-fg-base hover:text-ui-fg-subtle": isCurrent,
-      })}
+      className={clx(
+        "flex h-11 w-11 items-center justify-center rounded-full border text-sm font-medium",
+        {
+          "border-[rgba(113,86,57,0.2)] bg-[var(--shreem-accent-dark)] text-white":
+            isCurrent,
+          "border-[rgba(113,86,57,0.12)] bg-white/70 text-[var(--shreem-muted)] hover:border-[rgba(113,86,57,0.2)] hover:text-[var(--shreem-ink)]":
+            !isCurrent,
+        }
+      )}
       disabled={isCurrent}
       onClick={() => handlePageChange(p)}
     >
@@ -49,7 +55,7 @@ export function Pagination({
   const renderEllipsis = (key: string) => (
     <span
       key={key}
-      className="txt-xlarge-plus text-ui-fg-muted items-center cursor-default"
+      className="flex h-11 w-11 items-center justify-center text-sm text-[var(--shreem-muted)]"
     >
       ...
     </span>
@@ -107,8 +113,13 @@ export function Pagination({
 
   // Render the component
   return (
-    <div className="flex justify-center w-full mt-12">
-      <div className="flex gap-3 items-end" data-testid={dataTestid}>{renderPageButtons()}</div>
+    <div className="mt-12 flex w-full justify-center">
+      <div
+        className="brand-card flex items-center gap-2 px-3 py-3"
+        data-testid={dataTestid}
+      >
+        {renderPageButtons()}
+      </div>
     </div>
   )
 }

@@ -1,29 +1,24 @@
-import { Button, Container, Text } from "@medusajs/ui"
-import { cookies as nextCookies } from "next/headers"
+import { Text } from "@medusajs/ui"
 
 async function ProductOnboardingCta() {
-  const cookies = await nextCookies()
-
-  const isOnboarding = cookies.get("_medusa_onboarding")?.value === "true"
-
-  if (!isOnboarding) {
-    return null
-  }
-
   return (
-    <Container className="max-w-4xl h-full bg-ui-bg-subtle w-full p-8">
-      <div className="flex flex-col gap-y-4 center">
-        <Text className="text-ui-fg-base text-xl">
-          Your demo product was successfully created! 🎉
-        </Text>
-        <Text className="text-ui-fg-subtle text-small-regular">
-          You can now continue setting up your store in the admin.
-        </Text>
-        <a href="http://localhost:7001/a/orders?onboarding_step=create_order_nextjs">
-          <Button className="w-full">Continue setup in admin</Button>
-        </a>
-      </div>
-    </Container>
+    <div className="brand-card p-6">
+      <p className="brand-kicker">Why Shreem</p>
+      <Text className="mt-3 text-xl text-[var(--shreem-ink)]">
+        Built for families choosing a more rooted, desi-cow way of living.
+      </Text>
+      <ul className="mt-5 grid gap-3 text-sm leading-6 text-[var(--shreem-muted)]">
+        <li className="rounded-[22px] bg-[linear-gradient(135deg,rgba(240,248,246,0.78),rgba(255,249,240,0.72))] px-4 py-3">
+          The focus stays on use, sourcing, and process rather than exaggerated claims.
+        </li>
+        <li className="rounded-[22px] bg-[linear-gradient(135deg,rgba(240,248,246,0.78),rgba(255,249,240,0.72))] px-4 py-3">
+          Clear options and pricing help buyers move quickly from trust to purchase.
+        </li>
+        <li className="rounded-[22px] bg-[linear-gradient(135deg,rgba(240,248,246,0.78),rgba(255,249,240,0.72))] px-4 py-3">
+          The site experience stays calm, mobile-friendly, and easy to browse on a first visit.
+        </li>
+      </ul>
+    </div>
   )
 }
 

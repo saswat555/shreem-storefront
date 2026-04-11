@@ -1,155 +1,101 @@
-import { listCategories } from "@lib/data/categories"
-import { listCollections } from "@lib/data/collections"
-import { Text, clx } from "@medusajs/ui"
+import { Text } from "@medusajs/ui"
 
+import { shreemCowBreeds, shreemMascots } from "@lib/constants/shreem"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
-import MedusaCTA from "@modules/layout/components/medusa-cta"
+import BrandLogo from "@modules/layout/components/brand-logo"
 
-export default async function Footer() {
-  const { collections } = await listCollections({
-    fields: "*products",
-  })
-  const productCategories = await listCategories()
-
+export default function Footer() {
   return (
-    <footer className="border-t border-ui-border-base w-full">
-      <div className="content-container flex flex-col w-full">
-        <div className="flex flex-col gap-y-6 xsmall:flex-row items-start justify-between py-40">
-          <div>
-            <LocalizedClientLink
-              href="/"
-              className="txt-compact-xlarge-plus text-ui-fg-subtle hover:text-ui-fg-base uppercase"
-            >
-              Medusa Store
-            </LocalizedClientLink>
-          </div>
-          <div className="text-small-regular gap-10 md:gap-x-16 grid grid-cols-2 sm:grid-cols-3">
-            {productCategories && productCategories?.length > 0 && (
-              <div className="flex flex-col gap-y-2">
-                <span className="txt-small-plus txt-ui-fg-base">
-                  Categories
-                </span>
-                <ul
-                  className="grid grid-cols-1 gap-2"
-                  data-testid="footer-categories"
+    <footer className="w-full pb-8 pt-12 small:pt-16">
+      <div className="content-container">
+        <div className="brand-royal-surface flex w-full flex-col gap-8 px-6 py-8 text-white small:px-10 small:py-10">
+          <div className="flex flex-col gap-8 xl:flex-row xl:items-start xl:justify-between">
+            <div className="max-w-[30rem]">
+              <BrandLogo
+                size="large"
+                theme="dark"
+                caption="Bilona ghee, neem dhoop, gobar cakes, and Jeevamrut from naturally grazing desi cows."
+              />
+              <p className="mt-5 text-base leading-7 text-white/72">
+                Shreem is built around a slower desi-cow way of living: bilona
+                ghee for the kitchen, neem dhoop and gobar products for the
+                prayerful home, and Jeevamrut for fields that honour living
+                soil.
+              </p>
+              <p className="mt-4 text-sm leading-6 text-white/60">
+                Our herd includes {shreemCowBreeds.join(", ")} cows, while{" "}
+                {shreemMascots.map((mascot) => mascot.name).join(" and ")} give
+                the brand a face, a feeling, and a sense of sacred Indian
+                warmth.
+              </p>
+              <div className="mt-6 flex flex-wrap gap-3">
+                <LocalizedClientLink href="/store" className="brand-primary-button">
+                  Shop products
+                </LocalizedClientLink>
+                <LocalizedClientLink
+                  href="/gaatha"
+                  className="inline-flex items-center justify-center rounded-full border border-[rgba(212,161,38,0.24)] bg-white/8 px-6 py-3 text-sm font-semibold text-white"
                 >
-                  {productCategories?.slice(0, 6).map((c) => {
-                    if (c.parent_category) {
-                      return
-                    }
-
-                    const children =
-                      c.category_children?.map((child) => ({
-                        name: child.name,
-                        handle: child.handle,
-                        id: child.id,
-                      })) || null
-
-                    return (
-                      <li
-                        className="flex flex-col gap-2 text-ui-fg-subtle txt-small"
-                        key={c.id}
-                      >
-                        <LocalizedClientLink
-                          className={clx(
-                            "hover:text-ui-fg-base",
-                            children && "txt-small-plus"
-                          )}
-                          href={`/categories/${c.handle}`}
-                          data-testid="category-link"
-                        >
-                          {c.name}
-                        </LocalizedClientLink>
-                        {children && (
-                          <ul className="grid grid-cols-1 ml-3 gap-2">
-                            {children &&
-                              children.map((child) => (
-                                <li key={child.id}>
-                                  <LocalizedClientLink
-                                    className="hover:text-ui-fg-base"
-                                    href={`/categories/${child.handle}`}
-                                    data-testid="category-link"
-                                  >
-                                    {child.name}
-                                  </LocalizedClientLink>
-                                </li>
-                              ))}
-                          </ul>
-                        )}
-                      </li>
-                    )
-                  })}
-                </ul>
+                  Shreem Gaatha
+                </LocalizedClientLink>
               </div>
-            )}
-            {collections && collections.length > 0 && (
-              <div className="flex flex-col gap-y-2">
-                <span className="txt-small-plus txt-ui-fg-base">
-                  Collections
-                </span>
-                <ul
-                  className={clx(
-                    "grid grid-cols-1 gap-2 text-ui-fg-subtle txt-small",
-                    {
-                      "grid-cols-2": (collections?.length || 0) > 3,
-                    }
-                  )}
+            </div>
+            <div className="grid grid-cols-1 gap-8 text-small-regular sm:grid-cols-2 xl:grid-cols-3">
+              <div className="flex flex-col gap-y-3">
+                <span className="brand-kicker">Explore</span>
+                <LocalizedClientLink
+                  href="/"
+                  className="text-white/80 hover:text-[var(--shreem-gold)]"
                 >
-                  {collections?.slice(0, 6).map((c) => (
-                    <li key={c.id}>
-                      <LocalizedClientLink
-                        className="hover:text-ui-fg-base"
-                        href={`/collections/${c.handle}`}
-                      >
-                        {c.title}
-                      </LocalizedClientLink>
-                    </li>
-                  ))}
-                </ul>
+                  Home
+                </LocalizedClientLink>
+                <LocalizedClientLink
+                  href="/store"
+                  className="text-white/80 hover:text-[var(--shreem-gold)]"
+                >
+                  Shop
+                </LocalizedClientLink>
+                <LocalizedClientLink
+                  href="/gaatha"
+                  className="text-white/80 hover:text-[var(--shreem-gold)]"
+                >
+                  Shreem Gaatha
+                </LocalizedClientLink>
+                <LocalizedClientLink
+                  href="/account"
+                  className="text-white/80 hover:text-[var(--shreem-gold)]"
+                >
+                  Account
+                </LocalizedClientLink>
               </div>
-            )}
-            <div className="flex flex-col gap-y-2">
-              <span className="txt-small-plus txt-ui-fg-base">Medusa</span>
-              <ul className="grid grid-cols-1 gap-y-2 text-ui-fg-subtle txt-small">
-                <li>
-                  <a
-                    href="https://github.com/medusajs"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="hover:text-ui-fg-base"
-                  >
-                    GitHub
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="https://docs.medusajs.com"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="hover:text-ui-fg-base"
-                  >
-                    Documentation
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="https://github.com/medusajs/nextjs-starter-medusa"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="hover:text-ui-fg-base"
-                  >
-                    Source code
-                  </a>
-                </li>
-              </ul>
+              <div className="flex flex-col gap-y-3">
+                <span className="brand-kicker">Shreem Promise</span>
+                <Text className="text-white/72">Cultured bilona A2 ghee</Text>
+                <Text className="text-white/72">Naturally grazing desi cows</Text>
+                <Text className="text-white/72">Prayerful neem dhoop rituals</Text>
+                <Text className="text-white/72">Living-soil farm support</Text>
+              </div>
+              <div className="flex flex-col gap-y-3">
+                <span className="brand-kicker">Made For</span>
+                <Text className="text-white/72">The kitchen</Text>
+                <Text className="text-white/72">The prayer room</Text>
+                <Text className="text-white/72">The family home</Text>
+                <Text className="text-white/72">The farm</Text>
+              </div>
             </div>
           </div>
-        </div>
-        <div className="flex w-full mb-16 justify-between text-ui-fg-muted">
-          <Text className="txt-compact-small">
-            © {new Date().getFullYear()} Medusa Store. All rights reserved.
-          </Text>
-          <MedusaCTA />
+          <div className="flex flex-col gap-3 border-t border-white/10 pt-6 text-white/64 small:flex-row small:items-center small:justify-between">
+            <Text className="txt-compact-small">
+              © {new Date().getFullYear()} Shreem Cow Products. Rooted in desi
+              cows, bilona purity, and a more natural Indian way of life.
+            </Text>
+            <LocalizedClientLink
+              href="/gaatha"
+              className="txt-compact-small hover:text-[var(--shreem-gold)]"
+            >
+              Read Shreem Gaatha
+            </LocalizedClientLink>
+          </div>
         </div>
       </div>
     </footer>

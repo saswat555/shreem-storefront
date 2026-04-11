@@ -37,37 +37,38 @@ export default function CategoryTemplate({
   getParents(category)
 
   return (
-    <div
-      className="flex flex-col small:flex-row small:items-start py-6 content-container"
-      data-testid="category-container"
-    >
-      <RefinementList sortBy={sort} data-testid="sort-by-container" />
-      <div className="w-full">
-        <div className="flex flex-row mb-8 text-2xl-semi gap-4">
-          {parents &&
-            parents.map((parent) => (
-              <span key={parent.id} className="text-ui-fg-subtle">
-                <LocalizedClientLink
-                  className="mr-4 hover:text-black"
-                  href={`/categories/${parent.handle}`}
-                  data-testid="sort-by-link"
-                >
-                  {parent.name}
-                </LocalizedClientLink>
-                /
-              </span>
-            ))}
-          <h1 data-testid="category-page-title">{category.name}</h1>
+    <div className="content-container py-8 small:py-12" data-testid="category-container">
+      <div className="brand-surface mb-6 px-5 py-6 small:px-8 small:py-8">
+        <p className="brand-kicker">Category</p>
+        <div className="mt-3 flex flex-wrap items-center gap-2 text-sm text-[var(--shreem-muted)]">
+          {parents.map((parent) => (
+            <span key={parent.id} className="flex items-center gap-2">
+              <LocalizedClientLink
+                className="hover:text-[var(--shreem-accent-dark)]"
+                href={`/categories/${parent.handle}`}
+                data-testid="sort-by-link"
+              >
+                {parent.name}
+              </LocalizedClientLink>
+              <span>/</span>
+            </span>
+          ))}
         </div>
+        <h1
+          className="mt-3 text-[2.5rem] leading-none text-[var(--shreem-ink)] small:text-[3.6rem]"
+          data-testid="category-page-title"
+        >
+          {category.name}
+        </h1>
         {category.description && (
-          <div className="mb-8 text-base-regular">
+          <div className="mt-4 max-w-[38rem] text-base-regular text-[var(--shreem-muted)]">
             <p>{category.description}</p>
           </div>
         )}
-        {category.category_children && (
-          <div className="mb-8 text-base-large">
-            <ul className="grid grid-cols-1 gap-2">
-              {category.category_children?.map((c) => (
+        {!!category.category_children?.length && (
+          <div className="mt-6">
+            <ul className="flex flex-wrap gap-3">
+              {category.category_children.map((c) => (
                 <li key={c.id}>
                   <InteractiveLink href={`/categories/${c.handle}`}>
                     {c.name}
@@ -77,6 +78,9 @@ export default function CategoryTemplate({
             </ul>
           </div>
         )}
+      </div>
+      <div className="flex flex-col gap-5">
+        <RefinementList sortBy={sort} data-testid="sort-by-container" />
         <Suspense
           fallback={
             <SkeletonProductGrid

@@ -5,7 +5,8 @@ import StoreTemplate from "@modules/store/templates"
 
 export const metadata: Metadata = {
   title: "Store",
-  description: "Explore all of our products.",
+  description:
+    "Browse bilona ghee, neem dhoop, cow dung cakes, Jeevamrut, and other Shreem Cow Products.",
 }
 
 type Params = {

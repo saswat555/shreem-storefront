@@ -1,35 +1,103 @@
-import { Github } from "@medusajs/icons"
-import { Button, Heading } from "@medusajs/ui"
+import { ArrowUpRightMini } from "@medusajs/icons"
+import { shreemCowBreeds } from "@lib/constants/shreem"
+import BrandLogo from "@modules/layout/components/brand-logo"
+import LocalizedClientLink from "@modules/common/components/localized-client-link"
+import Image from "next/image"
 
 const Hero = () => {
   return (
-    <div className="h-[75vh] w-full border-b border-ui-border-base relative bg-ui-bg-subtle">
-      <div className="absolute inset-0 z-10 flex flex-col justify-center items-center text-center small:p-32 gap-6">
-        <span>
-          <Heading
-            level="h1"
-            className="text-3xl leading-10 text-ui-fg-base font-normal"
-          >
-            Ecommerce Starter Template
-          </Heading>
-          <Heading
-            level="h2"
-            className="text-3xl leading-10 text-ui-fg-subtle font-normal"
-          >
-            Powered by Medusa and Next.js
-          </Heading>
-        </span>
-        <a
-          href="https://github.com/medusajs/nextjs-starter-medusa"
-          target="_blank"
-        >
-          <Button variant="secondary">
-            View on GitHub
-            <Github />
-          </Button>
-        </a>
+    <section className="content-container relative pt-5 small:pt-8">
+      <div className="brand-surface relative overflow-hidden px-5 py-7 small:px-10 small:py-10">
+        <div
+          aria-hidden="true"
+          className="animate-shreem-glow absolute -left-20 top-10 h-64 w-64 rounded-full bg-[rgba(13,129,126,0.18)] blur-3xl"
+        />
+        <div
+          aria-hidden="true"
+          className="absolute right-0 top-0 h-full w-full bg-[radial-gradient(circle_at_top_right,rgba(212,161,38,0.22),transparent_24%),radial-gradient(circle_at_80%_30%,rgba(18,63,99,0.1),transparent_24%),linear-gradient(135deg,rgba(255,250,240,0.26),transparent_55%)]"
+        />
+        <div className="relative">
+          <div className="brand-pill mx-auto mb-4 w-fit">
+            A2 desi cow products from {shreemCowBreeds.join(", ")}
+          </div>
+          <BrandLogo
+            size="hero"
+            align="center"
+            className="mb-6"
+            caption="Bilona ghee, neem dhoop, gobar cakes, and Jeevamrut rooted in a Vedic, desi-cow way of life."
+          />
+          <h1 className="mx-auto max-w-[13ch] text-center text-[2.8rem] leading-[0.96] text-balance text-[var(--shreem-ink)] small:text-[4.6rem]">
+            Bilona purity, sacred warmth, and a slower desi-cow way of living.
+          </h1>
+          <p className="mx-auto mt-5 max-w-[44rem] text-center text-base leading-7 text-[var(--shreem-muted)] small:text-lg">
+            Shreem brings together naturally grazing desi cows, bilona A2 ghee,
+            neem dhoop, sacred home essentials, and living-soil farm inputs for
+            families who want a purer, calmer, and more chemical-light life.
+          </p>
+          <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <LocalizedClientLink href="/store" className="brand-primary-button">
+              Shop products
+            </LocalizedClientLink>
+            <LocalizedClientLink
+              href="/gaatha"
+              className="brand-secondary-button gap-2"
+            >
+              Enter Shreem Gaatha
+              <ArrowUpRightMini />
+            </LocalizedClientLink>
+          </div>
+          <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
+            <span className="brand-pill px-3 py-1.5 text-[11px]">
+              Bilona ghee from cultured curd
+            </span>
+            <span className="brand-pill px-3 py-1.5 text-[11px]">
+              Neem dhoop for evening prayer
+            </span>
+            <span className="brand-pill px-3 py-1.5 text-[11px]">
+              Gau-kasht smoky finish
+            </span>
+          </div>
+          <div className="mt-8 overflow-hidden rounded-[30px] border border-[var(--shreem-border)] bg-[linear-gradient(180deg,rgba(255,252,247,0.98),rgba(247,242,232,0.92))] p-2 shadow-[0_24px_70px_rgba(15,49,70,0.12)]">
+            <div className="relative aspect-[16/8] overflow-hidden rounded-[24px] small:aspect-[16/7]">
+              <Image
+                src="/shreem-scenes/hero-scene.png"
+                alt="Illustrated Shreem gaushala hero scene with Gauri, Mayur, and bilona ghee"
+                fill
+                priority
+                sizes="(max-width: 768px) 100vw, 1200px"
+                className="object-cover object-center"
+              />
+            </div>
+          </div>
+          <div className="mt-6 grid gap-3 sm:grid-cols-3">
+            <div className="brand-card px-4 py-4">
+              <p className="text-sm font-semibold text-[var(--shreem-ink)]">
+                Desi cow origin
+              </p>
+              <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
+                Shreem begins with Gir, Sahiwal, Tharparkar, and Rathi cows.
+              </p>
+            </div>
+            <div className="brand-card px-4 py-4 animate-shreem-float">
+              <p className="text-sm font-semibold text-[var(--shreem-ink)]">
+                Made for daily rituals
+              </p>
+              <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
+                From bilona ghee to neem dhoop batti, each product belongs in real homes.
+              </p>
+            </div>
+            <div className="brand-card px-4 py-4 animate-shreem-float-delayed">
+              <p className="text-sm font-semibold text-[var(--shreem-ink)]">
+                Kitchen, prayer, and farm
+              </p>
+              <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
+                Ghee for the kitchen, dhoop and gobar for the home, and Jeevamrut for living soil.
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
+    </section>
   )
 }
 

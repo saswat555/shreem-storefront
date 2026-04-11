@@ -11,7 +11,10 @@ type RefinementListProps = {
   'data-testid'?: string
 }
 
-const RefinementList = ({ sortBy, 'data-testid': dataTestId }: RefinementListProps) => {
+const RefinementList = ({
+  sortBy,
+  "data-testid": dataTestId,
+}: RefinementListProps) => {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -20,6 +23,7 @@ const RefinementList = ({ sortBy, 'data-testid': dataTestId }: RefinementListPro
     (name: string, value: string) => {
       const params = new URLSearchParams(searchParams)
       params.set(name, value)
+      params.delete("page")
 
       return params.toString()
     },
@@ -32,9 +36,15 @@ const RefinementList = ({ sortBy, 'data-testid': dataTestId }: RefinementListPro
   }
 
   return (
-    <div className="flex small:flex-col gap-12 py-4 mb-8 small:px-0 pl-6 small:min-w-[250px] small:ml-[1.675rem]">
-      <SortProducts sortBy={sortBy} setQueryParams={setQueryParams} data-testid={dataTestId} />
-    </div>
+    <aside className="w-full">
+      <div className="brand-card mb-2 px-4 py-4 small:mb-0">
+        <SortProducts
+          sortBy={sortBy}
+          setQueryParams={setQueryParams}
+          data-testid={dataTestId}
+        />
+      </div>
+    </aside>
   )
 }
 
