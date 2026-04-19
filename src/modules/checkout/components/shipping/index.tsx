@@ -149,12 +149,13 @@ const Shipping: React.FC<ShippingProps> = ({
   }, [isOpen])
 
   return (
-    <div className="bg-white">
+    <section className="brand-card px-5 py-6 small:px-6">
+      <p className="brand-kicker">Step 2</p>
       <div className="flex flex-row items-center justify-between mb-6">
         <Heading
           level="h2"
           className={clx(
-            "flex flex-row text-3xl-regular gap-x-2 items-baseline",
+            "mt-3 flex flex-row items-center gap-x-3 text-[2rem] leading-none text-[var(--shreem-ink)] small:text-[2.4rem]",
             {
               "opacity-50 pointer-events-none select-none":
                 !isOpen && cart.shipping_methods?.length === 0,
@@ -173,7 +174,7 @@ const Shipping: React.FC<ShippingProps> = ({
             <Text>
               <button
                 onClick={handleEdit}
-                className="text-ui-fg-interactive hover:text-ui-fg-interactive-hover"
+                className="rounded-full border border-[var(--shreem-border)] px-4 py-2 text-sm font-medium text-[var(--shreem-accent-dark)] hover:bg-white"
                 data-testid="edit-delivery-button"
               >
                 Edit
@@ -183,6 +184,14 @@ const Shipping: React.FC<ShippingProps> = ({
       </div>
       {isOpen ? (
         <>
+          <div className="mb-5 rounded-[22px] bg-[linear-gradient(135deg,rgba(240,248,246,0.76),rgba(255,249,240,0.72))] px-4 py-4">
+            <p className="text-sm font-semibold text-[var(--shreem-ink)]">
+              Choose your delivery style
+            </p>
+            <p className="mt-1 text-sm leading-6 text-[var(--shreem-muted)]">
+              See the available shipping methods for this address and move ahead with the one that fits best.
+            </p>
+          </div>
           <div className="grid">
             <div className="flex flex-col">
               <span className="font-medium txt-medium text-ui-fg-base">
@@ -211,7 +220,7 @@ const Shipping: React.FC<ShippingProps> = ({
                       value={PICKUP_OPTION_ON}
                       data-testid="delivery-option-radio"
                       className={clx(
-                        "flex items-center justify-between text-small-regular cursor-pointer py-4 border rounded-rounded px-8 mb-2 hover:shadow-borders-interactive-with-active",
+                        "mb-2 flex cursor-pointer items-center justify-between rounded-[22px] border px-5 py-4 text-small-regular transition-all duration-200 hover:shadow-[0_12px_28px_rgba(15,49,70,0.12)]",
                         {
                           "border-ui-border-interactive":
                             showPickupOptions === PICKUP_OPTION_ON,
@@ -253,7 +262,7 @@ const Shipping: React.FC<ShippingProps> = ({
                         data-testid="delivery-option-radio"
                         disabled={isDisabled}
                         className={clx(
-                          "flex items-center justify-between text-small-regular cursor-pointer py-4 border rounded-rounded px-8 mb-2 hover:shadow-borders-interactive-with-active",
+                          "mb-2 flex cursor-pointer items-center justify-between rounded-[22px] border px-5 py-4 text-small-regular transition-all duration-200 hover:shadow-[0_12px_28px_rgba(15,49,70,0.12)]",
                           {
                             "border-ui-border-interactive":
                               option.id === shippingMethodId,
@@ -323,7 +332,7 @@ const Shipping: React.FC<ShippingProps> = ({
                           disabled={option.insufficient_inventory}
                           data-testid="delivery-option-radio"
                           className={clx(
-                            "flex items-center justify-between text-small-regular cursor-pointer py-4 border rounded-rounded px-8 mb-2 hover:shadow-borders-interactive-with-active",
+                            "mb-2 flex cursor-pointer items-center justify-between rounded-[22px] border px-5 py-4 text-small-regular transition-all duration-200 hover:shadow-[0_12px_28px_rgba(15,49,70,0.12)]",
                             {
                               "border-ui-border-interactive":
                                 option.id === shippingMethodId,
@@ -370,7 +379,7 @@ const Shipping: React.FC<ShippingProps> = ({
             />
             <Button
               size="large"
-              className="mt"
+              className="mt-2 rounded-full border-0 bg-[linear-gradient(135deg,#0d817e_0%,#123f63_52%,#6f211f_100%)] text-white shadow-[0_18px_34px_rgba(18,63,99,0.26)]"
               onClick={handleSubmit}
               isLoading={isLoading}
               disabled={!cart.shipping_methods?.[0]}
@@ -384,16 +393,19 @@ const Shipping: React.FC<ShippingProps> = ({
         <div>
           <div className="text-small-regular">
             {cart && (cart.shipping_methods?.length ?? 0) > 0 && (
-              <div className="flex flex-col w-1/3">
+              <div className="rounded-[22px] bg-[linear-gradient(135deg,rgba(240,248,246,0.78),rgba(255,249,240,0.72))] px-4 py-4">
                 <Text className="txt-medium-plus text-ui-fg-base mb-1">
                   Method
                 </Text>
-                <Text className="txt-medium text-ui-fg-subtle">
-                  {cart.shipping_methods!.at(-1)!.name}{" "}
+                <Text className="txt-medium text-ui-fg-base">
+                  {cart.shipping_methods!.at(-1)!.name}
+                </Text>
+                <Text className="mt-1 text-sm leading-6 text-[var(--shreem-muted)]">
                   {convertToLocale({
                     amount: cart.shipping_methods!.at(-1)!.amount!,
                     currency_code: cart?.currency_code,
-                  })}
+                  })}{" "}
+                  charged for this order at checkout.
                 </Text>
               </div>
             )}
@@ -401,7 +413,7 @@ const Shipping: React.FC<ShippingProps> = ({
         </div>
       )}
       <Divider className="mt-8" />
-    </div>
+    </section>
   )
 }
 

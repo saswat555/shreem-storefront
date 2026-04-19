@@ -126,6 +126,29 @@
     scrollbar-width: none; /* Firefox */
   }
 
+  .shreem-reveal {
+    opacity: 0;
+    transform: translateY(26px) scale(0.985);
+    transition:
+      opacity 520ms ease,
+      transform 520ms ease;
+    will-change: opacity, transform;
+  }
+
+  .shreem-reveal.is-visible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .shreem-reveal,
+    .shreem-reveal.is-visible {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+  }
+
   .text-balance {
     text-wrap: balance;
   }

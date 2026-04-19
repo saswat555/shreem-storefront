@@ -8,9 +8,9 @@ export default function CheckoutLayout({
   children: React.ReactNode
 }) {
   return (
-    <div className="relative w-full bg-white/60 small:min-h-screen">
-      <div className="border-b border-[rgba(113,86,57,0.12)] bg-[rgba(255,252,248,0.88)] backdrop-blur-xl">
-        <nav className="content-container flex h-20 items-center justify-between">
+    <div className="relative w-full small:min-h-screen">
+      <div className="sticky top-0 z-40 border-b border-[rgba(113,86,57,0.12)] bg-[rgba(255,252,248,0.9)] backdrop-blur-xl">
+        <nav className="content-container flex h-24 items-center justify-between">
           <LocalizedClientLink
             href="/cart"
             className="flex flex-1 basis-0 items-center gap-x-2 text-small-semi uppercase text-ui-fg-base"
@@ -29,14 +29,16 @@ export default function CheckoutLayout({
             className="transition-transform duration-300 hover:scale-[1.01]"
             data-testid="store-link"
           >
-            <BrandLogo size="small" showCaption={false} />
+            <BrandLogo size="medium" showCaption={false} />
           </LocalizedClientLink>
           <div className="flex-1 basis-0" />
         </nav>
       </div>
-      <div className="relative" data-testid="checkout-container">{children}</div>
+      <div className="relative" data-testid="checkout-container">
+        {children}
+      </div>
       <div className="flex w-full items-center justify-center py-6 text-sm text-[var(--shreem-muted)]">
-        Secure Shreem checkout
+        Secure Shreem checkout with live totals and confirmation at every step
       </div>
     </div>
   )

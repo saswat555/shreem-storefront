@@ -47,6 +47,29 @@ export default function ProductActions({
     }
   }, [product.variants])
 
+  useEffect(() => {
+    if (!product.variants?.length || Object.keys(options).length > 0) {
+      return
+    }
+
+    const firstPurchasableVariant = product.variants.find((variant) => {
+      if (!variant.manage_inventory) {
+        return true
+      }
+
+      if (variant.allow_backorder) {
+        return true
+      }
+
+      return (variant.inventory_quantity || 0) > 0
+    })
+
+    if (firstPurchasableVariant) {
+      const variantOptions = optionsAsKeymap(firstPurchasableVariant.options)
+      setOptions(variantOptions ?? {})
+    }
+  }, [options, product.variants])
+
   const selectedVariant = useMemo(() => {
     if (!product.variants || product.variants.length === 0) {
       return
@@ -108,6 +131,18 @@ export default function ProductActions({
     return false
   }, [selectedVariant])
 
+  const stockLabel = useMemo(() => {
+    if (!selectedVariant) {
+      return "Choose a variant"
+    }
+
+    if (selectedVariant.allow_backorder && !inStock) {
+      return "Available on backorder"
+    }
+
+    return inStock ? "Ready to add to cart" : "Currently unavailable"
+  }, [inStock, selectedVariant])
+
   const actionsRef = useRef<HTMLDivElement>(null)
   const inView = useIntersection(actionsRef, "0px")
 
@@ -129,10 +164,18 @@ export default function ProductActions({
     <>
       <div className="brand-card flex flex-col gap-y-5 p-6" ref={actionsRef}>
         <div>
-          <p className="brand-kicker">Select your configuration</p>
+          <p className="brand-kicker">Purchase options</p>
           <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
-            Pick the option that suits you best and add it straight to your bag.
+            Choose your preferred size or variant, check the live price, and move straight into checkout.
           </p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <span className="brand-pill px-3 py-1.5">{stockLabel}</span>
+            {selectedVariant?.title && (
+              <span className="brand-pill px-3 py-1.5">
+                {selectedVariant.title}
+              </span>
+            )}
+          </div>
         </div>
 
         <div>
@@ -173,15 +216,37 @@ export default function ProductActions({
           isLoading={isAdding}
           data-testid="add-product-button"
         >
-          {!selectedVariant && !options
-            ? "Select variant"
+          {!selectedVariant
+            ? `Select ${
+                product.options?.[0]?.title?.toLowerCase() || "an option"
+              }`
             : !inStock || !isValidVariant
             ? "Out of stock"
             : "Add to cart"}
         </Button>
-        <p className="text-center text-xs leading-5 text-[var(--shreem-muted)]">
-          A smooth, secure checkout begins as soon as you add this piece to bag.
-        </p>
+        <div className="grid gap-3">
+          <div className="rounded-[20px] bg-[linear-gradient(135deg,rgba(240,248,246,0.78),rgba(255,249,240,0.72))] px-4 py-4 text-sm leading-6 text-[var(--shreem-muted)]">
+            Secure checkout, region-aware pricing, and live cart updates keep the buying flow clean from product page to payment.
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="rounded-[20px] border border-[rgba(18,63,99,0.12)] bg-white/76 px-4 py-4">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--shreem-gold-deep)]">
+                Checkout clarity
+              </p>
+              <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
+                Delivery, payment, and final review all stay visible before order placement.
+              </p>
+            </div>
+            <div className="rounded-[20px] border border-[rgba(18,63,99,0.12)] bg-white/76 px-4 py-4">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--shreem-gold-deep)]">
+                Post-purchase trust
+              </p>
+              <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
+                Approved customer feedback is shown on the product page with star ratings.
+              </p>
+            </div>
+          </div>
+        </div>
         <MobileActions
           product={product}
           variant={selectedVariant}

@@ -19,12 +19,13 @@ const Review = ({ cart }: { cart: any }) => {
     (cart.payment_collection || paidByGiftcard)
 
   return (
-    <div className="bg-white">
+    <section className="brand-card px-5 py-6 small:px-6">
+      <p className="brand-kicker">Step 4</p>
       <div className="flex flex-row items-center justify-between mb-6">
         <Heading
           level="h2"
           className={clx(
-            "flex flex-row text-3xl-regular gap-x-2 items-baseline",
+            "mt-3 flex flex-row items-center gap-x-3 text-[2rem] leading-none text-[var(--shreem-ink)] small:text-[2.4rem]",
             {
               "opacity-50 pointer-events-none select-none": !isOpen,
             }
@@ -35,20 +36,30 @@ const Review = ({ cart }: { cart: any }) => {
       </div>
       {isOpen && previousStepsCompleted && (
         <>
-          <div className="flex items-start gap-x-1 w-full mb-6">
-            <div className="w-full">
-              <Text className="txt-medium-plus text-ui-fg-base mb-1">
-                By clicking the Place Order button, you confirm that you have
-                read, understand and accept our Terms of Use, Terms of Sale and
-                Returns Policy and acknowledge that you have read Shreem&apos;s
-                Privacy Policy.
+          <div className="mb-6 grid gap-4 lg:grid-cols-[minmax(0,1fr)_220px]">
+            <div className="rounded-[24px] border border-[var(--shreem-border)] bg-[rgba(255,252,248,0.9)] px-4 py-4">
+              <Text className="txt-medium-plus text-ui-fg-base mb-2">
+                Final confirmation
+              </Text>
+              <Text className="text-sm leading-7 text-[var(--shreem-muted)]">
+                Review your shipping, payment, and cart summary one last time.
+                When you place the order, you also confirm the terms of sale,
+                returns policy, and privacy policy.
+              </Text>
+            </div>
+            <div className="rounded-[24px] bg-[linear-gradient(135deg,rgba(240,248,246,0.78),rgba(255,249,240,0.72))] px-4 py-4">
+              <Text className="txt-medium-plus text-ui-fg-base mb-2">
+                What happens next
+              </Text>
+              <Text className="text-sm leading-7 text-[var(--shreem-muted)]">
+                Your order is created immediately and the next screen will show the confirmation details.
               </Text>
             </div>
           </div>
           <PaymentButton cart={cart} data-testid="submit-order-button" />
         </>
       )}
-    </div>
+    </section>
   )
 }
 

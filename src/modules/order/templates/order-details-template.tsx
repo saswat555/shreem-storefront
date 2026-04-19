@@ -7,6 +7,7 @@ import Help from "@modules/order/components/help"
 import Items from "@modules/order/components/items"
 import OrderDetails from "@modules/order/components/order-details"
 import OrderSummary from "@modules/order/components/order-summary"
+import ProductFeedback from "@modules/order/components/product-feedback"
 import ShippingDetails from "@modules/order/components/shipping-details"
 import React from "react"
 
@@ -17,6 +18,24 @@ type OrderDetailsTemplateProps = {
 const OrderDetailsTemplate: React.FC<OrderDetailsTemplateProps> = ({
   order,
 }) => {
+  const isDelivered = ["delivered", "partially_delivered"].includes(
+    order.fulfillment_status
+  )
+  const feedbackItems =
+    order.items?.map((item) => {
+      const product = item.product as
+        | (HttpTypes.StoreProduct & { handle?: string | null })
+        | undefined
+
+      return {
+        id: item.id,
+        productId: item.product_id || product?.id || "",
+        productHandle: product?.handle || item.product_handle || null,
+        title: item.product_title || product?.title || "Shreem product",
+        thumbnail: item.thumbnail,
+      }
+    }) ?? []
+
   return (
     <div className="flex flex-col justify-center gap-y-4">
       <div className="flex gap-2 justify-between items-center">
@@ -35,6 +54,11 @@ const OrderDetailsTemplate: React.FC<OrderDetailsTemplateProps> = ({
       >
         <OrderDetails order={order} showStatus />
         <Items order={order} />
+        <ProductFeedback
+          orderId={order.id}
+          isDelivered={isDelivered}
+          items={feedbackItems}
+        />
         <ShippingDetails order={order} />
         <OrderSummary order={order} />
         <Help />

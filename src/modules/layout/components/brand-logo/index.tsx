@@ -2,7 +2,7 @@ import { clx } from "@medusajs/ui"
 import Image from "next/image"
 
 type BrandLogoProps = {
-  size?: "small" | "medium" | "large" | "hero"
+  size?: "small" | "medium" | "large" | "nav" | "hero" | "footer" | "sidebar"
   theme?: "light" | "dark"
   showCaption?: boolean
   caption?: string
@@ -29,11 +29,29 @@ const sizeMap = {
     title: "text-[1.7rem]",
     caption: "text-sm",
   },
+  nav: {
+    container: "h-[76px] w-[76px] rounded-[24px] p-2",
+    image: 58,
+    title: "text-[2rem]",
+    caption: "text-sm",
+  },
   hero: {
     container: "h-24 w-24 rounded-[28px] p-2.5 small:h-28 small:w-28",
     image: 78,
     title: "text-[2.3rem] small:text-[2.8rem]",
     caption: "text-sm small:text-base",
+  },
+  footer: {
+    container: "h-32 w-32 rounded-[34px] p-3 small:h-36 small:w-36",
+    image: 108,
+    title: "text-[2.5rem] small:text-[2.9rem]",
+    caption: "text-base",
+  },
+  sidebar: {
+    container: "h-56 w-56 rounded-[46px] p-4",
+    image: 192,
+    title: "text-[3.4rem]",
+    caption: "text-base",
   },
 }
 
@@ -49,12 +67,16 @@ export default function BrandLogo({
   const isDark = theme === "dark"
   const isCentered = align === "center"
   const isHero = size === "hero"
+  const isFooter = size === "footer"
+  const isSidebar = size === "sidebar"
 
   return (
     <div
       className={clx(
         "flex items-center gap-3",
         isHero && "flex-col gap-4",
+        isFooter && "items-start gap-5",
+        isSidebar && "flex-col items-center gap-4 text-center",
         isCentered && "mx-auto w-fit text-center",
         className
       )}
@@ -94,6 +116,7 @@ export default function BrandLogo({
             className={clx(
               "mt-1 hidden leading-relaxed sm:block",
               isCentered && "max-w-[30rem]",
+              isFooter && "max-w-[28rem]",
               config.caption,
               isDark ? "text-white/70" : "text-[var(--shreem-muted)]"
             )}

@@ -24,25 +24,32 @@ export default function ProductPrice({
   }
 
   return (
-    <div className="flex flex-col text-ui-fg-base">
-      <span className="brand-kicker mb-2">Price</span>
-      <span
-        className={clx("text-[2.1rem] leading-none text-[var(--shreem-ink)]", {
-          "text-[var(--shreem-accent-dark)]":
-            selectedPrice.price_type === "sale",
-        })}
-      >
-        {!variant && "From "}
-        <span
-          data-testid="product-price"
-          data-value={selectedPrice.calculated_price_number}
-        >
-          {selectedPrice.calculated_price}
-        </span>
-      </span>
-      {selectedPrice.price_type === "sale" && (
+    <div className="rounded-[22px] bg-[linear-gradient(135deg,rgba(240,248,246,0.78),rgba(255,249,240,0.76))] px-4 py-4 text-ui-fg-base">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <span className="brand-kicker mb-2 block">Price</span>
+          <span
+            className={clx("text-[2.2rem] leading-none text-[var(--shreem-ink)]", {
+              "text-[var(--shreem-accent-dark)]":
+                selectedPrice.price_type === "sale",
+            })}
+          >
+            {!variant && "From "}
+            <span
+              data-testid="product-price"
+              data-value={selectedPrice.calculated_price_number}
+            >
+              {selectedPrice.calculated_price}
+            </span>
+          </span>
+        </div>
+        <div className="rounded-full border border-[rgba(212,161,38,0.3)] bg-white/80 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--shreem-gold-deep)]">
+          {variant ? "Selected variant" : "Best available"}
+        </div>
+      </div>
+      {selectedPrice.price_type === "sale" ? (
         <>
-          <p className="mt-2 text-sm text-[var(--shreem-muted)]">
+          <p className="mt-3 text-sm text-[var(--shreem-muted)]">
             <span>Original: </span>
             <span
               className="line-through"
@@ -52,10 +59,14 @@ export default function ProductPrice({
               {selectedPrice.original_price}
             </span>
           </p>
-          <span className="mt-1 text-sm font-semibold text-[var(--shreem-accent-dark)]">
-            -{selectedPrice.percentage_diff}%
+          <span className="mt-1 inline-flex rounded-full bg-white/80 px-3 py-1 text-sm font-semibold text-[var(--shreem-accent-dark)]">
+            Save {selectedPrice.percentage_diff}%
           </span>
         </>
+      ) : (
+        <p className="mt-3 text-sm leading-6 text-[var(--shreem-muted)]">
+          Shipping and taxes are shown clearly during checkout before you place the order.
+        </p>
       )}
     </div>
   )

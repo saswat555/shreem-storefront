@@ -1,6 +1,5 @@
 import { ArrowUpRightMini } from "@medusajs/icons"
 import { shreemCowBreeds } from "@lib/constants/shreem"
-import BrandLogo from "@modules/layout/components/brand-logo"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import Image from "next/image"
 
@@ -20,53 +19,40 @@ const Hero = () => {
           <div className="brand-pill mx-auto mb-4 w-fit">
             A2 desi cow products from {shreemCowBreeds.join(", ")}
           </div>
-          <BrandLogo
-            size="hero"
-            align="center"
-            className="mb-6"
-            caption="Bilona ghee, neem dhoop, gobar cakes, and Jeevamrut rooted in a Vedic, desi-cow way of life."
-          />
-          <h1 className="mx-auto max-w-[13ch] text-center text-[2.8rem] leading-[0.96] text-balance text-[var(--shreem-ink)] small:text-[4.6rem]">
-            Bilona purity, sacred warmth, and a slower desi-cow way of living.
-          </h1>
-          <p className="mx-auto mt-5 max-w-[44rem] text-center text-base leading-7 text-[var(--shreem-muted)] small:text-lg">
-            Shreem brings together naturally grazing desi cows, bilona A2 ghee,
-            neem dhoop, sacred home essentials, and living-soil farm inputs for
-            families who want a purer, calmer, and more chemical-light life.
-          </p>
-          <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <LocalizedClientLink href="/store" className="brand-primary-button">
-              Shop products
-            </LocalizedClientLink>
-            <LocalizedClientLink
-              href="/gaatha"
-              className="brand-secondary-button gap-2"
-            >
-              Enter Shreem Gaatha
-              <ArrowUpRightMini />
-            </LocalizedClientLink>
-          </div>
-          <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
-            <span className="brand-pill px-3 py-1.5 text-[11px]">
-              Bilona ghee from cultured curd
-            </span>
-            <span className="brand-pill px-3 py-1.5 text-[11px]">
-              Neem dhoop for evening prayer
-            </span>
-            <span className="brand-pill px-3 py-1.5 text-[11px]">
-              Gau-kasht smoky finish
-            </span>
-          </div>
-          <div className="mt-8 overflow-hidden rounded-[30px] border border-[var(--shreem-border)] bg-[linear-gradient(180deg,rgba(255,252,247,0.98),rgba(247,242,232,0.92))] p-2 shadow-[0_24px_70px_rgba(15,49,70,0.12)]">
-            <div className="relative aspect-[16/8] overflow-hidden rounded-[24px] small:aspect-[16/7]">
-              <Image
-                src="/shreem-scenes/hero-scene.png"
-                alt="Illustrated Shreem gaushala hero scene with Gauri, Mayur, and bilona ghee"
-                fill
-                priority
-                sizes="(max-width: 768px) 100vw, 1200px"
-                className="object-cover object-center"
-              />
+          <div className="grid gap-6 xl:grid-cols-[0.94fr_1.06fr] xl:items-center">
+            <div className="order-2 xl:order-1">
+              <h1 className="max-w-[13ch] text-center text-[2.8rem] leading-[0.96] text-balance text-[var(--shreem-ink)] small:text-[4.6rem] xl:text-left">
+                Bilona purity, sacred warmth, and a slower desi-cow way of living.
+              </h1>
+              <p className="mt-6 max-w-[44rem] text-center text-base leading-7 text-[var(--shreem-muted)] small:text-lg xl:text-left">
+                Shreem brings together naturally grazing desi cows, bilona A2 ghee,
+                neem dhoop, sacred home essentials, and living-soil farm inputs for
+                families who want a purer, calmer, and more chemical-light life.
+              </p>
+              <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row xl:justify-start">
+                <LocalizedClientLink href="/store" className="brand-primary-button">
+                  Shop products
+                </LocalizedClientLink>
+                <LocalizedClientLink
+                  href="/prakriti-guide"
+                  className="brand-secondary-button gap-2"
+                >
+                  Use Prakriti Guide
+                  <ArrowUpRightMini />
+                </LocalizedClientLink>
+              </div>
+            </div>
+            <div className="order-1 xl:order-2 overflow-hidden rounded-[30px] border border-[var(--shreem-border)] bg-[linear-gradient(180deg,rgba(255,252,247,0.98),rgba(247,242,232,0.92))] p-2 shadow-[0_24px_70px_rgba(15,49,70,0.12)]">
+              <div className="relative aspect-[16/10] overflow-hidden rounded-[24px] small:aspect-[16/9] xl:aspect-[16/11]">
+                <Image
+                  src="/shreem-scenes/hero-scene.png"
+                  alt="Illustrated Shreem gaushala hero scene with Gauri, Mayur, and bilona ghee"
+                  fill
+                  priority
+                  sizes="(max-width: 1279px) 100vw, 720px"
+                  className="object-cover object-center"
+                />
+              </div>
             </div>
           </div>
           <div className="mt-6 grid gap-3 sm:grid-cols-3">
@@ -88,10 +74,10 @@ const Hero = () => {
             </div>
             <div className="brand-card px-4 py-4 animate-shreem-float-delayed">
               <p className="text-sm font-semibold text-[var(--shreem-ink)]">
-                Kitchen, prayer, and farm
+                Smart natural-care help
               </p>
               <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
-                Ghee for the kitchen, dhoop and gobar for the home, and Jeevamrut for living soil.
+                Upload plant or animal photos and get a cautious remedy direction when the guide is enabled.
               </p>
             </div>
           </div>

@@ -1,6 +1,6 @@
 "use client"
 
-import { isManual, isStripeLike } from "@lib/constants"
+import { getPaymentInfo, isOfflineLike, isStripeLike } from "@lib/constants"
 import { placeOrder } from "@lib/data/cart"
 import { HttpTypes } from "@medusajs/types"
 import { Button } from "@medusajs/ui"
@@ -24,7 +24,11 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
     !cart.email ||
     (cart.shipping_methods?.length ?? 0) < 1
 
-  const paymentSession = cart.payment_collection?.payment_sessions?.[0]
+  const paymentSession =
+    cart.payment_collection?.payment_sessions?.find(
+      (session) =>
+        session.status === "pending" || session.status === "authorized"
+    ) || cart.payment_collection?.payment_sessions?.[0]
 
   switch (true) {
     case isStripeLike(paymentSession?.provider_id):
@@ -35,12 +39,23 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
           data-testid={dataTestId}
         />
       )
-    case isManual(paymentSession?.provider_id):
+    case isOfflineLike(paymentSession?.provider_id):
       return (
-        <ManualTestPaymentButton notReady={notReady} data-testid={dataTestId} />
+        <OfflinePaymentButton
+          notReady={notReady}
+          providerId={paymentSession?.provider_id}
+          data-testid={dataTestId}
+        />
       )
     default:
-      return <Button disabled>Select a payment method</Button>
+      return (
+        <Button
+          disabled
+          className="rounded-full border border-[var(--shreem-border)] bg-[rgba(255,252,248,0.86)] text-[var(--shreem-muted)]"
+        >
+          Select a payment method
+        </Button>
+      )
   }
 }
 
@@ -139,6 +154,7 @@ const StripePaymentButton = ({
         onClick={handlePayment}
         size="large"
         isLoading={submitting}
+        className="rounded-full border-0 bg-[linear-gradient(135deg,#0d817e_0%,#123f63_52%,#6f211f_100%)] text-white shadow-[0_18px_34px_rgba(18,63,99,0.26)]"
         data-testid={dataTestId}
       >
         Place order
@@ -151,7 +167,13 @@ const StripePaymentButton = ({
   )
 }
 
-const ManualTestPaymentButton = ({ notReady }: { notReady: boolean }) => {
+const OfflinePaymentButton = ({
+  notReady,
+  providerId,
+}: {
+  notReady: boolean
+  providerId?: string
+}) => {
   const [submitting, setSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
@@ -178,13 +200,14 @@ const ManualTestPaymentButton = ({ notReady }: { notReady: boolean }) => {
         isLoading={submitting}
         onClick={handlePayment}
         size="large"
+        className="rounded-full border-0 bg-[linear-gradient(135deg,#0d817e_0%,#123f63_52%,#6f211f_100%)] text-white shadow-[0_18px_34px_rgba(18,63,99,0.26)]"
         data-testid="submit-order-button"
       >
-        Place order
+        Place order with {getPaymentInfo(providerId).title}
       </Button>
       <ErrorMessage
         error={errorMessage}
-        data-testid="manual-payment-error-message"
+        data-testid="offline-payment-error-message"
       />
     </>
   )

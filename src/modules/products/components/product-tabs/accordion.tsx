@@ -35,6 +35,7 @@ const Item: React.FC<AccordionItemProps> = ({
   description,
   children,
   className,
+  headingSize: _headingSize,
   customTrigger = undefined,
   forceMountContent = undefined,
   ...props

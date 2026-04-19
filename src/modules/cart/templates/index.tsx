@@ -18,7 +18,7 @@ const CartTemplate = ({
         <div className="brand-surface mb-6 px-5 py-6 small:px-8 small:py-8">
           <p className="brand-kicker">Your bag</p>
           <h1 className="mt-3 text-[2.4rem] leading-none text-[var(--shreem-ink)] small:text-[3.4rem]">
-            Everything you’ve selected, laid out clearly.
+            Your cart is ready to go.
           </h1>
         </div>
         {cart?.items?.length ? (

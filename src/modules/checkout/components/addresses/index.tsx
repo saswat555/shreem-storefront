@@ -40,11 +40,12 @@ const Addresses = ({
   const [message, formAction] = useActionState(setAddresses, null)
 
   return (
-    <div className="bg-white">
+    <section className="brand-card px-5 py-6 small:px-6">
+      <p className="brand-kicker">Step 1</p>
       <div className="flex flex-row items-center justify-between mb-6">
         <Heading
           level="h2"
-          className="flex flex-row text-3xl-regular gap-x-2 items-baseline"
+          className="mt-3 flex flex-row items-center gap-x-3 text-[2rem] leading-none text-[var(--shreem-ink)] small:text-[2.4rem]"
         >
           Shipping Address
           {!isOpen && <CheckCircleSolid />}
@@ -53,7 +54,7 @@ const Addresses = ({
           <Text>
             <button
               onClick={handleEdit}
-              className="text-ui-fg-interactive hover:text-ui-fg-interactive-hover"
+              className="rounded-full border border-[var(--shreem-border)] px-4 py-2 text-sm font-medium text-[var(--shreem-accent-dark)] hover:bg-white"
               data-testid="edit-address-button"
             >
               Edit
@@ -63,6 +64,14 @@ const Addresses = ({
       </div>
       {isOpen ? (
         <form action={formAction}>
+          <div className="mb-5 rounded-[22px] bg-[linear-gradient(135deg,rgba(240,248,246,0.76),rgba(255,249,240,0.72))] px-4 py-4">
+            <p className="text-sm font-semibold text-[var(--shreem-ink)]">
+              Tell us where to deliver
+            </p>
+            <p className="mt-1 text-sm leading-6 text-[var(--shreem-muted)]">
+              Use your saved details or enter a fresh address for this order. We will use it for delivery updates and checkout confirmation.
+            </p>
+          </div>
           <div className="pb-8">
             <ShippingAddress
               customer={customer}
@@ -93,10 +102,10 @@ const Addresses = ({
         <div>
           <div className="text-small-regular">
             {cart && cart.shipping_address ? (
-              <div className="flex items-start gap-x-8">
-                <div className="flex items-start gap-x-1 w-full">
+              <div className="w-full">
+                <div className="grid gap-6 small:grid-cols-3">
                   <div
-                    className="flex flex-col w-1/3"
+                    className="flex flex-col rounded-[22px] bg-[linear-gradient(135deg,rgba(240,248,246,0.78),rgba(255,249,240,0.72))] px-4 py-4"
                     data-testid="shipping-address-summary"
                   >
                     <Text className="txt-medium-plus text-ui-fg-base mb-1">
@@ -120,7 +129,7 @@ const Addresses = ({
                   </div>
 
                   <div
-                    className="flex flex-col w-1/3 "
+                    className="flex flex-col rounded-[22px] bg-[linear-gradient(135deg,rgba(240,248,246,0.78),rgba(255,249,240,0.72))] px-4 py-4"
                     data-testid="shipping-contact-summary"
                   >
                     <Text className="txt-medium-plus text-ui-fg-base mb-1">
@@ -135,7 +144,7 @@ const Addresses = ({
                   </div>
 
                   <div
-                    className="flex flex-col w-1/3"
+                    className="flex flex-col rounded-[22px] bg-[linear-gradient(135deg,rgba(240,248,246,0.78),rgba(255,249,240,0.72))] px-4 py-4"
                     data-testid="billing-address-summary"
                   >
                     <Text className="txt-medium-plus text-ui-fg-base mb-1">
@@ -177,7 +186,7 @@ const Addresses = ({
         </div>
       )}
       <Divider className="mt-8" />
-    </div>
+    </section>
   )
 }
 

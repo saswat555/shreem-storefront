@@ -7,15 +7,36 @@ import Divider from "@modules/common/components/divider"
 
 const CheckoutSummary = ({ cart }: { cart: any }) => {
   return (
-    <div className="sticky top-0 flex flex-col-reverse small:flex-col gap-y-8 py-8 small:py-0 ">
-      <div className="w-full bg-white flex flex-col">
-        <Divider className="my-6 small:hidden" />
+    <aside className="sticky top-28 flex flex-col-reverse gap-y-8 py-2 small:flex-col small:py-0">
+      <div className="brand-card w-full px-5 py-6 small:px-6">
+        <p className="brand-kicker">Order summary</p>
         <Heading
           level="h2"
-          className="flex flex-row text-3xl-regular items-baseline"
+          className="mt-3 flex flex-row items-baseline text-[2.1rem] leading-none text-[var(--shreem-ink)]"
         >
           In your Cart
         </Heading>
+        <p className="mt-3 text-sm leading-6 text-[var(--shreem-muted)]">
+          Real-time totals, line items, and promotional adjustments stay visible while you move through checkout.
+        </p>
+        <div className="mt-5 grid gap-3 small:grid-cols-2">
+          <div className="rounded-[20px] bg-[linear-gradient(135deg,rgba(240,248,246,0.78),rgba(255,249,240,0.72))] px-4 py-4">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--shreem-gold-deep)]">
+              Items
+            </p>
+            <p className="mt-2 text-sm text-[var(--shreem-ink)]">
+              {cart.items?.length || 0} product{(cart.items?.length || 0) === 1 ? "" : "s"} ready for checkout
+            </p>
+          </div>
+          <div className="rounded-[20px] bg-[linear-gradient(135deg,rgba(240,248,246,0.78),rgba(255,249,240,0.72))] px-4 py-4">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--shreem-gold-deep)]">
+              Currency
+            </p>
+            <p className="mt-2 text-sm uppercase text-[var(--shreem-ink)]">
+              {cart.currency_code}
+            </p>
+          </div>
+        </div>
         <Divider className="my-6" />
         <CartTotals totals={cart} />
         <ItemsPreviewTemplate cart={cart} />
@@ -23,7 +44,7 @@ const CheckoutSummary = ({ cart }: { cart: any }) => {
           <DiscountCode cart={cart} />
         </div>
       </div>
-    </div>
+    </aside>
   )
 }
 

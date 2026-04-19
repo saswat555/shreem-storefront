@@ -12,11 +12,26 @@ type ItemProps = {
 }
 
 const Item = ({ item, currencyCode }: ItemProps) => {
+  const itemProduct = item.product as
+    | { thumbnail?: string | null; images?: { url?: string | null }[] | null }
+    | undefined
+  const variantProduct = item.variant?.product as
+    | { thumbnail?: string | null; images?: { url?: string | null }[] | null }
+    | undefined
+  const lineItemThumbnail =
+    item.thumbnail || variantProduct?.thumbnail || itemProduct?.thumbnail
+  const lineItemImages =
+    variantProduct?.images || itemProduct?.images || item.variant?.images
+
   return (
     <Table.Row className="w-full" data-testid="product-row">
       <Table.Cell className="!pl-0 p-4 w-24">
         <div className="flex w-16">
-          <Thumbnail thumbnail={item.thumbnail} size="square" />
+          <Thumbnail
+            thumbnail={lineItemThumbnail}
+            images={lineItemImages}
+            size="square"
+          />
         </div>
       </Table.Cell>
 

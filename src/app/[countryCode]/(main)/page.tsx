@@ -1,5 +1,6 @@
 import { Metadata } from "next"
 import Image from "next/image"
+import { ArrowUpRightMini } from "@medusajs/icons"
 
 import { listProducts } from "@lib/data/products"
 import { getRegion } from "@lib/data/regions"
@@ -9,6 +10,7 @@ import {
   shreemMascots,
   shreemRituals,
 } from "@lib/constants/shreem"
+import MotionReveal from "@modules/common/components/motion-reveal"
 import Hero from "@modules/home/components/hero"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import ProductPreview from "@modules/products/components/product-preview"
@@ -79,9 +81,12 @@ export default async function Home(props: {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
       />
-      <Hero />
+      <MotionReveal>
+        <Hero />
+      </MotionReveal>
 
       {!!latestProducts.length && (
+        <MotionReveal delayMs={70}>
         <section className="content-container py-8 small:py-10">
           <div className="brand-surface px-5 py-6 small:px-8 small:py-8">
             <div className="flex flex-col gap-4 pb-6 small:flex-row small:items-end small:justify-between">
@@ -120,8 +125,69 @@ export default async function Home(props: {
             </div>
           </div>
         </section>
+        </MotionReveal>
       )}
 
+      <MotionReveal delayMs={110}>
+      <section className="content-container py-8 small:py-10">
+        <div className="brand-surface px-5 py-6 small:px-8 small:py-8">
+          <div className="grid gap-6 xl:grid-cols-[0.98fr_1.02fr] xl:items-center">
+            <div>
+              <p className="brand-kicker">A simpler buying journey</p>
+              <h2 className="mt-3 text-[2.2rem] leading-[1.02] text-[var(--shreem-ink)] small:text-[3.2rem]">
+                Not sure what helps? Start with Prakriti Guide.
+              </h2>
+              <p className="mt-4 text-sm leading-7 text-[var(--shreem-muted)] small:text-base">
+                Upload up to three photos of a plant or animal, add a short note,
+                and let the guide suggest a cautious natural-care direction.
+                It only surfaces a Shreem product when that item is available in
+                your region and genuinely fits the case.
+              </p>
+              <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+                <LocalizedClientLink
+                  href="/prakriti-guide"
+                  className="brand-primary-button gap-2"
+                >
+                  Open Prakriti Guide
+                  <ArrowUpRightMini />
+                </LocalizedClientLink>
+                <LocalizedClientLink href="/journal" className="brand-secondary-button">
+                  Read Journal first
+                </LocalizedClientLink>
+              </div>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
+              <article className="brand-card px-4 py-4">
+                <p className="text-sm font-semibold text-[var(--shreem-ink)]">
+                  1. Upload photos
+                </p>
+                <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
+                  Clear leaf, stem, skin, eye, or shed images help the guide read the case.
+                </p>
+              </article>
+              <article className="brand-card px-4 py-4">
+                <p className="text-sm font-semibold text-[var(--shreem-ink)]">
+                  2. Get a natural-care direction
+                </p>
+                <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
+                  The guide returns likely observations, home steps, and signs that need escalation.
+                </p>
+              </article>
+              <article className="brand-card px-4 py-4">
+                <p className="text-sm font-semibold text-[var(--shreem-ink)]">
+                  3. See useful Shreem products
+                </p>
+                <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
+                  Only region-available items with a real fit are recommended.
+                </p>
+              </article>
+            </div>
+          </div>
+        </div>
+      </section>
+      </MotionReveal>
+
+      <MotionReveal delayMs={140}>
       <section className="content-container py-8 small:py-10">
         <div className="brand-surface px-5 py-6 small:px-8 small:py-8">
           <div className="grid gap-6 xl:grid-cols-[1.08fr_0.92fr] xl:items-center">
@@ -138,7 +204,6 @@ export default async function Home(props: {
               </div>
             </div>
             <div>
-              <p className="brand-kicker">Shop Shreem</p>
               <p className="brand-kicker">Our signature bilona ghee</p>
               <h2 className="mt-3 text-[2.2rem] leading-[1.02] text-[var(--shreem-ink)] small:text-[3.2rem]">
                 Slow-made from cultured curd and finished with a gentle smoky warmth
@@ -193,7 +258,9 @@ export default async function Home(props: {
           </div>
         </div>
       </section>
+      </MotionReveal>
 
+      <MotionReveal delayMs={170}>
       <section className="content-container py-8 small:py-10">
         <div className="grid gap-4 xl:grid-cols-[1.04fr_0.96fr]">
           <div className="brand-royal-surface px-5 py-6 text-white small:px-8 small:py-8">
@@ -263,38 +330,38 @@ export default async function Home(props: {
           </div>
         </div>
       </section>
+      </MotionReveal>
 
+      <MotionReveal delayMs={200}>
       <section className="content-container pb-16 pt-8 small:pb-20 small:pt-10">
         <div className="brand-surface px-5 py-6 small:px-8 small:py-8">
-          <div className="flex flex-col gap-4 pb-6 small:flex-row small:items-end small:justify-between">
+          <div className="grid gap-6 pb-6 xl:grid-cols-[0.92fr_1.08fr] xl:items-start">
             <div className="max-w-[36rem]">
-              <p className="brand-kicker">Shreem Gaatha</p>
+              <p className="brand-kicker">From the Journal</p>
               <h2 className="mt-3 text-[2.2rem] leading-[1.04] text-[var(--shreem-ink)] small:text-[3.2rem]">
                 Meet Gauri and Mayur
               </h2>
               <p className="mt-4 text-sm leading-6 text-[var(--shreem-muted)]">
                 Gauri carries the tenderness of the desi cow. Mayur carries the
-                celebration and sacred color of the peacock. Together, they
-                turn Shreem into a world that feels personal, rooted, and
-                unmistakably Indian.
+                sacred color and festive radiance of the peacock. Together,
+                they make Shreem feel rooted, personal, and unmistakably Indian.
               </p>
+              <div className="mt-6">
+                <LocalizedClientLink href="/journal" className="brand-primary-button">
+                  Read the Journal
+                </LocalizedClientLink>
+              </div>
             </div>
-            <div>
-              <LocalizedClientLink href="/gaatha" className="brand-primary-button">
-                Read Shreem Gaatha
-              </LocalizedClientLink>
-            </div>
-          </div>
-          <div className="grid gap-4 lg:grid-cols-2">
+            <div className="grid gap-4">
             {shreemMascots.map((mascot) => (
               <article key={mascot.name} className="brand-card overflow-hidden">
-                <div className="grid gap-0 md:grid-cols-[230px_1fr]">
-                  <div className="relative min-h-[260px] border-b border-[var(--shreem-border)] bg-[radial-gradient(circle_at_top,rgba(212,161,38,0.22),transparent_40%),linear-gradient(180deg,rgba(248,241,226,0.96),rgba(239,246,242,0.92))] md:border-b-0 md:border-r">
+                <div className="grid gap-0 md:grid-cols-[260px_1fr]">
+                  <div className="relative min-h-[280px] border-b border-[var(--shreem-border)] bg-[radial-gradient(circle_at_top,rgba(212,161,38,0.22),transparent_40%),linear-gradient(180deg,rgba(248,241,226,0.96),rgba(239,246,242,0.92))] md:border-b-0 md:border-r">
                     <Image
                       src={mascot.imagePath}
                       alt={`${mascot.name}, one of the Shreem brand mascots`}
                       fill
-                      sizes="(max-width: 1024px) 100vw, 230px"
+                      sizes="(max-width: 1024px) 100vw, 260px"
                       className="object-contain object-bottom p-4"
                     />
                   </div>
@@ -310,9 +377,11 @@ export default async function Home(props: {
                 </div>
               </article>
             ))}
+            </div>
           </div>
         </div>
       </section>
+      </MotionReveal>
     </>
   )
 }

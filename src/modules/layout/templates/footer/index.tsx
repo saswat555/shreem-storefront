@@ -12,31 +12,31 @@ export default function Footer() {
           <div className="flex flex-col gap-8 xl:flex-row xl:items-start xl:justify-between">
             <div className="max-w-[30rem]">
               <BrandLogo
-                size="large"
+                size="footer"
                 theme="dark"
                 caption="Bilona ghee, neem dhoop, gobar cakes, and Jeevamrut from naturally grazing desi cows."
               />
               <p className="mt-5 text-base leading-7 text-white/72">
-                Shreem is built around a slower desi-cow way of living: bilona
-                ghee for the kitchen, neem dhoop and gobar products for the
-                prayerful home, and Jeevamrut for fields that honour living
+                Shreem is built for homes that want purity without theatre:
+                bilona ghee for the kitchen, neem dhoop and gobar products for
+                daily rituals, and Jeevamrut for fields that care about living
                 soil.
               </p>
               <p className="mt-4 text-sm leading-6 text-white/60">
                 Our herd includes {shreemCowBreeds.join(", ")} cows, while{" "}
                 {shreemMascots.map((mascot) => mascot.name).join(" and ")} give
-                the brand a face, a feeling, and a sense of sacred Indian
-                warmth.
+                the brand a warmer, more human presence across the store and the
+                Journal.
               </p>
               <div className="mt-6 flex flex-wrap gap-3">
                 <LocalizedClientLink href="/store" className="brand-primary-button">
                   Shop products
                 </LocalizedClientLink>
                 <LocalizedClientLink
-                  href="/gaatha"
+                  href="/journal"
                   className="inline-flex items-center justify-center rounded-full border border-[rgba(212,161,38,0.24)] bg-white/8 px-6 py-3 text-sm font-semibold text-white"
                 >
-                  Shreem Gaatha
+                  Read Journal
                 </LocalizedClientLink>
               </div>
             </div>
@@ -56,10 +56,22 @@ export default function Footer() {
                   Shop
                 </LocalizedClientLink>
                 <LocalizedClientLink
-                  href="/gaatha"
+                  href="/journal"
                   className="text-white/80 hover:text-[var(--shreem-gold)]"
                 >
-                  Shreem Gaatha
+                  Journal
+                </LocalizedClientLink>
+                <LocalizedClientLink
+                  href="/prakriti-guide"
+                  className="text-white/80 hover:text-[var(--shreem-gold)]"
+                >
+                  Prakriti Guide
+                </LocalizedClientLink>
+                <LocalizedClientLink
+                  href="/customer-service"
+                  className="text-white/80 hover:text-[var(--shreem-gold)]"
+                >
+                  Customer Service
                 </LocalizedClientLink>
                 <LocalizedClientLink
                   href="/account"
@@ -86,14 +98,14 @@ export default function Footer() {
           </div>
           <div className="flex flex-col gap-3 border-t border-white/10 pt-6 text-white/64 small:flex-row small:items-center small:justify-between">
             <Text className="txt-compact-small">
-              © {new Date().getFullYear()} Shreem Cow Products. Rooted in desi
-              cows, bilona purity, and a more natural Indian way of life.
+              © {new Date().getFullYear()} Shreem Cow Products. Crafted around
+              bilona purity, desi cows, and quieter everyday rituals.
             </Text>
             <LocalizedClientLink
-              href="/gaatha"
+              href="/journal"
               className="txt-compact-small hover:text-[var(--shreem-gold)]"
             >
-              Read Shreem Gaatha
+              Read Journal
             </LocalizedClientLink>
           </div>
         </div>

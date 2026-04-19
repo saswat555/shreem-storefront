@@ -4,10 +4,15 @@ export const useIntersection = (
   element: RefObject<HTMLDivElement | null>,
   rootMargin: string
 ) => {
-  const [isVisible, setState] = useState(false)
+  const [isVisible, setState] = useState(true)
 
   useEffect(() => {
     if (!element.current) {
+      return
+    }
+
+    if (typeof IntersectionObserver === "undefined") {
+      setState(true)
       return
     }
 
@@ -15,7 +20,9 @@ export const useIntersection = (
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        setState(entry.isIntersecting)
+        if (entry.isIntersecting) {
+          setState(true)
+        }
       },
       { rootMargin }
     )
