@@ -12,17 +12,17 @@ export default async function ProductRail({
   region: HttpTypes.StoreRegion
   index: number
 }) {
-  const {
-    response: { products: pricedProducts },
-  } = await listProducts({
+  const pricedProducts = await listProducts({
     regionId: region.id,
     queryParams: {
       collection_id: collection.id,
       fields: "*variants.calculated_price",
     },
   })
+    .then(({ response }) => response.products)
+    .catch(() => [])
 
-  if (!pricedProducts) {
+  if (!pricedProducts.length) {
     return null
   }
 
@@ -51,7 +51,7 @@ export default async function ProductRail({
             View collection
           </InteractiveLink>
         </div>
-        <ul className="grid grid-cols-2 gap-x-4 gap-y-6 small:grid-cols-4 small:gap-x-5 small:gap-y-8">
+        <ul className="grid grid-cols-2 gap-x-3 gap-y-5 small:grid-cols-4 small:gap-x-5 small:gap-y-8">
           {pricedProducts.slice(0, 4).map((product) => (
             <li key={product.id}>
               <ProductPreview product={product} region={region} isFeatured />

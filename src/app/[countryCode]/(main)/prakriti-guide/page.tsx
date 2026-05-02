@@ -46,15 +46,15 @@ export default async function PrakritiGuidePage(props: {
     )
   }
 
-  const {
-    response: { products },
-  } = await listProducts({
+  const products = await listProducts({
     countryCode,
     queryParams: {
       limit: 50,
       fields: "*variants.calculated_price,+metadata,+tags",
     },
   })
+    .then(({ response }) => response.products)
+    .catch(() => [])
 
   const serializedProducts = products.map((product) => ({
     id: product.id,

@@ -42,7 +42,7 @@ const Addresses = ({
   return (
     <section className="brand-card px-5 py-6 small:px-6">
       <p className="brand-kicker">Step 1</p>
-      <div className="flex flex-row items-center justify-between mb-6">
+      <div className="mb-6 flex flex-col gap-3 small:flex-row small:items-center small:justify-between">
         <Heading
           level="h2"
           className="mt-3 flex flex-row items-center gap-x-3 text-[2rem] leading-none text-[var(--shreem-ink)] small:text-[2.4rem]"
@@ -64,7 +64,7 @@ const Addresses = ({
       </div>
       {isOpen ? (
         <form action={formAction}>
-          <div className="mb-5 rounded-[22px] bg-[linear-gradient(135deg,rgba(240,248,246,0.76),rgba(255,249,240,0.72))] px-4 py-4">
+          <div className="mb-5 rounded-[16px] bg-[linear-gradient(135deg,rgba(240,248,246,0.76),rgba(255,249,240,0.72))] px-4 py-4 small:rounded-[22px]">
             <p className="text-sm font-semibold text-[var(--shreem-ink)]">
               Tell us where to deliver
             </p>
@@ -105,7 +105,7 @@ const Addresses = ({
               <div className="w-full">
                 <div className="grid gap-6 small:grid-cols-3">
                   <div
-                    className="flex flex-col rounded-[22px] bg-[linear-gradient(135deg,rgba(240,248,246,0.78),rgba(255,249,240,0.72))] px-4 py-4"
+                    className="flex flex-col rounded-[16px] bg-[linear-gradient(135deg,rgba(240,248,246,0.78),rgba(255,249,240,0.72))] px-4 py-4 small:rounded-[22px]"
                     data-testid="shipping-address-summary"
                   >
                     <Text className="txt-medium-plus text-ui-fg-base mb-1">
@@ -129,7 +129,7 @@ const Addresses = ({
                   </div>
 
                   <div
-                    className="flex flex-col rounded-[22px] bg-[linear-gradient(135deg,rgba(240,248,246,0.78),rgba(255,249,240,0.72))] px-4 py-4"
+                    className="flex flex-col rounded-[16px] bg-[linear-gradient(135deg,rgba(240,248,246,0.78),rgba(255,249,240,0.72))] px-4 py-4 small:rounded-[22px]"
                     data-testid="shipping-contact-summary"
                   >
                     <Text className="txt-medium-plus text-ui-fg-base mb-1">
@@ -144,7 +144,7 @@ const Addresses = ({
                   </div>
 
                   <div
-                    className="flex flex-col rounded-[22px] bg-[linear-gradient(135deg,rgba(240,248,246,0.78),rgba(255,249,240,0.72))] px-4 py-4"
+                    className="flex flex-col rounded-[16px] bg-[linear-gradient(135deg,rgba(240,248,246,0.78),rgba(255,249,240,0.72))] px-4 py-4 small:rounded-[22px]"
                     data-testid="billing-address-summary"
                   >
                     <Text className="txt-medium-plus text-ui-fg-base mb-1">

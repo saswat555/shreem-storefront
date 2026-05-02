@@ -38,14 +38,14 @@ const PaymentContainer: React.FC<PaymentContainerProps> = ({
       value={paymentProviderId}
       disabled={disabled}
       className={clx(
-        "mb-2 flex cursor-pointer flex-col gap-y-3 rounded-[22px] border px-5 py-4 text-small-regular transition-all duration-200 hover:shadow-[0_12px_28px_rgba(15,49,70,0.12)]",
+        "mb-2 flex cursor-pointer flex-col gap-y-3 rounded-[16px] border px-4 py-4 text-small-regular transition-all duration-200 hover:shadow-[0_12px_28px_rgba(15,49,70,0.12)] small:rounded-[22px] small:px-5",
         {
           "border-ui-border-interactive bg-[rgba(255,252,248,0.94)] shadow-[0_12px_24px_rgba(15,49,70,0.08)]":
             selectedPaymentOptionId === paymentProviderId,
         }
       )}
     >
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex items-start justify-between gap-3 small:gap-4">
         <div className="flex min-w-0 items-start gap-x-4">
           <Radio checked={selectedPaymentOptionId === paymentProviderId} />
           <div className="min-w-0">
@@ -60,7 +60,7 @@ const PaymentContainer: React.FC<PaymentContainerProps> = ({
             )}
           </div>
         </div>
-        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[16px] border border-[rgba(18,63,99,0.12)] bg-[rgba(255,252,248,0.9)] text-ui-fg-base shadow-[0_10px_24px_rgba(15,49,70,0.08)]">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[14px] border border-[rgba(18,63,99,0.12)] bg-[rgba(255,252,248,0.9)] text-ui-fg-base shadow-[0_10px_24px_rgba(15,49,70,0.08)] small:h-12 small:w-12 small:rounded-[16px]">
           {paymentInfo.icon}
         </span>
       </div>
@@ -116,7 +116,7 @@ export const StripeCardContainer = ({
     >
       {selectedPaymentOptionId === paymentProviderId &&
         (stripeReady ? (
-          <div className="my-4 rounded-[20px] border border-[rgba(18,63,99,0.12)] bg-[linear-gradient(135deg,rgba(240,248,246,0.72),rgba(255,249,240,0.72))] p-4 transition-all duration-150 ease-in-out">
+          <div className="my-4 rounded-[16px] border border-[rgba(18,63,99,0.12)] bg-[linear-gradient(135deg,rgba(240,248,246,0.72),rgba(255,249,240,0.72))] p-3 transition-all duration-150 ease-in-out small:rounded-[20px] small:p-4">
             <Text className="txt-medium-plus text-ui-fg-base mb-1">
               Enter your card details
             </Text>

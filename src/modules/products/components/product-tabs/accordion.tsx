@@ -83,7 +83,7 @@ Accordion.Item = Item
 
 const MorphingTrigger = () => {
   return (
-    <div className="relative rounded-full border border-[rgba(18,63,99,0.14)] bg-[rgba(240,248,246,0.72)] p-[10px]">
+    <div className="relative rounded-full border border-[rgba(18,63,99,0.14)] bg-[rgba(240,248,246,0.72)] p-[12px]">
       <div className="h-4 w-4">
         <span className="absolute inset-y-[46%] left-[50%] h-[1.5px] w-3 -translate-x-1/2 rounded-full bg-[var(--shreem-accent-dark)] duration-300" />
         <span className="absolute left-[50%] top-[50%] h-3 w-[1.5px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[var(--shreem-accent-dark)] duration-300 group-radix-state-open:scale-y-0" />

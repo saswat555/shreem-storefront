@@ -62,6 +62,14 @@ const nextConfig = {
         protocol: "https",
         hostname: "medusa-server-testing.s3.us-east-1.amazonaws.com",
       },
+      {
+        protocol: "https",
+        hostname: "www.shreemfarms.in",
+      },
+      {
+        protocol: "https",
+        hostname: "shreemfarms.in",
+      },
       ...backendImagePattern,
       ...(S3_HOSTNAME && S3_PATHNAME
         ? [

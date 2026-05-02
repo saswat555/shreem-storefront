@@ -39,15 +39,15 @@ export default async function Home(props: {
     return null
   }
 
-  const {
-    response: { products: latestProducts },
-  } = await listProducts({
+  const latestProducts = await listProducts({
     countryCode,
     queryParams: {
       limit: 4,
       fields: "*variants.calculated_price",
     },
   })
+    .then(({ response }) => response.products)
+    .catch(() => [])
 
   const baseUrl = getBaseURL()
   const [bilonaGhee, neemDhoop, cowDungCakes, jeevamrut] = shreemRituals
@@ -111,7 +111,7 @@ export default async function Home(props: {
                 </div>
               </div>
             </div>
-            <ul className="grid grid-cols-2 gap-x-4 gap-y-6 small:grid-cols-4 small:gap-x-5 small:gap-y-8">
+            <ul className="grid grid-cols-2 gap-x-3 gap-y-5 small:grid-cols-4 small:gap-x-5 small:gap-y-8">
               {latestProducts.map((product) => (
                 <li key={product.id}>
                   <ProductPreview product={product} region={region} isFeatured />
@@ -297,7 +297,7 @@ export default async function Home(props: {
               <p className="mt-3 text-sm leading-6 text-[var(--shreem-muted)]">
                 {cowDungCakes.description} They are used in havan, dhooni, and
                 slow ritual fire practices, and their earthy warmth also
-                connects directly to the gau-kasht finish behind our ghee's
+                connects directly to the gau-kasht finish behind our ghee&apos;s
                 signature aroma.
               </p>
             </article>

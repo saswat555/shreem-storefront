@@ -43,12 +43,12 @@ const AccountInfo = ({
 
   return (
     <div className="text-small-regular" data-testid={dataTestid}>
-      <div className="flex items-end justify-between">
-        <div className="flex flex-col">
+      <div className="flex flex-col gap-3 small:flex-row small:items-end small:justify-between">
+        <div className="flex min-w-0 flex-col">
           <span className="uppercase text-ui-fg-base">{label}</span>
-          <div className="flex items-center flex-1 basis-0 justify-end gap-x-4">
+          <div className="mt-1 flex min-w-0 items-center gap-x-4">
             {typeof currentInfo === "string" ? (
-              <span className="font-semibold" data-testid="current-info">{currentInfo}</span>
+              <span className="break-words font-semibold" data-testid="current-info">{currentInfo}</span>
             ) : (
               currentInfo
             )}
@@ -57,7 +57,7 @@ const AccountInfo = ({
         <div>
           <Button
             variant="secondary"
-            className="w-[100px] min-h-[25px] py-1"
+            className="min-h-[25px] w-full py-1 small:w-[100px]"
             onClick={handleToggle}
             type={state ? "reset" : "button"}
             data-testid="edit-button"

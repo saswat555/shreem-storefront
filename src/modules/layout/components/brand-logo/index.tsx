@@ -30,9 +30,9 @@ const sizeMap = {
     caption: "text-sm",
   },
   nav: {
-    container: "h-[76px] w-[76px] rounded-[24px] p-2",
+    container: "h-9 w-9 rounded-[12px] p-1 small:h-[76px] small:w-[76px] small:rounded-[24px] small:p-2",
     image: 58,
-    title: "text-[2rem]",
+    title: "text-[1.15rem] small:text-[2rem]",
     caption: "text-sm",
   },
   hero: {
@@ -48,9 +48,9 @@ const sizeMap = {
     caption: "text-base",
   },
   sidebar: {
-    container: "h-56 w-56 rounded-[46px] p-4",
+    container: "h-24 w-24 rounded-[24px] p-2 small:h-56 small:w-56 small:rounded-[46px] small:p-4",
     image: 192,
-    title: "text-[3.4rem]",
+    title: "text-[2.4rem] small:text-[3.4rem]",
     caption: "text-base",
   },
 }
@@ -100,7 +100,11 @@ export default function BrandLogo({
         />
       </div>
       <div
-        className={clx("flex min-w-0 flex-col", isCentered && "items-center")}
+        className={clx(
+          "flex min-w-0 flex-col",
+          size === "nav" && "max-w-[84px] small:max-w-none",
+          isCentered && "items-center"
+        )}
       >
         <span
           className={clx(

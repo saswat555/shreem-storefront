@@ -65,7 +65,7 @@ const EditAddress: React.FC<EditAddressProps> = ({
     <>
       <div
         className={clx(
-          "border rounded-rounded p-5 min-h-[220px] h-full w-full flex flex-col justify-between transition-colors",
+          "brand-card flex h-full min-h-[180px] w-full flex-col justify-between p-5 transition-colors small:min-h-[220px]",
           {
             "border-gray-900": isActive,
           }
@@ -101,7 +101,7 @@ const EditAddress: React.FC<EditAddressProps> = ({
             </span>
           </Text>
         </div>
-        <div className="flex items-center gap-x-4">
+        <div className="mt-5 flex flex-wrap items-center gap-4">
           <button
             className="text-small-regular text-ui-fg-base flex items-center gap-x-2"
             onClick={open}
@@ -129,7 +129,7 @@ const EditAddress: React.FC<EditAddressProps> = ({
           <input type="hidden" name="addressId" value={address.id} />
           <Modal.Body>
             <div className="grid grid-cols-1 gap-y-2">
-              <div className="grid grid-cols-2 gap-x-2">
+              <div className="grid grid-cols-1 gap-2 small:grid-cols-2">
                 <Input
                   label="First name"
                   name="first_name"
@@ -169,7 +169,7 @@ const EditAddress: React.FC<EditAddressProps> = ({
                 defaultValue={address.address_2 || undefined}
                 data-testid="address-2-input"
               />
-              <div className="grid grid-cols-[144px_1fr] gap-x-2">
+              <div className="grid grid-cols-1 gap-2 small:grid-cols-[144px_1fr]">
                 <Input
                   label="Postal code"
                   name="postal_code"
@@ -217,17 +217,17 @@ const EditAddress: React.FC<EditAddressProps> = ({
             )}
           </Modal.Body>
           <Modal.Footer>
-            <div className="flex gap-3 mt-6">
+            <div className="mt-6 flex w-full flex-col gap-3 small:flex-row">
               <Button
                 type="reset"
                 variant="secondary"
                 onClick={close}
-                className="h-10"
+                className="h-10 w-full small:w-auto"
                 data-testid="cancel-button"
               >
                 Cancel
               </Button>
-              <SubmitButton data-testid="save-button">Save</SubmitButton>
+              <SubmitButton className="w-full small:w-auto" data-testid="save-button">Save</SubmitButton>
             </div>
           </Modal.Footer>
         </form>

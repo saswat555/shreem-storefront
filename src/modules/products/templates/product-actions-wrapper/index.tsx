@@ -15,10 +15,17 @@ export default async function ProductActionsWrapper({
   const product = await listProducts({
     queryParams: { id: [id] },
     regionId: region.id,
-  }).then(({ response }) => response.products[0])
+  })
+    .then(({ response }) => response.products[0])
+    .catch(() => null)
 
   if (!product) {
-    return null
+    return (
+      <div className="brand-card px-4 py-4 text-sm leading-6 text-[var(--shreem-muted)]">
+        Purchase options are temporarily unavailable. Product details are still
+        visible, and the actions will return when the store connection responds.
+      </div>
+    )
   }
 
   return <ProductActions product={product} region={region} />

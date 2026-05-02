@@ -8,6 +8,14 @@ export const metadata: Metadata = {
     default: "Shreem",
     template: "%s | Shreem",
   },
+  icons: {
+    icon: [
+      { url: "/icon.jpg", type: "image/jpeg", sizes: "512x512" },
+      { url: "/logo.jpeg", type: "image/jpeg", sizes: "1024x1024" },
+    ],
+    shortcut: [{ url: "/icon.jpg", type: "image/jpeg" }],
+    apple: [{ url: "/apple-icon.jpg", type: "image/jpeg", sizes: "180x180" }],
+  },
   description:
     "Shop Shreem Cow Products for bilona ghee, neem dhoop, cow dung cakes, and Jeevamrut from naturally grazing desi cows.",
   keywords: [

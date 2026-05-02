@@ -9,7 +9,7 @@ const Hero = () => {
       <div className="brand-surface relative overflow-hidden px-5 py-7 small:px-10 small:py-10">
         <div
           aria-hidden="true"
-          className="animate-shreem-glow absolute -left-20 top-10 h-64 w-64 rounded-full bg-[rgba(13,129,126,0.18)] blur-3xl"
+          className="animate-shreem-glow absolute -left-20 top-10 hidden h-64 w-64 rounded-full bg-[rgba(13,129,126,0.18)] blur-3xl small:block"
         />
         <div
           aria-hidden="true"
@@ -21,7 +21,7 @@ const Hero = () => {
           </div>
           <div className="grid gap-6 xl:grid-cols-[0.94fr_1.06fr] xl:items-center">
             <div className="order-2 xl:order-1">
-              <h1 className="max-w-[13ch] text-center text-[2.8rem] leading-[0.96] text-balance text-[var(--shreem-ink)] small:text-[4.6rem] xl:text-left">
+              <h1 className="max-w-[13ch] text-center text-[2.25rem] leading-[0.96] text-balance text-[var(--shreem-ink)] small:text-[4.6rem] xl:text-left">
                 Bilona purity, sacred warmth, and a slower desi-cow way of living.
               </h1>
               <p className="mt-6 max-w-[44rem] text-center text-base leading-7 text-[var(--shreem-muted)] small:text-lg xl:text-left">

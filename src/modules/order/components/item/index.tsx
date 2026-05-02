@@ -24,9 +24,12 @@ const Item = ({ item, currencyCode }: ItemProps) => {
     variantProduct?.images || itemProduct?.images || item.variant?.images
 
   return (
-    <Table.Row className="w-full" data-testid="product-row">
-      <Table.Cell className="!pl-0 p-4 w-24">
-        <div className="flex w-16">
+    <Table.Row
+      className="mb-4 grid w-full grid-cols-[76px_minmax(0,1fr)] gap-x-3 rounded-[18px] border border-[rgba(18,63,99,0.12)] bg-white/72 p-3 small:mb-0 small:table-row small:rounded-none small:border-0 small:bg-transparent small:p-0"
+      data-testid="product-row"
+    >
+      <Table.Cell className="col-start-1 row-span-2 block !pl-0 p-0 small:table-cell small:p-4 small:w-24">
+        <div className="flex w-full small:w-16">
           <Thumbnail
             thumbnail={lineItemThumbnail}
             images={lineItemImages}
@@ -35,9 +38,9 @@ const Item = ({ item, currencyCode }: ItemProps) => {
         </div>
       </Table.Cell>
 
-      <Table.Cell className="text-left">
+      <Table.Cell className="col-start-2 block px-0 py-0 text-left small:table-cell small:px-4 small:py-4">
         <Text
-          className="txt-medium-plus text-ui-fg-base"
+          className="txt-medium-plus line-clamp-2 text-ui-fg-base"
           data-testid="product-name"
         >
           {item.product_title}
@@ -45,8 +48,8 @@ const Item = ({ item, currencyCode }: ItemProps) => {
         <LineItemOptions variant={item.variant} data-testid="product-variant" />
       </Table.Cell>
 
-      <Table.Cell className="!pr-0">
-        <span className="!pr-0 flex flex-col items-end h-full justify-center">
+      <Table.Cell className="col-span-2 block !pr-0 px-0 pt-3 small:table-cell small:px-4 small:pt-4">
+        <span className="!pr-0 flex items-start justify-between gap-4 small:flex small:flex-col small:items-end small:h-full small:justify-center">
           <span className="flex gap-x-1 ">
             <Text className="text-ui-fg-muted">
               <span data-testid="product-quantity">{item.quantity}</span>x{" "}

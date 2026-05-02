@@ -49,7 +49,7 @@ const AddAddress = ({
   return (
     <>
       <button
-        className="border border-ui-border-base rounded-rounded p-5 min-h-[220px] h-full w-full flex flex-col justify-between"
+        className="brand-card flex h-full min-h-[180px] w-full flex-col justify-between p-5 text-left small:min-h-[220px]"
         onClick={open}
         data-testid="add-address-button"
       >
@@ -64,7 +64,7 @@ const AddAddress = ({
         <form action={formAction}>
           <Modal.Body>
             <div className="flex flex-col gap-y-2">
-              <div className="grid grid-cols-2 gap-x-2">
+              <div className="grid grid-cols-1 gap-2 small:grid-cols-2">
                 <Input
                   label="First name"
                   name="first_name"
@@ -99,7 +99,7 @@ const AddAddress = ({
                 autoComplete="address-line2"
                 data-testid="address-2-input"
               />
-              <div className="grid grid-cols-[144px_1fr] gap-x-2">
+              <div className="grid grid-cols-1 gap-2 small:grid-cols-[144px_1fr]">
                 <Input
                   label="Postal code"
                   name="postal_code"
@@ -145,17 +145,17 @@ const AddAddress = ({
             )}
           </Modal.Body>
           <Modal.Footer>
-            <div className="flex gap-3 mt-6">
+            <div className="mt-6 flex w-full flex-col gap-3 small:flex-row">
               <Button
                 type="reset"
                 variant="secondary"
                 onClick={close}
-                className="h-10"
+                className="h-10 w-full small:w-auto"
                 data-testid="cancel-button"
               >
                 Cancel
               </Button>
-              <SubmitButton data-testid="save-button">Save</SubmitButton>
+              <SubmitButton className="w-full small:w-auto" data-testid="save-button">Save</SubmitButton>
             </div>
           </Modal.Footer>
         </form>

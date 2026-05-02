@@ -36,7 +36,7 @@ const OptionSelect: React.FC<OptionSelectProps> = ({
               onClick={() => updateOption(option.id, v)}
               key={v}
               className={clx(
-                "min-w-[calc(50%-0.25rem)] flex-1 rounded-full border px-4 py-3 text-sm",
+                "min-w-0 flex-1 basis-[calc(50%-0.25rem)] rounded-full border px-3 py-3 text-sm leading-5 small:px-4",
                 {
                   "border-[rgba(18,63,99,0.18)] bg-[rgba(255,252,247,0.96)] text-[var(--shreem-ink)] shadow-[0_14px_32px_rgba(12,47,73,0.08)]":
                     v === current,

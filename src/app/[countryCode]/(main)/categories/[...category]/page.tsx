@@ -5,6 +5,7 @@ import { getCategoryByHandle, listCategories } from "@lib/data/categories"
 import { listRegions } from "@lib/data/regions"
 import { StoreRegion } from "@medusajs/types"
 import CategoryTemplate from "@modules/categories/templates"
+import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
 
 type Props = {
@@ -16,7 +17,7 @@ type Props = {
 }
 
 export async function generateStaticParams() {
-  const product_categories = await listCategories()
+  const product_categories = await listCategories().catch(() => [])
 
   if (!product_categories) {
     return []
@@ -24,7 +25,7 @@ export async function generateStaticParams() {
 
   const countryCodes = await listRegions().then((regions: StoreRegion[]) =>
     regions?.map((r) => r.countries?.map((c) => c.iso_2)).flat()
-  )
+  ).catch(() => [])
 
   const categoryHandles = product_categories.map(
     (category: any) => category.handle
@@ -60,7 +61,10 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
       },
     }
   } catch (error) {
-    notFound()
+    return {
+      title: "Category | Shreem",
+      description: "Browse Shreem Cow Products categories.",
+    }
   }
 }
 
@@ -69,10 +73,12 @@ export default async function CategoryPage(props: Props) {
   const params = await props.params
   const { sortBy, page } = searchParams
 
-  const productCategory = await getCategoryByHandle(params.category)
+  const productCategory = await getCategoryByHandle(params.category).catch(
+    () => null
+  )
 
   if (!productCategory) {
-    notFound()
+    return <CategoryUnavailable category={params.category} />
   }
 
   return (
@@ -82,5 +88,32 @@ export default async function CategoryPage(props: Props) {
       page={page}
       countryCode={params.countryCode}
     />
+  )
+}
+
+function CategoryUnavailable({ category }: { category: string[] }) {
+  const label = category.join(" / ").replace(/-/g, " ")
+
+  return (
+    <div className="content-container py-8 small:py-12">
+      <section className="brand-surface px-5 py-8 small:px-10 small:py-10">
+        <p className="brand-kicker">Category</p>
+        <h1 className="mt-3 max-w-[15ch] text-[2.3rem] leading-[1.02] text-[var(--shreem-ink)] small:text-[3.6rem]">
+          We are reconnecting to {label}.
+        </h1>
+        <p className="mt-4 max-w-[40rem] text-sm leading-7 text-[var(--shreem-muted)] small:text-base">
+          This category could not be reached just now. The store remains
+          available while the category data refreshes.
+        </p>
+        <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+          <LocalizedClientLink href="/store" className="brand-primary-button">
+            Browse store
+          </LocalizedClientLink>
+          <LocalizedClientLink href="/" className="brand-secondary-button">
+            Return home
+          </LocalizedClientLink>
+        </div>
+      </section>
+    </div>
   )
 }

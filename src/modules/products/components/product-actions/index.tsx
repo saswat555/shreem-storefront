@@ -162,7 +162,7 @@ export default function ProductActions({
 
   return (
     <>
-      <div className="brand-card flex flex-col gap-y-5 p-6" ref={actionsRef}>
+      <div className="brand-card flex flex-col gap-y-5 p-4 small:p-6" ref={actionsRef}>
         <div>
           <p className="brand-kicker">Purchase options</p>
           <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
@@ -225,7 +225,7 @@ export default function ProductActions({
             : "Add to cart"}
         </Button>
         <div className="grid gap-3">
-          <div className="rounded-[20px] bg-[linear-gradient(135deg,rgba(240,248,246,0.78),rgba(255,249,240,0.72))] px-4 py-4 text-sm leading-6 text-[var(--shreem-muted)]">
+          <div className="rounded-[16px] bg-[linear-gradient(135deg,rgba(240,248,246,0.78),rgba(255,249,240,0.72))] px-4 py-4 text-sm leading-6 text-[var(--shreem-muted)] small:rounded-[20px]">
             Secure checkout, region-aware pricing, and live cart updates keep the buying flow clean from product page to payment.
           </div>
           <div className="grid gap-3 sm:grid-cols-2">

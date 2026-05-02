@@ -12,12 +12,12 @@ type ItemsTemplateProps = {
 const ItemsTemplate = ({ cart }: ItemsTemplateProps) => {
   const items = cart?.items
   return (
-    <div>
+    <div className="min-w-0">
       <div className="pb-3 flex items-center">
-        <Heading className="text-[2rem] leading-[2.75rem]">Cart</Heading>
+        <Heading className="text-[1.8rem] leading-[2.2rem] small:text-[2rem] small:leading-[2.75rem]">Cart</Heading>
       </div>
       <Table>
-        <Table.Header className="border-t-0">
+        <Table.Header className="hidden border-t-0 small:table-header-group">
           <Table.Row className="text-ui-fg-subtle txt-medium-plus">
             <Table.HeaderCell className="!pl-0">Item</Table.HeaderCell>
             <Table.HeaderCell></Table.HeaderCell>

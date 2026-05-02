@@ -7,8 +7,8 @@ import Divider from "@modules/common/components/divider"
 
 const CheckoutSummary = ({ cart }: { cart: any }) => {
   return (
-    <aside className="sticky top-28 flex flex-col-reverse gap-y-8 py-2 small:flex-col small:py-0">
-      <div className="brand-card w-full px-5 py-6 small:px-6">
+    <aside className="flex flex-col-reverse gap-y-8 py-2 small:flex-col small:py-0 xl:sticky xl:top-28">
+      <div className="brand-card w-full px-4 py-5 small:px-6 small:py-6">
         <p className="brand-kicker">Order summary</p>
         <Heading
           level="h2"
@@ -20,7 +20,7 @@ const CheckoutSummary = ({ cart }: { cart: any }) => {
           Real-time totals, line items, and promotional adjustments stay visible while you move through checkout.
         </p>
         <div className="mt-5 grid gap-3 small:grid-cols-2">
-          <div className="rounded-[20px] bg-[linear-gradient(135deg,rgba(240,248,246,0.78),rgba(255,249,240,0.72))] px-4 py-4">
+          <div className="rounded-[16px] bg-[linear-gradient(135deg,rgba(240,248,246,0.78),rgba(255,249,240,0.72))] px-4 py-4 small:rounded-[20px]">
             <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--shreem-gold-deep)]">
               Items
             </p>
@@ -28,7 +28,7 @@ const CheckoutSummary = ({ cart }: { cart: any }) => {
               {cart.items?.length || 0} product{(cart.items?.length || 0) === 1 ? "" : "s"} ready for checkout
             </p>
           </div>
-          <div className="rounded-[20px] bg-[linear-gradient(135deg,rgba(240,248,246,0.78),rgba(255,249,240,0.72))] px-4 py-4">
+          <div className="rounded-[16px] bg-[linear-gradient(135deg,rgba(240,248,246,0.78),rgba(255,249,240,0.72))] px-4 py-4 small:rounded-[20px]">
             <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--shreem-gold-deep)]">
               Currency
             </p>

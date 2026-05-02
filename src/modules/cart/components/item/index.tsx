@@ -56,13 +56,16 @@ const Item = ({ item, type = "full", currencyCode }: ItemProps) => {
   const canIncrease = item.quantity < Math.min(maxQuantity, 10) && !updating
 
   return (
-    <Table.Row className="w-full" data-testid="product-row">
-      <Table.Cell className="!pl-0 p-4 w-24">
+    <Table.Row
+      className="mb-4 grid w-full grid-cols-[76px_minmax(0,1fr)] gap-x-3 rounded-[18px] border border-[rgba(18,63,99,0.12)] bg-white/72 p-3 small:mb-0 small:table-row small:rounded-none small:border-0 small:bg-transparent small:p-0"
+      data-testid="product-row"
+    >
+      <Table.Cell className="col-start-1 row-span-2 block !pl-0 p-0 small:table-cell small:p-4 small:w-24">
         <LocalizedClientLink
           href={`/products/${item.product_handle}`}
-          className={clx("flex", {
+          className={clx("mb-0 flex small:mb-0", {
             "w-16": type === "preview",
-            "small:w-24 w-12": type === "full",
+            "w-full small:w-24": type === "full",
           })}
         >
           <Thumbnail
@@ -73,9 +76,9 @@ const Item = ({ item, type = "full", currencyCode }: ItemProps) => {
         </LocalizedClientLink>
       </Table.Cell>
 
-      <Table.Cell className="text-left">
+      <Table.Cell className="col-start-2 block px-0 py-0 text-left small:table-cell small:px-4 small:py-4">
         <Text
-          className="txt-medium-plus text-ui-fg-base"
+          className="txt-medium-plus line-clamp-2 text-ui-fg-base"
           data-testid="product-title"
         >
           {item.product_title}
@@ -84,8 +87,8 @@ const Item = ({ item, type = "full", currencyCode }: ItemProps) => {
       </Table.Cell>
 
       {type === "full" && (
-        <Table.Cell>
-          <div className="flex items-center gap-3">
+        <Table.Cell className="col-start-2 block px-0 pt-3 small:table-cell small:px-4 small:pt-4">
+          <div className="flex flex-wrap items-center gap-3">
             <DeleteButton id={item.id} data-testid="product-delete-button" />
             <div
               className="inline-flex h-11 items-center rounded-full border border-[var(--shreem-border)] bg-[rgba(255,252,248,0.88)] px-1.5 shadow-[0_10px_24px_rgba(15,49,70,0.08)]"
@@ -129,10 +132,11 @@ const Item = ({ item, type = "full", currencyCode }: ItemProps) => {
         </Table.Cell>
       )}
 
-      <Table.Cell className="!pr-0">
+      <Table.Cell className="col-span-2 block !pr-0 px-0 pt-3 small:table-cell small:px-4 small:pt-4">
         <span
-          className={clx("!pr-0", {
-            "flex flex-col items-end h-full justify-center": type === "preview",
+          className={clx("!pr-0 flex items-start justify-between gap-4 small:block", {
+            "small:flex small:flex-col small:items-end small:h-full small:justify-center":
+              type === "preview",
           })}
         >
           {type === "preview" && (

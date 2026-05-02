@@ -27,10 +27,7 @@ type CountrySelectProps = {
 }
 
 const CountrySelect = ({ toggleState, regions }: CountrySelectProps) => {
-  const [current, setCurrent] = useState<
-    | { country: string | undefined; region: string; label: string | undefined }
-    | undefined
-  >(undefined)
+  const [current, setCurrent] = useState<CountryOption | undefined>(undefined)
 
   const { countryCode } = useParams()
   const currentPath = usePathname().split(`/${countryCode}`)[1]
@@ -41,12 +38,13 @@ const CountrySelect = ({ toggleState, regions }: CountrySelectProps) => {
     return regions
       ?.map((r) => {
         return r.countries?.map((c) => ({
-          country: c.iso_2,
+          country: c.iso_2 ?? "",
           region: r.id,
-          label: c.display_name,
+          label: c.display_name ?? c.iso_2?.toUpperCase() ?? "",
         }))
       })
       .flat()
+      .filter((option): option is CountryOption => Boolean(option?.country))
       .sort((a, b) => (a?.label ?? "").localeCompare(b?.label ?? ""))
   }, [regions])
 
@@ -92,7 +90,7 @@ const CountrySelect = ({ toggleState, regions }: CountrySelectProps) => {
             )}
           </div>
         </ListboxButton>
-        <div className="flex relative w-full min-w-[320px]">
+        <div className="relative flex w-full min-w-0">
           <Transition
             show={state}
             as={Fragment}
@@ -101,7 +99,7 @@ const CountrySelect = ({ toggleState, regions }: CountrySelectProps) => {
             leaveTo="opacity-0"
           >
             <ListboxOptions
-              className="absolute -bottom-[calc(100%-36px)] left-0 xsmall:left-auto xsmall:right-0 max-h-[442px] overflow-y-scroll z-[900] bg-white drop-shadow-md text-small-regular uppercase text-black no-scrollbar rounded-rounded w-full"
+              className="absolute -bottom-[calc(100%-36px)] left-0 z-[900] max-h-[442px] w-[min(18rem,calc(100vw-5rem))] overflow-y-scroll rounded-rounded bg-white text-small-regular uppercase text-black drop-shadow-md no-scrollbar xsmall:left-auto xsmall:right-0 sm:w-full"
               static
             >
               {options?.map((o, index) => {

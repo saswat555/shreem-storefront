@@ -42,6 +42,14 @@ export const listProductReviews = async (
     return []
   }
 
+  const reviewsEnabled =
+    process.env.NEXT_PUBLIC_ENABLE_PRODUCT_REVIEWS === "true" ||
+    process.env.ENABLE_PRODUCT_REVIEWS === "true"
+
+  if (!reviewsEnabled) {
+    return []
+  }
+
   return sdk.client
     .fetch<{ reviews: ProductReview[] }>(`/store/products/${productId}/reviews`, {
       method: "GET",

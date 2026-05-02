@@ -4,6 +4,7 @@ import { listProducts } from "@lib/data/products"
 import { getRegion, listRegions } from "@lib/data/regions"
 import ProductTemplate from "@modules/products/templates"
 import { HttpTypes } from "@medusajs/types"
+import LocalizedClientLink from "@modules/common/components/localized-client-link"
 
 type Props = {
   params: Promise<{ countryCode: string; handle: string }>
@@ -81,10 +82,15 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
   const product = await listProducts({
     countryCode: params.countryCode,
     queryParams: { handle },
-  }).then(({ response }) => response.products[0])
+  })
+    .then(({ response }) => response.products[0])
+    .catch(() => null)
 
   if (!product) {
-    notFound()
+    return {
+      title: "Product | Shreem",
+      description: "Shop Shreem Cow Products.",
+    }
   }
 
   return {
@@ -116,10 +122,12 @@ export default async function ProductPage(props: Props) {
   const pricedProduct = await listProducts({
     countryCode: params.countryCode,
     queryParams: { handle: params.handle },
-  }).then(({ response }) => response.products[0])
+  })
+    .then(({ response }) => response.products[0])
+    .catch(() => null)
 
   if (!pricedProduct) {
-    notFound()
+    return <ProductUnavailable handle={params.handle} />
   }
 
   const images = getImagesForVariant(pricedProduct, selectedVariantId)
@@ -131,5 +139,33 @@ export default async function ProductPage(props: Props) {
       countryCode={params.countryCode}
       images={images}
     />
+  )
+}
+
+function ProductUnavailable({ handle }: { handle: string }) {
+  const readableHandle = handle.replace(/-/g, " ")
+
+  return (
+    <div className="content-container py-8 small:py-12">
+      <section className="brand-surface px-5 py-8 small:px-10 small:py-10">
+        <p className="brand-kicker">Product</p>
+        <h1 className="mt-3 max-w-[14ch] text-[2.3rem] leading-[1.02] text-[var(--shreem-ink)] small:text-[3.6rem]">
+          We are reconnecting to {readableHandle}.
+        </h1>
+        <p className="mt-4 max-w-[40rem] text-sm leading-7 text-[var(--shreem-muted)] small:text-base">
+          The product page loaded, but live pricing and availability could not
+          be reached just now. Refresh in a moment or continue browsing the
+          store.
+        </p>
+        <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+          <LocalizedClientLink href="/store" className="brand-primary-button">
+            Browse store
+          </LocalizedClientLink>
+          <LocalizedClientLink href="/" className="brand-secondary-button">
+            Return home
+          </LocalizedClientLink>
+        </div>
+      </section>
+    </div>
   )
 }

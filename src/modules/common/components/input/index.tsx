@@ -34,17 +34,17 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
     useImperativeHandle(ref, () => inputRef.current!)
 
     return (
-      <div className="flex flex-col w-full">
+      <div className="flex w-full flex-col">
         {topLabel && (
           <Label className="mb-2 txt-compact-medium-plus">{topLabel}</Label>
         )}
-        <div className="flex relative z-0 w-full txt-compact-medium">
+        <div className="relative z-0 flex w-full txt-compact-medium">
           <input
             type={inputType}
             name={name}
             placeholder=" "
             required={required}
-            className="mt-0 block h-12 w-full appearance-none rounded-[18px] border border-[rgba(113,86,57,0.12)] bg-[rgba(255,252,248,0.88)] px-4 pb-1 pt-4 focus:outline-none focus:ring-0 focus:shadow-[0_0_0_3px_rgba(139,108,78,0.12)] hover:bg-white"
+            className="mt-0 block h-12 w-full appearance-none rounded-[14px] border border-[rgba(113,86,57,0.12)] bg-[rgba(255,252,248,0.88)] px-4 pb-1 pt-4 text-[16px] focus:outline-none focus:ring-0 focus:shadow-[0_0_0_3px_rgba(139,108,78,0.12)] hover:bg-white small:rounded-[18px] small:text-sm"
             {...props}
             ref={inputRef}
           />
@@ -60,7 +60,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-0 top-3 px-4 text-[var(--shreem-muted)] outline-none transition-all duration-150 focus:text-[var(--shreem-ink)] focus:outline-none"
+              className="absolute right-0 top-0 flex h-12 w-12 items-center justify-center text-[var(--shreem-muted)] outline-none transition-all duration-150 focus:text-[var(--shreem-ink)] focus:outline-none"
             >
               {showPassword ? <Eye /> : <EyeOff />}
             </button>

@@ -24,25 +24,25 @@ const OrderCard = ({ order }: OrderCardProps) => {
   }, [order])
 
   return (
-    <div className="bg-white flex flex-col" data-testid="order-card">
-      <div className="uppercase text-large-semi mb-1">
+    <div className="brand-card flex flex-col px-4 py-4 small:px-5" data-testid="order-card">
+      <div className="mb-1 text-large-semi uppercase">
         #<span data-testid="order-display-id">{order.display_id}</span>
       </div>
-      <div className="flex items-center divide-x divide-gray-200 text-small-regular text-ui-fg-base">
-        <span className="pr-2" data-testid="order-created-at">
+      <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-small-regular text-ui-fg-base small:divide-x small:divide-gray-200">
+        <span className="small:pr-2" data-testid="order-created-at">
           {new Date(order.created_at).toDateString()}
         </span>
-        <span className="px-2" data-testid="order-amount">
+        <span className="small:px-2" data-testid="order-amount">
           {convertToLocale({
             amount: order.total,
             currency_code: order.currency_code,
           })}
         </span>
-        <span className="pl-2">{`${numberOfLines} ${
+        <span className="small:pl-2">{`${numberOfLines} ${
           numberOfLines > 1 ? "items" : "item"
         }`}</span>
       </div>
-      <div className="grid grid-cols-2 small:grid-cols-4 gap-4 my-4">
+      <div className="my-4 grid grid-cols-2 gap-3 small:grid-cols-4 small:gap-4">
         {order.items?.slice(0, 3).map((i) => {
           return (
             <div
@@ -53,7 +53,7 @@ const OrderCard = ({ order }: OrderCardProps) => {
               <Thumbnail thumbnail={i.thumbnail} images={[]} size="full" />
               <div className="flex items-center text-small-regular text-ui-fg-base">
                 <span
-                  className="text-ui-fg-base font-semibold"
+                  className="line-clamp-2 font-semibold text-ui-fg-base"
                   data-testid="item-title"
                 >
                   {i.title}

@@ -14,10 +14,10 @@ const Login = ({ setCurrentView }: Props) => {
 
   return (
     <div
-      className="max-w-sm w-full flex flex-col items-center"
+      className="flex w-full max-w-sm flex-col items-center"
       data-testid="login-page"
     >
-      <h1 className="text-large-semi uppercase mb-6">Welcome back</h1>
+      <h1 className="mb-4 text-[2rem] leading-none text-[var(--shreem-ink)] small:mb-6 small:text-large-semi small:uppercase">Welcome back</h1>
       <p className="text-center text-base-regular text-ui-fg-base mb-8">
         Sign in to revisit your orders, saved details, and Shreem favourites.
       </p>
@@ -50,7 +50,7 @@ const Login = ({ setCurrentView }: Props) => {
         Not a member?{" "}
         <button
           onClick={() => setCurrentView(LOGIN_VIEW.REGISTER)}
-          className="underline"
+          className="min-h-11 rounded-full px-2 font-semibold underline"
           data-testid="register-button"
         >
           Join us

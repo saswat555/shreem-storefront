@@ -9,8 +9,8 @@ export default function CheckoutLayout({
 }) {
   return (
     <div className="relative w-full small:min-h-screen">
-      <div className="sticky top-0 z-40 border-b border-[rgba(113,86,57,0.12)] bg-[rgba(255,252,248,0.9)] backdrop-blur-xl">
-        <nav className="content-container flex h-24 items-center justify-between">
+      <div className="sticky top-0 z-40 border-b border-[rgba(113,86,57,0.12)] bg-[rgba(255,252,248,0.92)] backdrop-blur-xl">
+        <nav className="content-container flex h-16 items-center justify-between small:h-24">
           <LocalizedClientLink
             href="/cart"
             className="flex flex-1 basis-0 items-center gap-x-2 text-small-semi uppercase text-ui-fg-base"

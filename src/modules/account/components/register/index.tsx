@@ -17,10 +17,10 @@ const Register = ({ setCurrentView }: Props) => {
 
   return (
     <div
-      className="max-w-sm flex flex-col items-center"
+      className="flex w-full max-w-sm flex-col items-center"
       data-testid="register-page"
     >
-      <h1 className="text-large-semi uppercase mb-6">
+      <h1 className="mb-4 text-center text-[2rem] leading-none text-[var(--shreem-ink)] small:mb-6 small:text-large-semi small:uppercase">
         Become a Shreem Member
       </h1>
       <p className="text-center text-base-regular text-ui-fg-base mb-4">
@@ -93,7 +93,7 @@ const Register = ({ setCurrentView }: Props) => {
         Already a member?{" "}
         <button
           onClick={() => setCurrentView(LOGIN_VIEW.SIGN_IN)}
-          className="underline"
+          className="min-h-11 rounded-full px-2 font-semibold underline"
         >
           Sign in
         </button>

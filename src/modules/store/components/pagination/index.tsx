@@ -36,7 +36,7 @@ export function Pagination({
     <button
       key={p}
       className={clx(
-        "flex h-11 w-11 items-center justify-center rounded-full border text-sm font-medium",
+        "flex h-9 w-9 shrink-0 items-center justify-center rounded-full border text-sm font-medium small:h-11 small:w-11",
         {
           "border-[rgba(113,86,57,0.2)] bg-[var(--shreem-accent-dark)] text-white":
             isCurrent,
@@ -55,7 +55,7 @@ export function Pagination({
   const renderEllipsis = (key: string) => (
     <span
       key={key}
-      className="flex h-11 w-11 items-center justify-center text-sm text-[var(--shreem-muted)]"
+      className="flex h-9 w-7 shrink-0 items-center justify-center text-sm text-[var(--shreem-muted)] small:h-11 small:w-11"
     >
       ...
     </span>
@@ -115,7 +115,7 @@ export function Pagination({
   return (
     <div className="mt-12 flex w-full justify-center">
       <div
-        className="brand-card flex items-center gap-2 px-3 py-3"
+        className="brand-card no-scrollbar flex max-w-full items-center gap-1 overflow-x-auto px-2 py-2 small:gap-2 small:px-3 small:py-3"
         data-testid={dataTestid}
       >
         {renderPageButtons()}

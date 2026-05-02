@@ -55,7 +55,7 @@ const MobileActions: React.FC<MobileActionsProps> = ({
   return (
     <>
       <div
-        className={clx("fixed inset-x-0 bottom-0 z-50 lg:hidden", {
+        className={clx("fixed inset-x-0 bottom-0 z-50 pb-[env(safe-area-inset-bottom)] lg:hidden", {
           "pointer-events-none": !show,
         })}
       >
@@ -70,11 +70,11 @@ const MobileActions: React.FC<MobileActionsProps> = ({
           leaveTo="opacity-0 translate-y-6"
         >
           <div
-            className="m-3 rounded-[28px] border border-[rgba(18,63,99,0.16)] bg-[linear-gradient(180deg,rgba(255,252,247,0.97),rgba(242,248,246,0.94))] p-4 shadow-[0_22px_60px_rgba(12,47,73,0.18)] backdrop-blur-2xl"
+            className="m-2 rounded-[20px] border border-[rgba(18,63,99,0.16)] bg-[linear-gradient(180deg,rgba(255,252,247,0.97),rgba(242,248,246,0.94))] p-3 shadow-[0_18px_48px_rgba(12,47,73,0.18)] backdrop-blur-2xl xsmall:m-3 xsmall:p-4"
             data-testid="mobile-actions"
           >
             <div className="mb-3 flex items-center justify-between gap-3">
-              <div>
+              <div className="min-w-0">
                 <p className="text-sm font-semibold text-[var(--shreem-ink)]" data-testid="mobile-title">
                   {product.title}
                 </p>
@@ -98,10 +98,10 @@ const MobileActions: React.FC<MobileActionsProps> = ({
                   </div>
                 ) : null}
               </div>
-              <span className="brand-pill px-3 py-1.5 text-[10px]">Mobile ready</span>
+              <span className="brand-pill hidden shrink-0 px-3 py-1.5 text-[10px] xsmall:inline-flex">Mobile ready</span>
             </div>
             <div
-              className={clx("grid w-full grid-cols-2 gap-x-3", {
+              className={clx("grid w-full grid-cols-2 gap-x-2 xsmall:gap-x-3", {
                 "!grid-cols-1": isSimple,
               })}
             >
@@ -109,7 +109,7 @@ const MobileActions: React.FC<MobileActionsProps> = ({
                 <Button
                   onClick={open}
                   variant="secondary"
-                  className="h-12 rounded-full border border-[rgba(18,63,99,0.16)] bg-white/72 text-[var(--shreem-ink)]"
+                  className="h-12 min-w-0 rounded-full border border-[rgba(18,63,99,0.16)] bg-white/72 text-[var(--shreem-ink)]"
                   data-testid="mobile-actions-button"
                 >
                   <div className="flex w-full items-center justify-between">
@@ -123,7 +123,7 @@ const MobileActions: React.FC<MobileActionsProps> = ({
               <Button
                 onClick={handleAddToCart}
                 disabled={!inStock || !variant}
-                className="h-12 rounded-full border-0 bg-[linear-gradient(135deg,#0d817e_0%,#123f63_52%,#6f211f_100%)] text-white shadow-[0_18px_34px_rgba(18,63,99,0.26)]"
+                className="h-12 min-w-0 rounded-full border-0 bg-[linear-gradient(135deg,#0d817e_0%,#123f63_52%,#6f211f_100%)] text-white shadow-[0_18px_34px_rgba(18,63,99,0.26)]"
                 isLoading={isAdding}
                 data-testid="mobile-cart-button"
               >
@@ -163,7 +163,7 @@ const MobileActions: React.FC<MobileActionsProps> = ({
                 leaveTo="opacity-0 translate-y-8"
               >
                 <Dialog.Panel
-                  className="w-full transform overflow-hidden rounded-t-[32px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,252,247,0.99),rgba(244,248,247,0.98))] px-5 pb-10 pt-5 text-left"
+                  className="max-h-[86dvh] w-full transform overflow-y-auto rounded-t-[24px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,252,247,0.99),rgba(244,248,247,0.98))] px-4 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-4 text-left small:rounded-t-[32px] small:px-5 small:pb-10 small:pt-5"
                   data-testid="mobile-actions-modal"
                 >
                   <div className="mb-6 flex w-full justify-end">

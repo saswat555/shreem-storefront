@@ -10,13 +10,14 @@ type ShippingDetailsProps = {
 
 const ShippingDetails = ({ order }: ShippingDetailsProps) => {
   return (
-    <div>
-      <Heading level="h2" className="flex flex-row text-3xl-regular my-6">
+    <section className="brand-card px-5 py-6 small:px-6">
+      <p className="brand-kicker">Delivery</p>
+      <Heading level="h2" className="mt-3 flex flex-row text-[2rem] leading-none text-[var(--shreem-ink)]">
         Delivery
       </Heading>
-      <div className="flex items-start gap-x-8">
+      <div className="mt-5 grid gap-4 md:grid-cols-3">
         <div
-          className="flex flex-col w-1/3"
+          className="rounded-[16px] bg-[linear-gradient(135deg,rgba(240,248,246,0.78),rgba(255,249,240,0.72))] px-4 py-4 small:rounded-[22px]"
           data-testid="shipping-address-summary"
         >
           <Text className="txt-medium-plus text-ui-fg-base mb-1">
@@ -40,7 +41,7 @@ const ShippingDetails = ({ order }: ShippingDetailsProps) => {
         </div>
 
         <div
-          className="flex flex-col w-1/3 "
+          className="rounded-[16px] bg-[linear-gradient(135deg,rgba(240,248,246,0.78),rgba(255,249,240,0.72))] px-4 py-4 small:rounded-[22px]"
           data-testid="shipping-contact-summary"
         >
           <Text className="txt-medium-plus text-ui-fg-base mb-1">Contact</Text>
@@ -51,7 +52,7 @@ const ShippingDetails = ({ order }: ShippingDetailsProps) => {
         </div>
 
         <div
-          className="flex flex-col w-1/3"
+          className="rounded-[16px] bg-[linear-gradient(135deg,rgba(240,248,246,0.78),rgba(255,249,240,0.72))] px-4 py-4 small:rounded-[22px]"
           data-testid="shipping-method-summary"
         >
           <Text className="txt-medium-plus text-ui-fg-base mb-1">Method</Text>
@@ -66,7 +67,7 @@ const ShippingDetails = ({ order }: ShippingDetailsProps) => {
         </div>
       </div>
       <Divider className="mt-8" />
-    </div>
+    </section>
   )
 }
 

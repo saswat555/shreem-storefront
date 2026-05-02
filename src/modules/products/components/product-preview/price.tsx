@@ -17,7 +17,7 @@ export default async function PreviewPrice({ price }: { price: VariantPrice }) {
         </Text>
       )}
       <Text
-        className={clx("text-sm font-semibold text-[var(--shreem-ink)]", {
+        className={clx("whitespace-nowrap text-sm font-semibold text-[var(--shreem-ink)]", {
           "text-[var(--shreem-accent-dark)]": price.price_type === "sale",
         })}
         data-testid="price"

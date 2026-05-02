@@ -40,15 +40,15 @@ const AccountNav = ({
           </LocalizedClientLink>
         ) : (
           <>
-            <div className="text-xl-semi mb-4 px-8">
+            <div className="mb-4 px-1 text-[2rem] leading-none text-[var(--shreem-ink)]">
               Hello {customer?.first_name}
             </div>
             <div className="text-base-regular">
-              <ul>
+              <ul className="grid gap-3">
                 <li>
                   <LocalizedClientLink
                     href="/account/profile"
-                    className="flex items-center justify-between py-4 border-b border-gray-200 px-8"
+                    className="brand-card flex items-center justify-between px-4 py-4"
                     data-testid="profile-link"
                   >
                     <>
@@ -63,7 +63,7 @@ const AccountNav = ({
                 <li>
                   <LocalizedClientLink
                     href="/account/addresses"
-                    className="flex items-center justify-between py-4 border-b border-gray-200 px-8"
+                    className="brand-card flex items-center justify-between px-4 py-4"
                     data-testid="addresses-link"
                   >
                     <>
@@ -78,7 +78,7 @@ const AccountNav = ({
                 <li>
                   <LocalizedClientLink
                     href="/account/orders"
-                    className="flex items-center justify-between py-4 border-b border-gray-200 px-8"
+                    className="brand-card flex items-center justify-between px-4 py-4"
                     data-testid="orders-link"
                   >
                     <div className="flex items-center gap-x-2">
@@ -91,7 +91,7 @@ const AccountNav = ({
                 <li>
                   <LocalizedClientLink
                     href="/customer-service"
-                    className="flex items-center justify-between py-4 border-b border-gray-200 px-8"
+                    className="brand-card flex items-center justify-between px-4 py-4"
                     data-testid="customer-service-link"
                   >
                     <div className="flex items-center gap-x-2">
@@ -104,7 +104,7 @@ const AccountNav = ({
                 <li>
                   <button
                     type="button"
-                    className="flex items-center justify-between py-4 border-b border-gray-200 px-8 w-full"
+                    className="brand-card flex w-full items-center justify-between px-4 py-4"
                     onClick={handleLogout}
                     data-testid="logout-button"
                   >

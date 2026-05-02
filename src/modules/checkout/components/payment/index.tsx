@@ -113,7 +113,7 @@ const Payment = ({
   return (
     <section className="brand-card px-5 py-6 small:px-6">
       <p className="brand-kicker">Step 3</p>
-      <div className="flex flex-row items-center justify-between mb-6">
+      <div className="mb-6 flex flex-col gap-3 small:flex-row small:items-center small:justify-between">
         <Heading
           level="h2"
           className={clx(
@@ -180,7 +180,7 @@ const Payment = ({
           )}
 
           {paidByGiftcard && (
-            <div className="flex flex-col w-1/3">
+            <div className="flex w-full flex-col rounded-[22px] bg-[linear-gradient(135deg,rgba(240,248,246,0.78),rgba(255,249,240,0.72))] px-4 py-4 small:w-auto">
               <Text className="txt-medium-plus text-ui-fg-base mb-1">
                 Payment method
               </Text>
@@ -200,7 +200,7 @@ const Payment = ({
 
           <Button
             size="large"
-            className="mt-6 rounded-full border-0 bg-[linear-gradient(135deg,#0d817e_0%,#123f63_52%,#6f211f_100%)] text-white shadow-[0_18px_34px_rgba(18,63,99,0.26)]"
+            className="mt-6 w-full rounded-full border-0 bg-[linear-gradient(135deg,#0d817e_0%,#123f63_52%,#6f211f_100%)] text-white shadow-[0_18px_34px_rgba(18,63,99,0.26)] xsmall:w-auto"
             onClick={handleSubmit}
             isLoading={isLoading}
             disabled={
@@ -252,7 +252,7 @@ const Payment = ({
                   Payment details
                 </Text>
                 <div
-                  className="flex gap-3 txt-medium text-ui-fg-subtle items-center"
+                  className="flex items-start gap-3 txt-medium text-ui-fg-subtle"
                   data-testid="payment-details-summary"
                 >
                   <Container className="flex h-10 w-10 items-center justify-center rounded-[14px] border border-[rgba(18,63,99,0.12)] bg-white/80 p-2">
@@ -269,7 +269,7 @@ const Payment = ({
               </div>
             </div>
           ) : paidByGiftcard ? (
-            <div className="rounded-[22px] bg-[linear-gradient(135deg,rgba(240,248,246,0.78),rgba(255,249,240,0.72))] px-4 py-4">
+            <div className="w-full rounded-[22px] bg-[linear-gradient(135deg,rgba(240,248,246,0.78),rgba(255,249,240,0.72))] px-4 py-4">
               <Text className="txt-medium-plus text-ui-fg-base mb-1">
                 Payment method
               </Text>

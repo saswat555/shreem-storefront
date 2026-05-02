@@ -21,7 +21,7 @@ const Review = ({ cart }: { cart: any }) => {
   return (
     <section className="brand-card px-5 py-6 small:px-6">
       <p className="brand-kicker">Step 4</p>
-      <div className="flex flex-row items-center justify-between mb-6">
+      <div className="mb-6 flex flex-col gap-3 small:flex-row small:items-center small:justify-between">
         <Heading
           level="h2"
           className={clx(

@@ -55,21 +55,36 @@ export default async function PaginatedProducts({
     return null
   }
 
-  let {
-    response: { products, count },
-  } = await listProductsWithSort({
+  const { products, count } = await listProductsWithSort({
     page,
     queryParams,
     sortBy,
     countryCode,
   })
+    .then(({ response }) => ({
+      products: response.products,
+      count: response.count,
+    }))
+    .catch(() => ({
+      products: [],
+      count: 0,
+    }))
 
   const totalPages = Math.ceil(count / PRODUCT_LIMIT)
+
+  if (!products.length) {
+    return (
+      <div className="brand-card px-5 py-8 text-sm leading-6 text-[var(--shreem-muted)]">
+        Products are temporarily unavailable. Please refresh once the store
+        connection is back.
+      </div>
+    )
+  }
 
   return (
     <>
       <ul
-        className="grid w-full grid-cols-2 gap-x-4 gap-y-6 small:grid-cols-3 medium:grid-cols-4 small:gap-x-5 small:gap-y-8"
+        className="grid w-full grid-cols-2 gap-x-3 gap-y-5 small:grid-cols-3 small:gap-x-5 small:gap-y-8 medium:grid-cols-4"
         data-testid="products-list"
       >
         {products.map((p) => {

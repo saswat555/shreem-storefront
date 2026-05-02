@@ -6,9 +6,9 @@ import BrandLogo from "@modules/layout/components/brand-logo"
 
 export default function Footer() {
   return (
-    <footer className="w-full pb-8 pt-12 small:pt-16">
+    <footer className="w-full pb-8 pt-10 small:pt-16">
       <div className="content-container">
-        <div className="brand-royal-surface flex w-full flex-col gap-8 px-6 py-8 text-white small:px-10 small:py-10">
+        <div className="brand-royal-surface flex w-full flex-col gap-8 px-4 py-6 text-white small:px-10 small:py-10">
           <div className="flex flex-col gap-8 xl:flex-row xl:items-start xl:justify-between">
             <div className="max-w-[30rem]">
               <BrandLogo
@@ -28,13 +28,13 @@ export default function Footer() {
                 the brand a warmer, more human presence across the store and the
                 Journal.
               </p>
-              <div className="mt-6 flex flex-wrap gap-3">
-                <LocalizedClientLink href="/store" className="brand-primary-button">
+              <div className="mt-6 grid gap-3 sm:flex sm:flex-wrap">
+                <LocalizedClientLink href="/store" className="brand-primary-button w-full justify-center sm:w-auto">
                   Shop products
                 </LocalizedClientLink>
                 <LocalizedClientLink
                   href="/journal"
-                  className="inline-flex items-center justify-center rounded-full border border-[rgba(212,161,38,0.24)] bg-white/8 px-6 py-3 text-sm font-semibold text-white"
+                  className="inline-flex w-full items-center justify-center rounded-full border border-[rgba(212,161,38,0.24)] bg-white/8 px-6 py-3 text-sm font-semibold text-white sm:w-auto"
                 >
                   Read Journal
                 </LocalizedClientLink>

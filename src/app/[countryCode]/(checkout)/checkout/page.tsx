@@ -21,22 +21,22 @@ export default async function Checkout(props: {
   searchParams: Promise<{ step?: string }>
 }) {
   const searchParams = await props.searchParams
-  const cart = await retrieveCart()
+  const cart = await retrieveCart().catch(() => null)
 
   if (!cart) {
     return notFound()
   }
 
-  const customer = await retrieveCustomer()
+  const customer = await retrieveCustomer().catch(() => null)
   const currentStep = searchParams.step || "address"
 
   return (
     <div className="content-container py-8 small:py-10">
-      <section className="brand-surface mb-6 px-5 py-6 small:px-8 small:py-8">
+      <section className="brand-surface mb-6 px-4 py-6 small:px-8 small:py-8">
         <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_420px] xl:items-end">
           <div>
             <p className="brand-kicker">Checkout</p>
-            <h1 className="mt-3 text-[2.4rem] leading-[0.98] text-[var(--shreem-ink)] small:text-[3.6rem]">
+            <h1 className="mt-3 text-[2rem] leading-[1.02] text-[var(--shreem-ink)] small:text-[3.6rem] small:leading-[0.98]">
               Finish your order without friction
             </h1>
             <p className="mt-4 max-w-[42rem] text-sm leading-7 text-[var(--shreem-muted)] small:text-base">
@@ -55,7 +55,7 @@ export default async function Checkout(props: {
               return (
                 <div
                   key={step.key}
-                  className={`rounded-[20px] border px-4 py-3 text-sm ${
+                  className={`rounded-[16px] border px-3 py-3 text-sm small:rounded-[20px] small:px-4 ${
                     isActive
                       ? "border-[rgba(212,161,38,0.34)] bg-[linear-gradient(135deg,rgba(255,248,233,0.96),rgba(245,239,224,0.88))] text-[var(--shreem-ink)]"
                       : "border-[var(--shreem-border)] bg-white/66 text-[var(--shreem-muted)]"

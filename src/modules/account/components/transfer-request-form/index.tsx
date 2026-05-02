@@ -42,7 +42,7 @@ export default function TransferRequestForm() {
             <Input className="w-full" name="order_id" placeholder="Order ID" />
             <SubmitButton
               variant="secondary"
-              className="w-fit whitespace-nowrap self-end"
+              className="w-full whitespace-nowrap sm:w-fit sm:self-end"
             >
               Request transfer
             </SubmitButton>
@@ -55,8 +55,8 @@ export default function TransferRequestForm() {
         </Text>
       )}
       {showSuccess && (
-        <div className="flex justify-between p-4 bg-neutral-50 shadow-borders-base w-full self-stretch items-center">
-          <div className="flex gap-x-2 items-center">
+        <div className="flex w-full items-start justify-between gap-3 self-stretch bg-neutral-50 p-4 shadow-borders-base">
+          <div className="flex items-start gap-x-2">
             <CheckCircleMiniSolid className="w-4 h-4 text-emerald-500" />
             <div className="flex flex-col gap-y-1">
               <Text className="text-medim-pl text-neutral-950">

@@ -10,6 +10,7 @@ import ProductInfo from "@modules/products/templates/product-info"
 import SkeletonRelatedProducts from "@modules/skeletons/templates/skeleton-related-products"
 import { notFound } from "next/navigation"
 import { HttpTypes } from "@medusajs/types"
+import MascotSprites from "@modules/common/components/mascot-sprites"
 
 import ProductActionsWrapper from "./product-actions-wrapper"
 
@@ -33,9 +34,13 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
   return (
     <>
       <div className="content-container py-8 small:py-12" data-testid="product-container">
-        <section className="brand-surface px-5 py-6 small:px-8 small:py-8">
-          <div className="grid gap-6 xl:grid-cols-[minmax(0,1.12fr)_420px] xl:items-start">
-            <div className="min-w-0">
+        <section className="brand-surface relative overflow-hidden px-5 py-6 small:px-8 small:py-8">
+          <MascotSprites className="opacity-45" />
+          <div className="relative z-[1]">
+          <ProductInfo product={product} />
+
+          <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.08fr)_400px] xl:items-start">
+            <div className="order-2 min-w-0 xl:order-1">
               <div className="mb-4 flex items-center justify-between gap-4">
                 <div>
                   <p className="brand-kicker">Product gallery</p>
@@ -73,8 +78,7 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
               </div>
             </div>
 
-            <div className="flex w-full flex-col gap-y-6 xl:sticky xl:top-28">
-              <ProductInfo product={product} />
+            <div className="order-1 flex w-full flex-col gap-y-6 xl:order-2 xl:sticky xl:top-28">
               <Suspense
                 fallback={
                   <ProductActions
@@ -107,6 +111,7 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
             >
               <ProductOnboardingCta />
             </Suspense>
+          </div>
           </div>
         </section>
       </div>

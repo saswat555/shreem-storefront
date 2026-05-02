@@ -3,7 +3,6 @@
 import { ChevronLeft, ChevronRight } from "@medusajs/icons"
 import { HttpTypes } from "@medusajs/types"
 import { clx } from "@medusajs/ui"
-import Image from "next/image"
 import { useEffect, useMemo, useState } from "react"
 
 type ImageGalleryProps = {
@@ -66,23 +65,21 @@ const ImageGallery = ({ images }: ImageGalleryProps) => {
 
   return (
     <section
-      className="brand-card overflow-hidden p-3 small:p-4"
+      className="brand-card overflow-hidden p-2 small:p-4"
       aria-label="Product image carousel"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
       <div
-        className="relative min-h-[320px] overflow-hidden rounded-[24px] bg-[linear-gradient(180deg,rgba(255,252,247,0.96),rgba(240,248,246,0.88))] small:min-h-[520px]"
+        className="relative w-full min-h-0 overflow-hidden rounded-[16px] bg-[linear-gradient(180deg,rgba(255,252,247,0.96),rgba(240,248,246,0.88))] small:min-h-[520px] small:rounded-[24px]"
         style={{ aspectRatio: String(Math.min(Math.max(activeRatio, 0.78), 1.65)) }}
       >
-        <Image
+        <img
           key={activeImage.id}
           src={activeImage.url!}
           alt={`Product image ${activeIndex + 1}`}
-          fill
-          priority={activeIndex === 0}
-          sizes="(max-width: 576px) 100vw, (max-width: 1024px) 70vw, 780px"
-          className="object-contain p-3 transition-transform duration-700 ease-out small:p-5"
+          loading={activeIndex === 0 ? "eager" : "lazy"}
+          className="absolute inset-0 h-full w-full object-contain p-3 transition-transform duration-700 ease-out small:p-5"
           onLoad={(event) => {
             const target = event.currentTarget
             const ratio = target.naturalWidth / target.naturalHeight
@@ -133,19 +130,18 @@ const ImageGallery = ({ images }: ImageGalleryProps) => {
               aria-label={`Show product image ${index + 1}`}
               aria-current={activeIndex === index}
               onClick={() => setActiveIndex(index)}
-              className={clx(
-                "relative h-20 w-20 shrink-0 overflow-hidden rounded-[18px] border bg-white/80 transition-all duration-300 small:h-24 small:w-24",
+            className={clx(
+                "relative h-16 w-16 shrink-0 overflow-hidden rounded-[14px] border bg-white/80 transition-all duration-300 small:h-24 small:w-24 small:rounded-[18px]",
                 activeIndex === index
                   ? "border-[rgba(212,161,38,0.9)] shadow-[0_12px_28px_rgba(156,105,18,0.18)]"
                   : "border-[var(--shreem-border)] opacity-72 hover:opacity-100"
               )}
             >
-              <Image
+              <img
                 src={image.url!}
                 alt={`Product thumbnail ${index + 1}`}
-                fill
-                sizes="96px"
-                className="object-cover"
+                loading="lazy"
+                className="h-full w-full object-cover"
               />
             </button>
           ))}

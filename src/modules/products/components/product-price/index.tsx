@@ -24,12 +24,12 @@ export default function ProductPrice({
   }
 
   return (
-    <div className="rounded-[22px] bg-[linear-gradient(135deg,rgba(240,248,246,0.78),rgba(255,249,240,0.76))] px-4 py-4 text-ui-fg-base">
-      <div className="flex items-start justify-between gap-4">
+    <div className="rounded-[16px] bg-[linear-gradient(135deg,rgba(240,248,246,0.78),rgba(255,249,240,0.76))] px-4 py-4 text-ui-fg-base small:rounded-[22px]">
+      <div className="flex flex-col items-start gap-3 xsmall:flex-row xsmall:justify-between">
         <div>
           <span className="brand-kicker mb-2 block">Price</span>
           <span
-            className={clx("text-[2.2rem] leading-none text-[var(--shreem-ink)]", {
+            className={clx("text-[1.9rem] leading-none text-[var(--shreem-ink)] small:text-[2.2rem]", {
               "text-[var(--shreem-accent-dark)]":
                 selectedPrice.price_type === "sale",
             })}
@@ -43,7 +43,7 @@ export default function ProductPrice({
             </span>
           </span>
         </div>
-        <div className="rounded-full border border-[rgba(212,161,38,0.3)] bg-white/80 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--shreem-gold-deep)]">
+        <div className="rounded-full border border-[rgba(212,161,38,0.3)] bg-white/80 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)] small:text-[11px] small:tracking-[0.2em]">
           {variant ? "Selected variant" : "Best available"}
         </div>
       </div>

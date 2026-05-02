@@ -22,26 +22,26 @@ export default async function ProductPreview({
       href={`/products/${product.handle}`}
       className="group block"
     >
-      <div className="space-y-4" data-testid="product-wrapper">
+      <div className="space-y-2 small:space-y-4" data-testid="product-wrapper">
         <Thumbnail
           thumbnail={product.thumbnail}
           images={product.images}
           size="full"
           isFeatured={isFeatured}
         />
-        <div className="brand-card px-4 py-4">
-          <div className="mb-3 flex items-center justify-between gap-3">
-            <span className="brand-pill px-3 py-1.5 text-[10px]">
+        <div className="brand-card px-3 py-3 small:px-4 small:py-4">
+          <div className="mb-2 flex min-w-0 flex-col gap-2 xsmall:flex-row xsmall:items-center xsmall:justify-between small:mb-3">
+            <span className="brand-pill hidden px-3 py-1.5 text-[10px] xsmall:inline-flex">
               Shreem product
             </span>
             {cheapestPrice && <PreviewPrice price={cheapestPrice} />}
           </div>
-          <h3 className="text-base font-semibold text-[var(--shreem-ink)]" data-testid="product-title">
+          <h3 className="line-clamp-2 min-h-[2.5rem] text-sm font-semibold leading-5 text-[var(--shreem-ink)] small:text-base" data-testid="product-title">
             {product.title}
           </h3>
-          <div className="mt-3 flex items-center justify-between gap-3 text-sm text-[var(--shreem-muted)]">
-            <span>View details</span>
-            <span className="transition-transform duration-300 group-hover:translate-x-1">
+          <div className="mt-2 flex items-center justify-between gap-2 text-xs text-[var(--shreem-muted)] small:mt-3 small:text-sm">
+            <span>View</span>
+            <span className="truncate transition-transform duration-300 group-hover:translate-x-1">
               Explore
             </span>
           </div>
