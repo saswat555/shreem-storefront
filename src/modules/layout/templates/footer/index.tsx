@@ -1,10 +1,13 @@
 import { Text } from "@medusajs/ui"
 
 import { shreemCowBreeds, shreemMascots } from "@lib/constants/shreem"
+import { isPrakritiGuideEnabled } from "@lib/util/prakriti-config"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import BrandLogo from "@modules/layout/components/brand-logo"
 
 export default function Footer() {
+  const prakritiGuideEnabled = isPrakritiGuideEnabled()
+
   return (
     <footer className="w-full pb-8 pt-10 small:pt-16">
       <div className="content-container">
@@ -61,12 +64,14 @@ export default function Footer() {
                 >
                   Journal
                 </LocalizedClientLink>
-                <LocalizedClientLink
-                  href="/prakriti-guide"
-                  className="text-white/80 hover:text-[var(--shreem-gold)]"
-                >
-                  Prakriti Guide
-                </LocalizedClientLink>
+                {prakritiGuideEnabled && (
+                  <LocalizedClientLink
+                    href="/prakriti-guide"
+                    className="text-white/80 hover:text-[var(--shreem-gold)]"
+                  >
+                    Prakriti Guide
+                  </LocalizedClientLink>
+                )}
                 <LocalizedClientLink
                   href="/customer-service"
                   className="text-white/80 hover:text-[var(--shreem-gold)]"

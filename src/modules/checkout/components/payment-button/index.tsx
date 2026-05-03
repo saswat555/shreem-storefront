@@ -51,7 +51,7 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
       return (
         <Button
           disabled
-          className="rounded-full border border-[var(--shreem-border)] bg-[rgba(255,252,248,0.86)] text-[var(--shreem-muted)]"
+          className="w-full rounded-full border border-[var(--shreem-border)] bg-[rgba(255,252,248,0.86)] text-[var(--shreem-muted)]"
         >
           Select a payment method
         </Button>
@@ -154,7 +154,7 @@ const StripePaymentButton = ({
         onClick={handlePayment}
         size="large"
         isLoading={submitting}
-        className="rounded-full border-0 bg-[linear-gradient(135deg,#0d817e_0%,#123f63_52%,#6f211f_100%)] text-white shadow-[0_18px_34px_rgba(18,63,99,0.26)]"
+        className="w-full rounded-full border-0 bg-[linear-gradient(135deg,#0d817e_0%,#123f63_52%,#6f211f_100%)] text-white shadow-[0_18px_34px_rgba(18,63,99,0.26)]"
         data-testid={dataTestId}
       >
         Place order
@@ -200,7 +200,7 @@ const OfflinePaymentButton = ({
         isLoading={submitting}
         onClick={handlePayment}
         size="large"
-        className="rounded-full border-0 bg-[linear-gradient(135deg,#0d817e_0%,#123f63_52%,#6f211f_100%)] text-white shadow-[0_18px_34px_rgba(18,63,99,0.26)]"
+        className="w-full rounded-full border-0 bg-[linear-gradient(135deg,#0d817e_0%,#123f63_52%,#6f211f_100%)] text-white shadow-[0_18px_34px_rgba(18,63,99,0.26)]"
         data-testid="submit-order-button"
       >
         Place order with {getPaymentInfo(providerId).title}

@@ -24,7 +24,7 @@ export default function ProductPrice({
   }
 
   return (
-    <div className="rounded-[16px] bg-[linear-gradient(135deg,rgba(240,248,246,0.78),rgba(255,249,240,0.76))] px-4 py-4 text-ui-fg-base small:rounded-[22px]">
+    <div className="border-y border-[rgba(18,63,99,0.1)] py-4 text-ui-fg-base">
       <div className="flex flex-col items-start gap-3 xsmall:flex-row xsmall:justify-between">
         <div>
           <span className="brand-kicker mb-2 block">Price</span>
@@ -65,7 +65,7 @@ export default function ProductPrice({
         </>
       ) : (
         <p className="mt-3 text-sm leading-6 text-[var(--shreem-muted)]">
-          Shipping and taxes are shown clearly during checkout before you place the order.
+          Final delivery and tax details appear before payment.
         </p>
       )}
     </div>

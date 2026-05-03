@@ -80,6 +80,7 @@ type SideMenuProps = {
   regions: HttpTypes.StoreRegion[] | null
   locales: Locale[] | null
   currentLocale: string | null
+  prakritiGuideEnabled?: boolean
 }
 
 const ScrollLock = ({ active }: { active: boolean }) => {
@@ -99,7 +100,12 @@ const ScrollLock = ({ active }: { active: boolean }) => {
   return null
 }
 
-const SideMenu = ({ regions, locales, currentLocale }: SideMenuProps) => {
+const SideMenu = ({
+  regions,
+  locales,
+  currentLocale,
+  prakritiGuideEnabled = false,
+}: SideMenuProps) => {
   const countryToggleState = useToggleState()
   const languageToggleState = useToggleState()
   const pathname = usePathname()
@@ -111,6 +117,9 @@ const SideMenu = ({ regions, locales, currentLocale }: SideMenuProps) => {
     currentCountryCode && pathname.startsWith(`/${currentCountryCode}`)
       ? pathname.slice(`/${currentCountryCode}`.length) || "/"
       : pathname
+  const visibleMenuItems = SideMenuItems.filter(
+    (item) => item.href !== "/prakriti-guide" || prakritiGuideEnabled
+  )
 
   return (
     <div className="h-full">
@@ -188,7 +197,7 @@ const SideMenu = ({ regions, locales, currentLocale }: SideMenuProps) => {
                       </p>
                     </div>
                     <ul className="relative z-[1] mt-3 grid grid-cols-2 gap-3 small:mt-6 small:flex small:flex-col small:items-start small:justify-start">
-                      {SideMenuItems.map(({ name, href, description, icon }) => {
+                      {visibleMenuItems.map(({ name, href, description, icon }) => {
                         const isActive =
                           href === "/"
                             ? normalizedPath === "/"

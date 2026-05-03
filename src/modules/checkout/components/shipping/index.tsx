@@ -177,13 +177,13 @@ const Shipping: React.FC<ShippingProps> = ({
   }, [isOpen])
 
   return (
-    <section className="brand-card px-5 py-6 small:px-6">
+    <section className="brand-card px-4 py-5 small:px-6 small:py-6">
       <p className="brand-kicker">Step 2</p>
-      <div className="mb-6 flex flex-col gap-3 small:flex-row small:items-center small:justify-between">
+      <div className="mb-5 flex flex-col gap-3 small:flex-row small:items-center small:justify-between">
         <Heading
           level="h2"
           className={clx(
-            "mt-3 flex flex-row items-center gap-x-3 text-[2rem] leading-none text-[var(--shreem-ink)] small:text-[2.4rem]",
+            "mt-2 flex flex-row items-center gap-x-3 text-[1.8rem] leading-none text-[var(--shreem-ink)] small:text-[2.4rem]",
             {
               "opacity-50 pointer-events-none select-none":
                 !isOpen && cart.shipping_methods?.length === 0,
@@ -212,12 +212,12 @@ const Shipping: React.FC<ShippingProps> = ({
       </div>
       {isOpen ? (
         <>
-          <div className="mb-5 rounded-[22px] bg-[linear-gradient(135deg,rgba(240,248,246,0.76),rgba(255,249,240,0.72))] px-4 py-4">
+          <div className="mb-4 rounded-[18px] border border-[rgba(18,63,99,0.1)] bg-white/58 px-4 py-3">
             <p className="text-sm font-semibold text-[var(--shreem-ink)]">
-              Choose your delivery style
+              Delivery method
             </p>
             <p className="mt-1 text-sm leading-6 text-[var(--shreem-muted)]">
-              See the available shipping methods for this address and move ahead with the one that fits best.
+              Select how this order should reach you.
             </p>
           </div>
           <div className="grid">
@@ -226,7 +226,7 @@ const Shipping: React.FC<ShippingProps> = ({
                 Shipping method
               </span>
               <span className="mb-4 text-ui-fg-muted txt-medium">
-                How would you like you order delivered
+                How would you like your order delivered?
               </span>
             </div>
             <div data-testid="delivery-options-container">
@@ -421,7 +421,7 @@ const Shipping: React.FC<ShippingProps> = ({
         <div>
           <div className="text-small-regular">
             {cart && (cart.shipping_methods?.length ?? 0) > 0 && (
-              <div className="rounded-[22px] bg-[linear-gradient(135deg,rgba(240,248,246,0.78),rgba(255,249,240,0.72))] px-4 py-4">
+              <div className="rounded-[18px] border border-[rgba(18,63,99,0.1)] bg-white/58 px-4 py-4">
                 <Text className="txt-medium-plus text-ui-fg-base mb-1">
                   Method
                 </Text>
@@ -440,7 +440,7 @@ const Shipping: React.FC<ShippingProps> = ({
           </div>
         </div>
       )}
-      <Divider className="mt-8" />
+      <Divider className="mt-6" />
     </section>
   )
 }

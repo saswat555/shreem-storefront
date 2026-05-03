@@ -4,7 +4,6 @@ import { addToCart } from "@lib/data/cart"
 import { useIntersection } from "@lib/hooks/use-in-view"
 import { HttpTypes } from "@medusajs/types"
 import { Button } from "@medusajs/ui"
-import Divider from "@modules/common/components/divider"
 import OptionSelect from "@modules/products/components/product-actions/option-select"
 import { isEqual } from "lodash"
 import { useParams, usePathname, useSearchParams } from "next/navigation"
@@ -162,42 +161,56 @@ export default function ProductActions({
 
   return (
     <>
-      <div className="brand-card flex flex-col gap-y-5 p-4 small:p-6" ref={actionsRef}>
-        <div>
-          <p className="brand-kicker">Purchase options</p>
-          <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
-            Choose your preferred size or variant, check the live price, and move straight into checkout.
-          </p>
-          <div className="mt-4 flex flex-wrap gap-2">
-            <span className="brand-pill px-3 py-1.5">{stockLabel}</span>
-            {selectedVariant?.title && (
-              <span className="brand-pill px-3 py-1.5">
-                {selectedVariant.title}
-              </span>
-            )}
+      <div className="brand-card flex flex-col gap-y-4 p-4 small:p-5" ref={actionsRef}>
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <p className="brand-kicker">Buy now</p>
+            <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
+              Select a variant and add it to your bag.
+            </p>
           </div>
+          <span className="brand-pill min-h-9 shrink-0 px-3 py-1.5 text-[10px]">
+            {inStock ? "In stock" : "Unavailable"}
+          </span>
         </div>
 
-        <div>
-          {(product.variants?.length ?? 0) > 1 && (
-            <div className="flex flex-col gap-y-4">
-              {(product.options || []).map((option) => {
-                return (
-                  <div key={option.id}>
-                    <OptionSelect
-                      option={option}
-                      current={options[option.id]}
-                      updateOption={setOptionValue}
-                      title={option.title ?? ""}
-                      data-testid="product-options"
-                      disabled={!!disabled || isAdding}
-                    />
-                  </div>
-                )
-              })}
-              <Divider />
+        {selectedVariant?.title && (
+          <div className="rounded-[16px] border border-[rgba(18,63,99,0.1)] bg-white/58 px-3 py-2 text-sm font-medium text-[var(--shreem-ink)]">
+            {selectedVariant.title}
+          </div>
+        )}
+
+        {(product.variants?.length ?? 0) > 1 && (
+          <div className="flex flex-col gap-y-4">
+            {(product.options || []).map((option) => {
+              return (
+                <div key={option.id}>
+                  <OptionSelect
+                    option={option}
+                    current={options[option.id]}
+                    updateOption={setOptionValue}
+                    title={option.title ?? ""}
+                    data-testid="product-options"
+                    disabled={!!disabled || isAdding}
+                  />
+                </div>
+              )
+            })}
+          </div>
+        )}
+
+        <div className="rounded-[18px] border border-[rgba(18,63,99,0.1)] bg-[rgba(255,252,247,0.7)] px-4 py-3">
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--shreem-gold-deep)]">
+                Status
+              </p>
+              <p className="mt-1 text-sm leading-5 text-[var(--shreem-muted)]">
+                {stockLabel}
+              </p>
             </div>
-          )}
+            <span className="h-3 w-3 shrink-0 rounded-full bg-[var(--shreem-accent)] shadow-[0_0_0_5px_rgba(13,129,126,0.13)]" />
+          </div>
         </div>
 
         <ProductPrice product={product} variant={selectedVariant} />
@@ -224,28 +237,12 @@ export default function ProductActions({
             ? "Out of stock"
             : "Add to cart"}
         </Button>
-        <div className="grid gap-3">
-          <div className="rounded-[16px] bg-[linear-gradient(135deg,rgba(240,248,246,0.78),rgba(255,249,240,0.72))] px-4 py-4 text-sm leading-6 text-[var(--shreem-muted)] small:rounded-[20px]">
-            Secure checkout, region-aware pricing, and live cart updates keep the buying flow clean from product page to payment.
-          </div>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div className="rounded-[20px] border border-[rgba(18,63,99,0.12)] bg-white/76 px-4 py-4">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--shreem-gold-deep)]">
-                Checkout clarity
-              </p>
-              <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
-                Delivery, payment, and final review all stay visible before order placement.
-              </p>
-            </div>
-            <div className="rounded-[20px] border border-[rgba(18,63,99,0.12)] bg-white/76 px-4 py-4">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--shreem-gold-deep)]">
-                Post-purchase trust
-              </p>
-              <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
-                Approved customer feedback is shown on the product page with star ratings.
-              </p>
-            </div>
-          </div>
+        <div className="grid grid-cols-3 overflow-hidden rounded-[18px] border border-[rgba(18,63,99,0.1)] bg-white/54 text-center text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--shreem-muted)]">
+          <span className="px-2 py-3">Secure</span>
+          <span className="border-x border-[rgba(18,63,99,0.1)] px-2 py-3">
+            Live total
+          </span>
+          <span className="px-2 py-3">Support</span>
         </div>
         <MobileActions
           product={product}

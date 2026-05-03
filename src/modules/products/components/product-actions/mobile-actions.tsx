@@ -98,7 +98,11 @@ const MobileActions: React.FC<MobileActionsProps> = ({
                   </div>
                 ) : null}
               </div>
-              <span className="brand-pill hidden shrink-0 px-3 py-1.5 text-[10px] xsmall:inline-flex">Mobile ready</span>
+              {variant?.title ? (
+                <span className="brand-pill hidden max-w-[8rem] shrink-0 truncate px-3 py-1.5 text-[10px] xsmall:inline-flex">
+                  {variant.title}
+                </span>
+              ) : null}
             </div>
             <div
               className={clx("grid w-full grid-cols-2 gap-x-2 xsmall:gap-x-3", {
@@ -178,8 +182,7 @@ const MobileActions: React.FC<MobileActionsProps> = ({
                   <div className="mb-5">
                     <p className="brand-kicker">Select options</p>
                     <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
-                      Tune the product to the exact combination you want before
-                      adding it to your bag.
+                      Choose the product variant before adding it to your bag.
                     </p>
                   </div>
                   <div className="bg-white/70">

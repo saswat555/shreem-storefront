@@ -130,7 +130,7 @@ const ImageGallery = ({ images }: ImageGalleryProps) => {
               aria-label={`Show product image ${index + 1}`}
               aria-current={activeIndex === index}
               onClick={() => setActiveIndex(index)}
-            className={clx(
+              className={clx(
                 "relative h-16 w-16 shrink-0 overflow-hidden rounded-[14px] border bg-white/80 transition-all duration-300 small:h-24 small:w-24 small:rounded-[18px]",
                 activeIndex === index
                   ? "border-[rgba(212,161,38,0.9)] shadow-[0_12px_28px_rgba(156,105,18,0.18)]"

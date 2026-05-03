@@ -10,7 +10,6 @@ import ProductInfo from "@modules/products/templates/product-info"
 import SkeletonRelatedProducts from "@modules/skeletons/templates/skeleton-related-products"
 import { notFound } from "next/navigation"
 import { HttpTypes } from "@medusajs/types"
-import MascotSprites from "@modules/common/components/mascot-sprites"
 
 import ProductActionsWrapper from "./product-actions-wrapper"
 
@@ -33,91 +32,60 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
 
   return (
     <>
-      <div className="content-container py-8 small:py-12" data-testid="product-container">
-        <section className="brand-surface relative overflow-hidden px-5 py-6 small:px-8 small:py-8">
-          <MascotSprites className="opacity-45" />
-          <div className="relative z-[1]">
-          <ProductInfo product={product} />
-
-          <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.08fr)_400px] xl:items-start">
-            <div className="order-2 min-w-0 xl:order-1">
-              <div className="mb-4 flex items-center justify-between gap-4">
-                <div>
-                  <p className="brand-kicker">Product gallery</p>
-                  <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
-                    View the pack, label, and finish closely before you add it to bag.
-                  </p>
-                </div>
+      <div
+        className="content-container py-4 pb-12 small:py-10"
+        data-testid="product-container"
+      >
+        <section className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_430px] xl:items-start">
+          <div className="min-w-0">
+            <div className="mb-3 flex items-center justify-between gap-3 rounded-[22px] border border-[rgba(18,63,99,0.12)] bg-[rgba(255,252,248,0.82)] px-4 py-3 backdrop-blur-xl small:mb-5 small:rounded-[28px] small:px-5 small:py-4">
+              <div>
+                <p className="brand-kicker">Product</p>
+                <p className="mt-1 text-sm leading-5 text-[var(--shreem-muted)]">
+                  Swipe photos, choose a variant, add to bag.
+                </p>
               </div>
-              <ImageGallery images={images} />
-              <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                <div className="rounded-[20px] border border-[rgba(18,63,99,0.12)] bg-white/72 px-4 py-4">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--shreem-gold-deep)]">
-                    Image-led view
-                  </p>
-                  <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
-                    The carousel keeps the product itself central, not a placeholder frame.
-                  </p>
-                </div>
-                <div className="rounded-[20px] border border-[rgba(18,63,99,0.12)] bg-white/72 px-4 py-4">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--shreem-gold-deep)]">
-                    Variant clarity
-                  </p>
-                  <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
-                    Buyers can see the selected option, live price, and stock state before adding to cart.
-                  </p>
-                </div>
-                <div className="rounded-[20px] border border-[rgba(18,63,99,0.12)] bg-white/72 px-4 py-4">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--shreem-gold-deep)]">
-                    Review-backed
-                  </p>
-                  <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
-                    Approved customer feedback appears lower on the page with star ratings.
-                  </p>
-                </div>
-              </div>
+              <span className="brand-pill hidden px-3 py-1.5 text-[11px] xsmall:inline-flex">
+                Live pricing
+              </span>
             </div>
-
-            <div className="order-1 flex w-full flex-col gap-y-6 xl:order-2 xl:sticky xl:top-28">
-              <Suspense
-                fallback={
-                  <ProductActions
-                    disabled={true}
-                    product={product}
-                    region={region}
-                  />
-                }
-              >
-                <ProductActionsWrapper id={product.id} region={region} />
-              </Suspense>
-            </div>
+            <ImageGallery images={images} />
           </div>
 
-          <div className="mt-8">
-            <div className="mb-5">
-              <p className="brand-kicker">More about this product</p>
-              <h3 className="mt-3 text-[1.9rem] leading-none text-[var(--shreem-ink)] small:text-[2.4rem]">
-                Details, delivery guidance, and buying confidence
-              </h3>
-            </div>
-          </div>
-
-          <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
-            <ProductTabs product={product} />
+          <div className="flex min-w-0 flex-col gap-4 xl:sticky xl:top-28">
+            <ProductInfo product={product} />
             <Suspense
               fallback={
-                <ProductOnboardingCta />
+                <ProductActions
+                  disabled={true}
+                  product={product}
+                  region={region}
+                />
               }
             >
-              <ProductOnboardingCta />
+              <ProductActionsWrapper id={product.id} region={region} />
             </Suspense>
           </div>
+        </section>
+
+        <section className="mt-6 small:mt-10">
+          <div className="mb-4 px-1 small:mb-6">
+            <p className="brand-kicker">Details</p>
+            <h2 className="mt-2 text-[1.9rem] leading-none text-[var(--shreem-ink)] small:text-[2.6rem]">
+              Product information
+            </h2>
+          </div>
+          <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_340px]">
+            <ProductTabs product={product} />
+            <Suspense fallback={<ProductOnboardingCta />}>
+              <ProductOnboardingCta />
+            </Suspense>
           </div>
         </section>
       </div>
       <ProductReviews productId={product.id} />
       <div
-        className="content-container my-16 small:my-24"
+        className="content-container my-10 small:my-20"
         data-testid="related-products-container"
       >
         <div className="mb-8 flex flex-col gap-3">

@@ -31,40 +31,35 @@ export default async function Checkout(props: {
   const currentStep = searchParams.step || "address"
 
   return (
-    <div className="content-container py-8 small:py-10">
-      <section className="brand-surface mb-6 px-4 py-6 small:px-8 small:py-8">
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_420px] xl:items-end">
+    <div className="content-container py-4 pb-10 small:py-10">
+      <section className="brand-surface mb-4 px-4 py-5 small:mb-6 small:px-8 small:py-8">
+        <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_420px] xl:items-end">
           <div>
             <p className="brand-kicker">Checkout</p>
-            <h1 className="mt-3 text-[2rem] leading-[1.02] text-[var(--shreem-ink)] small:text-[3.6rem] small:leading-[0.98]">
-              Finish your order without friction
+            <h1 className="mt-2 text-[2rem] leading-[1.02] text-[var(--shreem-ink)] small:text-[3.6rem] small:leading-[0.98]">
+              Finish order
             </h1>
-            <p className="mt-4 max-w-[42rem] text-sm leading-7 text-[var(--shreem-muted)] small:text-base">
-              Confirm your address, choose delivery, select a payment method, and place the order from one clear flow.
+            <p className="mt-3 max-w-[42rem] text-sm leading-6 text-[var(--shreem-muted)] small:text-base small:leading-7">
+              Confirm details, pay, and place the order.
             </p>
-            <div className="mt-5 flex flex-wrap gap-2">
-              <span className="brand-pill px-3 py-1.5">Secure checkout</span>
-              <span className="brand-pill px-3 py-1.5">Live cart totals</span>
-              <span className="brand-pill px-3 py-1.5">Professional order review</span>
-            </div>
           </div>
-          <div className="grid grid-cols-2 gap-2 small:grid-cols-4 xl:grid-cols-2">
+          <div className="grid grid-cols-4 gap-1.5 small:gap-2 xl:grid-cols-2">
             {checkoutSteps.map((step, index) => {
               const isActive = currentStep === step.key
 
               return (
                 <div
                   key={step.key}
-                  className={`rounded-[16px] border px-3 py-3 text-sm small:rounded-[20px] small:px-4 ${
+                  className={`min-w-0 rounded-[15px] border px-2 py-3 text-center text-xs small:rounded-[20px] small:px-4 small:text-sm ${
                     isActive
                       ? "border-[rgba(212,161,38,0.34)] bg-[linear-gradient(135deg,rgba(255,248,233,0.96),rgba(245,239,224,0.88))] text-[var(--shreem-ink)]"
                       : "border-[var(--shreem-border)] bg-white/66 text-[var(--shreem-muted)]"
                   }`}
                 >
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em]">
-                    Step {index + 1}
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.12em]">
+                    {index + 1}
                   </p>
-                  <p className="mt-2 font-medium">{step.label}</p>
+                  <p className="mt-1 truncate font-medium">{step.label}</p>
                 </div>
               )
             })}

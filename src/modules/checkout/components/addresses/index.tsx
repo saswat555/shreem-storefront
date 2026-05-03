@@ -40,14 +40,14 @@ const Addresses = ({
   const [message, formAction] = useActionState(setAddresses, null)
 
   return (
-    <section className="brand-card px-5 py-6 small:px-6">
+    <section className="brand-card px-4 py-5 small:px-6 small:py-6">
       <p className="brand-kicker">Step 1</p>
-      <div className="mb-6 flex flex-col gap-3 small:flex-row small:items-center small:justify-between">
+      <div className="mb-5 flex flex-col gap-3 small:flex-row small:items-center small:justify-between">
         <Heading
           level="h2"
-          className="mt-3 flex flex-row items-center gap-x-3 text-[2rem] leading-none text-[var(--shreem-ink)] small:text-[2.4rem]"
+          className="mt-2 flex flex-row items-center gap-x-3 text-[1.8rem] leading-none text-[var(--shreem-ink)] small:text-[2.4rem]"
         >
-          Shipping Address
+          Address
           {!isOpen && <CheckCircleSolid />}
         </Heading>
         {!isOpen && cart?.shipping_address && (
@@ -64,12 +64,12 @@ const Addresses = ({
       </div>
       {isOpen ? (
         <form action={formAction}>
-          <div className="mb-5 rounded-[16px] bg-[linear-gradient(135deg,rgba(240,248,246,0.76),rgba(255,249,240,0.72))] px-4 py-4 small:rounded-[22px]">
+          <div className="mb-4 rounded-[18px] border border-[rgba(18,63,99,0.1)] bg-white/58 px-4 py-3">
             <p className="text-sm font-semibold text-[var(--shreem-ink)]">
-              Tell us where to deliver
+              Delivery details
             </p>
             <p className="mt-1 text-sm leading-6 text-[var(--shreem-muted)]">
-              Use your saved details or enter a fresh address for this order. We will use it for delivery updates and checkout confirmation.
+              Enter the address and contact details for this order.
             </p>
           </div>
           <div className="pb-8">
@@ -92,7 +92,10 @@ const Addresses = ({
                 <BillingAddress cart={cart} />
               </div>
             )}
-            <SubmitButton className="mt-6" data-testid="submit-address-button">
+            <SubmitButton
+              className="mt-6 w-full rounded-full border-0 bg-[linear-gradient(135deg,#0d817e_0%,#123f63_52%,#6f211f_100%)] text-white shadow-[0_18px_34px_rgba(18,63,99,0.26)] xsmall:w-auto"
+              data-testid="submit-address-button"
+            >
               Continue to delivery
             </SubmitButton>
             <ErrorMessage error={message} data-testid="address-error-message" />
@@ -103,9 +106,9 @@ const Addresses = ({
           <div className="text-small-regular">
             {cart && cart.shipping_address ? (
               <div className="w-full">
-                <div className="grid gap-6 small:grid-cols-3">
+                <div className="grid gap-3 small:grid-cols-3">
                   <div
-                    className="flex flex-col rounded-[16px] bg-[linear-gradient(135deg,rgba(240,248,246,0.78),rgba(255,249,240,0.72))] px-4 py-4 small:rounded-[22px]"
+                    className="flex flex-col rounded-[18px] border border-[rgba(18,63,99,0.1)] bg-white/58 px-4 py-4"
                     data-testid="shipping-address-summary"
                   >
                     <Text className="txt-medium-plus text-ui-fg-base mb-1">
@@ -129,7 +132,7 @@ const Addresses = ({
                   </div>
 
                   <div
-                    className="flex flex-col rounded-[16px] bg-[linear-gradient(135deg,rgba(240,248,246,0.78),rgba(255,249,240,0.72))] px-4 py-4 small:rounded-[22px]"
+                    className="flex flex-col rounded-[18px] border border-[rgba(18,63,99,0.1)] bg-white/58 px-4 py-4"
                     data-testid="shipping-contact-summary"
                   >
                     <Text className="txt-medium-plus text-ui-fg-base mb-1">
@@ -144,7 +147,7 @@ const Addresses = ({
                   </div>
 
                   <div
-                    className="flex flex-col rounded-[16px] bg-[linear-gradient(135deg,rgba(240,248,246,0.78),rgba(255,249,240,0.72))] px-4 py-4 small:rounded-[22px]"
+                    className="flex flex-col rounded-[18px] border border-[rgba(18,63,99,0.1)] bg-white/58 px-4 py-4"
                     data-testid="billing-address-summary"
                   >
                     <Text className="txt-medium-plus text-ui-fg-base mb-1">
@@ -185,7 +188,7 @@ const Addresses = ({
           </div>
         </div>
       )}
-      <Divider className="mt-8" />
+      <Divider className="mt-6" />
     </section>
   )
 }

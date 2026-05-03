@@ -35,94 +35,12 @@ type PreparedImage = {
   id: string
   name: string
   dataUrl: string
-  base64: string
 }
 
 type PrakritiGuideProps = {
   products: PrakritiProduct[]
+  model: string
 }
-
-const OPENAI_API_KEY = process.env.NEXT_PUBLIC_OPENAI_API_KEY
-const OPENAI_MODEL = process.env.NEXT_PUBLIC_OPENAI_MODEL || "gpt-4o-mini"
-const OLLAMA_ENABLED = process.env.NEXT_PUBLIC_OLLAMA_ENABLED === "true"
-const OLLAMA_BASE_URL =
-  process.env.NEXT_PUBLIC_OLLAMA_BASE_URL || "http://localhost:11434"
-const OLLAMA_MODEL = process.env.NEXT_PUBLIC_OLLAMA_MODEL || "gemma3:4b"
-
-const REMEDY_SCHEMA = {
-  type: "object",
-  additionalProperties: false,
-  properties: {
-    likely_condition: { type: "string" },
-    confidence: {
-      type: "string",
-      enum: ["low", "medium", "high"],
-    },
-    observations: {
-      type: "array",
-      items: { type: "string" },
-    },
-    immediate_home_steps: {
-      type: "array",
-      items: { type: "string" },
-    },
-    natural_remedy: { type: "string" },
-    prevention_tips: {
-      type: "array",
-      items: { type: "string" },
-    },
-    urgent_care_signs: {
-      type: "array",
-      items: { type: "string" },
-    },
-    recommended_products: {
-      type: "array",
-      items: {
-        type: "object",
-        additionalProperties: false,
-        properties: {
-          handle: { type: "string" },
-          title: { type: "string" },
-          advantage: { type: "string" },
-          how_to_use: { type: "string" },
-          reason_match: { type: "string" },
-        },
-        required: ["handle", "title", "advantage", "how_to_use", "reason_match"],
-      },
-    },
-  },
-  required: [
-    "likely_condition",
-    "confidence",
-    "observations",
-    "immediate_home_steps",
-    "natural_remedy",
-    "prevention_tips",
-    "urgent_care_signs",
-    "recommended_products",
-  ],
-} as const
-
-const providerOptions = [
-  OPENAI_API_KEY
-    ? {
-        value: "openai" as const,
-        label: "OpenAI",
-        caption: OPENAI_MODEL,
-      }
-    : null,
-  OLLAMA_ENABLED
-    ? {
-        value: "ollama" as const,
-        label: "Ollama",
-        caption: OLLAMA_MODEL,
-      }
-    : null,
-].filter(Boolean) as {
-  value: "openai" | "ollama"
-  label: string
-  caption: string
-}[]
 
 const resizeImageToDataUrl = async (file: File) => {
   if (!file.type.startsWith("image/")) {
@@ -161,38 +79,12 @@ const resizeImageToDataUrl = async (file: File) => {
 
   const mimeType = file.type === "image/png" ? "image/png" : "image/jpeg"
   const dataUrl = canvas.toDataURL(mimeType, 0.84)
-  const base64 = dataUrl.split(",")[1] || ""
 
   return {
     id: `${file.name}-${file.size}-${file.lastModified}`,
     name: file.name,
     dataUrl,
-    base64,
   }
-}
-
-const buildPrompt = ({
-  subject,
-  notes,
-  products,
-}: {
-  subject: PrakritiSubject
-  notes: string
-  products: PrakritiProduct[]
-}) => {
-  return [
-    `You are Shreem Prakriti Guide, a careful natural-care assistant for ${subject}s.`,
-    `Use the uploaded images first, then use the user's note if present.`,
-    `Give a practical, low-risk assessment. Never claim certainty from images alone.`,
-    `If the case seems severe, rapidly spreading, or dangerous, include urgent-care signs that tell the user to contact a veterinarian, plant pathologist, or local expert.`,
-    `Recommend a Shreem product only if it is clearly relevant to the case and only from this available regional list: ${JSON.stringify(
-      products
-    )}.`,
-    `If none of the available products are truly useful, return an empty recommended_products array.`,
-    `Do not recommend bilona ghee as a treatment for plant or animal disease.`,
-    `For animal cases, avoid medical treatment claims and keep product suggestions limited to environment-supportive use when clearly relevant.`,
-    `User note: ${notes.trim() || "No extra notes provided."}`,
-  ].join("\n")
 }
 
 const parseGuideResult = (
@@ -239,16 +131,13 @@ const parseGuideResult = (
   }
 }
 
-export default function PrakritiGuide({ products }: PrakritiGuideProps) {
+export default function PrakritiGuide({ products, model }: PrakritiGuideProps) {
   const [subject, setSubject] = useState<PrakritiSubject>("plant")
   const [notes, setNotes] = useState("")
   const [images, setImages] = useState<PreparedImage[]>([])
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [result, setResult] = useState<GuideResult | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [provider, setProvider] = useState<"openai" | "ollama">(
-    providerOptions[0]?.value ?? "ollama"
-  )
 
   const relevantProducts = useMemo(
     () => getRelevantPrakritiProducts(products, subject),
@@ -283,37 +172,33 @@ export default function PrakritiGuide({ products }: PrakritiGuideProps) {
       return
     }
 
-    if (!providerOptions.length) {
-      setError("No AI provider is enabled in the environment.")
-      return
-    }
-
     setIsAnalyzing(true)
     setError(null)
     setResult(null)
 
     try {
-      const prompt = buildPrompt({
-        subject,
-        notes,
-        products: relevantProducts,
+      const response = await fetch("/api/prakriti-guide", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          subject,
+          notes,
+          products: relevantProducts,
+          images: images.map((image) => ({ dataUrl: image.dataUrl })),
+        }),
       })
 
-      let rawResult: unknown
+      const payload = await response.json().catch(() => null)
 
-      if (provider === "openai") {
-        rawResult = await callOpenAI({
-          prompt,
-          images,
-        })
-      } else {
-        rawResult = await callOllama({
-          prompt,
-          images,
-        })
+      if (!response.ok) {
+        throw new Error(
+          payload?.message || "Unable to analyze the images right now."
+        )
       }
 
-      setResult(parseGuideResult(rawResult, relevantProducts, subject))
+      setResult(parseGuideResult(payload?.result, relevantProducts, subject))
     } catch (guideError) {
       setError(
         guideError instanceof Error
@@ -334,11 +219,10 @@ export default function PrakritiGuide({ products }: PrakritiGuideProps) {
             Upload up to three photos and get a natural-care plan
           </h1>
           <p className="mt-4 max-w-[38rem] text-sm leading-7 text-[var(--shreem-muted)] small:text-base">
-            This guide runs entirely in the browser. When an OpenAI key or an
-            Ollama endpoint is enabled in the environment, it reads the images,
+            This guide runs through a secured server route, reads the images,
             suggests a cautious natural-care direction, and only recommends a
-            Shreem product when that item is available in this region and
-            genuinely useful for the case.
+            Shreem product when it is available in this region and genuinely
+            useful for the case.
           </p>
 
           <div className="mt-6 grid gap-4 md:grid-cols-2">
@@ -363,27 +247,14 @@ export default function PrakritiGuide({ products }: PrakritiGuideProps) {
               </div>
             </label>
 
-            <label className="flex flex-col gap-2 text-sm font-medium text-[var(--shreem-ink)]">
-              AI provider
-              <select
-                value={provider}
-                onChange={(event) =>
-                  setProvider(event.target.value as "openai" | "ollama")
-                }
-                className="h-12 rounded-[18px] border border-[rgba(113,86,57,0.12)] bg-[rgba(255,252,248,0.88)] px-4 text-sm text-[var(--shreem-ink)] focus:outline-none focus:shadow-[0_0_0_3px_rgba(139,108,78,0.12)]"
-                disabled={!providerOptions.length}
-              >
-                {providerOptions.length ? (
-                  providerOptions.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label} • {option.caption}
-                    </option>
-                  ))
-                ) : (
-                  <option>No provider configured</option>
-                )}
-              </select>
-            </label>
+            <div className="flex flex-col justify-between rounded-[20px] border border-[rgba(18,63,99,0.12)] bg-white/68 px-4 py-3">
+              <p className="text-sm font-medium text-[var(--shreem-ink)]">
+                AI model
+              </p>
+              <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
+                OpenAI {model}
+              </p>
+            </div>
           </div>
 
           <label className="mt-5 flex flex-col gap-2 text-sm font-medium text-[var(--shreem-ink)]">
@@ -461,7 +332,7 @@ export default function PrakritiGuide({ products }: PrakritiGuideProps) {
             <button
               type="button"
               onClick={runGuide}
-              disabled={isAnalyzing || !images.length || !providerOptions.length}
+              disabled={isAnalyzing || !images.length}
               className="brand-primary-button disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isAnalyzing ? (
@@ -483,15 +354,6 @@ export default function PrakritiGuide({ products }: PrakritiGuideProps) {
             direction, but severe animal illness, poisoning, major wounds, or
             fast crop loss should still go to a veterinarian or local expert.
           </p>
-
-          {!providerOptions.length && (
-            <div className="mt-5 rounded-[22px] border border-[rgba(18,63,99,0.12)] bg-white/72 px-4 py-4 text-sm leading-6 text-[var(--shreem-muted)]">
-              Enable `NEXT_PUBLIC_OPENAI_API_KEY` for browser-based OpenAI usage,
-              or set `NEXT_PUBLIC_OLLAMA_ENABLED=true` with
-              `NEXT_PUBLIC_OLLAMA_BASE_URL` and `NEXT_PUBLIC_OLLAMA_MODEL` for
-              a local or self-hosted Ollama setup.
-            </div>
-          )}
 
           {error && (
             <div className="mt-5 rounded-[22px] border border-rose-200 bg-rose-50 px-4 py-4 text-sm leading-6 text-rose-700">
@@ -678,106 +540,4 @@ const ResultBlock = ({ title, body }: { title: string; body: string }) => {
       </div>
     </div>
   )
-}
-
-const callOpenAI = async ({
-  prompt,
-  images,
-}: {
-  prompt: string
-  images: PreparedImage[]
-}) => {
-  const response = await fetch("https://api.openai.com/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${OPENAI_API_KEY}`,
-    },
-    body: JSON.stringify({
-      model: OPENAI_MODEL,
-      temperature: 0.2,
-      response_format: {
-        type: "json_schema",
-        json_schema: {
-          name: "shreem_prakriti_guide",
-          strict: true,
-          schema: REMEDY_SCHEMA,
-        },
-      },
-      messages: [
-        {
-          role: "system",
-          content:
-            "You are a careful natural-care assistant. Stay cautious, practical, and product-honest. Never recommend a regional product unless it is clearly useful for the specific case.",
-        },
-        {
-          role: "user",
-          content: [
-            { type: "text", text: prompt },
-            ...images.map((image) => ({
-              type: "image_url",
-              image_url: {
-                url: image.dataUrl,
-                detail: "low",
-              },
-            })),
-          ],
-        },
-      ],
-    }),
-  })
-
-  if (!response.ok) {
-    const errorBody = await response.text()
-    throw new Error(`OpenAI request failed: ${errorBody}`)
-  }
-
-  const data = await response.json()
-  return data.choices?.[0]?.message?.content
-}
-
-const callOllama = async ({
-  prompt,
-  images,
-}: {
-  prompt: string
-  images: PreparedImage[]
-}) => {
-  const response = await fetch(
-    `${OLLAMA_BASE_URL.replace(/\/$/, "")}/api/chat`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: OLLAMA_MODEL,
-        stream: false,
-        format: REMEDY_SCHEMA,
-        options: {
-          temperature: 0.2,
-        },
-        messages: [
-          {
-            role: "system",
-            content:
-              "You are a careful natural-care assistant. Stay cautious, practical, and product-honest. Never recommend a regional product unless it is clearly useful for the specific case.",
-          },
-          {
-            role: "user",
-            content: prompt,
-            images: images.map((image) => image.base64),
-          },
-        ],
-      }),
-    }
-  )
-
-  if (!response.ok) {
-    const errorBody = await response.text()
-    throw new Error(`Ollama request failed: ${errorBody}`)
-  }
-
-  const data = await response.json()
-  return data.message?.content
 }

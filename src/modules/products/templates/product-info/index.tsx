@@ -30,64 +30,37 @@ const ProductInfo = ({ product }: ProductInfoProps) => {
   ]
 
   return (
-    <div id="product-info" className="brand-card p-4 small:p-7">
-      <div className="flex flex-wrap items-center gap-3">
+    <div id="product-info" className="brand-card p-4 small:p-6">
+      <div className="flex flex-wrap items-center gap-2">
         <p className="brand-kicker">Shreem selection</p>
         {product.collection && (
           <LocalizedClientLink
             href={`/collections/${product.collection.handle}`}
-            className="brand-pill min-h-10 px-3 py-1.5"
+            className="brand-pill min-h-9 px-3 py-1.5 text-[11px]"
           >
             {product.collection.title}
           </LocalizedClientLink>
         )}
       </div>
-      <div className="mt-4 flex flex-col gap-y-5 lg:max-w-[500px]">
+      <div className="mt-4 flex flex-col gap-y-4">
         <Heading
           level="h2"
-          className="text-[2.2rem] leading-[1.02] text-[var(--shreem-ink)] small:text-[3.2rem]"
+          className="text-[2rem] leading-[1.02] text-[var(--shreem-ink)] small:text-[3rem]"
           data-testid="product-title"
         >
           {product.title}
         </Heading>
 
         {subtitle && (
-          <p className="max-w-[36rem] text-base leading-7 text-[var(--shreem-accent-dark)]">
+          <p className="text-sm font-medium leading-6 text-[var(--shreem-accent-dark)] small:text-base small:leading-7">
             {subtitle}
           </p>
         )}
 
-        <div className="grid gap-3 sm:grid-cols-3">
-          <div className="rounded-[22px] border border-[rgba(18,63,99,0.12)] bg-white/72 px-4 py-4">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--shreem-gold-deep)]">
-              Buying help
-            </p>
-            <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
-              Choose a variant, see the live price, and add to cart without guesswork.
-            </p>
-          </div>
-          <div className="rounded-[22px] border border-[rgba(18,63,99,0.12)] bg-white/72 px-4 py-4">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--shreem-gold-deep)]">
-              Checkout clarity
-            </p>
-            <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
-              Delivery, payment, and final review stay visible before the order is placed.
-            </p>
-          </div>
-          <div className="rounded-[22px] border border-[rgba(18,63,99,0.12)] bg-white/72 px-4 py-4">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--shreem-gold-deep)]">
-              Support available
-            </p>
-            <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
-              Product questions and order help can be sent directly from the support page.
-            </p>
-          </div>
-        </div>
-
         {!!highlights.length && (
           <div className="flex flex-wrap gap-2">
             {highlights.map((highlight) => (
-              <span key={highlight} className="brand-pill px-3 py-1.5">
+              <span key={highlight} className="brand-pill px-3 py-1.5 text-[11px]">
                 {highlight}
               </span>
             ))}
@@ -95,23 +68,23 @@ const ProductInfo = ({ product }: ProductInfoProps) => {
         )}
 
         <Text
-          className="whitespace-pre-line text-sm leading-7 text-[var(--shreem-muted)] small:text-base"
+          className="line-clamp-2 whitespace-pre-line text-sm leading-7 text-[var(--shreem-muted)] small:line-clamp-none small:text-base"
           data-testid="product-description"
         >
           {product.description ||
             "A Shreem product presented with a clearer focus on sourcing, process, and everyday use."}
         </Text>
 
-        <div className="grid gap-3 sm:grid-cols-3">
+        <div className="grid grid-cols-3 gap-2">
           {detailCards.map((detail) => (
             <div
               key={detail.label}
-              className="rounded-[22px] bg-[linear-gradient(135deg,rgba(240,248,246,0.78),rgba(255,249,240,0.72))] px-4 py-4"
+              className="rounded-[16px] bg-[linear-gradient(135deg,rgba(240,248,246,0.78),rgba(255,249,240,0.72))] px-3 py-3 small:rounded-[20px] small:px-4"
             >
-              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--shreem-gold-deep)]">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
                 {detail.label}
               </p>
-              <p className="mt-2 text-sm leading-6 text-[var(--shreem-ink)]">
+              <p className="mt-1 line-clamp-2 text-xs leading-5 text-[var(--shreem-ink)] small:text-sm small:leading-6">
                 {detail.value}
               </p>
             </div>

@@ -1,7 +1,12 @@
 import { Metadata } from "next"
+import { notFound } from "next/navigation"
 
 import { retrieveCustomer } from "@lib/data/customer"
 import { listProducts } from "@lib/data/products"
+import {
+  getPrakritiGuideModel,
+  isPrakritiGuideEnabled,
+} from "@lib/util/prakriti-config"
 import { inferPrakritiTags } from "@lib/util/prakriti"
 import MotionReveal from "@modules/common/components/motion-reveal"
 import LoginTemplate from "@modules/account/templates/login-template"
@@ -16,8 +21,13 @@ export const metadata: Metadata = {
 export default async function PrakritiGuidePage(props: {
   params: Promise<{ countryCode: string }>
 }) {
+  if (!isPrakritiGuideEnabled()) {
+    return notFound()
+  }
+
   const { countryCode } = await props.params
   const customer = await retrieveCustomer().catch(() => null)
+  const model = getPrakritiGuideModel()
 
   if (!customer) {
     return (
@@ -90,7 +100,7 @@ export default async function PrakritiGuidePage(props: {
         </section>
       </MotionReveal>
 
-      <PrakritiGuide products={serializedProducts} />
+      <PrakritiGuide products={serializedProducts} model={model} />
     </div>
   )
 }

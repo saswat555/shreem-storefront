@@ -1,10 +1,13 @@
-import { retrieveOrder } from "@lib/data/orders"
+import {
+  enrichOrderLineItemsWithProductImages,
+  retrieveOrder,
+} from "@lib/data/orders"
 import OrderDetailsTemplate from "@modules/order/templates/order-details-template"
 import { Metadata } from "next"
 import { notFound } from "next/navigation"
 
 type Props = {
-  params: Promise<{ id: string }>
+  params: Promise<{ countryCode: string; id: string }>
 }
 
 export async function generateMetadata(props: Props): Promise<Metadata> {
@@ -29,5 +32,10 @@ export default async function OrderDetailPage(props: Props) {
     notFound()
   }
 
-  return <OrderDetailsTemplate order={order} />
+  const imageReadyOrder = await enrichOrderLineItemsWithProductImages(
+    order,
+    params.countryCode
+  )
+
+  return <OrderDetailsTemplate order={imageReadyOrder} />
 }

@@ -3,6 +3,7 @@ import { Suspense } from "react"
 import { listRegions } from "@lib/data/regions"
 import { listLocales } from "@lib/data/locales"
 import { getLocale } from "@lib/data/locale-actions"
+import { isPrakritiGuideEnabled } from "@lib/util/prakriti-config"
 import { StoreRegion } from "@medusajs/types"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import BrandLogo from "@modules/layout/components/brand-logo"
@@ -18,6 +19,7 @@ export default async function Nav() {
     listLocales().catch(() => []),
     getLocale().catch(() => null),
   ])
+  const prakritiGuideEnabled = isPrakritiGuideEnabled()
 
   return (
     <div className="sticky inset-x-0 top-0 z-50 bg-[rgba(248,241,228,0.9)] px-2 py-2 backdrop-blur-xl small:bg-transparent small:px-6 small:pb-0 small:pt-3">
@@ -30,6 +32,7 @@ export default async function Nav() {
                 regions={regions}
                 locales={locales}
                 currentLocale={currentLocale}
+                prakritiGuideEnabled={prakritiGuideEnabled}
               />
             </div>
           </div>

@@ -7,6 +7,7 @@ import Help from "@modules/order/components/help"
 import Items from "@modules/order/components/items"
 import OrderDetails from "@modules/order/components/order-details"
 import OrderSummary from "@modules/order/components/order-summary"
+import PaymentDetails from "@modules/order/components/payment-details"
 import ProductFeedback from "@modules/order/components/product-feedback"
 import ShippingDetails from "@modules/order/components/shipping-details"
 import React from "react"
@@ -26,13 +27,16 @@ const OrderDetailsTemplate: React.FC<OrderDetailsTemplateProps> = ({
       const product = item.product as
         | (HttpTypes.StoreProduct & { handle?: string | null })
         | undefined
+      const variantProduct = item.variant?.product as
+        | { thumbnail?: string | null; images?: { url?: string | null }[] | null }
+        | undefined
 
       return {
         id: item.id,
         productId: item.product_id || product?.id || "",
         productHandle: product?.handle || item.product_handle || null,
         title: item.product_title || product?.title || "Shreem product",
-        thumbnail: item.thumbnail,
+        thumbnail: item.thumbnail || variantProduct?.thumbnail || product?.thumbnail,
       }
     }) ?? []
 
@@ -60,6 +64,7 @@ const OrderDetailsTemplate: React.FC<OrderDetailsTemplateProps> = ({
           items={feedbackItems}
         />
         <ShippingDetails order={order} />
+        <PaymentDetails order={order} />
         <OrderSummary order={order} />
         <Help />
       </div>

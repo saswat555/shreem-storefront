@@ -192,6 +192,12 @@
     overflow: hidden;
   }
 
+  .line-clamp-none {
+    display: block;
+    -webkit-line-clamp: unset;
+    overflow: visible;
+  }
+
   input:focus ~ label,
   input:not(:placeholder-shown) ~ label {
     @apply -translate-y-2 text-xsmall-regular;

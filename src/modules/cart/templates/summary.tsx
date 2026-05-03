@@ -26,16 +26,25 @@ function getCheckoutStep(cart: HttpTypes.StoreCart) {
 
 const Summary = ({ cart }: SummaryProps) => {
   const step = getCheckoutStep(cart)
+  const itemCount =
+    cart.items?.reduce((count, item) => count + item.quantity, 0) ?? 0
 
   return (
     <div className="flex flex-col gap-y-4">
-      <p className="brand-kicker">Checkout</p>
-      <Heading
-        level="h2"
-        className="text-[2rem] leading-[2.5rem] text-[var(--shreem-ink)]"
-      >
-        Summary
-      </Heading>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="brand-kicker">Checkout</p>
+          <Heading
+            level="h2"
+            className="mt-2 text-[1.8rem] leading-[2.2rem] text-[var(--shreem-ink)]"
+          >
+            Summary
+          </Heading>
+        </div>
+        <span className="brand-pill min-h-9 shrink-0 px-3 py-1.5 text-[11px]">
+          {itemCount} item{itemCount === 1 ? "" : "s"}
+        </span>
+      </div>
       <DiscountCode cart={cart} />
       <Divider />
       <CartTotals totals={cart} />
@@ -43,7 +52,7 @@ const Summary = ({ cart }: SummaryProps) => {
         href={"/checkout?step=" + step}
         data-testid="checkout-button"
       >
-        <Button className="h-12 w-full rounded-full border-0 bg-[linear-gradient(135deg,#0d817e_0%,#123f63_52%,#6f211f_100%)] text-white shadow-[0_18px_34px_rgba(18,63,99,0.26)]">
+        <Button className="h-[52px] w-full rounded-full border-0 bg-[linear-gradient(135deg,#0d817e_0%,#123f63_52%,#6f211f_100%)] text-white shadow-[0_18px_34px_rgba(18,63,99,0.26)]">
           Go to checkout
         </Button>
       </LocalizedClientLink>

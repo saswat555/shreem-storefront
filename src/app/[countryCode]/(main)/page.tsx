@@ -5,6 +5,7 @@ import { ArrowUpRightMini } from "@medusajs/icons"
 import { listProducts } from "@lib/data/products"
 import { getRegion } from "@lib/data/regions"
 import { getBaseURL } from "@lib/util/env"
+import { isPrakritiGuideEnabled } from "@lib/util/prakriti-config"
 import {
   shreemCowBreeds,
   shreemMascots,
@@ -50,6 +51,7 @@ export default async function Home(props: {
     .catch(() => [])
 
   const baseUrl = getBaseURL()
+  const prakritiGuideEnabled = isPrakritiGuideEnabled()
   const [bilonaGhee, neemDhoop, cowDungCakes, jeevamrut] = shreemRituals
 
   const websiteSchema = {
@@ -82,7 +84,7 @@ export default async function Home(props: {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
       />
       <MotionReveal>
-        <Hero />
+        <Hero prakritiGuideEnabled={prakritiGuideEnabled} />
       </MotionReveal>
 
       {!!latestProducts.length && (
@@ -128,64 +130,66 @@ export default async function Home(props: {
         </MotionReveal>
       )}
 
-      <MotionReveal delayMs={110}>
-      <section className="content-container py-8 small:py-10">
-        <div className="brand-surface px-5 py-6 small:px-8 small:py-8">
-          <div className="grid gap-6 xl:grid-cols-[0.98fr_1.02fr] xl:items-center">
-            <div>
-              <p className="brand-kicker">A simpler buying journey</p>
-              <h2 className="mt-3 text-[2.2rem] leading-[1.02] text-[var(--shreem-ink)] small:text-[3.2rem]">
-                Not sure what helps? Start with Prakriti Guide.
-              </h2>
-              <p className="mt-4 text-sm leading-7 text-[var(--shreem-muted)] small:text-base">
-                Upload up to three photos of a plant or animal, add a short note,
-                and let the guide suggest a cautious natural-care direction.
-                It only surfaces a Shreem product when that item is available in
-                your region and genuinely fits the case.
-              </p>
-              <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-                <LocalizedClientLink
-                  href="/prakriti-guide"
-                  className="brand-primary-button gap-2"
-                >
-                  Open Prakriti Guide
-                  <ArrowUpRightMini />
-                </LocalizedClientLink>
-                <LocalizedClientLink href="/journal" className="brand-secondary-button">
-                  Read Journal first
-                </LocalizedClientLink>
+      {prakritiGuideEnabled && (
+        <MotionReveal delayMs={110}>
+        <section className="content-container py-8 small:py-10">
+          <div className="brand-surface px-5 py-6 small:px-8 small:py-8">
+            <div className="grid gap-6 xl:grid-cols-[0.98fr_1.02fr] xl:items-center">
+              <div>
+                <p className="brand-kicker">A simpler buying journey</p>
+                <h2 className="mt-3 text-[2.2rem] leading-[1.02] text-[var(--shreem-ink)] small:text-[3.2rem]">
+                  Not sure what helps? Start with Prakriti Guide.
+                </h2>
+                <p className="mt-4 text-sm leading-7 text-[var(--shreem-muted)] small:text-base">
+                  Upload up to three photos of a plant or animal, add a short note,
+                  and let the guide suggest a cautious natural-care direction.
+                  It only surfaces a Shreem product when that item is available in
+                  your region and genuinely fits the case.
+                </p>
+                <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+                  <LocalizedClientLink
+                    href="/prakriti-guide"
+                    className="brand-primary-button gap-2"
+                  >
+                    Open Prakriti Guide
+                    <ArrowUpRightMini />
+                  </LocalizedClientLink>
+                  <LocalizedClientLink href="/journal" className="brand-secondary-button">
+                    Read Journal first
+                  </LocalizedClientLink>
+                </div>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
+                <article className="brand-card px-4 py-4">
+                  <p className="text-sm font-semibold text-[var(--shreem-ink)]">
+                    1. Upload photos
+                  </p>
+                  <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
+                    Clear leaf, stem, skin, eye, or shed images help the guide read the case.
+                  </p>
+                </article>
+                <article className="brand-card px-4 py-4">
+                  <p className="text-sm font-semibold text-[var(--shreem-ink)]">
+                    2. Get a natural-care direction
+                  </p>
+                  <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
+                    The guide returns likely observations, home steps, and signs that need escalation.
+                  </p>
+                </article>
+                <article className="brand-card px-4 py-4">
+                  <p className="text-sm font-semibold text-[var(--shreem-ink)]">
+                    3. See useful Shreem products
+                  </p>
+                  <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
+                    Only region-available items with a real fit are recommended.
+                  </p>
+                </article>
               </div>
             </div>
-            <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
-              <article className="brand-card px-4 py-4">
-                <p className="text-sm font-semibold text-[var(--shreem-ink)]">
-                  1. Upload photos
-                </p>
-                <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
-                  Clear leaf, stem, skin, eye, or shed images help the guide read the case.
-                </p>
-              </article>
-              <article className="brand-card px-4 py-4">
-                <p className="text-sm font-semibold text-[var(--shreem-ink)]">
-                  2. Get a natural-care direction
-                </p>
-                <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
-                  The guide returns likely observations, home steps, and signs that need escalation.
-                </p>
-              </article>
-              <article className="brand-card px-4 py-4">
-                <p className="text-sm font-semibold text-[var(--shreem-ink)]">
-                  3. See useful Shreem products
-                </p>
-                <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
-                  Only region-available items with a real fit are recommended.
-                </p>
-              </article>
-            </div>
           </div>
-        </div>
-      </section>
-      </MotionReveal>
+        </section>
+        </MotionReveal>
+      )}
 
       <MotionReveal delayMs={140}>
       <section className="content-container py-8 small:py-10">

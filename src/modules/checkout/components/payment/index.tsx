@@ -111,13 +111,13 @@ const Payment = ({
   }, [isOpen])
 
   return (
-    <section className="brand-card px-5 py-6 small:px-6">
+    <section className="brand-card px-4 py-5 small:px-6 small:py-6">
       <p className="brand-kicker">Step 3</p>
-      <div className="mb-6 flex flex-col gap-3 small:flex-row small:items-center small:justify-between">
+      <div className="mb-5 flex flex-col gap-3 small:flex-row small:items-center small:justify-between">
         <Heading
           level="h2"
           className={clx(
-            "mt-3 flex flex-row items-center gap-x-3 text-[2rem] leading-none text-[var(--shreem-ink)] small:text-[2.4rem]",
+            "mt-2 flex flex-row items-center gap-x-3 text-[1.8rem] leading-none text-[var(--shreem-ink)] small:text-[2.4rem]",
             {
               "opacity-50 pointer-events-none select-none":
                 !isOpen && !paymentReady,
@@ -141,12 +141,12 @@ const Payment = ({
       </div>
       <div>
         <div className={isOpen ? "block" : "hidden"}>
-          <div className="mb-5 rounded-[22px] bg-[linear-gradient(135deg,rgba(240,248,246,0.76),rgba(255,249,240,0.72))] px-4 py-4">
+          <div className="mb-4 rounded-[18px] border border-[rgba(18,63,99,0.1)] bg-white/58 px-4 py-3">
             <p className="text-sm font-semibold text-[var(--shreem-ink)]">
-              Choose how you want to pay
+              Payment method
             </p>
             <p className="mt-1 text-sm leading-6 text-[var(--shreem-muted)]">
-              Pick the provider you trust. We keep the confirmation step clean and visible before the order is placed.
+              Choose a provider and continue to review.
             </p>
           </div>
           {!paidByGiftcard && availablePaymentMethods?.length && (
@@ -180,7 +180,7 @@ const Payment = ({
           )}
 
           {paidByGiftcard && (
-            <div className="flex w-full flex-col rounded-[22px] bg-[linear-gradient(135deg,rgba(240,248,246,0.78),rgba(255,249,240,0.72))] px-4 py-4 small:w-auto">
+            <div className="flex w-full flex-col rounded-[18px] border border-[rgba(18,63,99,0.1)] bg-white/58 px-4 py-4 small:w-auto">
               <Text className="txt-medium-plus text-ui-fg-base mb-1">
                 Payment method
               </Text>
@@ -217,8 +217,8 @@ const Payment = ({
 
         <div className={isOpen ? "hidden" : "block"}>
           {cart && paymentReady && (activeSession || selectedPaymentMethod) ? (
-            <div className="grid gap-4 small:grid-cols-2">
-              <div className="rounded-[22px] bg-[linear-gradient(135deg,rgba(240,248,246,0.78),rgba(255,249,240,0.72))] px-4 py-4">
+            <div className="grid gap-3 small:grid-cols-2">
+              <div className="rounded-[18px] border border-[rgba(18,63,99,0.1)] bg-white/58 px-4 py-4">
                 <Text className="txt-medium-plus text-ui-fg-base mb-1">
                   Payment method
                 </Text>
@@ -247,7 +247,7 @@ const Payment = ({
                   </div>
                 </div>
               </div>
-              <div className="rounded-[22px] bg-[linear-gradient(135deg,rgba(240,248,246,0.78),rgba(255,249,240,0.72))] px-4 py-4">
+              <div className="rounded-[18px] border border-[rgba(18,63,99,0.1)] bg-white/58 px-4 py-4">
                 <Text className="txt-medium-plus text-ui-fg-base mb-1">
                   Payment details
                 </Text>
@@ -269,7 +269,7 @@ const Payment = ({
               </div>
             </div>
           ) : paidByGiftcard ? (
-            <div className="w-full rounded-[22px] bg-[linear-gradient(135deg,rgba(240,248,246,0.78),rgba(255,249,240,0.72))] px-4 py-4">
+            <div className="w-full rounded-[18px] border border-[rgba(18,63,99,0.1)] bg-white/58 px-4 py-4">
               <Text className="txt-medium-plus text-ui-fg-base mb-1">
                 Payment method
               </Text>
@@ -283,7 +283,7 @@ const Payment = ({
           ) : null}
         </div>
       </div>
-      <Divider className="mt-8" />
+      <Divider className="mt-6" />
     </section>
   )
 }

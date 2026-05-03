@@ -3,7 +3,11 @@ import { shreemCowBreeds } from "@lib/constants/shreem"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import Image from "next/image"
 
-const Hero = () => {
+const Hero = ({
+  prakritiGuideEnabled = false,
+}: {
+  prakritiGuideEnabled?: boolean
+}) => {
   return (
     <section className="content-container relative pt-5 small:pt-8">
       <div className="brand-surface relative overflow-hidden px-5 py-7 small:px-10 small:py-10">
@@ -33,13 +37,15 @@ const Hero = () => {
                 <LocalizedClientLink href="/store" className="brand-primary-button">
                   Shop products
                 </LocalizedClientLink>
-                <LocalizedClientLink
-                  href="/prakriti-guide"
-                  className="brand-secondary-button gap-2"
-                >
-                  Use Prakriti Guide
-                  <ArrowUpRightMini />
-                </LocalizedClientLink>
+                {prakritiGuideEnabled && (
+                  <LocalizedClientLink
+                    href="/prakriti-guide"
+                    className="brand-secondary-button gap-2"
+                  >
+                    Use Prakriti Guide
+                    <ArrowUpRightMini />
+                  </LocalizedClientLink>
+                )}
               </div>
             </div>
             <div className="order-1 xl:order-2 overflow-hidden rounded-[30px] border border-[var(--shreem-border)] bg-[linear-gradient(180deg,rgba(255,252,247,0.98),rgba(247,242,232,0.92))] p-2 shadow-[0_24px_70px_rgba(15,49,70,0.12)]">
@@ -55,7 +61,11 @@ const Hero = () => {
               </div>
             </div>
           </div>
-          <div className="mt-6 grid gap-3 sm:grid-cols-3">
+          <div
+            className={`mt-6 grid gap-3 ${
+              prakritiGuideEnabled ? "sm:grid-cols-3" : "sm:grid-cols-2"
+            }`}
+          >
             <div className="brand-card px-4 py-4">
               <p className="text-sm font-semibold text-[var(--shreem-ink)]">
                 Desi cow origin
@@ -72,14 +82,16 @@ const Hero = () => {
                 From bilona ghee to neem dhoop batti, each product belongs in real homes.
               </p>
             </div>
-            <div className="brand-card px-4 py-4 animate-shreem-float-delayed">
-              <p className="text-sm font-semibold text-[var(--shreem-ink)]">
-                Smart natural-care help
-              </p>
-              <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
-                Upload plant or animal photos and get a cautious remedy direction when the guide is enabled.
-              </p>
-            </div>
+            {prakritiGuideEnabled && (
+              <div className="brand-card px-4 py-4 animate-shreem-float-delayed">
+                <p className="text-sm font-semibold text-[var(--shreem-ink)]">
+                  Smart natural-care help
+                </p>
+                <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
+                  Upload plant or animal photos and get a cautious remedy direction.
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </div>
