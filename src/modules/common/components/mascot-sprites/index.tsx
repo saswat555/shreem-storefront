@@ -14,8 +14,8 @@ export default function MascotSprites({ className }: MascotSpritesProps) {
       )}
       aria-hidden="true"
     >
-      <div className="animate-shreem-float absolute -left-6 bottom-4 hidden opacity-70 small:block">
-        <div className="relative h-28 w-28 rounded-full bg-white/28 p-2 shadow-[0_24px_60px_rgba(15,49,70,0.12)] backdrop-blur-md">
+      <div className="animate-shreem-float absolute -left-8 bottom-4 opacity-55 small:-left-6 small:opacity-70">
+        <div className="relative h-20 w-20 rounded-full bg-white/28 p-2 shadow-[0_24px_60px_rgba(15,49,70,0.12)] backdrop-blur-md small:h-28 small:w-28">
           <Image
             src="/gauri.png"
             alt=""

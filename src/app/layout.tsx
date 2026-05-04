@@ -4,8 +4,9 @@ import "styles/globals.css"
 
 export const metadata: Metadata = {
   metadataBase: new URL(getBaseURL()),
+  applicationName: "Shreem Cow Products",
   title: {
-    default: "Shreem",
+    default: "Shreem Cow Products | Bilona A2 Ghee, Neem Dhoop, Cow Dung Cakes",
     template: "%s | Shreem",
   },
   icons: {
@@ -27,8 +28,11 @@ export const metadata: Metadata = {
     "Jeevamrut",
     "A2 desi cow products",
   ],
+  alternates: {
+    canonical: "/",
+  },
   openGraph: {
-    title: "Shreem",
+    title: "Shreem Cow Products",
     description:
       "Shop Shreem Cow Products for bilona ghee, neem dhoop, cow dung cakes, and Jeevamrut from naturally grazing desi cows.",
     url: getBaseURL(),
@@ -38,11 +42,23 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Shreem",
+    title: "Shreem Cow Products",
     description:
       "Shop bilona ghee, neem dhoop, cow dung cakes, and Jeevamrut from Shreem.",
     images: ["/logo.jpeg"],
   },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
+  category: "Ecommerce",
 }
 
 export default function RootLayout(props: { children: React.ReactNode }) {

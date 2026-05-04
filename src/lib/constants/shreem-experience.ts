@@ -31,9 +31,9 @@ export const shreemSupportFaqs = [
       "Use Bilona Ghee for the kitchen, Neem Dhoop Batti for evening prayer and calmer home fragrance, Cow Dung Cakes for havan and dhooni rituals, and Jeevamrut for natural-farming routines focused on living soil.",
   },
   {
-    question: "Why does Shreem speak about a slower and more chemical-light life?",
+    question: "Why does Shreem speak about a slower, input-conscious life?",
     answer:
-      "Because the brand is rooted in naturally grazing desi cows, cultured bilona methods, prayerful home rituals, and soil care that respects biological life. The aim is not noise, but nourishment, purity, and a calmer rhythm at home and on the farm.",
+      "Because the brand is rooted in naturally grazing desi cows, cultured bilona methods, home rituals, and soil care that respects biological life. The aim is clear product purpose, not loud promises.",
   },
 ]
 
@@ -78,7 +78,7 @@ export const shreemJournalPosts: ShreemJournalPost[] = [
     slug: "neem-dhoop-for-evening-rituals",
     title: "Why neem dhoop belongs in the soft light of evening rituals",
     description:
-      "A Shreem Journal piece on neem dhoop, devotional fragrance, and why calmer evening rituals matter in a home that values purity.",
+      "A Shreem Journal piece on neem dhoop, devotional fragrance, and why calmer evening rituals matter in a family home.",
     excerpt:
       "Neem dhoop is not meant to overpower a room. It belongs to the prayer hour, when fragrance should support calm, devotion, and a gentler atmosphere.",
     image: "/shreem-scenes/neem-dhoop.png",
@@ -91,7 +91,7 @@ export const shreemJournalPosts: ShreemJournalPost[] = [
         heading: "A household ritual, not a loud room perfume",
         body: [
           "Shreem neem dhoop batti is designed for the prayer corner, the evening diya, and the calm that comes when fragrance stays devotional rather than noisy.",
-          "The goal is not to fill the home with a sharp synthetic smell. The goal is to let a ritual space feel cleaner, warmer, and more rooted.",
+          "The goal is not to fill the home with a sharp synthetic smell. The goal is to let a ritual space feel calmer, warmer, and more rooted.",
         ],
       },
       {
@@ -111,8 +111,8 @@ export const shreemJournalPosts: ShreemJournalPost[] = [
     ],
   },
   {
-    slug: "living-soil-and-a-chemical-light-farm-rhythm",
-    title: "Living soil, Jeevamrut, and a more chemical-light farm rhythm",
+    slug: "living-soil-and-input-conscious-farm-rhythm",
+    title: "Living soil, Jeevamrut, and an input-conscious farm rhythm",
     description:
       "A Shreem Journal article on Jeevamrut, living-soil thinking, and why many farmers are drawn to more natural farming inputs.",
     excerpt:
@@ -138,9 +138,9 @@ export const shreemJournalPosts: ShreemJournalPost[] = [
         ],
       },
       {
-        heading: "Why chemical-light language matters",
+        heading: "Why input-conscious language matters",
         body: [
-          "Shreem speaks of a chemical-light farm rhythm because repeated force-driven inputs can leave land feeling more dependent and less alive over time.",
+          "Shreem speaks of an input-conscious farm rhythm because soil care works best when farmers observe, adjust, and avoid treating every problem as a shortcut-input problem.",
           "The alternative is not romanticism. It is patience, observation, and a steadier relationship with the field.",
         ],
       },

@@ -16,16 +16,39 @@ import Hero from "@modules/home/components/hero"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import ProductPreview from "@modules/products/components/product-preview"
 
-export const metadata: Metadata = {
-  title: "Shreem Cow Products",
-  description:
-    "Shop Shreem Cow Products for bilona ghee, neem dhoop, cow dung cakes, and Jeevamrut from naturally grazing desi cows.",
-  openGraph: {
-    title: "Shreem Cow Products",
-    description:
-      "Shop Shreem Cow Products for bilona ghee, neem dhoop, cow dung cakes, and Jeevamrut from naturally grazing desi cows.",
-    images: ["/logo.jpeg"],
-  },
+export async function generateMetadata(props: {
+  params: Promise<{ countryCode: string }>
+}): Promise<Metadata> {
+  const { countryCode } = await props.params
+  const title =
+    "Shreem Cow Products | Bilona A2 Ghee, Neem Dhoop & Natural Farming"
+  const description =
+    "Shop Shreem Cow Products for bilona A2 ghee, neem dhoop batti, cow-dung cakes, Jeevamrut, and desi-cow inspired ritual essentials."
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: `/${countryCode}`,
+    },
+    openGraph: {
+      title,
+      description,
+      url: `/${countryCode}`,
+      images: [
+        {
+          url: "/logo.jpeg",
+          alt: "Shreem Cow Products logo with peacock-feather colors",
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: ["/logo.jpeg"],
+    },
+  }
 }
 
 export default async function Home(props: {
@@ -60,7 +83,7 @@ export default async function Home(props: {
     name: "Shreem Cow Products",
     url: baseUrl,
     description:
-      "Shop bilona ghee, neem dhoop, cow dung cakes, and Jeevamrut from naturally grazing desi cows.",
+      "Shop bilona A2 ghee, neem dhoop batti, cow-dung cakes, and Jeevamrut farm input from desi-cow sources.",
   }
 
   const organizationSchema = {
@@ -70,8 +93,34 @@ export default async function Home(props: {
     url: baseUrl,
     logo: `${baseUrl}/logo.jpeg`,
     description:
-      "A desi-cow D2C brand focused on bilona A2 ghee, dhoop batti, sacred home essentials, and natural-farming products.",
+      "A desi-cow D2C brand focused on bilona A2 ghee, neem dhoop batti, cow-dung cakes, and Jeevamrut for natural-farming routines.",
   }
+  const storeSchema = {
+    "@context": "https://schema.org",
+    "@type": "Store",
+    name: "Shreem Cow Products",
+    url: `${baseUrl}/${countryCode}`,
+    image: `${baseUrl}/logo.jpeg`,
+    description:
+      "Shop bilona A2 ghee, neem dhoop batti, cow-dung cakes, Jeevamrut, and desi-cow inspired products for home, ritual, and natural farming.",
+    brand: {
+      "@type": "Brand",
+      name: "Shreem",
+    },
+  }
+  const productItemListSchema = latestProducts.length
+    ? {
+        "@context": "https://schema.org",
+        "@type": "ItemList",
+        name: "Featured Shreem Cow Products",
+        itemListElement: latestProducts.map((product, index) => ({
+          "@type": "ListItem",
+          position: index + 1,
+          url: `${baseUrl}/${countryCode}/products/${product.handle}`,
+          name: product.title,
+        })),
+      }
+    : null
 
   return (
     <>
@@ -83,6 +132,18 @@ export default async function Home(props: {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
       />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(storeSchema) }}
+      />
+      {productItemListSchema && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(productItemListSchema),
+          }}
+        />
+      )}
       <MotionReveal>
         <Hero prakritiGuideEnabled={prakritiGuideEnabled} />
       </MotionReveal>
@@ -100,9 +161,9 @@ export default async function Home(props: {
               </div>
               <div className="max-w-[34rem]">
                 <p className="text-sm leading-6 text-[var(--shreem-muted)]">
-                  Start with our featured Shreem essentials for the kitchen, the
-                  prayer room, and the farm, all rooted in naturally grazing
-                  desi cows.
+                  Start with the core Shreem range for the kitchen, the home,
+                  and natural-farming routines, with product details and pricing
+                  pulled from the live store backend.
                 </p>
                 <div className="mt-4 flex flex-wrap gap-2">
                   {shreemCowBreeds.map((breed) => (
@@ -136,22 +197,22 @@ export default async function Home(props: {
           <div className="brand-surface px-5 py-6 small:px-8 small:py-8">
             <div className="grid gap-6 xl:grid-cols-[0.98fr_1.02fr] xl:items-center">
               <div>
-                <p className="brand-kicker">A simpler buying journey</p>
+                <p className="brand-kicker">AI care helper</p>
                 <h2 className="mt-3 text-[2.2rem] leading-[1.02] text-[var(--shreem-ink)] small:text-[3.2rem]">
-                  Not sure what helps? Start with Prakriti Guide.
+                  Not sure what helps? Ask GrowBuddy AI.
                 </h2>
                 <p className="mt-4 text-sm leading-7 text-[var(--shreem-muted)] small:text-base">
                   Upload up to three photos of a plant or animal, add a short note,
-                  and let the guide suggest a cautious natural-care direction.
-                  It only surfaces a Shreem product when that item is available in
-                  your region and genuinely fits the case.
+                  and get a cautious first-pass care plan. It only surfaces a
+                  Shreem product when that item is available in your region and
+                  genuinely fits the case.
                 </p>
                 <div className="mt-6 flex flex-col gap-3 sm:flex-row">
                   <LocalizedClientLink
                     href="/prakriti-guide"
                     className="brand-primary-button gap-2"
                   >
-                    Open Prakriti Guide
+                    Open GrowBuddy AI
                     <ArrowUpRightMini />
                   </LocalizedClientLink>
                   <LocalizedClientLink href="/journal" className="brand-secondary-button">
@@ -170,10 +231,10 @@ export default async function Home(props: {
                 </article>
                 <article className="brand-card px-4 py-4">
                   <p className="text-sm font-semibold text-[var(--shreem-ink)]">
-                    2. Get a natural-care direction
+                    2. Get a care plan
                   </p>
                   <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
-                    The guide returns likely observations, home steps, and signs that need escalation.
+                    GrowBuddy returns likely observations, home steps, monitoring tips, and escalation signs.
                   </p>
                 </article>
                 <article className="brand-card px-4 py-4">
@@ -210,12 +271,11 @@ export default async function Home(props: {
             <div>
               <p className="brand-kicker">Our signature bilona ghee</p>
               <h2 className="mt-3 text-[2.2rem] leading-[1.02] text-[var(--shreem-ink)] small:text-[3.2rem]">
-                Slow-made from cultured curd and finished with a gentle smoky warmth
+                Slow-made from cultured curd with a warm finished aroma
               </h2>
               <p className="mt-4 text-sm leading-7 text-[var(--shreem-muted)] small:text-base">
-                {bilonaGhee.description} In our kitchen finish, the ghee is
-                brought to completion over gau-kasht heat, giving it the softly
-                roasted, smoky note that makes Shreem instantly recognisable.
+                {bilonaGhee.description} The final heating is handled slowly so
+                the aroma stays rounded, warm, and recognisably Shreem.
               </p>
               <div className="mt-6 grid gap-3 sm:grid-cols-3">
                 <article className="brand-card px-4 py-4">
@@ -238,24 +298,24 @@ export default async function Home(props: {
                 </article>
                 <article className="brand-card px-4 py-4">
                   <p className="text-sm font-semibold text-[var(--shreem-ink)]">
-                    Gau-kasht smoky finish
+                    Warm finishing character
                   </p>
                   <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
-                    The final heating over cow-dung-cake fuel adds the warm,
-                    lightly smoky character that sets Shreem apart.
+                    The final stage is kept patient so the ghee develops a
+                    rounded aroma instead of tasting rushed or flat.
                   </p>
                 </article>
               </div>
               <div className="mt-6 rounded-[28px] border border-[rgba(212,161,38,0.24)] bg-[linear-gradient(135deg,rgba(255,248,233,0.95),rgba(245,239,224,0.88))] px-5 py-5 shadow-[0_18px_40px_rgba(156,105,18,0.08)]">
                 <p className="brand-kicker">Shreem USP</p>
                 <h3 className="mt-3 text-[1.9rem] leading-[1.04] text-[var(--shreem-ink)]">
-                  Smoky flavour, earned slowly
+                  Aroma that comes from patience
                 </h3>
                 <p className="mt-3 text-sm leading-6 text-[var(--shreem-muted)]">
                   Many ghee jars in the market stop at generic richness. Shreem
-                  carries a deeper kitchen memory: the soft smoky warmth that
-                  comes when bilona ghee is finished slowly over gau-kasht
-                  heat, not rushed into a flat aroma.
+                  is built around a slower curd-first route, careful heating,
+                  and a finished aroma that feels closer to an everyday Indian
+                  kitchen than a generic shelf product.
                 </p>
               </div>
             </div>
@@ -271,13 +331,12 @@ export default async function Home(props: {
             <div>
               <p className="brand-kicker">For a calmer home</p>
               <h2 className="mt-3 text-[2.2rem] leading-[1.04] text-white small:text-[3.2rem]">
-                Evening prayer, gentler fragrance, and a more rooted home atmosphere
+                Evening prayer, gentler fragrance, and a calmer home atmosphere
               </h2>
               <p className="mt-4 max-w-[36rem] text-sm leading-6 text-white/78">
                 {neemDhoop.description} Neem has long been part of household
-                care, and neem oil has also been studied for mosquito-repellent
-                action, which is why this ritual sits naturally in the evening
-                life of the home.
+                routines, and the product is positioned for fragrance and
+                familiar evening use rather than as a medical promise.
               </p>
             </div>
             <div className="mt-6 overflow-hidden rounded-[28px] border border-white/12 bg-white/6 p-2 shadow-[0_24px_60px_rgba(0,0,0,0.16)]">
@@ -296,38 +355,36 @@ export default async function Home(props: {
             <article className="brand-card px-5 py-5 small:px-6">
               <p className="brand-kicker">{cowDungCakes.title}</p>
               <h3 className="mt-3 text-[2rem] leading-[1.04] text-[var(--shreem-ink)]">
-                Sacred fire products with a practical place in the home
+                Cow-dung cakes for havan, dhooni, and traditional fire use
               </h3>
               <p className="mt-3 text-sm leading-6 text-[var(--shreem-muted)]">
                 {cowDungCakes.description} They are used in havan, dhooni, and
-                slow ritual fire practices, and their earthy warmth also
-                connects directly to the gau-kasht finish behind our ghee&apos;s
-                signature aroma.
+                traditional household fire practices where people want a simple,
+                familiar material.
               </p>
             </article>
             <article className="brand-card px-5 py-5 small:px-6">
               <p className="brand-kicker">{jeevamrut.title}</p>
               <h3 className="mt-3 text-[2rem] leading-[1.04] text-[var(--shreem-ink)]">
-                For fields that want living soil, not chemical pressure
+                For soil-care routines that need biological support
               </h3>
               <p className="mt-3 text-sm leading-6 text-[var(--shreem-muted)]">
                 {jeevamrut.description} It belongs to a natural-farming
-                approach that respects soil biology and helps farmers step away
-                from urea-heavy routines that leave the land more dependent over
-                time.
+                approach that focuses on soil biology, observation, and
+                input-conscious farm routines.
               </p>
             </article>
             <article className="brand-surface px-5 py-5 small:px-6">
               <p className="brand-kicker">Why people come to Shreem</p>
               <div className="mt-3 grid gap-3 sm:grid-cols-3">
                 <div className="rounded-[22px] bg-white/72 px-4 py-4 text-sm leading-6 text-[var(--shreem-muted)]">
-                  Purer kitchen fats with the depth of bilona ghee.
+                  Traditional kitchen ghee with a curd-first bilona method.
                 </div>
                 <div className="rounded-[22px] bg-white/72 px-4 py-4 text-sm leading-6 text-[var(--shreem-muted)]">
-                  Prayer rituals that feel calmer and less synthetic.
+                  Home rituals with a calmer, less synthetic fragrance.
                 </div>
                 <div className="rounded-[22px] bg-white/72 px-4 py-4 text-sm leading-6 text-[var(--shreem-muted)]">
-                  Soil care that values life in the field, not only yield.
+                  Farm inputs made for living-soil routines.
                 </div>
               </div>
             </article>
@@ -343,12 +400,12 @@ export default async function Home(props: {
             <div className="max-w-[36rem]">
               <p className="brand-kicker">From the Journal</p>
               <h2 className="mt-3 text-[2.2rem] leading-[1.04] text-[var(--shreem-ink)] small:text-[3.2rem]">
-                Meet Gauri and Mayur
+                The Shreem story, made memorable
               </h2>
               <p className="mt-4 text-sm leading-6 text-[var(--shreem-muted)]">
-                Gauri carries the tenderness of the desi cow. Mayur carries the
-                sacred color and festive radiance of the peacock. Together,
-                they make Shreem feel rooted, personal, and unmistakably Indian.
+                Gauri and Mayur give the store a consistent visual world while
+                the product pages stay grounded in what customers actually need:
+                ingredients, use cases, pricing, checkout, and support.
               </p>
               <div className="mt-6">
                 <LocalizedClientLink href="/journal" className="brand-primary-button">

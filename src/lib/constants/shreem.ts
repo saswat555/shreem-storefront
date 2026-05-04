@@ -11,14 +11,14 @@ export const shreemMascots = [
     imagePath: "/gauri.png",
     role: "The gentle keeper of nourishment",
     description:
-      "Gauri is the mother-heart of Shreem: a gentle desi cow who stands for nourishment, patience, purity, and the quiet dignity with which indigenous breeds have long been cared for in Indian homes.",
+      "Gauri is the desi-cow character behind Shreem: a warm brand symbol for nourishment, patience, and the care Indian homes associate with indigenous breeds.",
   },
   {
     name: "Mayur",
     imagePath: "/mayur.png",
     role: "The bearer of color and devotion",
     description:
-      "Mayur carries the peacock-feather radiance of the logo into the Shreem world, bringing celebration, sacred beauty, prayerful energy, and the joyful spirit that makes each ritual feel alive.",
+      "Mayur brings the peacock-feather color of the logo into the Shreem world, giving the brand a festive, recognisable visual language across the store.",
   },
 ]
 
@@ -41,7 +41,7 @@ export const shreemAssurances = [
   {
     title: "For home and soil",
     description:
-      "From dhoop batti and gobar cakes to Jeevamrut, each Shreem product is made for prayer, daily use, or care for living soil.",
+      "From dhoop batti and gobar cakes to Jeevamrut, each Shreem product is made for home rituals, daily use, or living-soil routines.",
   },
 ]
 
@@ -53,7 +53,7 @@ export const shreemRituals = [
     points: [
       "Bilona traditionally refers to the curd-first route: milk to curd, curd to makkhan, and makkhan to ghee, rather than a direct cream-only process.",
       "Research comparing ghee-making methods has shown that the route used can influence aroma and flavour profile.",
-      "At Shreem, the ghee is brought to completion slowly, and its gau-kasht finish gives it a gentle smoky note that has become part of its signature.",
+      "At Shreem, the ghee is brought to completion slowly so the finished aroma stays warm, rounded, and recognisable.",
     ],
   },
   {
@@ -62,28 +62,28 @@ export const shreemRituals = [
       "Neem dhoop batti is made for the prayer corner, the evening aarti hour, and homes that prefer a calmer ritual fragrance over sharp synthetic smoke.",
     points: [
       "Neem has long held an important place in Indian household practice, and neem oil has been studied for mosquito-repellent action.",
-      "Shreem presents neem dhoop batti as a prayerful evening ritual for families who want a more rooted and less perfumed home atmosphere.",
-      "The aim is purity, tradition, and a clean devotional feeling rather than a loud room-fragrance effect.",
+      "Shreem presents neem dhoop batti as an evening home ritual for families who want a more rooted and less perfumed atmosphere.",
+      "The aim is tradition and a familiar devotional feeling rather than a loud room-fragrance effect.",
     ],
   },
   {
     title: "Cow Dung Cakes",
     description:
-      "Sun-dried gobar cakes remain deeply connected with havan, dhooni, and the slow sacred warmth of traditional household practice.",
+      "Sun-dried gobar cakes remain connected with havan, dhooni, and traditional household fire practices.",
     points: [
       "Used in many homes for havan, dhooni, and slow ceremonial burning.",
       "Chosen for their ritual simplicity, earthy fragrance, and connection to older Vedic practices.",
-      "At Shreem they are treated with dignity, as sacred-use essentials that also support the gau-kasht style heat behind our ghee's smoky warmth.",
+      "At Shreem they are positioned as simple ritual-use essentials with clear home-use context.",
     ],
   },
   {
     title: "Jeevamrut",
     description:
-      "Jeevamrut is part of a natural-farming tradition that treats soil as living, active, and worthy of patient care rather than chemical force.",
+      "Jeevamrut is part of a natural-farming tradition that treats soil as living, active, and worthy of patient care.",
     points: [
       "Research has described Jeevamrut as a microbial bioformulation used in Indian natural farming.",
       "Studies have reported rich microbial diversity and soil-health relevance in Jeevamrut-based systems.",
-      "For Shreem, it represents a return to living soil, farmer dignity, and a reduced dependence on urea-heavy farm routines.",
+      "For Shreem, it represents living-soil thinking, farmer dignity, and input-conscious farm routines.",
     ],
   },
 ]

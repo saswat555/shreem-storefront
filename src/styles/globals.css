@@ -16,6 +16,10 @@
     --shreem-surface-strong: rgba(255, 252, 247, 0.94);
     --shreem-border: rgba(18, 63, 99, 0.16);
     --shreem-shadow: 0 24px 70px rgba(15, 49, 70, 0.12);
+    --font-shreem-display: "Cormorant Garamond", "Iowan Old Style",
+      "Baskerville", "Palatino Linotype", "Times New Roman", serif;
+    --font-shreem-body: "Avenir Next", "Inter", "Segoe UI", "Helvetica Neue",
+      system-ui, sans-serif;
   }
 
   html {
@@ -33,7 +37,12 @@
     min-height: 100vh;
     overflow-x: clip;
     color: var(--shreem-ink);
-    font-family: "Avenir Next", "Segoe UI", "Helvetica Neue", sans-serif;
+    font-family: var(--font-shreem-body);
+    font-feature-settings:
+      "kern" 1,
+      "liga" 1,
+      "calt" 1;
+    text-rendering: geometricPrecision;
     background: linear-gradient(180deg, #f8f1e4 0%, #f5efe4 42%, #f7f2e7 100%);
   }
 
@@ -106,9 +115,8 @@
   h4,
   h5,
   h6 {
-    font-family:
-      "Iowan Old Style", "Baskerville", "Palatino Linotype", "Times New Roman",
-      serif;
+    font-family: var(--font-shreem-display);
+    font-weight: 600;
     letter-spacing: 0;
     overflow-wrap: anywhere;
   }

@@ -32,7 +32,7 @@ const ProductInfo = ({ product }: ProductInfoProps) => {
   return (
     <div id="product-info" className="brand-card p-4 small:p-6">
       <div className="flex flex-wrap items-center gap-2">
-        <p className="brand-kicker">Shreem selection</p>
+        <p className="brand-kicker">Product details</p>
         {product.collection && (
           <LocalizedClientLink
             href={`/collections/${product.collection.handle}`}
@@ -45,10 +45,9 @@ const ProductInfo = ({ product }: ProductInfoProps) => {
       <div className="mt-4 flex flex-col gap-y-4">
         <Heading
           level="h2"
-          className="text-[2rem] leading-[1.02] text-[var(--shreem-ink)] small:text-[3rem]"
-          data-testid="product-title"
+          className="text-[2rem] leading-[1.02] text-[var(--shreem-ink)] small:text-[2.8rem]"
         >
-          {product.title}
+          About this product
         </Heading>
 
         {subtitle && (
@@ -68,7 +67,7 @@ const ProductInfo = ({ product }: ProductInfoProps) => {
         )}
 
         <Text
-          className="line-clamp-2 whitespace-pre-line text-sm leading-7 text-[var(--shreem-muted)] small:line-clamp-none small:text-base"
+          className="whitespace-pre-line text-sm leading-7 text-[var(--shreem-muted)] small:text-base"
           data-testid="product-description"
         >
           {product.description ||

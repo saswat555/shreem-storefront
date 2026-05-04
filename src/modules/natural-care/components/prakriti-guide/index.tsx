@@ -5,21 +5,24 @@ import { clx } from "@medusajs/ui"
 import MotionReveal from "@modules/common/components/motion-reveal"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import Image from "next/image"
-import { ChangeEvent, useMemo, useState } from "react"
+import { ChangeEvent, FormEvent, useEffect, useMemo, useRef, useState } from "react"
 
 import {
   getRelevantPrakritiProducts,
   matchRecommendedProduct,
-  PrakritiProduct,
-  PrakritiSubject,
 } from "@lib/util/prakriti"
+import type { PrakritiProduct, PrakritiSubject } from "@lib/util/prakriti"
 
 type GuideResult = {
   likely_condition: string
+  case_summary: string
   confidence: "low" | "medium" | "high"
+  confidence_reason: string
   observations: string[]
+  possible_causes: string[]
   immediate_home_steps: string[]
   natural_remedy: string
+  monitoring_plan: string[]
   prevention_tips: string[]
   urgent_care_signs: string[]
   recommended_products: {
@@ -37,10 +40,28 @@ type PreparedImage = {
   dataUrl: string
 }
 
+type GuideChatMessage = {
+  id: string
+  role: "assistant" | "user"
+  text: string
+  result?: GuideResult
+  imageCount?: number
+}
+
+type CaseMeta = {
+  subjectName: string
+  environment: string
+  duration: string
+}
+
 type PrakritiGuideProps = {
   products: PrakritiProduct[]
   model: string
 }
+
+const careToolName = "GrowBuddy AI"
+
+const makeId = () => Math.random().toString(36).slice(2)
 
 const resizeImageToDataUrl = async (file: File) => {
   if (!file.type.startsWith("image/")) {
@@ -87,17 +108,38 @@ const resizeImageToDataUrl = async (file: File) => {
   }
 }
 
+const asList = (value: unknown) => (Array.isArray(value) ? value : [])
+
+const asStringList = (value: unknown) =>
+  asList(value)
+    .filter((item): item is string => typeof item === "string")
+    .map((item) => item.trim())
+    .filter(Boolean)
+
+const getText = (value: unknown, fallback = "") =>
+  typeof value === "string" ? value.trim() || fallback : fallback
+
 const parseGuideResult = (
   raw: unknown,
   products: PrakritiProduct[],
   subject: PrakritiSubject
 ): GuideResult => {
+  const parsedValue = typeof raw === "string" ? JSON.parse(raw) : raw
   const parsed =
-    typeof raw === "string" ? (JSON.parse(raw) as GuideResult) : (raw as GuideResult)
+    parsedValue && typeof parsedValue === "object"
+      ? (parsedValue as Partial<GuideResult>)
+      : {}
 
-  const filteredRecommendations = (parsed.recommended_products || [])
+  const filteredRecommendations = asList(parsed.recommended_products)
     .map((recommendation) => {
-      const matchedProduct = matchRecommendedProduct(products, recommendation)
+      if (!recommendation || typeof recommendation !== "object") {
+        return null
+      }
+
+      const item = recommendation as Partial<
+        GuideResult["recommended_products"][number]
+      >
+      const matchedProduct = matchRecommendedProduct(products, item)
 
       if (!matchedProduct) {
         return null
@@ -112,49 +154,102 @@ const parseGuideResult = (
       return {
         handle: matchedProduct.handle,
         title: matchedProduct.title,
-        advantage: recommendation.advantage,
-        how_to_use: recommendation.how_to_use,
-        reason_match: recommendation.reason_match,
+        advantage: getText(item.advantage),
+        how_to_use: getText(item.how_to_use),
+        reason_match: getText(item.reason_match),
       }
     })
     .filter(Boolean) as GuideResult["recommended_products"]
 
+  const confidence =
+    parsed.confidence === "high" ||
+    parsed.confidence === "medium" ||
+    parsed.confidence === "low"
+      ? parsed.confidence
+      : "low"
+
   return {
-    likely_condition: parsed.likely_condition,
-    confidence: parsed.confidence,
-    observations: parsed.observations || [],
-    immediate_home_steps: parsed.immediate_home_steps || [],
-    natural_remedy: parsed.natural_remedy,
-    prevention_tips: parsed.prevention_tips || [],
-    urgent_care_signs: parsed.urgent_care_signs || [],
+    likely_condition: getText(parsed.likely_condition, "Care check result"),
+    case_summary:
+      getText(parsed.case_summary) ||
+      "GrowBuddy AI reviewed the images and your notes to create a first-pass care plan.",
+    confidence,
+    confidence_reason: getText(parsed.confidence_reason),
+    observations: asStringList(parsed.observations),
+    possible_causes: asStringList(parsed.possible_causes),
+    immediate_home_steps: asStringList(parsed.immediate_home_steps),
+    natural_remedy: getText(parsed.natural_remedy),
+    monitoring_plan: asStringList(parsed.monitoring_plan),
+    prevention_tips: asStringList(parsed.prevention_tips),
+    urgent_care_signs: asStringList(parsed.urgent_care_signs),
     recommended_products: filteredRecommendations,
   }
 }
 
 export default function PrakritiGuide({ products, model }: PrakritiGuideProps) {
   const [subject, setSubject] = useState<PrakritiSubject>("plant")
+  const [caseMeta, setCaseMeta] = useState<CaseMeta>({
+    subjectName: "",
+    environment: "",
+    duration: "",
+  })
   const [notes, setNotes] = useState("")
   const [images, setImages] = useState<PreparedImage[]>([])
   const [isAnalyzing, setIsAnalyzing] = useState(false)
-  const [result, setResult] = useState<GuideResult | null>(null)
+  const [, setResult] = useState<GuideResult | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [messages, setMessages] = useState<GuideChatMessage[]>([
+    {
+      id: makeId(),
+      role: "assistant",
+      text: "Start a case by choosing plant or animal, adding the brief, attaching photos, and then asking your care question in the same console.",
+    },
+  ])
+  const chatScrollRef = useRef<HTMLDivElement>(null)
 
   const relevantProducts = useMemo(
     () => getRelevantPrakritiProducts(products, subject),
     [products, subject]
   )
 
+  const canAnalyze = images.length > 0 && notes.trim().length >= 12
+  const promptSeeds =
+    subject === "plant"
+      ? [
+          "Leaves are turning yellow after watering.",
+          "There are spots on the leaves and weak growth.",
+          "The plant is drooping even though soil is moist.",
+        ]
+      : [
+          "The animal seems irritated in the evening.",
+          "The shed has insects and the animal is restless.",
+          "I need safe environment-care guidance.",
+        ]
+
+  useEffect(() => {
+    chatScrollRef.current?.scrollTo({
+      top: chatScrollRef.current.scrollHeight,
+      behavior: "smooth",
+    })
+  }, [messages, isAnalyzing])
+
+  const updateCaseMeta = (key: keyof CaseMeta, value: string) => {
+    setCaseMeta((current) => ({ ...current, [key]: value }))
+  }
+
   const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
-    const fileList = Array.from(event.target.files || []).slice(0, 3)
+    const availableSlots = Math.max(0, 3 - images.length)
+    const fileList = Array.from(event.target.files || []).slice(0, availableSlots)
 
     if (!fileList.length) {
+      event.target.value = ""
       return
     }
 
     try {
       setError(null)
       const prepared = await Promise.all(fileList.map(resizeImageToDataUrl))
-      setImages(prepared)
+      setImages((current) => [...current, ...prepared].slice(0, 3))
       setResult(null)
       event.target.value = ""
     } catch (uploadError) {
@@ -166,15 +261,31 @@ export default function PrakritiGuide({ products, model }: PrakritiGuideProps) {
     }
   }
 
-  const runGuide = async () => {
+  const runGuide = async (event?: FormEvent<HTMLFormElement>) => {
+    event?.preventDefault()
+
     if (!images.length) {
       setError("Add at least one image to continue.")
+      return
+    }
+
+    if (notes.trim().length < 12) {
+      setError("Add a short paragraph about the issue or care need.")
       return
     }
 
     setIsAnalyzing(true)
     setError(null)
     setResult(null)
+    setMessages((current) => [
+      ...current,
+      {
+        id: makeId(),
+        role: "user",
+        text: notes.trim(),
+        imageCount: images.length,
+      },
+    ])
 
     try {
       const response = await fetch("/api/prakriti-guide", {
@@ -184,6 +295,7 @@ export default function PrakritiGuide({ products, model }: PrakritiGuideProps) {
         },
         body: JSON.stringify({
           subject,
+          caseMeta,
           notes,
           products: relevantProducts,
           images: images.map((image) => ({ dataUrl: image.dataUrl })),
@@ -198,314 +310,447 @@ export default function PrakritiGuide({ products, model }: PrakritiGuideProps) {
         )
       }
 
-      setResult(parseGuideResult(payload?.result, relevantProducts, subject))
+      const parsedResult = parseGuideResult(
+        payload?.result,
+        relevantProducts,
+        subject
+      )
+
+      setResult(parsedResult)
+      setMessages((current) => [
+        ...current,
+        {
+          id: makeId(),
+          role: "assistant",
+          text: parsedResult.case_summary,
+          result: parsedResult,
+        },
+      ])
+      setNotes("")
     } catch (guideError) {
-      setError(
+      const message =
         guideError instanceof Error
           ? guideError.message
           : "Unable to analyze the images right now."
-      )
+
+      setError(message)
+      setMessages((current) => [
+        ...current,
+        {
+          id: makeId(),
+          role: "assistant",
+          text: message,
+        },
+      ])
     } finally {
       setIsAnalyzing(false)
     }
   }
 
   return (
-    <div className="grid gap-5 xl:grid-cols-[0.96fr_1.04fr]">
-      <MotionReveal>
-        <section className="brand-surface px-5 py-6 small:px-8 small:py-8">
-          <p className="brand-kicker">Shreem Prakriti Guide</p>
-          <h1 className="mt-3 text-[2.2rem] leading-[1.02] text-[var(--shreem-ink)] small:text-[3.2rem]">
-            Upload up to three photos and get a natural-care plan
-          </h1>
-          <p className="mt-4 max-w-[38rem] text-sm leading-7 text-[var(--shreem-muted)] small:text-base">
-            This guide runs through a secured server route, reads the images,
-            suggests a cautious natural-care direction, and only recommends a
-            Shreem product when it is available in this region and genuinely
-            useful for the case.
-          </p>
+    <MotionReveal>
+      <section className="brand-royal-surface relative overflow-hidden px-3 py-4 text-white small:px-6 small:py-6">
+        <div className="pointer-events-none absolute -right-12 top-4 h-40 w-40 rounded-full border border-[#e8c364]/12" />
+        <div className="pointer-events-none absolute -left-10 bottom-10 h-32 w-32 rounded-full border border-[#79c7b8]/12" />
 
-          <div className="mt-6 grid gap-4 md:grid-cols-2">
-            <label className="flex flex-col gap-2 text-sm font-medium text-[var(--shreem-ink)]">
-              What are you checking?
-              <div className="grid grid-cols-2 gap-2">
+        <div className="relative z-[1] flex flex-col gap-4 xsmall:flex-row xsmall:items-center xsmall:justify-between">
+          <div className="flex min-w-0 items-center gap-3">
+            <div className="relative h-16 w-16 shrink-0 rounded-[18px] border border-white/10 bg-white/8">
+              <Image src="/gauri.png" alt="" fill sizes="64px" className="object-contain p-1" />
+            </div>
+            <div className="min-w-0">
+              <p className="brand-kicker text-[#e8c364]">{careToolName}</p>
+              <h1 className="mt-2 text-[2.15rem] leading-[0.98] text-white small:text-[3rem]">
+                Ancient care, modern eyes.
+              </h1>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="rounded-full border border-[#e8c364]/30 bg-[#e8c364]/12 px-3 py-1.5 text-[11px] font-semibold text-[#f5dd9c]">
+              {model}
+            </span>
+            <div className="relative h-14 w-14 shrink-0 rounded-[18px] border border-white/10 bg-white/8">
+              <Image src="/mayur.png" alt="" fill sizes="56px" className="object-contain p-1" />
+            </div>
+          </div>
+        </div>
+
+        <div className="relative z-[1] mt-5 overflow-hidden rounded-[28px] border border-[#e8c364]/18 bg-[rgba(255,252,244,0.96)] text-[var(--shreem-ink)] shadow-[0_26px_70px_rgba(0,0,0,0.18)]">
+          <div className="border-b border-[rgba(18,63,99,0.1)] bg-[linear-gradient(135deg,rgba(255,249,235,0.95),rgba(241,248,245,0.9))] px-4 py-4 small:px-5">
+            <div className="flex flex-col gap-3 small:flex-row small:items-center small:justify-between">
+              <div>
+                <p className="brand-kicker">Case console</p>
+                <h2 className="mt-1 text-[1.75rem] leading-[1] text-[var(--shreem-ink)] small:text-[2.2rem]">
+                  Context and chat move together
+                </h2>
+              </div>
+              <LocalizedClientLink
+                href="/store"
+                className="brand-secondary-button w-full small:w-auto"
+              >
+                Store
+              </LocalizedClientLink>
+            </div>
+
+            <div className="mt-4 grid gap-3 xl:grid-cols-[220px_minmax(0,1fr)_240px]">
+              <div className="grid grid-cols-2 gap-2 xl:grid-cols-1">
                 {(["plant", "animal"] as PrakritiSubject[]).map((option) => (
                   <button
                     key={option}
                     type="button"
-                    onClick={() => setSubject(option)}
+                    onClick={() => {
+                      setSubject(option)
+                      setResult(null)
+                      setError(null)
+                    }}
                     className={clx(
-                      "rounded-[20px] border px-4 py-3 text-sm font-semibold transition-all duration-300",
+                      "min-h-12 rounded-[18px] border px-4 py-3 text-sm font-semibold",
                       subject === option
-                        ? "border-[rgba(18,63,99,0.18)] bg-[linear-gradient(135deg,rgba(255,248,233,0.95),rgba(245,239,224,0.88))] text-[var(--shreem-ink)] shadow-[0_10px_24px_rgba(15,49,70,0.08)]"
-                        : "border-[rgba(18,63,99,0.12)] bg-white/78 text-[var(--shreem-muted)]"
+                        ? "border-[rgba(212,161,38,0.48)] bg-[rgba(212,161,38,0.18)] text-[var(--shreem-ink)] shadow-[0_12px_26px_rgba(156,105,18,0.12)]"
+                        : "border-[rgba(18,63,99,0.12)] bg-white/70 text-[var(--shreem-muted)]"
                     )}
                   >
                     {option === "plant" ? "Plant" : "Animal"}
                   </button>
                 ))}
               </div>
-            </label>
 
-            <div className="flex flex-col justify-between rounded-[20px] border border-[rgba(18,63,99,0.12)] bg-white/68 px-4 py-3">
-              <p className="text-sm font-medium text-[var(--shreem-ink)]">
-                AI model
-              </p>
-              <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
-                OpenAI {model}
-              </p>
-            </div>
-          </div>
-
-          <label className="mt-5 flex flex-col gap-2 text-sm font-medium text-[var(--shreem-ink)]">
-            What symptoms are you noticing?
-            <textarea
-              value={notes}
-              onChange={(event) => setNotes(event.target.value)}
-              placeholder="Example: yellow leaves after heavy watering, white spots on stem, cattle shed has many mosquitoes, animal seems dull..."
-              className="min-h-[120px] rounded-[20px] border border-[rgba(113,86,57,0.12)] bg-[rgba(255,252,248,0.88)] px-4 py-4 text-sm leading-6 text-[var(--shreem-ink)] focus:outline-none focus:shadow-[0_0_0_3px_rgba(139,108,78,0.12)]"
-            />
-          </label>
-
-          <div className="mt-5 rounded-[24px] border border-dashed border-[rgba(18,63,99,0.18)] bg-[linear-gradient(135deg,rgba(255,250,240,0.88),rgba(245,240,232,0.72))] px-5 py-5">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <p className="text-sm font-semibold text-[var(--shreem-ink)]">
-                  Add up to 3 photos
-                </p>
-                <p className="mt-1 text-sm leading-6 text-[var(--shreem-muted)]">
-                  Use clear close-ups in natural light. Leaves, stems, fur,
-                  eyes, skin, waste, or surrounding environment can all help.
-                </p>
-              </div>
-              <label className="brand-primary-button cursor-pointer">
-                Upload images
-                <input
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  className="hidden"
-                  onChange={handleFileChange}
+              <div className="grid gap-3 sm:grid-cols-3">
+                <TextInput
+                  label={subject === "plant" ? "Plant name" : "Animal type"}
+                  value={caseMeta.subjectName}
+                  placeholder={subject === "plant" ? "Rose, tulsi, wheat" : "Cow, calf, goat"}
+                  onChange={(value) => updateCaseMeta("subjectName", value)}
                 />
-              </label>
-            </div>
+                <TextInput
+                  label="Place"
+                  value={caseMeta.environment}
+                  placeholder={subject === "plant" ? "Pot, garden, field" : "Shed, home, farm"}
+                  onChange={(value) => updateCaseMeta("environment", value)}
+                />
+                <TextInput
+                  label="Visible since"
+                  value={caseMeta.duration}
+                  placeholder="2 days, 1 week"
+                  onChange={(value) => updateCaseMeta("duration", value)}
+                />
+              </div>
 
-            {!!images.length && (
-              <div className="mt-5 grid gap-3 sm:grid-cols-3">
-                {images.map((image, index) => (
-                  <div
-                    key={image.id}
-                    className="overflow-hidden rounded-[22px] border border-[var(--shreem-border)] bg-white/80"
+              <div className="rounded-[20px] border border-dashed border-[rgba(212,161,38,0.34)] bg-white/74 px-4 py-3">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-semibold text-[var(--shreem-ink)]">
+                      Images
+                    </p>
+                    <p className="mt-1 text-xs leading-5 text-[var(--shreem-muted)]">
+                      {images.length}/3 attached
+                    </p>
+                  </div>
+                  <label
+                    className={clx(
+                      "inline-flex min-h-10 cursor-pointer items-center justify-center rounded-full bg-[var(--shreem-gold)] px-4 py-2 text-xs font-semibold text-[var(--shreem-ink)]",
+                      images.length >= 3 && "pointer-events-none opacity-50"
+                    )}
                   >
-                    <div className="relative aspect-[4/3]">
-                      <Image
-                        src={image.dataUrl}
-                        alt={`Uploaded preview ${index + 1}`}
-                        fill
-                        sizes="(max-width: 768px) 100vw, 280px"
-                        className="object-cover"
-                      />
-                    </div>
-                    <div className="flex items-center justify-between px-4 py-3">
-                      <span className="truncate pr-3 text-xs text-[var(--shreem-muted)]">
-                        {image.name}
-                      </span>
+                    Attach
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      className="hidden"
+                      onChange={handleFileChange}
+                      disabled={images.length >= 3}
+                    />
+                  </label>
+                </div>
+                {!!images.length && (
+                  <div className="mt-3 grid grid-cols-3 gap-2">
+                    {images.map((image, index) => (
                       <button
+                        key={image.id}
                         type="button"
-                        onClick={() =>
+                        onClick={() => {
                           setImages((current) =>
                             current.filter((item) => item.id !== image.id)
                           )
-                        }
-                        className="text-xs font-semibold text-[var(--shreem-accent-dark)]"
+                          setResult(null)
+                          setError(null)
+                        }}
+                        className="group overflow-hidden rounded-[14px] border border-[rgba(18,63,99,0.12)] bg-white"
                       >
-                        Remove
+                        <span className="relative block aspect-square">
+                          <Image
+                            src={image.dataUrl}
+                            alt={`GrowBuddy upload ${index + 1}`}
+                            fill
+                            sizes="96px"
+                            className="object-cover"
+                          />
+                          <span className="absolute inset-x-0 bottom-0 bg-black/52 py-1 text-[10px] font-semibold text-white opacity-0 group-hover:opacity-100">
+                            Remove
+                          </span>
+                        </span>
                       </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-            <button
-              type="button"
-              onClick={runGuide}
-              disabled={isAnalyzing || !images.length}
-              className="brand-primary-button disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {isAnalyzing ? (
-                <>
-                  <span className="h-4 w-4 rounded-full border-2 border-white/40 border-t-white animate-spin" />
-                  Analyzing images
-                </>
-              ) : (
-                "Analyze with Prakriti Guide"
-              )}
-            </button>
-            <LocalizedClientLink href="/store" className="brand-secondary-button">
-              Browse Shreem products
-            </LocalizedClientLink>
-          </div>
-
-          <p className="mt-4 text-xs leading-6 text-[var(--shreem-muted)]">
-            The guide is cautious by design. It can help with first-pass natural
-            direction, but severe animal illness, poisoning, major wounds, or
-            fast crop loss should still go to a veterinarian or local expert.
-          </p>
-
-          {error && (
-            <div className="mt-5 rounded-[22px] border border-rose-200 bg-rose-50 px-4 py-4 text-sm leading-6 text-rose-700">
-              {error}
-            </div>
-          )}
-        </section>
-      </MotionReveal>
-
-      <MotionReveal delayMs={90}>
-        <section className="grid gap-4">
-          <article className="brand-card px-5 py-6 small:px-6">
-            <p className="brand-kicker">How it works</p>
-            <div className="mt-4 grid gap-3">
-              {[
-                "Upload one to three clear images.",
-                "The guide estimates the likely issue and home-care direction.",
-                "It checks only the products available in your current region.",
-                "It recommends a Shreem product only when the fit is genuinely useful.",
-              ].map((step, index) => (
-                <div
-                  key={step}
-                  className="rounded-[20px] bg-[linear-gradient(135deg,rgba(255,251,241,0.95),rgba(241,248,245,0.86))] px-4 py-4 text-sm leading-6 text-[var(--shreem-muted)]"
-                >
-                  <span className="mr-2 font-semibold text-[var(--shreem-ink)]">
-                    {index + 1}.
-                  </span>
-                  {step}
-                </div>
-              ))}
-            </div>
-          </article>
-
-          <article className="brand-card px-5 py-6 small:px-6">
-            <p className="brand-kicker">Region-aware Shreem products</p>
-            <h2 className="mt-3 text-[2rem] leading-[1.04] text-[var(--shreem-ink)]">
-              Products the guide can consider right now
-            </h2>
-            <div className="mt-4 flex flex-wrap gap-2">
-              {relevantProducts.length ? (
-                relevantProducts.map((product) => (
-                  <span key={product.handle} className="brand-pill px-3 py-1.5">
-                    {product.title}
-                  </span>
-                ))
-              ) : (
-                <span className="text-sm leading-6 text-[var(--shreem-muted)]">
-                  No strongly relevant Shreem products are available for this
-                  subject in the current region, so the guide will stay with
-                  natural home-care advice only.
-                </span>
-              )}
-            </div>
-          </article>
-
-          {result ? (
-            <article className="brand-surface px-5 py-6 small:px-6">
-              <div className="flex flex-wrap items-start justify-between gap-4">
-                <div>
-                  <p className="brand-kicker">Guide result</p>
-                  <h2 className="mt-3 text-[2rem] leading-[1.04] text-[var(--shreem-ink)]">
-                    {result.likely_condition}
-                  </h2>
-                </div>
-                <span className="brand-pill px-3 py-1.5">
-                  Confidence: {result.confidence}
-                </span>
-              </div>
-
-              <div className="mt-6 grid gap-4">
-                <ResultList title="What the guide noticed" items={result.observations} />
-                <ResultList
-                  title="Immediate home steps"
-                  items={result.immediate_home_steps}
-                />
-                <ResultBlock
-                  title="Natural home remedy direction"
-                  body={result.natural_remedy}
-                />
-                <ResultList
-                  title="Prevention tips"
-                  items={result.prevention_tips}
-                />
-                <ResultList
-                  title="Escalate quickly if you see"
-                  items={result.urgent_care_signs}
-                />
-
-                {!!result.recommended_products.length && (
-                  <div>
-                    <p className="brand-kicker">Useful Shreem products</p>
-                    <div className="mt-3 grid gap-3">
-                      {result.recommended_products.map((product) => (
-                        <div
-                          key={product.handle}
-                          className="rounded-[24px] border border-[var(--shreem-border)] bg-white/80 px-4 py-4"
-                        >
-                          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                            <div>
-                              <h3 className="text-lg font-semibold text-[var(--shreem-ink)]">
-                                {product.title}
-                              </h3>
-                              <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
-                                {product.reason_match}
-                              </p>
-                              <p className="mt-3 text-sm leading-6 text-[var(--shreem-muted)]">
-                                <span className="font-semibold text-[var(--shreem-ink)]">
-                                  Why it helps:
-                                </span>{" "}
-                                {product.advantage}
-                              </p>
-                              <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
-                                <span className="font-semibold text-[var(--shreem-ink)]">
-                                  How to use:
-                                </span>{" "}
-                                {product.how_to_use}
-                              </p>
-                            </div>
-                            <LocalizedClientLink
-                              href={`/products/${product.handle}`}
-                              className="brand-secondary-button gap-2"
-                            >
-                              View product
-                              <ArrowUpRightMini />
-                            </LocalizedClientLink>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+                    ))}
                   </div>
                 )}
               </div>
-            </article>
-          ) : (
-            <article className="brand-card px-5 py-6 small:px-6">
-              <p className="brand-kicker">Important note</p>
-              <p className="mt-3 text-sm leading-7 text-[var(--shreem-muted)]">
-                This tool is meant for first-pass guidance and natural-care
-                support, not a medical or agronomy diagnosis. For animal
-                distress, wounds, fever, breathing trouble, poisoning, or fast
-                decline, consult a veterinarian. For rapidly spreading plant
-                disease or heavy crop loss, consult a local plant expert.
-              </p>
-            </article>
+            </div>
+
+            <div className="mt-3 flex flex-wrap gap-2">
+              <span className="brand-pill px-3 py-1.5 text-[11px]">
+                {subject === "plant" ? "Plant case" : "Animal case"}
+              </span>
+              {caseMeta.subjectName && (
+                <span className="brand-pill px-3 py-1.5 text-[11px]">
+                  {caseMeta.subjectName}
+                </span>
+              )}
+              {caseMeta.environment && (
+                <span className="brand-pill px-3 py-1.5 text-[11px]">
+                  {caseMeta.environment}
+                </span>
+              )}
+              {caseMeta.duration && (
+                <span className="brand-pill px-3 py-1.5 text-[11px]">
+                  {caseMeta.duration}
+                </span>
+              )}
+              <span className="brand-pill px-3 py-1.5 text-[11px]">
+                {images.length} image{images.length === 1 ? "" : "s"}
+              </span>
+            </div>
+          </div>
+
+          <div
+            ref={chatScrollRef}
+            className="max-h-[58vh] min-h-[380px] overflow-y-auto px-3 py-4 small:max-h-[650px] small:px-5"
+          >
+            <div className="grid gap-4">
+              {messages.map((message) => (
+                <div
+                  key={message.id}
+                  className={clx(
+                    "flex",
+                    message.role === "user" ? "justify-end" : "justify-start"
+                  )}
+                >
+                  <div
+                    className={clx(
+                      "max-w-[94%] rounded-[24px] px-4 py-3 text-sm leading-6 shadow-[0_14px_34px_rgba(15,49,70,0.1)] small:max-w-[84%]",
+                      message.role === "user"
+                        ? "bg-[linear-gradient(135deg,#0d817e,#123f63)] text-white"
+                        : "border border-[rgba(212,161,38,0.18)] bg-[rgba(255,249,235,0.96)] text-[var(--shreem-ink)]"
+                    )}
+                  >
+                    <p>{message.text}</p>
+                    {!!message.imageCount && (
+                      <p className="mt-2 text-xs font-semibold opacity-72">
+                        {message.imageCount} image{message.imageCount === 1 ? "" : "s"} attached with this case
+                      </p>
+                    )}
+                    {message.result && (
+                      <div className="mt-4">
+                        <CareResult result={message.result} />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+
+              {isAnalyzing && (
+                <div className="flex justify-start">
+                  <div className="rounded-[24px] border border-[rgba(212,161,38,0.18)] bg-[rgba(255,249,235,0.96)] px-4 py-3 text-sm text-[var(--shreem-ink)]">
+                    Reading the case brief and images...
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {error && (
+            <div className="mx-4 mb-3 rounded-[20px] border border-rose-200 bg-rose-50 px-4 py-3 text-sm leading-6 text-rose-700 small:mx-5">
+              {error}
+            </div>
           )}
-        </section>
-      </MotionReveal>
-    </div>
+
+          <form
+            onSubmit={runGuide}
+            className="border-t border-[rgba(18,63,99,0.1)] bg-white/72 px-3 py-3 small:px-5 small:py-4"
+          >
+            <div className="mb-3 flex gap-2 overflow-x-auto pb-1">
+              {promptSeeds.map((prompt) => (
+                <button
+                  key={prompt}
+                  type="button"
+                  onClick={() => {
+                    setNotes(prompt)
+                    setError(null)
+                    setResult(null)
+                  }}
+                  className="shrink-0 rounded-full border border-[rgba(18,63,99,0.12)] bg-white/84 px-3 py-2 text-xs font-semibold text-[var(--shreem-muted)]"
+                >
+                  {prompt}
+                </button>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <textarea
+                value={notes}
+                onChange={(event) => {
+                  setNotes(event.target.value)
+                  setResult(null)
+                  setError(null)
+                }}
+                placeholder={
+                  subject === "plant"
+                    ? "Ask with the case above: leaves, soil, watering, weather, pests, or care need..."
+                    : "Ask with the case above: behavior, shed conditions, visible issue, or care need..."
+                }
+                rows={1}
+                className="max-h-32 min-h-12 flex-1 resize-none rounded-[18px] border border-[rgba(18,63,99,0.12)] bg-white/92 px-4 py-3 text-sm leading-6 text-[var(--shreem-ink)] outline-none focus:shadow-[0_0_0_3px_rgba(212,161,38,0.16)]"
+              />
+              <button
+                type="submit"
+                disabled={isAnalyzing || !canAnalyze}
+                className="min-h-12 rounded-[18px] bg-[linear-gradient(135deg,#0d817e,#123f63,#6f211f)] px-5 text-sm font-semibold text-white disabled:opacity-50"
+              >
+                {isAnalyzing ? "..." : "Ask"}
+              </button>
+            </div>
+            <p className="mt-3 text-xs leading-5 text-[var(--shreem-muted)]">
+              First-pass guidance only. For animal distress, wounds, fever,
+              breathing trouble, poisoning, or rapid crop loss, contact a local expert.
+            </p>
+          </form>
+        </div>
+      </section>
+    </MotionReveal>
   )
 }
 
-const ResultList = ({ title, items }: { title: string; items: string[] }) => {
+const TextInput = ({
+  label,
+  value,
+  placeholder,
+  onChange,
+}: {
+  label: string
+  value: string
+  placeholder: string
+  onChange: (value: string) => void
+}) => (
+  <label className="grid gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
+    {label}
+    <input
+      value={value}
+      onChange={(event) => onChange(event.target.value)}
+      placeholder={placeholder}
+      className="h-12 rounded-[16px] border border-[rgba(18,63,99,0.12)] bg-white/86 px-4 text-sm font-medium normal-case tracking-[0] text-[var(--shreem-ink)] outline-none placeholder:text-[rgba(75,104,114,0.58)] focus:shadow-[0_0_0_3px_rgba(212,161,38,0.16)]"
+    />
+  </label>
+)
+
+const CareResult = ({ result }: { result: GuideResult }) => (
+  <article className="brand-surface px-4 py-5 small:px-6 small:py-6">
+    <div className="flex flex-wrap items-start justify-between gap-4">
+      <div>
+        <p className="brand-kicker">GrowBuddy result</p>
+        <h2 className="mt-3 text-[2rem] leading-[1.04] text-[var(--shreem-ink)]">
+          {result.likely_condition}
+        </h2>
+      </div>
+      <span className="brand-pill px-3 py-1.5">
+        Confidence: {result.confidence}
+      </span>
+    </div>
+
+    <div className="mt-5 rounded-[22px] border border-[rgba(18,63,99,0.1)] bg-white/80 px-4 py-4">
+      <p className="text-sm leading-7 text-[var(--shreem-muted)]">
+        {result.case_summary}
+      </p>
+      {result.confidence_reason && (
+        <p className="mt-3 text-sm leading-6 text-[var(--shreem-muted)]">
+          <span className="font-semibold text-[var(--shreem-ink)]">
+            Why this confidence:
+          </span>{" "}
+          {result.confidence_reason}
+        </p>
+      )}
+    </div>
+
+    <div className="mt-5 grid gap-4">
+      <ResultList title="What GrowBuddy noticed" items={result.observations} />
+      <ResultList title="Possible causes" items={result.possible_causes} />
+      <ResultList
+        title="Do this first"
+        items={result.immediate_home_steps}
+        numbered
+      />
+      <ResultBlock title="Natural care direction" body={result.natural_remedy} />
+      <ResultList
+        title="Monitor over the next few days"
+        items={result.monitoring_plan}
+      />
+      <ResultList title="Prevention tips" items={result.prevention_tips} />
+      <ResultList title="Escalate quickly if you see" items={result.urgent_care_signs} />
+
+      {!!result.recommended_products.length && (
+        <div>
+          <p className="brand-kicker">Useful Shreem products</p>
+          <div className="mt-3 grid gap-3">
+            {result.recommended_products.map((product) => (
+              <div
+                key={product.handle}
+                className="rounded-[22px] border border-[var(--shreem-border)] bg-white/82 px-4 py-4"
+              >
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div>
+                    <h3 className="text-lg font-semibold text-[var(--shreem-ink)]">
+                      {product.title}
+                    </h3>
+                    <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
+                      {product.reason_match}
+                    </p>
+                    <p className="mt-3 text-sm leading-6 text-[var(--shreem-muted)]">
+                      <span className="font-semibold text-[var(--shreem-ink)]">
+                        Benefit:
+                      </span>{" "}
+                      {product.advantage}
+                    </p>
+                    <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
+                      <span className="font-semibold text-[var(--shreem-ink)]">
+                        How to use:
+                      </span>{" "}
+                      {product.how_to_use}
+                    </p>
+                  </div>
+                  <LocalizedClientLink
+                    href={`/products/${product.handle}`}
+                    className="brand-secondary-button gap-2"
+                  >
+                    View product
+                    <ArrowUpRightMini />
+                  </LocalizedClientLink>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  </article>
+)
+
+const ResultList = ({
+  title,
+  items,
+  numbered = false,
+}: {
+  title: string
+  items: string[]
+  numbered?: boolean
+}) => {
   if (!items.length) {
     return null
   }
@@ -514,12 +759,17 @@ const ResultList = ({ title, items }: { title: string; items: string[] }) => {
     <div>
       <p className="brand-kicker">{title}</p>
       <div className="mt-3 grid gap-2">
-        {items.map((item) => (
+        {items.map((item, index) => (
           <div
-            key={item}
-            className="rounded-[20px] bg-[linear-gradient(135deg,rgba(255,251,241,0.95),rgba(241,248,245,0.86))] px-4 py-4 text-sm leading-6 text-[var(--shreem-muted)]"
+            key={`${index}-${item}`}
+            className="flex gap-3 rounded-[18px] bg-[linear-gradient(135deg,rgba(255,251,241,0.95),rgba(241,248,245,0.86))] px-4 py-4 text-sm leading-6 text-[var(--shreem-muted)]"
           >
-            {item}
+            {numbered && (
+              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/80 text-xs font-semibold text-[var(--shreem-ink)]">
+                {index + 1}
+              </span>
+            )}
+            <span>{item}</span>
           </div>
         ))}
       </div>
@@ -535,7 +785,7 @@ const ResultBlock = ({ title, body }: { title: string; body: string }) => {
   return (
     <div>
       <p className="brand-kicker">{title}</p>
-      <div className="mt-3 rounded-[24px] border border-[var(--shreem-border)] bg-white/80 px-4 py-4 text-sm leading-7 text-[var(--shreem-muted)]">
+      <div className="mt-3 rounded-[22px] border border-[var(--shreem-border)] bg-white/82 px-4 py-4 text-sm leading-7 text-[var(--shreem-muted)]">
         {body}
       </div>
     </div>

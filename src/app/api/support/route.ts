@@ -5,6 +5,31 @@ const SUPPORT_TO_EMAIL = "brajsavitrikrishisansthan@gmail.com"
 const sanitize = (value: unknown) =>
   typeof value === "string" ? value.trim() : ""
 
+const sanitizeConversation = (value: unknown) => {
+  if (!Array.isArray(value)) {
+    return ""
+  }
+
+  return value
+    .map((item) => {
+      if (!item || typeof item !== "object") {
+        return null
+      }
+
+      const role = sanitize((item as { role?: unknown }).role).slice(0, 24)
+      const text = sanitize((item as { text?: unknown }).text).slice(0, 1200)
+
+      if (!role || !text) {
+        return null
+      }
+
+      return `${role}: ${text}`
+    })
+    .filter(Boolean)
+    .slice(-8)
+    .join("\n")
+}
+
 const buildSupportBody = (payload: Record<string, unknown>) => {
   return [
     `Name: ${sanitize(payload.name) || "-"}`,
@@ -15,6 +40,9 @@ const buildSupportBody = (payload: Record<string, unknown>) => {
     "",
     "Message:",
     sanitize(payload.message) || "-",
+    sanitizeConversation(payload.conversation)
+      ? "\nRecent chat:\n" + sanitizeConversation(payload.conversation)
+      : "",
   ].join("\n")
 }
 
@@ -69,7 +97,7 @@ export async function POST(request: NextRequest) {
     },
     body: JSON.stringify({
       from: fromEmail,
-      to: [process.env.SUPPORT_TO_EMAIL || SUPPORT_TO_EMAIL],
+      to: [SUPPORT_TO_EMAIL],
       reply_to: email,
       subject: `[Shreem Support] ${topic}`,
       text: buildSupportBody(payload),

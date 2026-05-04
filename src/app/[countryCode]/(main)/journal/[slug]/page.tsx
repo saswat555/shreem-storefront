@@ -3,10 +3,11 @@ import Image from "next/image"
 import { notFound } from "next/navigation"
 
 import { shreemJournalPosts } from "@lib/constants/shreem-experience"
+import { getBaseURL } from "@lib/util/env"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 
 type Props = {
-  params: Promise<{ slug: string }>
+  params: Promise<{ countryCode: string; slug: string }>
 }
 
 export async function generateStaticParams() {
@@ -14,7 +15,7 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata(props: Props): Promise<Metadata> {
-  const { slug } = await props.params
+  const { countryCode, slug } = await props.params
   const post = shreemJournalPosts.find((entry) => entry.slug === slug)
 
   if (!post) {
@@ -26,24 +27,56 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
   return {
     title: post.title,
     description: post.description,
+    alternates: {
+      canonical: `/${countryCode}/journal/${post.slug}`,
+    },
     openGraph: {
       title: post.title,
       description: post.description,
+      url: `/${countryCode}/journal/${post.slug}`,
       images: [post.image],
+      type: "article",
     },
   }
 }
 
 export default async function JournalArticlePage(props: Props) {
-  const { slug } = await props.params
+  const { countryCode, slug } = await props.params
   const post = shreemJournalPosts.find((entry) => entry.slug === slug)
 
   if (!post) {
     notFound()
   }
+  const baseUrl = getBaseURL()
+  const articleSchema = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: post.title,
+    description: post.description,
+    image: `${baseUrl}${post.image}`,
+    datePublished: post.publishedAt,
+    dateModified: post.publishedAt,
+    author: {
+      "@type": "Organization",
+      name: "Shreem Cow Products",
+    },
+    publisher: {
+      "@type": "Organization",
+      name: "Shreem Cow Products",
+      logo: {
+        "@type": "ImageObject",
+        url: `${baseUrl}/logo.jpeg`,
+      },
+    },
+    mainEntityOfPage: `${baseUrl}/${countryCode}/journal/${post.slug}`,
+  }
 
   return (
     <div className="content-container py-8 small:py-12">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
+      />
       <article className="brand-surface overflow-hidden px-5 py-8 small:px-10 small:py-10">
         <div className="max-w-[52rem]">
           <p className="brand-pill w-fit">{post.category}</p>

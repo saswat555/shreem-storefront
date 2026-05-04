@@ -51,9 +51,9 @@ const SideMenuItems: SideMenuItem[] = [
     icon: BookOpen,
   },
   {
-    name: "Prakriti Guide",
+    name: "GrowBuddy AI",
     href: "/prakriti-guide",
-    description: "Upload photos for a natural-care direction",
+    description: "Plant and animal care from photos",
     icon: Sparkles,
   },
   {

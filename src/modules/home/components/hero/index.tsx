@@ -26,12 +26,13 @@ const Hero = ({
           <div className="grid gap-6 xl:grid-cols-[0.94fr_1.06fr] xl:items-center">
             <div className="order-2 xl:order-1">
               <h1 className="max-w-[13ch] text-center text-[2.25rem] leading-[0.96] text-balance text-[var(--shreem-ink)] small:text-[4.6rem] xl:text-left">
-                Bilona purity, sacred warmth, and a slower desi-cow way of living.
+                Bilona A2 ghee, neem dhoop, gobar cakes, and Jeevamrut from desi-cow farms.
               </h1>
               <p className="mt-6 max-w-[44rem] text-center text-base leading-7 text-[var(--shreem-muted)] small:text-lg xl:text-left">
-                Shreem brings together naturally grazing desi cows, bilona A2 ghee,
-                neem dhoop, sacred home essentials, and living-soil farm inputs for
-                families who want a purer, calmer, and more chemical-light life.
+                Shreem brings everyday cow-based products into one clean
+                storefront: cultured bilona ghee for the kitchen, neem dhoop for
+                home use, cow-dung cakes for havan and dhooni, and Jeevamrut for
+                natural farming routines.
               </p>
               <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row xl:justify-start">
                 <LocalizedClientLink href="/store" className="brand-primary-button">
@@ -42,7 +43,7 @@ const Hero = ({
                     href="/prakriti-guide"
                     className="brand-secondary-button gap-2"
                   >
-                    Use Prakriti Guide
+                    Try GrowBuddy AI
                     <ArrowUpRightMini />
                   </LocalizedClientLink>
                 )}
@@ -68,27 +69,27 @@ const Hero = ({
           >
             <div className="brand-card px-4 py-4">
               <p className="text-sm font-semibold text-[var(--shreem-ink)]">
-                Desi cow origin
+                Desi cow source
               </p>
               <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
-                Shreem begins with Gir, Sahiwal, Tharparkar, and Rathi cows.
+                Shreem focuses on Gir, Sahiwal, Tharparkar, and Rathi desi-cow lines.
               </p>
             </div>
             <div className="brand-card px-4 py-4 animate-shreem-float">
               <p className="text-sm font-semibold text-[var(--shreem-ink)]">
-                Made for daily rituals
+                Everyday use
               </p>
               <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
-                From bilona ghee to neem dhoop batti, each product belongs in real homes.
+                From bilona ghee to neem dhoop batti, each product is presented for clear daily use.
               </p>
             </div>
             {prakritiGuideEnabled && (
               <div className="brand-card px-4 py-4 animate-shreem-float-delayed">
                 <p className="text-sm font-semibold text-[var(--shreem-ink)]">
-                  Smart natural-care help
+                  GrowBuddy AI
                 </p>
                 <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
-                  Upload plant or animal photos and get a cautious remedy direction.
+                  Plant and animal care help from photos, notes, and Gemini AI.
                 </p>
               </div>
             )}

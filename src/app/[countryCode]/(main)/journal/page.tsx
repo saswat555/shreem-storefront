@@ -3,19 +3,56 @@ import Image from "next/image"
 
 import { shreemMascots } from "@lib/constants/shreem"
 import { shreemJournalPosts } from "@lib/constants/shreem-experience"
+import { getBaseURL } from "@lib/util/env"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 
-export const metadata: Metadata = {
-  title: "Shreem Journal",
-  description:
-    "Read the Shreem Journal for notes on bilona A2 ghee, neem dhoop, desi-cow living, and natural-farming wisdom.",
+export async function generateMetadata(props: {
+  params: Promise<{ countryCode: string }>
+}): Promise<Metadata> {
+  const { countryCode } = await props.params
+  const title = "Shreem Journal | Bilona Ghee, Neem Dhoop & Natural Farming"
+  const description =
+    "Read the Shreem Journal for notes on bilona A2 ghee, neem dhoop, desi-cow living, cow dung cakes, Jeevamrut, and natural-farming wisdom."
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: `/${countryCode}/journal`,
+    },
+    openGraph: {
+      title,
+      description,
+      url: `/${countryCode}/journal`,
+      images: ["/logo.jpeg"],
+    },
+  }
 }
 
-export default function JournalPage() {
+export default async function JournalPage(props: {
+  params: Promise<{ countryCode: string }>
+}) {
+  const { countryCode } = await props.params
+  const baseUrl = getBaseURL()
   const [featuredPost, ...posts] = shreemJournalPosts
+  const itemListSchema = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: "Shreem Journal articles",
+    itemListElement: shreemJournalPosts.map((post, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: post.title,
+      url: `${baseUrl}/${countryCode}/journal/${post.slug}`,
+    })),
+  }
 
   return (
     <div className="content-container py-8 small:py-12">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListSchema) }}
+      />
       <section className="brand-surface px-5 py-8 small:px-10 small:py-10">
         <div className="grid gap-6 xl:grid-cols-[0.92fr_1.08fr] xl:items-center">
           <div>

@@ -42,9 +42,9 @@ const sizeMap = {
     caption: "text-sm small:text-base",
   },
   footer: {
-    container: "h-32 w-32 rounded-[34px] p-3 small:h-36 small:w-36",
+    container: "h-16 w-16 rounded-[20px] p-1.5 small:h-36 small:w-36 small:rounded-[34px] small:p-3",
     image: 108,
-    title: "text-[2.5rem] small:text-[2.9rem]",
+    title: "text-[1.9rem] small:text-[2.9rem]",
     caption: "text-base",
   },
   sidebar: {

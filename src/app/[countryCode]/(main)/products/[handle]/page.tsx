@@ -2,6 +2,8 @@ import { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { listProducts } from "@lib/data/products"
 import { getRegion, listRegions } from "@lib/data/regions"
+import { getProductPrice } from "@lib/util/get-product-price"
+import { getBaseURL } from "@lib/util/env"
 import ProductTemplate from "@modules/products/templates"
 import { HttpTypes } from "@medusajs/types"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
@@ -72,7 +74,7 @@ function getImagesForVariant(
 
 export async function generateMetadata(props: Props): Promise<Metadata> {
   const params = await props.params
-  const { handle } = params
+  const { countryCode, handle } = params
   const region = await getRegion(params.countryCode)
 
   if (!region) {
@@ -93,16 +95,30 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
     }
   }
 
+  const description =
+    product.description?.slice(0, 155) ||
+    `Shop ${product.title} from Shreem Cow Products with live pricing, product details, and secure checkout.`
+  const canonical = `/${countryCode}/products/${handle}`
+
   return {
-    title: product.title,
-    description:
-      product.description?.slice(0, 150) ||
-      `Shop ${product.title} from Shreem.`,
+    title: `${product.title} | Shreem Cow Products`,
+    description,
+    alternates: {
+      canonical,
+    },
     openGraph: {
       title: `${product.title} | Shreem`,
-      description:
-        product.description?.slice(0, 150) ||
-        `Shop ${product.title} from Shreem.`,
+      description,
+      url: canonical,
+      type: "website",
+      images: product.thumbnail
+        ? [{ url: product.thumbnail, alt: product.title }]
+        : [],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${product.title} | Shreem`,
+      description,
       images: product.thumbnail ? [product.thumbnail] : [],
     },
   }
@@ -131,14 +147,79 @@ export default async function ProductPage(props: Props) {
   }
 
   const images = getImagesForVariant(pricedProduct, selectedVariantId)
+  const baseUrl = getBaseURL()
+  const { cheapestPrice } = getProductPrice({ product: pricedProduct })
+  const imageUrls = [
+    pricedProduct.thumbnail,
+    ...(images || []).map((image) => image.url),
+  ].filter(Boolean)
+  const productSchema = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: pricedProduct.title,
+    description:
+      pricedProduct.description ||
+      `Shop ${pricedProduct.title} from Shreem Cow Products.`,
+    image: imageUrls,
+    sku: pricedProduct.variants?.[0]?.sku || pricedProduct.id,
+    brand: {
+      "@type": "Brand",
+      name: "Shreem",
+    },
+    category: pricedProduct.collection?.title || pricedProduct.type?.value,
+    offers: cheapestPrice
+      ? {
+          "@type": "Offer",
+          url: `${baseUrl}/${params.countryCode}/products/${pricedProduct.handle}`,
+          priceCurrency: cheapestPrice.currency_code?.toUpperCase(),
+          price: cheapestPrice.calculated_price_number,
+          availability: "https://schema.org/InStock",
+          itemCondition: "https://schema.org/NewCondition",
+        }
+      : undefined,
+  }
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Home",
+        item: `${baseUrl}/${params.countryCode}`,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Store",
+        item: `${baseUrl}/${params.countryCode}/store`,
+      },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: pricedProduct.title,
+        item: `${baseUrl}/${params.countryCode}/products/${pricedProduct.handle}`,
+      },
+    ],
+  }
 
   return (
-    <ProductTemplate
-      product={pricedProduct}
-      region={region}
-      countryCode={params.countryCode}
-      images={images}
-    />
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
+      <ProductTemplate
+        product={pricedProduct}
+        region={region}
+        countryCode={params.countryCode}
+        images={images}
+      />
+    </>
   )
 }
 

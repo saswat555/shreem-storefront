@@ -36,24 +36,22 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
         className="content-container py-4 pb-12 small:py-10"
         data-testid="product-container"
       >
-        <section className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_430px] xl:items-start">
-          <div className="min-w-0">
+        <section className="grid gap-4 xl:grid-cols-[430px_minmax(0,1fr)] xl:items-start">
+          <div className="order-2 flex min-w-0 flex-col gap-4 xl:order-1 xl:sticky xl:top-28">
             <div className="mb-3 flex items-center justify-between gap-3 rounded-[22px] border border-[rgba(18,63,99,0.12)] bg-[rgba(255,252,248,0.82)] px-4 py-3 backdrop-blur-xl small:mb-5 small:rounded-[28px] small:px-5 small:py-4">
               <div>
                 <p className="brand-kicker">Product</p>
-                <p className="mt-1 text-sm leading-5 text-[var(--shreem-muted)]">
-                  Swipe photos, choose a variant, add to bag.
-                </p>
+                <h1
+                  className="mt-2 text-[2rem] leading-[1.02] text-[var(--shreem-ink)] small:text-[2.5rem]"
+                  data-testid="product-title"
+                >
+                  {product.title}
+                </h1>
               </div>
               <span className="brand-pill hidden px-3 py-1.5 text-[11px] xsmall:inline-flex">
                 Live pricing
               </span>
             </div>
-            <ImageGallery images={images} />
-          </div>
-
-          <div className="flex min-w-0 flex-col gap-4 xl:sticky xl:top-28">
-            <ProductInfo product={product} />
             <Suspense
               fallback={
                 <ProductActions
@@ -66,6 +64,22 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
               <ProductActionsWrapper id={product.id} region={region} />
             </Suspense>
           </div>
+
+          <div className="order-1 min-w-0 xl:order-2">
+            <div className="mb-3 flex items-center justify-between gap-3 rounded-[22px] border border-[rgba(18,63,99,0.12)] bg-[rgba(255,252,248,0.82)] px-4 py-3 backdrop-blur-xl small:mb-5 small:rounded-[28px] small:px-5 small:py-4">
+              <div>
+                <p className="brand-kicker">Gallery</p>
+                <p className="mt-1 text-sm leading-5 text-[var(--shreem-muted)]">
+                  Swipe photos and inspect the product before adding it to your bag.
+                </p>
+              </div>
+            </div>
+            <ImageGallery images={images} />
+          </div>
+        </section>
+
+        <section className="mt-5 small:mt-8">
+          <ProductInfo product={product} />
         </section>
 
         <section className="mt-6 small:mt-10">
