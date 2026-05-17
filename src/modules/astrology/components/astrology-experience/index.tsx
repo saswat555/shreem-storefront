@@ -5,13 +5,14 @@ import {
   calculateDailyMuhurat,
   getCityById,
   getTodayDateString,
+  type HindiCalendarDay,
   type MuhurtaSlot,
   type PrashnaChart,
   type PrashnaHouse,
   type PrashnaPlanet,
 } from "@lib/util/astrology"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 
 type PrashnaResult = {
   chart?: PrashnaChart
@@ -278,6 +279,10 @@ export default function AstrologyExperience() {
   const [question, setQuestion] = useState("")
   const [prashna, setPrashna] = useState<PrashnaResult | null>(null)
   const [loadingPrashna, setLoadingPrashna] = useState(false)
+  const [hindiCalendar, setHindiCalendar] = useState<HindiCalendarDay | null>(
+    null
+  )
+  const [loadingCalendar, setLoadingCalendar] = useState(true)
   const city = getCityById(cityId)
   const muhurat = useMemo(
     () => calculateDailyMuhurat({ city, date }),
@@ -286,6 +291,37 @@ export default function AstrologyExperience() {
   const bestDaySlots = muhurat.daySlots.filter(
     (slot) => slot.quality === "auspicious"
   )
+
+  useEffect(() => {
+    let active = true
+
+    setLoadingCalendar(true)
+    fetch(
+      `/api/astrology/hindi-calendar?cityId=${encodeURIComponent(
+        cityId
+      )}&date=${encodeURIComponent(date)}`
+    )
+      .then((response) => (response.ok ? response.json() : null))
+      .then((data: HindiCalendarDay | null) => {
+        if (active) {
+          setHindiCalendar(data)
+        }
+      })
+      .catch(() => {
+        if (active) {
+          setHindiCalendar(null)
+        }
+      })
+      .finally(() => {
+        if (active) {
+          setLoadingCalendar(false)
+        }
+      })
+
+    return () => {
+      active = false
+    }
+  }, [cityId, date])
 
   const askPrashna = async () => {
     setLoadingPrashna(true)
@@ -322,7 +358,7 @@ export default function AstrologyExperience() {
             </h2>
             <p className="mt-4 max-w-[48rem] text-sm leading-7 text-[var(--shreem-muted)] small:text-base">
               Choose your city and date. Sunrise, sunset, day Choghadiya, night
-              Choghadiya, and 30 muhurtas are calculated instantly for that
+              Choghadiya, and Hindi calendar details are calculated for that
               place.
             </p>
           </div>
@@ -409,24 +445,72 @@ export default function AstrologyExperience() {
       </section>
 
       <section className="brand-surface px-5 py-6 small:px-8 small:py-8">
-        <p className="brand-kicker">48-minute planning</p>
-        <h3 className="mt-2 text-[2rem] leading-none text-[var(--shreem-ink)]">
-          30 muhurtas from sunrise
-        </h3>
-        <div className="mt-5 grid gap-2 small:grid-cols-3 xl:grid-cols-5">
-          {muhurat.muhurtaSlots.map((slot) => (
-            <div
-              key={slot.index}
-              className="rounded-[16px] border border-[var(--shreem-border)] bg-white/62 px-3 py-3 text-sm"
-            >
-              <p className="font-semibold text-[var(--shreem-ink)]">
-                Muhurta {slot.index}
+        <p className="brand-kicker">Hindi calendar today</p>
+        <div className="grid gap-5 xl:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] xl:items-start">
+          <div>
+            <h3 className="mt-2 max-w-[13ch] text-[2.2rem] leading-[1.02] text-[var(--shreem-ink)] small:text-[3.4rem]">
+              Tithi, masa, and meaning
+            </h3>
+            <p className="mt-4 text-sm leading-7 text-[var(--shreem-muted)]">
+              This snapshot follows the selected city and date, so the tithi
+              and calendar context stay aligned with the Choghadiya above.
+            </p>
+          </div>
+
+          <div className="brand-card px-4 py-5 small:px-6">
+            {loadingCalendar && (
+              <p className="text-sm leading-7 text-[var(--shreem-muted)]">
+                Calculating Hindi calendar details...
               </p>
-              <p className="mt-1 text-xs leading-5 text-[var(--shreem-muted)]">
-                {slot.startLabel} - {slot.endLabel}
+            )}
+            {!loadingCalendar && !hindiCalendar && (
+              <p className="rounded-[16px] border border-rose-200 bg-rose-50 px-4 py-3 text-sm leading-6 text-rose-700">
+                Unable to calculate Hindi calendar details right now.
               </p>
-            </div>
-          ))}
+            )}
+            {hindiCalendar && (
+              <div className="grid gap-4">
+                <div className="grid gap-3 small:grid-cols-2">
+                  <ChartMiniCard
+                    label="Tithi"
+                    value={hindiCalendar.tithi}
+                    detail={`${hindiCalendar.paksha} paksha · ${hindiCalendar.weekday}`}
+                  />
+                  <ChartMiniCard
+                    label="Hindi month"
+                    value={`${hindiCalendar.month.name} (${hindiCalendar.month.commonName})`}
+                    detail={`Solar anchor: ${hindiCalendar.month.sunSign}`}
+                  />
+                  <ChartMiniCard
+                    label="Nakshatra"
+                    value={hindiCalendar.nakshatra}
+                    detail={`${hindiCalendar.yoga} yoga`}
+                  />
+                  <ChartMiniCard
+                    label="Karana"
+                    value={hindiCalendar.karana}
+                    detail={`${hindiCalendar.city.name}, ${hindiCalendar.city.region}`}
+                  />
+                </div>
+
+                <div className="rounded-[20px] border border-[rgba(13,129,126,0.14)] bg-[rgba(240,248,246,0.72)] px-4 py-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
+                    Month significance
+                  </p>
+                  <p className="mt-2 text-sm leading-7 text-[var(--shreem-muted)]">
+                    {hindiCalendar.month.significance}
+                  </p>
+                  <p className="mt-3 rounded-[14px] bg-white/62 px-3 py-2 text-xs leading-5 text-[var(--shreem-muted)]">
+                    Focus: {hindiCalendar.month.focus}
+                  </p>
+                </div>
+
+                <p className="text-xs leading-5 text-[var(--shreem-muted)]">
+                  {hindiCalendar.note}
+                </p>
+              </div>
+            )}
+          </div>
         </div>
       </section>
 

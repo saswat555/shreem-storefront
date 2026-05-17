@@ -10,7 +10,7 @@ export async function generateMetadata(props: {
   const title =
     "Shreem Astrology | Shubh Muhurth, Vedic Prashna Kundli & Consultations"
   const description =
-    "Check city-based Shubh Muhurth, day and night Choghadiya, Vedic Prashna Kundli with Lagna and Panchang details, and book astrology consultations with Sanjay Kumar Pandey."
+    "Check city-based Shubh Muhurth, day and night Choghadiya, Hindi calendar tithi and masa context, Vedic Prashna Kundli, and astrology consultations with Sanjay Kumar Pandey."
 
   return {
     title,
@@ -58,7 +58,7 @@ export default async function ShreemAstrologyPage(props: {
         serviceType:
           "Daily Shubh Muhurth, Vedic Prashna Kundli, and paid astrology consultation",
         description:
-          "City-based sunrise and sunset Choghadiya, 30 muhurta planning windows, Vedic Prashna Kundli chart details, and consultation booking with Sanjay Kumar Pandey.",
+          "City-based sunrise and sunset Choghadiya, Hindi calendar tithi and masa context, Vedic Prashna Kundli chart details, and consultation booking with Sanjay Kumar Pandey.",
         offers: [
           {
             "@type": "Offer",
@@ -82,7 +82,7 @@ export default async function ShreemAstrologyPage(props: {
             name: "How does Shreem Astrology calculate Shubh Muhurth?",
             acceptedAnswer: {
               "@type": "Answer",
-              text: "The page uses the selected city and date to calculate local sunrise and sunset, then divides daytime and nighttime into Choghadiya slots. It also shows 30 muhurta planning windows from sunrise to next sunrise.",
+              text: "The page uses the selected city and date to calculate local sunrise and sunset, then divides daytime and nighttime into Choghadiya slots. It also shows Hindi calendar tithi, paksha, masa, nakshatra, yoga, and karana context for the selected date.",
             },
           },
           {
@@ -119,8 +119,8 @@ export default async function ShreemAstrologyPage(props: {
           Muhurth, Prashna, and guided calls
         </h1>
         <p className="mt-5 max-w-[52rem] text-base leading-7 text-[var(--shreem-muted)] small:text-lg">
-          A clean astrology desk for daily Choghadiya windows, 48-minute
-          muhurtas, Vedic Prashna Kundli chart details, and paid consultation
+          A clean astrology desk for daily Choghadiya windows, Hindi calendar
+          tithi and masa context, Vedic Prashna Kundli chart details, and paid consultation
           booking with Sanjay Kumar Pandey.
         </p>
         <div className="mt-5 flex flex-wrap gap-2">
@@ -144,7 +144,7 @@ export default async function ShreemAstrologyPage(props: {
             </h3>
             <p className="mt-2 text-sm leading-7 text-[var(--shreem-muted)]">
               Select a city and date to see local sunrise, sunset, day
-              Choghadiya, night Choghadiya, and 30 muhurta planning windows.
+              Choghadiya, night Choghadiya, and Hindi calendar context.
             </p>
           </div>
           <div className="brand-card px-4 py-4">

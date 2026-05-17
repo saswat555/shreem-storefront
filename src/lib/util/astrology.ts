@@ -42,6 +42,27 @@ export type DailyMuhurat = {
   muhurtaSlots: MuhurtaSlot[]
 }
 
+export type HindiMonthInfo = {
+  name: string
+  commonName: string
+  sunSign: string
+  significance: string
+  focus: string
+}
+
+export type HindiCalendarDay = {
+  date: string
+  city: AstrologyCity
+  weekday: string
+  tithi: string
+  paksha: "Shukla" | "Krishna"
+  month: HindiMonthInfo
+  nakshatra: string
+  yoga: string
+  karana: string
+  note: string
+}
+
 export type PrashnaChart = {
   generatedAtIso: string
   generatedAtLocal: string
@@ -217,6 +238,108 @@ export const HOUSE_THEMES = [
   "Loss, isolation, sleep, foreign matters",
 ]
 
+const HINDI_MONTHS_BY_SUN_SIGN: Record<string, HindiMonthInfo> = {
+  Pisces: {
+    name: "Chaitra",
+    commonName: "Chait",
+    sunSign: "Pisces",
+    significance:
+      "Chaitra begins the traditional Hindu year in many panchang traditions and is associated with renewal, Navratri, Ram Navami, and fresh sankalpa.",
+    focus: "Renewal, discipline, worship, and beginning clean routines.",
+  },
+  Aries: {
+    name: "Vaishakha",
+    commonName: "Baisakh",
+    sunSign: "Aries",
+    significance:
+      "Vaishakha is praised for snan, daan, japa, Akshaya Tritiya, and steady punya-oriented work.",
+    focus: "Charity, purity, water offering, and stable prosperity.",
+  },
+  Taurus: {
+    name: "Jyeshtha",
+    commonName: "Jeth",
+    sunSign: "Taurus",
+    significance:
+      "Jyeshtha falls in the intense summer period and emphasizes water charity, protection from heat, restraint, Vat Savitri, and Ganga Dussehra observances.",
+    focus: "Cooling care, patience, protection, and family wellbeing.",
+  },
+  Gemini: {
+    name: "Ashadha",
+    commonName: "Asadh",
+    sunSign: "Gemini",
+    significance:
+      "Ashadha carries Guru Purnima energy and leads into Chaturmas, a period for learning, vows, and spiritual steadiness.",
+    focus: "Guru bhakti, study, vows, and inner discipline.",
+  },
+  Cancer: {
+    name: "Shravana",
+    commonName: "Sawan",
+    sunSign: "Cancer",
+    significance:
+      "Shravana is deeply connected with Shiva worship, rainfall, greenery, fasting, and devotional practice.",
+    focus: "Shiva bhakti, healing, devotion, and simple living.",
+  },
+  Leo: {
+    name: "Bhadrapada",
+    commonName: "Bhado",
+    sunSign: "Leo",
+    significance:
+      "Bhadrapada is known for Shri Krishna, Ganesha Chaturthi, Anant Chaturdashi, and dharmic household observances.",
+    focus: "Wisdom, remover-of-obstacles worship, and family dharma.",
+  },
+  Virgo: {
+    name: "Ashwin",
+    commonName: "Asoj",
+    sunSign: "Virgo",
+    significance:
+      "Ashwin includes Pitru Paksha, Sharad Navratri, and Vijayadashami, balancing ancestral remembrance with Devi worship.",
+    focus: "Ancestral gratitude, Devi sadhana, and victory over inertia.",
+  },
+  Libra: {
+    name: "Kartik",
+    commonName: "Kartik",
+    sunSign: "Libra",
+    significance:
+      "Kartik is treasured for deepdaan, Tulsi worship, Govardhan, and devotion around light, purity, and bhakti.",
+    focus: "Light, devotion, gratitude, and sacred household rituals.",
+  },
+  Scorpio: {
+    name: "Margashirsha",
+    commonName: "Agahan",
+    sunSign: "Scorpio",
+    significance:
+      "Margashirsha is associated with Krishna bhakti, Gita Jayanti, and quiet nourishment of faith and knowledge.",
+    focus: "Learning, Krishna smaran, and grounded prosperity.",
+  },
+  Sagittarius: {
+    name: "Pausha",
+    commonName: "Pus",
+    sunSign: "Sagittarius",
+    significance:
+      "Pausha is a winter month for Surya worship, discipline, warmth, and preserving health through restrained living.",
+    focus: "Health, warmth, Surya upasana, and restraint.",
+  },
+  Capricorn: {
+    name: "Magha",
+    commonName: "Magh",
+    sunSign: "Capricorn",
+    significance:
+      "Magha is known for sacred bathing, daan, Mauni Amavasya, and deep purification practices.",
+    focus: "Purification, silence, charity, and ancestral respect.",
+  },
+  Aquarius: {
+    name: "Phalguna",
+    commonName: "Phagun",
+    sunSign: "Aquarius",
+    significance:
+      "Phalguna brings Holika, Holi, seasonal transition, forgiveness, joy, and completion before the new yearly cycle.",
+    focus: "Joy, forgiveness, completion, and community harmony.",
+  },
+}
+
+export const getHindiMonthInfoBySunSign = (sunSign: string) =>
+  HINDI_MONTHS_BY_SUN_SIGN[sunSign] || HINDI_MONTHS_BY_SUN_SIGN.Pisces
+
 export const ASTROLOGY_CITIES: AstrologyCity[] = [
   { id: "rewa", name: "Rewa", region: "Madhya Pradesh", latitude: 24.5362, longitude: 81.3037, timeZone: "Asia/Kolkata", utcOffsetHours: 5.5 },
   { id: "delhi", name: "Delhi", region: "Delhi", latitude: 28.6139, longitude: 77.209, timeZone: "Asia/Kolkata", utcOffsetHours: 5.5 },
@@ -284,11 +407,10 @@ const dayOfYear = ({ year, month, day }: { year: number; month: number; day: num
   return Math.floor((current - start) / 86400000)
 }
 
-const getWeekdayIndex = (date: string, offsetHours = 5.5) => {
+const getWeekdayIndex = (date: string) => {
   const { year, month, day } = parseDateParts(date)
-  const utc = Date.UTC(year, month - 1, day) - offsetHours * 60 * 60 * 1000
 
-  return new Date(utc).getUTCDay()
+  return new Date(Date.UTC(year, month - 1, day, 12)).getUTCDay()
 }
 
 const calculateSunTime = ({
@@ -423,7 +545,7 @@ export const calculateDailyMuhurat = ({
   city: AstrologyCity
   date: string
 }): DailyMuhurat => {
-  const weekdayIndex = getWeekdayIndex(date, city.utcOffsetHours)
+  const weekdayIndex = getWeekdayIndex(date)
   const sunriseMinute = calculateSunTime({ date, city, isSunrise: true })
   const sunsetMinute = calculateSunTime({ date, city, isSunrise: false })
   const nextSunriseMinute =

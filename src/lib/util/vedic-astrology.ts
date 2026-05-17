@@ -5,10 +5,12 @@ import {
   KARANAS,
   SIGN_LORDS,
   YOGAS,
+  getHindiMonthInfoBySunSign,
   getDegreeInSign,
   getNakshatraFromDegree,
   getSignFromDegree,
   type AstrologyCity,
+  type HindiCalendarDay,
   type PrashnaChart,
   type PrashnaHouse,
   type PrashnaPlanet,
@@ -106,6 +108,14 @@ const getWeekday = (date: Date, city: AstrologyCity) =>
     timeZone: city.timeZone,
     weekday: "long",
   }).format(date)
+
+const getLocalNoonDate = (date: string, city: AstrologyCity) => {
+  const [year, month, day] = date.split("-").map(Number)
+  const utcMs =
+    Date.UTC(year, month - 1, day, 12) - city.utcOffsetHours * 60 * 60 * 1000
+
+  return new Date(utcMs)
+}
 
 const getLocalDateTime = (date: Date, city: AstrologyCity) =>
   new Intl.DateTimeFormat("en-IN", {
@@ -408,5 +418,32 @@ export const buildDetailedPrashnaChart = ({
     ],
     accuracyNote:
       "Chart is calculated with astronomical ephemeris and an approximate mean Lahiri ayanamsa. It is suitable for first-pass Prashna guidance; final ritual, gemstone, medical, legal, or financial decisions should be confirmed with a qualified astrologer or professional.",
+  }
+}
+
+export const buildHindiCalendarDay = ({
+  city,
+  date,
+}: {
+  city: AstrologyCity
+  date: string
+}): HindiCalendarDay => {
+  const chart = buildDetailedPrashnaChart({
+    city,
+    date: getLocalNoonDate(date, city),
+  })
+
+  return {
+    date,
+    city,
+    weekday: chart.weekday,
+    tithi: chart.tithi,
+    paksha: chart.paksha,
+    month: getHindiMonthInfoBySunSign(chart.sunSign),
+    nakshatra: `${chart.nakshatra} pada ${chart.nakshatraPada}`,
+    yoga: chart.yoga,
+    karana: chart.karana,
+    note:
+      "Calculated for the selected city and date around local midday. Local panchang traditions can differ slightly by sunrise rules and regional calendar style.",
   }
 }
