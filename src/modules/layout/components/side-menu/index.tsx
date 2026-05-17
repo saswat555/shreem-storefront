@@ -51,6 +51,12 @@ const SideMenuItems: SideMenuItem[] = [
     icon: BookOpen,
   },
   {
+    name: "Shreem Astrology",
+    href: "/shreem-astrology",
+    description: "Muhurth, Prashna, and paid calls",
+    icon: Sparkles,
+  },
+  {
     name: "GrowBuddy AI",
     href: "/prakriti-guide",
     description: "Plant and animal care from photos",

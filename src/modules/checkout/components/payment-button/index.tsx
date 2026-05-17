@@ -13,6 +13,9 @@ type PaymentButtonProps = {
   "data-testid": string
 }
 
+const CHECKOUT_ERROR_MESSAGE =
+  "We could not place this order right now. Please confirm the payment and delivery details, then try again. If money was deducted, contact support with your phone number and cart details."
+
 const PaymentButton: React.FC<PaymentButtonProps> = ({
   cart,
   "data-testid": dataTestId,
@@ -74,7 +77,8 @@ const StripePaymentButton = ({
   const onPaymentCompleted = async () => {
     await placeOrder()
       .catch((err) => {
-        setErrorMessage(err.message)
+        console.error("Place order failed", err)
+        setErrorMessage(CHECKOUT_ERROR_MESSAGE)
       })
       .finally(() => {
         setSubmitting(false)
@@ -132,7 +136,10 @@ const StripePaymentButton = ({
             onPaymentCompleted()
           }
 
-          setErrorMessage(error.message || null)
+          setErrorMessage(
+            error.message ||
+              "Payment could not be confirmed. Please try again or choose another payment method."
+          )
           return
         }
 
@@ -180,7 +187,8 @@ const OfflinePaymentButton = ({
   const onPaymentCompleted = async () => {
     await placeOrder()
       .catch((err) => {
-        setErrorMessage(err.message)
+        console.error("Place order failed", err)
+        setErrorMessage(CHECKOUT_ERROR_MESSAGE)
       })
       .finally(() => {
         setSubmitting(false)

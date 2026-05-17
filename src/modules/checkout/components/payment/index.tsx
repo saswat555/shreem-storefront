@@ -3,9 +3,15 @@
 import { RadioGroup } from "@headlessui/react"
 import { getPaymentInfo, isStripeLike, paymentInfoMap } from "@lib/constants"
 import { initiatePaymentSession } from "@lib/data/cart"
+import {
+  isIndianAddress,
+  isShiprocketShippingOption,
+  normalizePincode,
+} from "@lib/util/shiprocket"
 import { CheckCircleSolid, CreditCard } from "@medusajs/icons"
 import { Button, Container, Heading, Text, clx } from "@medusajs/ui"
 import ErrorMessage from "@modules/checkout/components/error-message"
+import { useShiprocketCheckout } from "@modules/checkout/context/shiprocket-context"
 import PaymentContainer, {
   StripeCardContainer,
 } from "@modules/checkout/components/payment-container"
@@ -20,6 +26,7 @@ const Payment = ({
   cart: any
   availablePaymentMethods: any[]
 }) => {
+  const shiprocket = useShiprocketCheckout()
   const activeSession =
     cart.payment_collection?.payment_sessions?.find(
       (paymentSession: any) =>
@@ -54,11 +61,58 @@ const Payment = ({
 
   const paidByGiftcard =
     cart?.gift_cards && cart?.gift_cards?.length > 0 && cart?.total === 0
+  const selectedShippingMethod = cart.shipping_methods?.at(-1)
+  const isIndianDelivery = isIndianAddress(cart.shipping_address?.country_code)
+  const deliveryPincode = normalizePincode(cart.shipping_address?.postal_code)
+  const selectedIsShiprocket =
+    isShiprocketShippingOption(selectedShippingMethod)
+  const shiprocketQuoteReady =
+    shiprocket.status === "available" &&
+    Boolean(shiprocket.rate) &&
+    shiprocket.postalCode === deliveryPincode
+  const fallbackAllowed =
+    shiprocket.status === "error" &&
+    Boolean(selectedShippingMethod) &&
+    !selectedIsShiprocket
+  const shiprocketPaymentReady =
+    !isIndianDelivery ||
+    fallbackAllowed ||
+    (shiprocketQuoteReady && selectedIsShiprocket)
+  const shiprocketPaymentMessage = (() => {
+    if (!isIndianDelivery || shiprocketPaymentReady) {
+      return null
+    }
+
+    if (shiprocket.status === "loading") {
+      return "Checking the Shiprocket delivery price before payment."
+    }
+
+    if (shiprocket.status === "unavailable") {
+      return (
+        shiprocket.error ||
+        "Delivery is not available for this pincode. Please try another address."
+      )
+    }
+
+    if (shiprocket.status === "error") {
+      return (
+        shiprocket.error ||
+        "Unable to calculate shipping right now. Please try again."
+      )
+    }
+
+    if (!shiprocketQuoteReady) {
+      return "Calculate Shiprocket Delivery for this pincode before payment."
+    }
+
+    return "Select Shiprocket Delivery so the live shipping price is included in payment."
+  })()
 
   const paymentReady =
-    ((activeSession || selectedPaymentMethod) &&
+    (((activeSession || selectedPaymentMethod) &&
       cart?.shipping_methods.length !== 0) ||
-    paidByGiftcard
+      paidByGiftcard) &&
+    shiprocketPaymentReady
 
   const createQueryString = useCallback(
     (name: string, value: string) => {
@@ -77,6 +131,11 @@ const Payment = ({
   }
 
   const handleSubmit = async () => {
+    if (shiprocketPaymentMessage) {
+      setError(shiprocketPaymentMessage)
+      return
+    }
+
     setIsLoading(true)
     try {
       const shouldInputCard =
@@ -197,6 +256,11 @@ const Payment = ({
             error={error}
             data-testid="payment-method-error-message"
           />
+          {shiprocketPaymentMessage && (
+            <div className="mt-4 rounded-[16px] border border-[rgba(212,161,38,0.24)] bg-[rgba(255,248,233,0.78)] px-4 py-3 text-sm leading-6 text-[var(--shreem-ink)]">
+              {shiprocketPaymentMessage}
+            </div>
+          )}
 
           <Button
             size="large"
@@ -205,7 +269,8 @@ const Payment = ({
             isLoading={isLoading}
             disabled={
               (isStripeLike(selectedPaymentMethod) && !cardComplete) ||
-              (!selectedPaymentMethod && !paidByGiftcard)
+              (!selectedPaymentMethod && !paidByGiftcard) ||
+              Boolean(shiprocketPaymentMessage)
             }
             data-testid="submit-payment-button"
           >

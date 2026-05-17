@@ -11,7 +11,8 @@ import LineItemUnitPrice from "@modules/common/components/line-item-unit-price"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import Spinner from "@modules/common/icons/spinner"
 import Thumbnail from "@modules/products/components/thumbnail"
-import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
 
 type ItemProps = {
   item: HttpTypes.StoreCartLineItem
@@ -20,8 +21,10 @@ type ItemProps = {
 }
 
 const Item = ({ item, type = "full", currencyCode }: ItemProps) => {
+  const router = useRouter()
   const [updating, setUpdating] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [quantity, setQuantity] = useState(item.quantity || 1)
   const itemProduct = item.product as
     | { thumbnail?: string | null; images?: { url?: string | null }[] | null }
     | undefined
@@ -33,27 +36,49 @@ const Item = ({ item, type = "full", currencyCode }: ItemProps) => {
   const lineItemImages =
     variantProduct?.images || itemProduct?.images || item.variant?.images
 
-  const changeQuantity = async (quantity: number) => {
+  useEffect(() => {
+    setQuantity(item.quantity || 1)
+  }, [item.quantity])
+
+  const changeQuantity = async (nextQuantity: number) => {
+    if (nextQuantity < 1 || updating) {
+      return
+    }
+
+    const previousQuantity = quantity
     setError(null)
+    setQuantity(nextQuantity)
     setUpdating(true)
 
     await updateLineItem({
       lineId: item.id,
-      quantity,
+      quantity: nextQuantity,
     })
       .catch((err) => {
-        setError(err.message)
+        setQuantity(previousQuantity)
+        setError(
+          err?.message ||
+            "We could not update this item quantity. Please try again."
+        )
       })
       .finally(() => {
         setUpdating(false)
+        router.refresh()
       })
   }
 
-  // TODO: Update this to grab the actual max inventory
-  const maxQtyFromInventory = 10
-  const maxQuantity = item.variant?.manage_inventory ? 10 : maxQtyFromInventory
-  const canDecrease = item.quantity > 1 && !updating
-  const canIncrease = item.quantity < Math.min(maxQuantity, 10) && !updating
+  const inventoryQuantity = Number(
+    (item.variant as { inventory_quantity?: number | null } | undefined)
+      ?.inventory_quantity
+  )
+  const maxQuantity =
+    item.variant?.manage_inventory &&
+    Number.isFinite(inventoryQuantity) &&
+    inventoryQuantity > 0
+      ? inventoryQuantity
+      : 99
+  const canDecrease = quantity > 1 && !updating
+  const canIncrease = quantity < maxQuantity && !updating
 
   return (
     <Table.Row
@@ -98,19 +123,19 @@ const Item = ({ item, type = "full", currencyCode }: ItemProps) => {
                 type="button"
                 aria-label="Decrease quantity"
                 disabled={!canDecrease}
-                onClick={() => changeQuantity(item.quantity - 1)}
+                onClick={() => changeQuantity(quantity - 1)}
                 className="flex h-8 w-8 items-center justify-center rounded-full text-lg font-medium text-[var(--shreem-ink)] disabled:cursor-not-allowed disabled:opacity-35"
               >
                 -
               </button>
               <span className="min-w-[2rem] text-center text-sm font-semibold text-[var(--shreem-ink)]">
-                {item.quantity}
+                {quantity}
               </span>
               <button
                 type="button"
                 aria-label="Increase quantity"
                 disabled={!canIncrease}
-                onClick={() => changeQuantity(item.quantity + 1)}
+                onClick={() => changeQuantity(quantity + 1)}
                 className="flex h-8 w-8 items-center justify-center rounded-full text-lg font-medium text-[var(--shreem-ink)] disabled:cursor-not-allowed disabled:opacity-35"
               >
                 +

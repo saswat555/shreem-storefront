@@ -7,6 +7,7 @@ import LocalizedClientLink from "@modules/common/components/localized-client-lin
 
 const navItems = [
   { label: "Shop", href: "/store" },
+  { label: "Astrology", href: "/shreem-astrology" },
   { label: "Journal", href: "/journal" },
   { label: "Support", href: "/customer-service" },
   { label: "Account", href: "/account" },

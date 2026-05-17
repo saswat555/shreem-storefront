@@ -1,22 +1,47 @@
 "use client"
 
+import {
+  isIndianAddress,
+  isShiprocketShippingOption,
+  normalizePincode,
+} from "@lib/util/shiprocket"
 import { Heading, Text, clx } from "@medusajs/ui"
+import { useShiprocketCheckout } from "@modules/checkout/context/shiprocket-context"
 
 import PaymentButton from "../payment-button"
 import { useSearchParams } from "next/navigation"
 
 const Review = ({ cart }: { cart: any }) => {
+  const shiprocket = useShiprocketCheckout()
   const searchParams = useSearchParams()
 
   const isOpen = searchParams.get("step") === "review"
 
   const paidByGiftcard =
     cart?.gift_cards && cart?.gift_cards?.length > 0 && cart?.total === 0
+  const selectedShippingMethod = cart.shipping_methods?.at(-1)
+  const isIndianDelivery = isIndianAddress(cart.shipping_address?.country_code)
+  const deliveryPincode = normalizePincode(cart.shipping_address?.postal_code)
+  const selectedIsShiprocket =
+    isShiprocketShippingOption(selectedShippingMethod)
+  const shiprocketQuoteReady =
+    shiprocket.status === "available" &&
+    Boolean(shiprocket.rate) &&
+    shiprocket.postalCode === deliveryPincode
+  const fallbackAllowed =
+    shiprocket.status === "error" &&
+    Boolean(selectedShippingMethod) &&
+    !selectedIsShiprocket
+  const shiprocketReady =
+    !isIndianDelivery ||
+    fallbackAllowed ||
+    (shiprocketQuoteReady && selectedIsShiprocket)
 
   const previousStepsCompleted =
     cart.shipping_address &&
     cart.shipping_methods.length > 0 &&
-    (cart.payment_collection || paidByGiftcard)
+    (cart.payment_collection || paidByGiftcard) &&
+    shiprocketReady
 
   return (
     <section className="brand-card px-4 py-5 small:px-6 small:py-6">
@@ -56,6 +81,12 @@ const Review = ({ cart }: { cart: any }) => {
           </div>
           <PaymentButton cart={cart} data-testid="submit-order-button" />
         </>
+      )}
+      {isOpen && !shiprocketReady && (
+        <div className="rounded-[18px] border border-[rgba(212,161,38,0.24)] bg-[rgba(255,248,233,0.78)] px-4 py-4 text-sm leading-6 text-[var(--shreem-ink)]">
+          Shiprocket delivery must be calculated and synced before the order can
+          be placed. Return to Delivery and select Shiprocket Delivery.
+        </div>
       )}
     </section>
   )

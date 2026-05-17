@@ -1,6 +1,7 @@
 import { retrieveCart } from "@lib/data/cart"
 import { retrieveCustomer } from "@lib/data/customer"
 import PaymentWrapper from "@modules/checkout/components/payment-wrapper"
+import { ShiprocketCheckoutProvider } from "@modules/checkout/context/shiprocket-context"
 import CheckoutForm from "@modules/checkout/templates/checkout-form"
 import CheckoutSummary from "@modules/checkout/templates/checkout-summary"
 import { Metadata } from "next"
@@ -71,12 +72,14 @@ export default async function Checkout(props: {
         </div>
       </section>
 
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_400px] xl:gap-8">
-        <PaymentWrapper cart={cart}>
-          <CheckoutForm cart={cart} customer={customer} />
-        </PaymentWrapper>
-        <CheckoutSummary cart={cart} />
-      </div>
+      <ShiprocketCheckoutProvider cart={cart}>
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_400px] xl:gap-8">
+          <PaymentWrapper cart={cart}>
+            <CheckoutForm cart={cart} customer={customer} />
+          </PaymentWrapper>
+          <CheckoutSummary cart={cart} />
+        </div>
+      </ShiprocketCheckoutProvider>
     </div>
   )
 }

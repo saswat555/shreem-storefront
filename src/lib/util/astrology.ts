@@ -1,0 +1,554 @@
+export type AstrologyCity = {
+  id: string
+  name: string
+  region: string
+  latitude: number
+  longitude: number
+  timeZone: string
+  utcOffsetHours: number
+}
+
+export type ChoghadiyaName =
+  | "Amrit"
+  | "Shubh"
+  | "Labh"
+  | "Char"
+  | "Kaal"
+  | "Rog"
+  | "Udveg"
+
+export type MuhurtaSlot = {
+  index: number
+  name: ChoghadiyaName | string
+  startMinute: number
+  endMinute: number
+  startLabel: string
+  endLabel: string
+  quality: "auspicious" | "neutral" | "avoid"
+  note: string
+}
+
+export type DailyMuhurat = {
+  city: AstrologyCity
+  date: string
+  weekday: string
+  sunriseMinute: number
+  sunsetMinute: number
+  nextSunriseMinute: number
+  sunriseLabel: string
+  sunsetLabel: string
+  daySlots: MuhurtaSlot[]
+  nightSlots: MuhurtaSlot[]
+  muhurtaSlots: MuhurtaSlot[]
+}
+
+export type PrashnaChart = {
+  generatedAtIso: string
+  generatedAtLocal: string
+  city: AstrologyCity
+  calculationSystem: string
+  weekday: string
+  ayanamsa: number
+  ascendant: string
+  ascendantDegree: number
+  ascendantLongitude: number
+  ascendantNakshatra: string
+  ascendantPada: number
+  moonSign: string
+  moonDegree: number
+  moonLongitude: number
+  sunSign: string
+  sunDegree: number
+  sunLongitude: number
+  nakshatra: string
+  nakshatraPada: number
+  tithi: string
+  paksha: "Shukla" | "Krishna"
+  yoga: string
+  karana: string
+  planets: PrashnaPlanet[]
+  houses: PrashnaHouse[]
+  prashnaFactors: string[]
+  accuracyNote: string
+}
+
+export type PrashnaPlanet = {
+  key: string
+  name: string
+  longitude: number
+  latitude?: number
+  sign: string
+  signDegree: number
+  nakshatra: string
+  pada: number
+  house: number
+  retrograde?: boolean
+}
+
+export type PrashnaHouse = {
+  house: number
+  sign: string
+  signLord: string
+  theme: string
+}
+
+const WEEKDAYS = [
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+]
+
+const SIGNS = [
+  "Aries",
+  "Taurus",
+  "Gemini",
+  "Cancer",
+  "Leo",
+  "Virgo",
+  "Libra",
+  "Scorpio",
+  "Sagittarius",
+  "Capricorn",
+  "Aquarius",
+  "Pisces",
+]
+
+const NAKSHATRAS = [
+  "Ashwini",
+  "Bharani",
+  "Krittika",
+  "Rohini",
+  "Mrigashira",
+  "Ardra",
+  "Punarvasu",
+  "Pushya",
+  "Ashlesha",
+  "Magha",
+  "Purva Phalguni",
+  "Uttara Phalguni",
+  "Hasta",
+  "Chitra",
+  "Swati",
+  "Vishakha",
+  "Anuradha",
+  "Jyeshtha",
+  "Mula",
+  "Purva Ashadha",
+  "Uttara Ashadha",
+  "Shravana",
+  "Dhanishta",
+  "Shatabhisha",
+  "Purva Bhadrapada",
+  "Uttara Bhadrapada",
+  "Revati",
+]
+
+export const YOGAS = [
+  "Vishkambha",
+  "Priti",
+  "Ayushman",
+  "Saubhagya",
+  "Shobhana",
+  "Atiganda",
+  "Sukarma",
+  "Dhriti",
+  "Shoola",
+  "Ganda",
+  "Vriddhi",
+  "Dhruva",
+  "Vyaghata",
+  "Harshana",
+  "Vajra",
+  "Siddhi",
+  "Vyatipata",
+  "Variyan",
+  "Parigha",
+  "Shiva",
+  "Siddha",
+  "Sadhya",
+  "Shubha",
+  "Shukla",
+  "Brahma",
+  "Indra",
+  "Vaidhriti",
+]
+
+export const KARANAS = [
+  "Bava",
+  "Balava",
+  "Kaulava",
+  "Taitila",
+  "Garaja",
+  "Vanija",
+  "Vishti",
+]
+
+export const SIGN_LORDS: Record<string, string> = {
+  Aries: "Mars",
+  Taurus: "Venus",
+  Gemini: "Mercury",
+  Cancer: "Moon",
+  Leo: "Sun",
+  Virgo: "Mercury",
+  Libra: "Venus",
+  Scorpio: "Mars",
+  Sagittarius: "Jupiter",
+  Capricorn: "Saturn",
+  Aquarius: "Saturn",
+  Pisces: "Jupiter",
+}
+
+export const HOUSE_THEMES = [
+  "Questioner, body, intent, immediate direction",
+  "Speech, resources, family, value",
+  "Effort, courage, communication, siblings",
+  "Home, land, emotional base, vehicles",
+  "Intelligence, children, mantra, creativity",
+  "Obstacles, disease, service, dispute",
+  "Partner, public dealing, agreements",
+  "Sudden events, hidden matters, transformation",
+  "Fortune, dharma, teacher, long travel",
+  "Action, profession, authority, outcome visibility",
+  "Gains, network, fulfillment",
+  "Loss, isolation, sleep, foreign matters",
+]
+
+export const ASTROLOGY_CITIES: AstrologyCity[] = [
+  { id: "rewa", name: "Rewa", region: "Madhya Pradesh", latitude: 24.5362, longitude: 81.3037, timeZone: "Asia/Kolkata", utcOffsetHours: 5.5 },
+  { id: "delhi", name: "Delhi", region: "Delhi", latitude: 28.6139, longitude: 77.209, timeZone: "Asia/Kolkata", utcOffsetHours: 5.5 },
+  { id: "mumbai", name: "Mumbai", region: "Maharashtra", latitude: 19.076, longitude: 72.8777, timeZone: "Asia/Kolkata", utcOffsetHours: 5.5 },
+  { id: "bengaluru", name: "Bengaluru", region: "Karnataka", latitude: 12.9716, longitude: 77.5946, timeZone: "Asia/Kolkata", utcOffsetHours: 5.5 },
+  { id: "kolkata", name: "Kolkata", region: "West Bengal", latitude: 22.5726, longitude: 88.3639, timeZone: "Asia/Kolkata", utcOffsetHours: 5.5 },
+  { id: "chennai", name: "Chennai", region: "Tamil Nadu", latitude: 13.0827, longitude: 80.2707, timeZone: "Asia/Kolkata", utcOffsetHours: 5.5 },
+  { id: "hyderabad", name: "Hyderabad", region: "Telangana", latitude: 17.385, longitude: 78.4867, timeZone: "Asia/Kolkata", utcOffsetHours: 5.5 },
+  { id: "varanasi", name: "Varanasi", region: "Uttar Pradesh", latitude: 25.3176, longitude: 82.9739, timeZone: "Asia/Kolkata", utcOffsetHours: 5.5 },
+  { id: "ujjain", name: "Ujjain", region: "Madhya Pradesh", latitude: 23.1765, longitude: 75.7885, timeZone: "Asia/Kolkata", utcOffsetHours: 5.5 },
+  { id: "jaipur", name: "Jaipur", region: "Rajasthan", latitude: 26.9124, longitude: 75.7873, timeZone: "Asia/Kolkata", utcOffsetHours: 5.5 },
+  { id: "lucknow", name: "Lucknow", region: "Uttar Pradesh", latitude: 26.8467, longitude: 80.9462, timeZone: "Asia/Kolkata", utcOffsetHours: 5.5 },
+  { id: "bhopal", name: "Bhopal", region: "Madhya Pradesh", latitude: 23.2599, longitude: 77.4126, timeZone: "Asia/Kolkata", utcOffsetHours: 5.5 },
+]
+
+const DAY_SEQUENCES: Record<number, ChoghadiyaName[]> = {
+  0: ["Udveg", "Char", "Labh", "Amrit", "Kaal", "Shubh", "Rog", "Udveg"],
+  1: ["Amrit", "Kaal", "Shubh", "Rog", "Udveg", "Char", "Labh", "Amrit"],
+  2: ["Rog", "Udveg", "Char", "Labh", "Amrit", "Kaal", "Shubh", "Rog"],
+  3: ["Labh", "Amrit", "Kaal", "Shubh", "Rog", "Udveg", "Char", "Labh"],
+  4: ["Shubh", "Rog", "Udveg", "Char", "Labh", "Amrit", "Kaal", "Shubh"],
+  5: ["Char", "Labh", "Amrit", "Kaal", "Shubh", "Rog", "Udveg", "Char"],
+  6: ["Kaal", "Shubh", "Rog", "Udveg", "Char", "Labh", "Amrit", "Kaal"],
+}
+
+const NIGHT_SEQUENCES: Record<number, ChoghadiyaName[]> = {
+  0: ["Shubh", "Amrit", "Char", "Rog", "Kaal", "Labh", "Udveg", "Shubh"],
+  1: ["Char", "Rog", "Kaal", "Labh", "Udveg", "Shubh", "Amrit", "Char"],
+  2: ["Kaal", "Labh", "Udveg", "Shubh", "Amrit", "Char", "Rog", "Kaal"],
+  3: ["Udveg", "Shubh", "Amrit", "Char", "Rog", "Kaal", "Labh", "Udveg"],
+  4: ["Amrit", "Char", "Rog", "Kaal", "Labh", "Udveg", "Shubh", "Amrit"],
+  5: ["Rog", "Kaal", "Labh", "Udveg", "Shubh", "Amrit", "Char", "Rog"],
+  6: ["Labh", "Udveg", "Shubh", "Amrit", "Char", "Rog", "Kaal", "Labh"],
+}
+
+const normalizeDegrees = (value: number) => ((value % 360) + 360) % 360
+const toRadians = (value: number) => (Math.PI / 180) * value
+const toDegrees = (value: number) => (180 / Math.PI) * value
+
+export const getCityById = (cityId?: string) =>
+  ASTROLOGY_CITIES.find((city) => city.id === cityId) || ASTROLOGY_CITIES[0]
+
+export const getTodayDateString = (date = new Date(), timeZone = "Asia/Kolkata") => {
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(date)
+  const get = (type: string) => parts.find((part) => part.type === type)?.value
+
+  return `${get("year")}-${get("month")}-${get("day")}`
+}
+
+const parseDateParts = (date: string) => {
+  const [year, month, day] = date.split("-").map(Number)
+
+  return { year, month, day }
+}
+
+const dayOfYear = ({ year, month, day }: { year: number; month: number; day: number }) => {
+  const current = Date.UTC(year, month - 1, day)
+  const start = Date.UTC(year, 0, 0)
+
+  return Math.floor((current - start) / 86400000)
+}
+
+const getWeekdayIndex = (date: string, offsetHours = 5.5) => {
+  const { year, month, day } = parseDateParts(date)
+  const utc = Date.UTC(year, month - 1, day) - offsetHours * 60 * 60 * 1000
+
+  return new Date(utc).getUTCDay()
+}
+
+const calculateSunTime = ({
+  date,
+  city,
+  isSunrise,
+}: {
+  date: string
+  city: AstrologyCity
+  isSunrise: boolean
+}) => {
+  const parts = parseDateParts(date)
+  const zenith = 90.833
+  const n = dayOfYear(parts)
+  const lngHour = city.longitude / 15
+  const t = n + ((isSunrise ? 6 : 18) - lngHour) / 24
+  const m = 0.9856 * t - 3.289
+  let l =
+    m +
+    1.916 * Math.sin(toRadians(m)) +
+    0.02 * Math.sin(toRadians(2 * m)) +
+    282.634
+  l = normalizeDegrees(l)
+
+  let ra = toDegrees(Math.atan(0.91764 * Math.tan(toRadians(l))))
+  ra = normalizeDegrees(ra)
+  const lQuadrant = Math.floor(l / 90) * 90
+  const raQuadrant = Math.floor(ra / 90) * 90
+  ra = (ra + lQuadrant - raQuadrant) / 15
+
+  const sinDec = 0.39782 * Math.sin(toRadians(l))
+  const cosDec = Math.cos(Math.asin(sinDec))
+  const cosH =
+    (Math.cos(toRadians(zenith)) -
+      sinDec * Math.sin(toRadians(city.latitude))) /
+    (cosDec * Math.cos(toRadians(city.latitude)))
+
+  if (cosH > 1 || cosH < -1) {
+    return isSunrise ? 6 * 60 : 18 * 60
+  }
+
+  let h = isSunrise ? 360 - toDegrees(Math.acos(cosH)) : toDegrees(Math.acos(cosH))
+  h /= 15
+
+  const localHours =
+    h + ra - 0.06571 * t - 6.622 - lngHour + city.utcOffsetHours
+  const normalizedHours = ((localHours % 24) + 24) % 24
+
+  return Math.round(normalizedHours * 60)
+}
+
+const addDays = (date: string, days: number) => {
+  const { year, month, day } = parseDateParts(date)
+  const next = new Date(Date.UTC(year, month - 1, day + days))
+
+  return next.toISOString().slice(0, 10)
+}
+
+export const formatMinuteLabel = (minute: number) => {
+  const dayOffset = Math.floor(minute / 1440)
+  const normalized = ((Math.round(minute) % 1440) + 1440) % 1440
+  const hours = Math.floor(normalized / 60)
+  const minutes = normalized % 60
+  const prefix = dayOffset > 0 ? "Next day " : ""
+
+  return `${prefix}${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`
+}
+
+const getQuality = (name: string): MuhurtaSlot["quality"] => {
+  if (["Amrit", "Shubh", "Labh", "Char"].includes(name)) {
+    return "auspicious"
+  }
+
+  return name === "Kaal" || name === "Rog" || name === "Udveg"
+    ? "avoid"
+    : "neutral"
+}
+
+const getNote = (name: string) => {
+  switch (name) {
+    case "Amrit":
+      return "Best for important beginnings, worship, and high-intent work."
+    case "Shubh":
+      return "Good for positive starts, meetings, and household decisions."
+    case "Labh":
+      return "Good for business, purchases, learning, and gains."
+    case "Char":
+      return "Good for travel, movement, calls, and quick action."
+    case "Kaal":
+      return "Avoid starting sensitive or high-value work."
+    case "Rog":
+      return "Avoid new commitments; keep focus on repair and caution."
+    case "Udveg":
+      return "Restless window; avoid conflict-heavy decisions."
+    default:
+      return "Use this as a short 48-minute planning window."
+  }
+}
+
+const createSlots = ({
+  start,
+  end,
+  names,
+}: {
+  start: number
+  end: number
+  names: string[]
+}) => {
+  const duration = (end - start) / names.length
+
+  return names.map((name, index) => {
+    const startMinute = start + duration * index
+    const endMinute = start + duration * (index + 1)
+
+    return {
+      index: index + 1,
+      name,
+      startMinute,
+      endMinute,
+      startLabel: formatMinuteLabel(startMinute),
+      endLabel: formatMinuteLabel(endMinute),
+      quality: getQuality(name),
+      note: getNote(name),
+    }
+  })
+}
+
+export const calculateDailyMuhurat = ({
+  city,
+  date,
+}: {
+  city: AstrologyCity
+  date: string
+}): DailyMuhurat => {
+  const weekdayIndex = getWeekdayIndex(date, city.utcOffsetHours)
+  const sunriseMinute = calculateSunTime({ date, city, isSunrise: true })
+  const sunsetMinute = calculateSunTime({ date, city, isSunrise: false })
+  const nextSunriseMinute =
+    1440 +
+    calculateSunTime({
+      date: addDays(date, 1),
+      city,
+      isSunrise: true,
+    })
+
+  const daySlots = createSlots({
+    start: sunriseMinute,
+    end: sunsetMinute,
+    names: DAY_SEQUENCES[weekdayIndex],
+  }) as MuhurtaSlot[]
+  const nightSlots = createSlots({
+    start: sunsetMinute,
+    end: nextSunriseMinute,
+    names: NIGHT_SEQUENCES[weekdayIndex],
+  }) as MuhurtaSlot[]
+  const muhurtaSlots = createSlots({
+    start: sunriseMinute,
+    end: nextSunriseMinute,
+    names: Array.from({ length: 30 }, (_, index) => `Muhurta ${index + 1}`),
+  }) as MuhurtaSlot[]
+
+  return {
+    city,
+    date,
+    weekday: WEEKDAYS[weekdayIndex],
+    sunriseMinute,
+    sunsetMinute,
+    nextSunriseMinute,
+    sunriseLabel: formatMinuteLabel(sunriseMinute),
+    sunsetLabel: formatMinuteLabel(sunsetMinute),
+    daySlots,
+    nightSlots,
+    muhurtaSlots,
+  }
+}
+
+const julianDay = (date: Date) => date.getTime() / 86400000 + 2440587.5
+
+export const getSignFromDegree = (degree: number) =>
+  SIGNS[Math.floor(normalizeDegrees(degree) / 30)]
+
+export const getDegreeInSign = (degree: number) =>
+  Number((normalizeDegrees(degree) % 30).toFixed(2))
+
+export const getNakshatraFromDegree = (degree: number) => {
+  const normalized = normalizeDegrees(degree)
+  const span = 360 / 27
+  const index = Math.floor(normalized / span)
+  const pada = Math.floor((normalized % span) / (span / 4)) + 1
+
+  return {
+    name: NAKSHATRAS[index] || "Unknown",
+    pada,
+  }
+}
+
+export const buildPrashnaChart = ({
+  city,
+  date = new Date(),
+}: {
+  city: AstrologyCity
+  date?: Date
+}): PrashnaChart => {
+  const jd = julianDay(date)
+  const daysSinceJ2000 = jd - 2451545
+  const gmstHours =
+    18.697374558 + 24.06570982441908 * daysSinceJ2000
+  const localSiderealDegree = normalizeDegrees(gmstHours * 15 + city.longitude)
+  const ayanamsa = 24.1
+  const ascendantLongitude = normalizeDegrees(localSiderealDegree - ayanamsa)
+  const sunLongitude = normalizeDegrees(
+    280.46646 + 0.98564736 * daysSinceJ2000 - ayanamsa
+  )
+  const moonLongitude = normalizeDegrees(
+    218.316 + 13.176396 * daysSinceJ2000 - ayanamsa
+  )
+  const tithiIndex =
+    Math.floor(normalizeDegrees(moonLongitude - sunLongitude) / 12) + 1
+  const pakshaTithi = tithiIndex > 15 ? tithiIndex - 15 : tithiIndex
+  const nakshatraIndex = Math.floor(moonLongitude / (360 / 27))
+  const weekday = new Intl.DateTimeFormat("en-US", {
+    timeZone: city.timeZone,
+    weekday: "long",
+  }).format(date)
+
+  return {
+    generatedAtIso: date.toISOString(),
+    generatedAtLocal: new Intl.DateTimeFormat("en-IN", {
+      timeZone: city.timeZone,
+      dateStyle: "medium",
+      timeStyle: "short",
+    }).format(date),
+    city,
+    calculationSystem:
+      "Approximate sidereal prashna chart using mean Lahiri ayanamsa. Production AI uses chart data as guidance, not certainty.",
+    weekday,
+    ayanamsa,
+    ascendant: getSignFromDegree(ascendantLongitude),
+    ascendantDegree: getDegreeInSign(ascendantLongitude),
+    ascendantLongitude: Number(ascendantLongitude.toFixed(2)),
+    ascendantNakshatra: getNakshatraFromDegree(ascendantLongitude).name,
+    ascendantPada: getNakshatraFromDegree(ascendantLongitude).pada,
+    moonSign: getSignFromDegree(moonLongitude),
+    moonDegree: getDegreeInSign(moonLongitude),
+    moonLongitude: Number(moonLongitude.toFixed(2)),
+    sunSign: getSignFromDegree(sunLongitude),
+    sunDegree: getDegreeInSign(sunLongitude),
+    sunLongitude: Number(sunLongitude.toFixed(2)),
+    nakshatra: NAKSHATRAS[nakshatraIndex] || "Unknown",
+    nakshatraPada: getNakshatraFromDegree(moonLongitude).pada,
+    tithi: `${pakshaTithi} ${tithiIndex <= 15 ? "Shukla" : "Krishna"}`,
+    paksha: tithiIndex <= 15 ? "Shukla" : "Krishna",
+    yoga: "Not calculated in fallback mode",
+    karana: "Not calculated in fallback mode",
+    planets: [],
+    houses: [],
+    prashnaFactors: [
+      "Fallback chart is approximate. Use the production server chart for detailed reading.",
+    ],
+    accuracyNote:
+      "This fallback avoids blank UI only. Server-side Prashna uses astronomia for richer ephemeris-style calculations.",
+  }
+}

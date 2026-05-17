@@ -6,6 +6,14 @@ import { mapKeys } from "lodash"
 import React, { useEffect, useMemo, useState } from "react"
 import AddressSelect from "../address-select"
 import CountrySelect from "../country-select"
+import { useShiprocketCheckout } from "@modules/checkout/context/shiprocket-context"
+import {
+  formatShiprocketAmount,
+  getShiprocketAmountPaise,
+  getShiprocketEtaLabel,
+  isIndianAddress,
+  normalizePincode,
+} from "@lib/util/shiprocket"
 
 const ShippingAddress = ({
   customer,
@@ -18,6 +26,7 @@ const ShippingAddress = ({
   checked: boolean
   onChange: () => void
 }) => {
+  const { calculate } = useShiprocketCheckout()
   const [formData, setFormData] = useState<Record<string, any>>({
     "shipping_address.first_name": cart?.shipping_address?.first_name || "",
     "shipping_address.last_name": cart?.shipping_address?.last_name || "",
@@ -92,6 +101,31 @@ const ShippingAddress = ({
     })
   }
 
+  const postalCode = normalizePincode(formData["shipping_address.postal_code"])
+  const countryCode = formData["shipping_address.country_code"]
+  const shouldRate = isIndianAddress(countryCode)
+
+  useEffect(() => {
+    if (!shouldRate) {
+      calculate({
+        postalCode,
+        countryCode,
+        cart: cart || undefined,
+      })
+      return
+    }
+
+    const timer = window.setTimeout(() => {
+      calculate({
+        postalCode,
+        countryCode,
+        cart: cart || undefined,
+      })
+    }, postalCode.length === 6 ? 500 : 120)
+
+    return () => window.clearTimeout(timer)
+  }, [calculate, cart, countryCode, postalCode, shouldRate])
+
   return (
     <>
       {customer && (addressesInRegion?.length || 0) > 0 && (
@@ -155,6 +189,11 @@ const ShippingAddress = ({
           required
           data-testid="shipping-postal-code-input"
         />
+        {shouldRate && (
+          <div className="small:col-span-2">
+            <ShiprocketInlineRate currencyCode={cart?.currency_code || "inr"} />
+          </div>
+        )}
         <Input
           label="City"
           name="shipping_address.city"
@@ -217,3 +256,63 @@ const ShippingAddress = ({
 }
 
 export default ShippingAddress
+
+const ShiprocketInlineRate = ({ currencyCode }: { currencyCode: string }) => {
+  const shiprocket = useShiprocketCheckout()
+  const amount = getShiprocketAmountPaise(shiprocket.rate)
+  const eta = getShiprocketEtaLabel(shiprocket.rate)
+
+  if (shiprocket.status === "idle") {
+    return null
+  }
+
+  if (shiprocket.status === "waiting") {
+    return (
+      <div className="rounded-[16px] border border-[rgba(18,63,99,0.1)] bg-white/62 px-4 py-3 text-sm leading-6 text-[var(--shreem-muted)]">
+        Enter a 6 digit Indian pincode to check Shiprocket delivery.
+      </div>
+    )
+  }
+
+  if (shiprocket.status === "loading") {
+    return (
+      <div className="rounded-[16px] border border-[rgba(212,161,38,0.22)] bg-[rgba(255,248,233,0.76)] px-4 py-3 text-sm font-medium leading-6 text-[var(--shreem-ink)]">
+        Checking delivery price...
+      </div>
+    )
+  }
+
+  if (shiprocket.status === "available" && shiprocket.rate) {
+    return (
+      <div className="rounded-[16px] border border-[rgba(13,129,126,0.22)] bg-[rgba(240,248,246,0.82)] px-4 py-3">
+        <div className="flex flex-col gap-2 xsmall:flex-row xsmall:items-start xsmall:justify-between">
+          <div>
+            <p className="text-sm font-semibold text-[var(--shreem-ink)]">
+              Shiprocket Delivery
+            </p>
+            {shiprocket.rate.courier?.courier_name && (
+              <p className="mt-1 text-sm leading-6 text-[var(--shreem-muted)]">
+                {shiprocket.rate.courier.courier_name}
+              </p>
+            )}
+            {eta && (
+              <p className="mt-1 text-xs font-medium leading-5 text-[var(--shreem-muted)]">
+                {eta}
+              </p>
+            )}
+          </div>
+          <span className="shrink-0 rounded-full border border-[rgba(13,129,126,0.2)] bg-white/80 px-3 py-1.5 text-sm font-semibold text-[var(--shreem-ink)]">
+            {formatShiprocketAmount(amount, currencyCode)}
+          </span>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="rounded-[16px] border border-rose-200 bg-rose-50 px-4 py-3 text-sm leading-6 text-rose-700">
+      {shiprocket.error ||
+        "Delivery is not available for this pincode. Please try another address."}
+    </div>
+  )
+}
