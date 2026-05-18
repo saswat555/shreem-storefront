@@ -1,3 +1,5 @@
+import { INDIA_ASTROLOGY_CITIES } from "./india-astrology-cities"
+
 export type AstrologyCity = {
   id: string
   name: string
@@ -376,20 +378,7 @@ const HINDI_MONTHS_BY_SUN_SIGN: Record<string, HindiMonthInfo> = {
 export const getHindiMonthInfoBySunSign = (sunSign: string) =>
   HINDI_MONTHS_BY_SUN_SIGN[sunSign] || HINDI_MONTHS_BY_SUN_SIGN.Pisces
 
-export const ASTROLOGY_CITIES: AstrologyCity[] = [
-  { id: "rewa", name: "Rewa", region: "Madhya Pradesh", latitude: 24.5362, longitude: 81.3037, timeZone: "Asia/Kolkata", utcOffsetHours: 5.5 },
-  { id: "delhi", name: "Delhi", region: "Delhi", latitude: 28.6139, longitude: 77.209, timeZone: "Asia/Kolkata", utcOffsetHours: 5.5 },
-  { id: "mumbai", name: "Mumbai", region: "Maharashtra", latitude: 19.076, longitude: 72.8777, timeZone: "Asia/Kolkata", utcOffsetHours: 5.5 },
-  { id: "bengaluru", name: "Bengaluru", region: "Karnataka", latitude: 12.9716, longitude: 77.5946, timeZone: "Asia/Kolkata", utcOffsetHours: 5.5 },
-  { id: "kolkata", name: "Kolkata", region: "West Bengal", latitude: 22.5726, longitude: 88.3639, timeZone: "Asia/Kolkata", utcOffsetHours: 5.5 },
-  { id: "chennai", name: "Chennai", region: "Tamil Nadu", latitude: 13.0827, longitude: 80.2707, timeZone: "Asia/Kolkata", utcOffsetHours: 5.5 },
-  { id: "hyderabad", name: "Hyderabad", region: "Telangana", latitude: 17.385, longitude: 78.4867, timeZone: "Asia/Kolkata", utcOffsetHours: 5.5 },
-  { id: "varanasi", name: "Varanasi", region: "Uttar Pradesh", latitude: 25.3176, longitude: 82.9739, timeZone: "Asia/Kolkata", utcOffsetHours: 5.5 },
-  { id: "ujjain", name: "Ujjain", region: "Madhya Pradesh", latitude: 23.1765, longitude: 75.7885, timeZone: "Asia/Kolkata", utcOffsetHours: 5.5 },
-  { id: "jaipur", name: "Jaipur", region: "Rajasthan", latitude: 26.9124, longitude: 75.7873, timeZone: "Asia/Kolkata", utcOffsetHours: 5.5 },
-  { id: "lucknow", name: "Lucknow", region: "Uttar Pradesh", latitude: 26.8467, longitude: 80.9462, timeZone: "Asia/Kolkata", utcOffsetHours: 5.5 },
-  { id: "bhopal", name: "Bhopal", region: "Madhya Pradesh", latitude: 23.2599, longitude: 77.4126, timeZone: "Asia/Kolkata", utcOffsetHours: 5.5 },
-]
+export const ASTROLOGY_CITIES: AstrologyCity[] = INDIA_ASTROLOGY_CITIES
 
 const DAY_SEQUENCES: Record<number, ChoghadiyaName[]> = {
   0: ["Udveg", "Char", "Labh", "Amrit", "Kaal", "Shubh", "Rog", "Udveg"],

@@ -6,6 +6,7 @@ import {
   getCityById,
   getTodayDateString,
   type HindiCalendarDay,
+  type AstrologyCity,
   type MuhurtaSlot,
   type PrashnaChart,
   type PrashnaHouse,
@@ -253,6 +254,108 @@ const emptyMatchPerson = () => ({
   birthTime: "",
   cityId: "rewa",
 })
+
+const normalizeCitySearch = (value: string) =>
+  value
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim()
+
+const cityLabel = (city: AstrologyCity) => `${city.name}, ${city.region}`
+
+const CityPicker = ({
+  label = "Birth city",
+  value,
+  onChange,
+}: {
+  label?: string
+  value: string
+  onChange: (cityId: string) => void
+}) => {
+  const selectedCity = getCityById(value)
+  const selectedLabel = cityLabel(selectedCity)
+  const [query, setQuery] = useState(selectedLabel)
+  const [open, setOpen] = useState(false)
+
+  useEffect(() => {
+    setQuery(selectedLabel)
+  }, [selectedLabel])
+
+  const normalizedQuery = normalizeCitySearch(query)
+  const matches = useMemo(() => {
+    if (!normalizedQuery) {
+      return ASTROLOGY_CITIES.slice(0, 48)
+    }
+
+    return ASTROLOGY_CITIES.filter((city) =>
+      normalizeCitySearch(`${city.name} ${city.region}`).includes(normalizedQuery)
+    ).slice(0, 72)
+  }, [normalizedQuery])
+
+  const chooseCity = (city: AstrologyCity) => {
+    onChange(city.id)
+    setQuery(cityLabel(city))
+    setOpen(false)
+  }
+
+  return (
+    <label className="grid gap-2">
+      <span className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
+        {label}
+      </span>
+      <div className="relative">
+        <input
+          value={query}
+          onChange={(event) => {
+            setQuery(event.target.value)
+            setOpen(true)
+          }}
+          onFocus={() => setOpen(true)}
+          onBlur={() => {
+            window.setTimeout(() => {
+              setOpen(false)
+              setQuery(cityLabel(getCityById(value)))
+            }, 120)
+          }}
+          className="h-12 w-full rounded-[16px] border border-[var(--shreem-border)] bg-white/82 px-3 text-sm text-[var(--shreem-ink)] outline-none"
+          placeholder="Search city"
+        />
+        {open && (
+          <div className="absolute left-0 right-0 top-[calc(100%+6px)] z-30 max-h-64 overflow-auto rounded-[16px] border border-[var(--shreem-border)] bg-white py-1 shadow-[0_18px_40px_rgba(18,63,99,0.16)]">
+            {matches.length ? (
+              matches.map((city) => (
+                <button
+                  key={city.id}
+                  type="button"
+                  onMouseDown={(event) => {
+                    event.preventDefault()
+                    chooseCity(city)
+                  }}
+                  className={`flex w-full flex-col px-3 py-2 text-left text-sm transition hover:bg-[rgba(13,129,126,0.08)] ${
+                    city.id === value ? "bg-[rgba(13,129,126,0.1)]" : ""
+                  }`}
+                >
+                  <span className="font-semibold text-[var(--shreem-ink)]">
+                    {city.name}
+                  </span>
+                  <span className="text-xs text-[var(--shreem-muted)]">
+                    {city.region}
+                  </span>
+                </button>
+              ))
+            ) : (
+              <p className="px-3 py-3 text-sm text-[var(--shreem-muted)]">
+                No matching city
+              </p>
+            )}
+          </div>
+        )}
+      </div>
+    </label>
+  )
+}
 
 const SlotCard = ({ slot }: { slot: MuhurtaSlot }) => (
   <div className={`rounded-[18px] border px-4 py-4 ${qualityClasses[slot.quality]}`}>
@@ -1122,22 +1225,10 @@ const MatchPersonFields = ({
           />
         </label>
       </div>
-      <label className="grid gap-2">
-        <span className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
-          Birth city
-        </span>
-        <select
-          value={value.cityId}
-          onChange={(event) => onChange({ ...value, cityId: event.target.value })}
-          className="h-12 rounded-[16px] border border-[var(--shreem-border)] bg-white/82 px-3 text-sm text-[var(--shreem-ink)] outline-none"
-        >
-          {ASTROLOGY_CITIES.map((item) => (
-            <option key={item.id} value={item.id}>
-              {item.name}, {item.region}
-            </option>
-          ))}
-        </select>
-      </label>
+      <CityPicker
+        value={value.cityId}
+        onChange={(cityId) => onChange({ ...value, cityId })}
+      />
     </div>
   </div>
 )
@@ -1739,22 +1830,7 @@ export default function AstrologyExperience({
 
   const LocationDateControls = ({ showDate = true }: { showDate?: boolean }) => (
     <div className="brand-card grid gap-3 px-4 py-4 small:grid-cols-2">
-      <label className="grid gap-2">
-        <span className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--shreem-gold-deep)]">
-          City
-        </span>
-        <select
-          value={cityId}
-          onChange={(event) => setCityId(event.target.value)}
-          className="h-12 rounded-[16px] border border-[var(--shreem-border)] bg-white/80 px-3 text-sm text-[var(--shreem-ink)] outline-none"
-        >
-          {ASTROLOGY_CITIES.map((item) => (
-            <option key={item.id} value={item.id}>
-              {item.name}, {item.region}
-            </option>
-          ))}
-        </select>
-      </label>
+      <CityPicker label="City" value={cityId} onChange={setCityId} />
       {showDate && (
         <label className="grid gap-2">
           <span className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--shreem-gold-deep)]">
@@ -2166,27 +2242,15 @@ export default function AstrologyExperience({
                     />
                   </label>
                 </div>
-                <label className="grid gap-2">
-                  <span className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
-                    Birth city
-                  </span>
-                  <select
-                    value={kundliForm.cityId}
-                    onChange={(event) =>
-                      setKundliForm((current) => ({
-                        ...current,
-                        cityId: event.target.value,
-                      }))
-                    }
-                    className="h-12 rounded-[16px] border border-[var(--shreem-border)] bg-white/82 px-3 text-sm text-[var(--shreem-ink)] outline-none"
-                  >
-                    {ASTROLOGY_CITIES.map((item) => (
-                      <option key={item.id} value={item.id}>
-                        {item.name}, {item.region}
-                      </option>
-                    ))}
-                  </select>
-                </label>
+                <CityPicker
+                  value={kundliForm.cityId}
+                  onChange={(cityId) =>
+                    setKundliForm((current) => ({
+                      ...current,
+                      cityId,
+                    }))
+                  }
+                />
                 <div className="rounded-[20px] border border-[var(--shreem-border)] bg-white/52 px-3 py-3">
                   <LanguageControls />
                 </div>
