@@ -11,6 +11,7 @@ import {
   type PrashnaHouse,
   type PrashnaPlanet,
 } from "@lib/util/astrology"
+import LogoLoader from "@modules/common/components/logo-loader"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import { useEffect, useMemo, useState } from "react"
 
@@ -102,17 +103,70 @@ type KundliResult = {
   usage_synced?: boolean
 }
 
+type MatchmakingResult = {
+  girl?: {
+    profile?: {
+      name?: string
+      birth_date?: string
+      birth_time?: string
+      city?: string
+    }
+    chart?: PrashnaChart
+  }
+  boy?: {
+    profile?: {
+      name?: string
+      birth_date?: string
+      birth_time?: string
+      city?: string
+    }
+    chart?: PrashnaChart
+  }
+  compatibility?: {
+    scores?: {
+      name: string
+      score: number
+      max: number
+      reason: string
+    }[]
+    total?: number
+    max?: number
+    percentage?: number
+    deterministicRecommendation?: "go" | "caution" | "avoid"
+  }
+  analysis?: {
+    summary?: string
+    recommendation?: "go" | "caution" | "avoid"
+    percentage_suggestion?: number
+    decision_reason?: string
+    strengths?: string[]
+    concerns?: string[]
+    family_discussion_points?: string[]
+    marriage_timing_note?: string
+    remedies?: string[]
+    expert_call_recommended?: boolean
+    expert_call_reason?: string
+  }
+  message?: string
+  usage_synced?: boolean
+}
+
 type AstrologyHistoryItem = {
   id: string
-  type: "Prashna" | "Kundli"
+  type: "Prashna" | "Kundli" | "Matchmaking"
   title: string
   createdAt: string
   summary: string
   synced?: boolean
-  response?: PrashnaResult | KundliResult
+  response?: PrashnaResult | KundliResult | MatchmakingResult
 }
 
-type AstrologyTab = "muhurth" | "calendar" | "prashna" | "kundli"
+type AstrologyTab =
+  | "muhurth"
+  | "calendar"
+  | "prashna"
+  | "kundli"
+  | "matchmaking"
 type AstrologyLanguage = "english" | "hindi" | "hinglish"
 
 const qualityClasses: Record<MuhurtaSlot["quality"], string> = {
@@ -161,6 +215,11 @@ const astrologyTabs: { id: AstrologyTab; label: string; description: string }[] 
     label: "Kundli",
     description: "Birth chart and PDF",
   },
+  {
+    id: "matchmaking",
+    label: "Matchmaking",
+    description: "Marriage compatibility",
+  },
 ]
 
 const HISTORY_KEY = "shreem_astrology_history_v1"
@@ -187,6 +246,13 @@ const languageOptions: {
     detail: "Hindi-English chat style",
   },
 ]
+
+const emptyMatchPerson = () => ({
+  name: "",
+  birthDate: "",
+  birthTime: "",
+  cityId: "rewa",
+})
 
 const SlotCard = ({ slot }: { slot: MuhurtaSlot }) => (
   <div className={`rounded-[18px] border px-4 py-4 ${qualityClasses[slot.quality]}`}>
@@ -696,7 +762,8 @@ const HistoryPanel = ({
     <p className="brand-kicker">Recent history</p>
     {!items.length && (
       <p className="mt-3 text-sm leading-6 text-[var(--shreem-muted)]">
-        Your last Prashna and Kundli chats will appear here after you run them.
+        Your last Prashna, Kundli, and matchmaking sessions will appear here
+        after you run them.
       </p>
     )}
     <div className="mt-3 grid gap-2">
@@ -1004,6 +1071,197 @@ const KundliResultView = ({
   )
 }
 
+const MatchPersonFields = ({
+  title,
+  value,
+  onChange,
+}: {
+  title: string
+  value: ReturnType<typeof emptyMatchPerson>
+  onChange: (value: ReturnType<typeof emptyMatchPerson>) => void
+}) => (
+  <div className="rounded-[22px] border border-[var(--shreem-border)] bg-white/60 px-4 py-4">
+    <p className="text-sm font-semibold text-[var(--shreem-ink)]">{title}</p>
+    <div className="mt-4 grid gap-3">
+      <label className="grid gap-2">
+        <span className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
+          Name
+        </span>
+        <input
+          value={value.name}
+          onChange={(event) => onChange({ ...value, name: event.target.value })}
+          className="h-12 rounded-[16px] border border-[var(--shreem-border)] bg-white/82 px-3 text-sm text-[var(--shreem-ink)] outline-none"
+          placeholder={`${title} name`}
+        />
+      </label>
+      <div className="grid gap-3 small:grid-cols-2">
+        <label className="grid gap-2">
+          <span className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
+            Birth date
+          </span>
+          <input
+            type="date"
+            value={value.birthDate}
+            onChange={(event) =>
+              onChange({ ...value, birthDate: event.target.value })
+            }
+            className="h-12 rounded-[16px] border border-[var(--shreem-border)] bg-white/82 px-3 text-sm text-[var(--shreem-ink)] outline-none"
+          />
+        </label>
+        <label className="grid gap-2">
+          <span className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
+            Birth time
+          </span>
+          <input
+            type="time"
+            value={value.birthTime}
+            onChange={(event) =>
+              onChange({ ...value, birthTime: event.target.value })
+            }
+            className="h-12 rounded-[16px] border border-[var(--shreem-border)] bg-white/82 px-3 text-sm text-[var(--shreem-ink)] outline-none"
+          />
+        </label>
+      </div>
+      <label className="grid gap-2">
+        <span className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
+          Birth city
+        </span>
+        <select
+          value={value.cityId}
+          onChange={(event) => onChange({ ...value, cityId: event.target.value })}
+          className="h-12 rounded-[16px] border border-[var(--shreem-border)] bg-white/82 px-3 text-sm text-[var(--shreem-ink)] outline-none"
+        >
+          {ASTROLOGY_CITIES.map((item) => (
+            <option key={item.id} value={item.id}>
+              {item.name}, {item.region}
+            </option>
+          ))}
+        </select>
+      </label>
+    </div>
+  </div>
+)
+
+const MatchmakingResultView = ({ result }: { result: MatchmakingResult }) => {
+  const percentage =
+    result.analysis?.percentage_suggestion ?? result.compatibility?.percentage ?? 0
+  const recommendation =
+    result.analysis?.recommendation ||
+    result.compatibility?.deterministicRecommendation ||
+    "caution"
+  const recommendationLabel =
+    recommendation === "go"
+      ? "Good to proceed"
+      : recommendation === "avoid"
+      ? "Do not proceed without expert review"
+      : "Proceed carefully"
+
+  return (
+    <div className="grid gap-4">
+      <div className="rounded-[24px] border border-[rgba(212,161,38,0.26)] bg-[rgba(255,248,233,0.82)] px-5 py-5">
+        <p className="brand-kicker">Marriage compatibility</p>
+        <div className="mt-3 flex flex-col gap-4 small:flex-row small:items-end small:justify-between">
+          <div>
+            <p className="text-[3rem] font-semibold leading-none text-[var(--shreem-ink)]">
+              {percentage}%
+            </p>
+            <p className="mt-2 text-sm font-semibold text-[var(--shreem-muted)]">
+              {recommendationLabel}
+            </p>
+          </div>
+          <div className="rounded-full border border-[var(--shreem-border)] bg-white/70 px-4 py-2 text-sm font-semibold capitalize text-[var(--shreem-ink)]">
+            {recommendation}
+          </div>
+        </div>
+        <p className="mt-4 text-sm leading-7 text-[var(--shreem-muted)]">
+          {result.analysis?.decision_reason || result.analysis?.summary}
+        </p>
+      </div>
+
+      <div className="grid gap-3 small:grid-cols-2">
+        <ChartMiniCard
+          label={`${result.girl?.profile?.name || "Girl"} chart`}
+          value={`${result.girl?.chart?.ascendant || "-"} Lagna · ${
+            result.girl?.chart?.moonSign || "-"
+          } Moon`}
+        />
+        <ChartMiniCard
+          label={`${result.boy?.profile?.name || "Boy"} chart`}
+          value={`${result.boy?.chart?.ascendant || "-"} Lagna · ${
+            result.boy?.chart?.moonSign || "-"
+          } Moon`}
+        />
+      </div>
+
+      <div className="overflow-hidden rounded-[20px] border border-[var(--shreem-border)] bg-white/70">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[620px] text-left text-sm">
+            <thead className="bg-[rgba(255,248,233,0.92)] text-xs uppercase tracking-[0.14em] text-[var(--shreem-gold-deep)]">
+              <tr>
+                <th className="px-4 py-3">Koota</th>
+                <th className="px-4 py-3">Score</th>
+                <th className="px-4 py-3">Reason</th>
+              </tr>
+            </thead>
+            <tbody>
+              {(result.compatibility?.scores || []).map((score) => (
+                <tr key={score.name} className="border-t border-[var(--shreem-border)]">
+                  <td className="px-4 py-3 font-semibold text-[var(--shreem-ink)]">
+                    {score.name}
+                  </td>
+                  <td className="px-4 py-3 text-[var(--shreem-muted)]">
+                    {score.score}/{score.max}
+                  </td>
+                  <td className="px-4 py-3 text-[var(--shreem-muted)]">
+                    {score.reason}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div className="grid gap-3 xl:grid-cols-2">
+        <InsightList title="Strengths" items={result.analysis?.strengths} />
+        <InsightList title="Concerns" items={result.analysis?.concerns} />
+        <InsightList
+          title="Family discussion points"
+          items={result.analysis?.family_discussion_points}
+        />
+        <InsightList title="Remedies" items={result.analysis?.remedies} />
+      </div>
+
+      {result.analysis?.marriage_timing_note && (
+        <div className="rounded-[20px] border border-[var(--shreem-border)] bg-white/60 px-4 py-4">
+          <p className="brand-kicker">Timing note</p>
+          <p className="mt-2 text-sm leading-7 text-[var(--shreem-muted)]">
+            {result.analysis.marriage_timing_note}
+          </p>
+        </div>
+      )}
+
+      {result.analysis?.expert_call_recommended && (
+        <div className="rounded-[20px] border border-[rgba(212,161,38,0.32)] bg-[rgba(255,248,233,0.84)] px-4 py-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
+            Expert review suggested
+          </p>
+          <p className="mt-2 text-sm leading-7 text-[var(--shreem-muted)]">
+            {result.analysis.expert_call_reason ||
+              "Marriage matching should be confirmed with a human astrologer before final decisions."}
+          </p>
+          <LocalizedClientLink
+            href="/products/shreem-astrology-30-minute-call"
+            className="mt-3 inline-flex w-full items-center justify-center rounded-full bg-[linear-gradient(135deg,#0d817e_0%,#123f63_52%,#6f211f_100%)] px-4 py-2.5 text-sm font-semibold text-white small:w-auto"
+          >
+            Book Sanjay Kumar Pandey
+          </LocalizedClientLink>
+        </div>
+      )}
+    </div>
+  )
+}
+
 const escapeHtml = (value?: string | number) =>
   String(value ?? "").replace(/[&<>"']/g, (char) => {
     const entities: Record<string, string> = {
@@ -1123,15 +1381,26 @@ const normalizeUsageHistory = (item: unknown): AstrologyHistoryItem | null => {
   const response = asRecord(source.response)
   const profile = asRecord(response.profile)
   const tool = String(source.tool || "astrology")
-  const type: AstrologyHistoryItem["type"] = tool.includes("kundli")
+  const type: AstrologyHistoryItem["type"] = tool.includes("matchmaking")
+    ? "Matchmaking"
+    : tool.includes("kundli")
     ? "Kundli"
     : "Prashna"
   const title =
-    type === "Kundli"
+    type === "Matchmaking"
+      ? `${String(asRecord(asRecord(response.girl).profile).name || "Girl")} + ${String(
+          asRecord(asRecord(response.boy).profile).name || "Boy"
+        )}`
+      : type === "Kundli"
       ? `${String(profile.name || input.name || "Generated")} Kundli`
       : String(input.question || "Prashna session")
   const summary =
-    String(response.answer || asRecord(response.analysis).summary || "") ||
+    String(
+      response.answer ||
+        asRecord(response.analysis).summary ||
+        asRecord(response.analysis).decision_reason ||
+        ""
+    ) ||
     String(response.chart_summary || "Saved astrology session")
   const createdAt = String(source.created_at || new Date().toISOString())
 
@@ -1142,7 +1411,11 @@ const normalizeUsageHistory = (item: unknown): AstrologyHistoryItem | null => {
     createdAt,
     summary,
     synced: true,
-    response: source.response as PrashnaResult | KundliResult | undefined,
+    response: source.response as
+      | PrashnaResult
+      | KundliResult
+      | MatchmakingResult
+      | undefined,
   }
 }
 
@@ -1189,6 +1462,13 @@ export default function AstrologyExperience({
   })
   const [kundliResult, setKundliResult] = useState<KundliResult | null>(null)
   const [loadingKundli, setLoadingKundli] = useState(false)
+  const [matchmakingForm, setMatchmakingForm] = useState({
+    girl: emptyMatchPerson(),
+    boy: emptyMatchPerson(),
+  })
+  const [matchmakingResult, setMatchmakingResult] =
+    useState<MatchmakingResult | null>(null)
+  const [loadingMatchmaking, setLoadingMatchmaking] = useState(false)
   const city = getCityById(cityId)
   const muhurat = useMemo(
     () => calculateDailyMuhurat({ city, date }),
@@ -1390,7 +1670,63 @@ export default function AstrologyExperience({
     setLoadingKundli(false)
   }
 
+  const generateMatchmaking = async () => {
+    setLoadingMatchmaking(true)
+    setMatchmakingResult(null)
+
+    const response = await fetch("/api/astrology/matchmaking", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        ...matchmakingForm,
+        language,
+      }),
+      cache: "no-store",
+    }).catch(() => null)
+    const data = (await response?.json().catch(() => null)) as
+      | MatchmakingResult
+      | null
+    const result =
+      data || ({
+        message:
+          "Matchmaking AI could not generate the compatibility reading right now.",
+      } satisfies MatchmakingResult)
+
+    setMatchmakingResult(result)
+
+    if (result.compatibility) {
+      rememberHistory(
+        {
+          id: `matchmaking-${Date.now()}`,
+          type: "Matchmaking",
+          title: `${matchmakingForm.girl.name || "Girl"} + ${
+            matchmakingForm.boy.name || "Boy"
+          }`,
+          createdAt: new Date().toISOString(),
+          summary:
+            result.analysis?.summary ||
+            result.analysis?.decision_reason ||
+            `Compatibility ${result.compatibility.percentage || 0}%`,
+          response: result,
+        },
+        {
+          persistLocal: !result.usage_synced,
+        }
+      )
+    }
+
+    setLoadingMatchmaking(false)
+  }
+
   const selectHistoryItem = (item: AstrologyHistoryItem) => {
+    if (item.type === "Matchmaking") {
+      setMatchmakingResult(item.response as MatchmakingResult)
+      setActiveTab("matchmaking")
+      return
+    }
+
     if (item.type === "Kundli") {
       setKundliResult(item.response as KundliResult)
       setActiveTab("kundli")
@@ -1721,7 +2057,13 @@ export default function AstrologyExperience({
             <div className="grid gap-4">
               <div className="brand-card px-4 py-5 small:px-6">
                 <p className="brand-kicker">Result</p>
-                {!prashna && (
+                {loadingPrashna && (
+                  <LogoLoader
+                    label="Reading the Prashna chart..."
+                    detail="Calculating the moment chart, then asking Shreem AI for a concise Vedic interpretation."
+                  />
+                )}
+                {!loadingPrashna && !prashna && (
                   <p className="mt-3 text-sm leading-7 text-[var(--shreem-muted)]">
                     Your answer will appear here with Lagna, Panchang, graha
                     positions, house chart, direct indication, timing, caution,
@@ -1901,7 +2243,13 @@ export default function AstrologyExperience({
             <div className="grid gap-4">
               <div className="brand-card px-4 py-5 small:px-6">
                 <p className="brand-kicker">Generated chart</p>
-                {!kundliResult && (
+                {loadingKundli && (
+                  <LogoLoader
+                    label="Generating your Kundli..."
+                    detail="Preparing the North Indian chart, dasha context, yogas, house table, and AI reading."
+                  />
+                )}
+                {!loadingKundli && !kundliResult && (
                   <p className="mt-3 text-sm leading-7 text-[var(--shreem-muted)]">
                     Your North Indian chart, graha positions, special case
                     checks, upaay, stone indicators, and PDF-ready report will
@@ -1919,6 +2267,96 @@ export default function AstrologyExperience({
                       result={kundliResult}
                       onPrint={() => printKundliReport(kundliResult)}
                     />
+                  </div>
+                )}
+              </div>
+              <HistoryPanel items={history} onSelect={selectHistoryItem} />
+            </div>
+          </div>
+        </section>
+      )}
+
+      {activeTab === "matchmaking" && (
+        <section className="brand-surface px-5 py-7 small:px-8 small:py-9">
+          <div className="grid gap-5 xl:grid-cols-[minmax(0,0.88fr)_minmax(0,1.12fr)]">
+            <div className="brand-card px-4 py-5 small:px-5">
+              <p className="brand-kicker">Kundli matchmaking</p>
+              <h2 className="mt-2 max-w-[12ch] text-[2.2rem] leading-none text-[var(--shreem-ink)]">
+                Marriage compatibility
+              </h2>
+              <p className="mt-3 text-sm leading-7 text-[var(--shreem-muted)]">
+                Enter both birth details. Shreem calculates both sidereal
+                charts, Ashtakoota-style score, dasha context, and a clear
+                go/caution/avoid recommendation.
+              </p>
+              <div className="mt-5 grid gap-4">
+                <MatchPersonFields
+                  title="Girl"
+                  value={matchmakingForm.girl}
+                  onChange={(girl) =>
+                    setMatchmakingForm((current) => ({ ...current, girl }))
+                  }
+                />
+                <MatchPersonFields
+                  title="Boy"
+                  value={matchmakingForm.boy}
+                  onChange={(boy) =>
+                    setMatchmakingForm((current) => ({ ...current, boy }))
+                  }
+                />
+                <div className="rounded-[20px] border border-[var(--shreem-border)] bg-white/52 px-3 py-3">
+                  <LanguageControls />
+                </div>
+                <button
+                  type="button"
+                  disabled={
+                    loadingMatchmaking ||
+                    !matchmakingForm.girl.name ||
+                    !matchmakingForm.girl.birthDate ||
+                    !matchmakingForm.girl.birthTime ||
+                    !matchmakingForm.boy.name ||
+                    !matchmakingForm.boy.birthDate ||
+                    !matchmakingForm.boy.birthTime
+                  }
+                  onClick={generateMatchmaking}
+                  className="w-full rounded-full border-0 bg-[linear-gradient(135deg,#0d817e_0%,#123f63_52%,#6f211f_100%)] px-5 py-3 text-sm font-semibold text-white shadow-[0_18px_34px_rgba(18,63,99,0.26)] disabled:cursor-not-allowed disabled:opacity-45"
+                >
+                  {loadingMatchmaking
+                    ? "Checking compatibility..."
+                    : "Generate Matchmaking"}
+                </button>
+                <p className="text-xs leading-5 text-[var(--shreem-muted)]">
+                  Marriage decisions should include family context, consent,
+                  health, values, and expert review. This is a calculated
+                  first-pass reading.
+                </p>
+              </div>
+            </div>
+
+            <div className="grid gap-4">
+              <div className="brand-card px-4 py-5 small:px-6">
+                <p className="brand-kicker">Compatibility result</p>
+                {loadingMatchmaking && (
+                  <LogoLoader
+                    label="Matching both Kundlis..."
+                    detail="Calculating Moon, nakshatra, guna score, dasha context, and the AI recommendation."
+                  />
+                )}
+                {!loadingMatchmaking && !matchmakingResult && (
+                  <p className="mt-3 text-sm leading-7 text-[var(--shreem-muted)]">
+                    The result will show percentage suitability, Ashtakoota
+                    breakdown, strengths, concerns, remedies, and whether the
+                    wedding should proceed.
+                  </p>
+                )}
+                {matchmakingResult?.message && (
+                  <p className="mt-3 rounded-[16px] border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-800">
+                    {matchmakingResult.message}
+                  </p>
+                )}
+                {matchmakingResult?.compatibility && (
+                  <div className="mt-4">
+                    <MatchmakingResultView result={matchmakingResult} />
                   </div>
                 )}
               </div>

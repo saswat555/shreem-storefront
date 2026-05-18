@@ -28,7 +28,10 @@ export const recordAiUsage = async (payload: AiUsagePayload) => {
   }
 
   try {
-    const result = await sdk.client.fetch<{ usage: AiUsageRecord }>(
+    const result = await sdk.client.fetch<{
+      synced?: boolean
+      usage?: AiUsageRecord
+    }>(
       AI_USAGE_ROUTE,
       {
         method: "POST",
@@ -37,6 +40,10 @@ export const recordAiUsage = async (payload: AiUsagePayload) => {
         cache: "no-store",
       }
     )
+
+    if (result.synced === false || !result.usage) {
+      return { synced: false, reason: "backend_storage_unavailable" }
+    }
 
     return { synced: true, usage: result.usage }
   } catch {
@@ -58,7 +65,10 @@ export const listAiUsage = async ({
   }
 
   try {
-    const result = await sdk.client.fetch<{ usage: AiUsageRecord[] }>(
+    const result = await sdk.client.fetch<{
+      synced?: boolean
+      usage?: AiUsageRecord[]
+    }>(
       AI_USAGE_ROUTE,
       {
         method: "GET",
@@ -71,7 +81,10 @@ export const listAiUsage = async ({
       }
     )
 
-    return { synced: true, items: result.usage || [] }
+    return {
+      synced: result.synced !== false,
+      items: result.usage || [],
+    }
   } catch {
     return { synced: false, items: [] as AiUsageRecord[] }
   }

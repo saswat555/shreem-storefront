@@ -2,6 +2,7 @@
 
 import { ArrowUpRightMini } from "@medusajs/icons"
 import { clx } from "@medusajs/ui"
+import LogoLoader from "@modules/common/components/logo-loader"
 import MotionReveal from "@modules/common/components/motion-reveal"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import Image from "next/image"
@@ -211,7 +212,7 @@ export default function PrakritiGuide({ products, model }: PrakritiGuideProps) {
   const [error, setError] = useState<string | null>(null)
   const [messages, setMessages] = useState<GuideChatMessage[]>([
     {
-      id: makeId(),
+      id: "growbuddy-welcome",
       role: "assistant",
       text: "Start a case by choosing plant or animal, adding the brief, attaching photos, and then asking your care question in the same console.",
     },
@@ -572,9 +573,11 @@ export default function PrakritiGuide({ products, model }: PrakritiGuideProps) {
 
               {isAnalyzing && (
                 <div className="flex justify-start">
-                  <div className="rounded-[24px] border border-[rgba(212,161,38,0.18)] bg-[rgba(255,249,235,0.96)] px-4 py-3 text-sm text-[var(--shreem-ink)]">
-                    Reading the case brief and images...
-                  </div>
+                  <LogoLoader
+                    label="Reading the case brief and images..."
+                    detail="GrowBuddy is checking photos, issue notes, and Shreem product fit."
+                    compact
+                  />
                 </div>
               )}
             </div>

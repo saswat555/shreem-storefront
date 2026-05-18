@@ -1,6 +1,7 @@
 "use client"
 
 import { clx } from "@medusajs/ui"
+import LogoLoader from "@modules/common/components/logo-loader"
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react"
 
 type ChatMessage = {
@@ -54,7 +55,7 @@ export default function SupportChat({
 }: SupportChatProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
-      id: makeId(),
+      id: "support-welcome",
       role: "assistant",
       text: "Namaste. I can help with orders, product selection, checkout, payments, and account guidance. If your issue needs human follow-up, I will help you prepare the details before anything is emailed.",
     },
@@ -309,9 +310,11 @@ export default function SupportChat({
 
               {isSending && (
                 <div className="flex justify-start">
-                  <div className="rounded-[22px] border border-[#e8c364]/18 bg-[rgba(255,248,229,0.94)] px-4 py-3 text-sm text-[#102d36]">
-                    Thinking...
-                  </div>
+                  <LogoLoader
+                    label="Thinking through your support request..."
+                    detail="Checking the chat context before suggesting the next step."
+                    compact
+                  />
                 </div>
               )}
 
