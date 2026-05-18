@@ -119,11 +119,11 @@ export default async function ShreemAstrologyPage(props: {
         />
         <MotionReveal>
           <section className="brand-surface mb-6 px-5 py-8 small:px-10 small:py-11">
-            <p className="brand-pill mb-5 w-fit">Shreem Astrology</p>
-            <h1 className="max-w-[13ch] text-[2.75rem] leading-[0.98] text-[var(--shreem-ink)] small:text-[4.6rem]">
-              Sign in for astrology tools
+            <p className="brand-pill mb-5 w-fit">Jyotish desk</p>
+            <h1 className="brand-page-title max-w-[16ch]">
+              Sign in for muhurth, kundli, and chart notes.
             </h1>
-            <p className="mt-5 max-w-[52rem] text-base leading-7 text-[var(--shreem-muted)] small:text-lg">
+            <p className="brand-page-copy mt-5 max-w-[52rem]">
               Muhurth, Hindu calendar, Prashna Kundli, birth Kundli generation,
               chart history, and PDF-ready reports are available after sign in.
             </p>
@@ -147,11 +147,11 @@ export default async function ShreemAstrologyPage(props: {
       />
 
       <section className="brand-surface mb-6 px-5 py-8 small:px-10 small:py-11">
-        <p className="brand-pill mb-5 w-fit">Shreem Astrology</p>
-        <h1 className="max-w-[13ch] text-[2.75rem] leading-[0.98] text-[var(--shreem-ink)] small:text-[4.6rem]">
-          Muhurth, Prashna, and guided calls
+        <p className="brand-pill mb-5 w-fit">Jyotish desk</p>
+        <h1 className="brand-page-title max-w-[17ch]">
+          Muhurth windows, Prashna charts, and guided calls.
         </h1>
-        <p className="mt-5 max-w-[52rem] text-base leading-7 text-[var(--shreem-muted)] small:text-lg">
+        <p className="brand-page-copy mt-5 max-w-[52rem]">
           A clean astrology desk for daily Choghadiya windows, Hindi calendar
           tithi and masa context, Vedic Prashna Kundli chart details, and paid consultation
           booking with Sanjay Kumar Pandey.

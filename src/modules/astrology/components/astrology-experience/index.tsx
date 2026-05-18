@@ -2043,8 +2043,8 @@ export default function AstrologyExperience({
         <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px] xl:items-end">
           <div>
             <p className="brand-kicker">Astrology desk</p>
-            <h2 className="mt-3 max-w-[14ch] text-[2.3rem] leading-[1.02] text-[var(--shreem-ink)] small:text-[3.5rem]">
-              Shreem astrology tools
+            <h2 className="brand-section-title mt-3 max-w-[16ch]">
+              A focused workspace for muhurth, charts, and questions.
             </h2>
             <p className="mt-4 max-w-[52rem] text-sm leading-7 text-[var(--shreem-muted)] small:text-base">
               Explore Muhurth, Hindu Calendar, Prashna Kundli, and full Kundli
@@ -2099,8 +2099,8 @@ export default function AstrologyExperience({
             <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_420px] xl:items-end">
               <div>
                 <p className="brand-kicker">Subh Muhurth</p>
-                <h2 className="mt-3 max-w-[13ch] text-[2.3rem] leading-[1.02] text-[var(--shreem-ink)] small:text-[3.6rem]">
-                  Today&apos;s auspicious windows
+                <h2 className="brand-section-title mt-3 max-w-[16ch]">
+                  Auspicious windows for your city and date.
                 </h2>
                 <p className="mt-4 max-w-[48rem] text-sm leading-7 text-[var(--shreem-muted)] small:text-base">
                   Choose your city and date. Sunrise, sunset, day Choghadiya,
@@ -2137,7 +2137,7 @@ export default function AstrologyExperience({
           <section className="grid gap-5 xl:grid-cols-2">
             <div className="brand-card px-5 py-6 small:px-6">
               <p className="brand-kicker">Day Choghadiya</p>
-              <h3 className="mt-2 text-[1.9rem] leading-none text-[var(--shreem-ink)]">
+              <h3 className="brand-card-title mt-2">
                 {muhurat.weekday} daytime
               </h3>
               <div className="mt-5 grid gap-3 small:grid-cols-2">
@@ -2149,7 +2149,7 @@ export default function AstrologyExperience({
 
             <div className="brand-card px-5 py-6 small:px-6">
               <p className="brand-kicker">Night Choghadiya</p>
-              <h3 className="mt-2 text-[1.9rem] leading-none text-[var(--shreem-ink)]">
+              <h3 className="brand-card-title mt-2">
                 Sunset to next sunrise
               </h3>
               <div className="mt-5 grid gap-3 small:grid-cols-2">
@@ -2167,7 +2167,7 @@ export default function AstrologyExperience({
           <div className="grid gap-5 xl:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] xl:items-start">
             <div>
               <p className="brand-kicker">Hindu calendar</p>
-              <h3 className="mt-2 max-w-[13ch] text-[2.2rem] leading-[1.02] text-[var(--shreem-ink)] small:text-[3.4rem]">
+              <h3 className="brand-section-title mt-2 max-w-[16ch]">
                 Panchang, masa, and festivals
               </h3>
               <p className="mt-4 text-sm leading-7 text-[var(--shreem-muted)]">
@@ -2263,8 +2263,8 @@ export default function AstrologyExperience({
           <div className="grid gap-5 xl:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]">
             <div>
               <p className="brand-kicker">Prashna Kundli</p>
-              <h2 className="mt-2 max-w-[12ch] text-[2.4rem] leading-[1.02] text-[var(--shreem-ink)] small:text-[3.6rem]">
-                Ask one clear question
+              <h2 className="brand-section-title mt-2 max-w-[16ch]">
+                Ask one clear question at the moment it matters.
               </h2>
               <p className="mt-4 text-sm leading-7 text-[var(--shreem-muted)] small:text-base">
                 The chart is generated for the exact moment you ask, using the
@@ -2331,7 +2331,7 @@ export default function AstrologyExperience({
           <div className="grid gap-5 xl:grid-cols-[390px_minmax(0,1fr)]">
             <div className="brand-card px-4 py-5 small:px-5">
               <p className="brand-kicker">Kundli generator</p>
-              <h2 className="mt-2 text-[2.1rem] leading-none text-[var(--shreem-ink)]">
+              <h2 className="brand-card-title mt-2">
                 Birth chart and PDF
               </h2>
               <div className="mt-5 grid gap-3">
@@ -2508,7 +2508,7 @@ export default function AstrologyExperience({
           <div className="grid gap-5 xl:grid-cols-[minmax(0,0.88fr)_minmax(0,1.12fr)]">
             <div className="brand-card px-4 py-5 small:px-5">
               <p className="brand-kicker">Kundli matchmaking</p>
-              <h2 className="mt-2 max-w-[12ch] text-[2.2rem] leading-none text-[var(--shreem-ink)]">
+              <h2 className="brand-card-title mt-2 max-w-[14ch]">
                 Marriage compatibility
               </h2>
               <p className="mt-3 text-sm leading-7 text-[var(--shreem-muted)]">
@@ -2595,7 +2595,7 @@ export default function AstrologyExperience({
 
       <section className="brand-surface px-5 py-7 small:px-8 small:py-9">
         <p className="brand-kicker">Astrologer booking</p>
-        <h2 className="mt-2 max-w-[15ch] text-[2.35rem] leading-[1.02] text-[var(--shreem-ink)] small:text-[3.6rem]">
+        <h2 className="brand-section-title mt-2 max-w-[16ch]">
           Speak with Sanjay Kumar Pandey
         </h2>
         <p className="mt-4 max-w-[48rem] text-sm leading-7 text-[var(--shreem-muted)] small:text-base">
@@ -2611,7 +2611,7 @@ export default function AstrologyExperience({
             >
               <div>
                 <p className="brand-kicker">{service.amount}</p>
-                <h3 className="mt-2 text-[1.9rem] leading-none text-[var(--shreem-ink)]">
+                <h3 className="brand-card-title mt-2">
                   {service.title}
                 </h3>
                 <p className="mt-3 text-sm leading-7 text-[var(--shreem-muted)]">

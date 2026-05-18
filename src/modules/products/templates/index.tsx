@@ -42,7 +42,7 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
               <div>
                 <p className="brand-kicker">Product</p>
                 <h1
-                  className="mt-2 text-[2rem] leading-[1.02] text-[var(--shreem-ink)] small:text-[2.5rem]"
+                  className="brand-card-title mt-2"
                   data-testid="product-title"
                 >
                   {product.title}
@@ -85,7 +85,7 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
         <section className="mt-6 small:mt-10">
           <div className="mb-4 px-1 small:mb-6">
             <p className="brand-kicker">Details</p>
-            <h2 className="mt-2 text-[1.9rem] leading-none text-[var(--shreem-ink)] small:text-[2.6rem]">
+            <h2 className="brand-section-title mt-2">
               Product information
             </h2>
           </div>
@@ -104,8 +104,8 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
       >
         <div className="mb-8 flex flex-col gap-3">
           <p className="brand-kicker">You may also like</p>
-          <h2 className="text-[2.2rem] leading-none text-[var(--shreem-ink)] small:text-[3rem]">
-            More to explore from Shreem.
+          <h2 className="brand-section-title">
+            More useful picks to explore.
           </h2>
         </div>
         <Suspense fallback={<SkeletonRelatedProducts />}>

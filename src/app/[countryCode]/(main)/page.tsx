@@ -154,16 +154,15 @@ export default async function Home(props: {
           <div className="brand-surface px-5 py-6 small:px-8 small:py-8">
             <div className="flex flex-col gap-4 pb-6 small:flex-row small:items-end small:justify-between">
               <div>
-                <p className="brand-kicker">Shop Shreem</p>
-                <h2 className="mt-3 text-[2.2rem] leading-[1.02] text-[var(--shreem-ink)] small:text-[3.2rem]">
-                  Bring Shreem home
+                <p className="brand-kicker">From the store shelf</p>
+                <h2 className="brand-section-title mt-3">
+                  Start with the everyday quartet
                 </h2>
               </div>
               <div className="max-w-[34rem]">
                 <p className="text-sm leading-6 text-[var(--shreem-muted)]">
-                  Start with the core Shreem range for the kitchen, the home,
-                  and natural-farming routines, with product details and pricing
-                  pulled from the live store backend.
+                  Ghee, dhoop, havan fuel, and soil care sit together here with
+                  live pricing, real product pages, and checkout-ready detail.
                 </p>
                 <div className="mt-4 flex flex-wrap gap-2">
                   {shreemCowBreeds.map((breed) => (
@@ -197,14 +196,14 @@ export default async function Home(props: {
           <div className="brand-surface px-5 py-6 small:px-8 small:py-8">
             <div className="grid gap-6 xl:grid-cols-[0.98fr_1.02fr] xl:items-center">
               <div>
-                <p className="brand-kicker">AI care helper</p>
-                <h2 className="mt-3 text-[2.2rem] leading-[1.02] text-[var(--shreem-ink)] small:text-[3.2rem]">
-                  Not sure what helps? Ask GrowBuddy AI.
+                <p className="brand-kicker">Ask before you guess</p>
+                <h2 className="brand-section-title mt-3">
+                  GrowBuddy turns photos into a cautious care plan.
                 </h2>
                 <p className="mt-4 text-sm leading-7 text-[var(--shreem-muted)] small:text-base">
                   Upload up to three photos of a plant or animal, add a short note,
                   and get a cautious first-pass care plan. It only surfaces a
-                  Shreem product when that item is available in your region and
+                  product when that item is available in your region and
                   genuinely fits the case.
                 </p>
                 <div className="mt-6 flex flex-col gap-3 sm:flex-row">
@@ -239,7 +238,7 @@ export default async function Home(props: {
                 </article>
                 <article className="brand-card px-4 py-4">
                   <p className="text-sm font-semibold text-[var(--shreem-ink)]">
-                    3. See useful Shreem products
+                    3. See useful products
                   </p>
                   <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
                     Only region-available items with a real fit are recommended.
@@ -269,9 +268,9 @@ export default async function Home(props: {
               </div>
             </div>
             <div>
-              <p className="brand-kicker">Our signature bilona ghee</p>
-              <h2 className="mt-3 text-[2.2rem] leading-[1.02] text-[var(--shreem-ink)] small:text-[3.2rem]">
-                Slow-made from cultured curd with a warm finished aroma
+              <p className="brand-kicker">Bilona, without shortcuts</p>
+              <h2 className="brand-section-title mt-3">
+                Curd-first ghee with a warm, patient finish.
               </h2>
               <p className="mt-4 text-sm leading-7 text-[var(--shreem-muted)] small:text-base">
                 {bilonaGhee.description} The final heating is handled slowly so
@@ -307,13 +306,13 @@ export default async function Home(props: {
                 </article>
               </div>
               <div className="mt-6 rounded-[28px] border border-[rgba(212,161,38,0.24)] bg-[linear-gradient(135deg,rgba(255,248,233,0.95),rgba(245,239,224,0.88))] px-5 py-5 shadow-[0_18px_40px_rgba(156,105,18,0.08)]">
-                <p className="brand-kicker">Shreem USP</p>
-                <h3 className="mt-3 text-[1.9rem] leading-[1.04] text-[var(--shreem-ink)]">
-                  Aroma that comes from patience
+                <p className="brand-kicker">What makes the jar memorable</p>
+                <h3 className="brand-card-title mt-3">
+                  Aroma that comes from patience.
                 </h3>
                 <p className="mt-3 text-sm leading-6 text-[var(--shreem-muted)]">
-                  Many ghee jars in the market stop at generic richness. Shreem
-                  is built around a slower curd-first route, careful heating,
+                  Many ghee jars in the market stop at generic richness. This
+                  one is built around a slower curd-first route, careful heating,
                   and a finished aroma that feels closer to an everyday Indian
                   kitchen than a generic shelf product.
                 </p>
@@ -330,8 +329,8 @@ export default async function Home(props: {
           <div className="brand-royal-surface px-5 py-6 text-white small:px-8 small:py-8">
             <div>
               <p className="brand-kicker">For a calmer home</p>
-              <h2 className="mt-3 text-[2.2rem] leading-[1.04] text-white small:text-[3.2rem]">
-                Evening prayer, gentler fragrance, and a calmer home atmosphere
+              <h2 className="brand-section-title mt-3 text-white">
+                Evening prayer with a gentler, grounded fragrance.
               </h2>
               <p className="mt-4 max-w-[36rem] text-sm leading-6 text-white/78">
                 {neemDhoop.description} Neem has long been part of household
@@ -354,8 +353,8 @@ export default async function Home(props: {
           <div className="grid gap-4">
             <article className="brand-card px-5 py-5 small:px-6">
               <p className="brand-kicker">{cowDungCakes.title}</p>
-              <h3 className="mt-3 text-[2rem] leading-[1.04] text-[var(--shreem-ink)]">
-                Cow-dung cakes for havan, dhooni, and traditional fire use
+              <h3 className="brand-card-title mt-3">
+                Cow-dung cakes for havan, dhooni, and traditional fire use.
               </h3>
               <p className="mt-3 text-sm leading-6 text-[var(--shreem-muted)]">
                 {cowDungCakes.description} They are used in havan, dhooni, and
@@ -365,8 +364,8 @@ export default async function Home(props: {
             </article>
             <article className="brand-card px-5 py-5 small:px-6">
               <p className="brand-kicker">{jeevamrut.title}</p>
-              <h3 className="mt-3 text-[2rem] leading-[1.04] text-[var(--shreem-ink)]">
-                For soil-care routines that need biological support
+              <h3 className="brand-card-title mt-3">
+                Soil-care routines built around biological support.
               </h3>
               <p className="mt-3 text-sm leading-6 text-[var(--shreem-muted)]">
                 {jeevamrut.description} It belongs to a natural-farming
@@ -375,7 +374,7 @@ export default async function Home(props: {
               </p>
             </article>
             <article className="brand-surface px-5 py-5 small:px-6">
-              <p className="brand-kicker">Why people come to Shreem</p>
+              <p className="brand-kicker">Why people return</p>
               <div className="mt-3 grid gap-3 sm:grid-cols-3">
                 <div className="rounded-[22px] bg-white/72 px-4 py-4 text-sm leading-6 text-[var(--shreem-muted)]">
                   Traditional kitchen ghee with a curd-first bilona method.
@@ -399,8 +398,8 @@ export default async function Home(props: {
           <div className="grid gap-6 pb-6 xl:grid-cols-[0.92fr_1.08fr] xl:items-start">
             <div className="max-w-[36rem]">
               <p className="brand-kicker">From the Journal</p>
-              <h2 className="mt-3 text-[2.2rem] leading-[1.04] text-[var(--shreem-ink)] small:text-[3.2rem]">
-                The Shreem story, made memorable
+              <h2 className="brand-section-title mt-3">
+                The story world behind the products.
               </h2>
               <p className="mt-4 text-sm leading-6 text-[var(--shreem-muted)]">
                 Gauri and Mayur give the store a consistent visual world while
@@ -428,7 +427,7 @@ export default async function Home(props: {
                   </div>
                   <div className="p-5 small:p-6">
                     <p className="brand-kicker">{mascot.role}</p>
-                    <h3 className="mt-3 text-[2rem] leading-[1.04] text-[var(--shreem-ink)]">
+                    <h3 className="brand-card-title mt-3">
                       {mascot.name}
                     </h3>
                     <p className="mt-3 text-sm leading-6 text-[var(--shreem-muted)]">

@@ -73,14 +73,14 @@ export default async function CustomerServicePage(props: {
         <MascotSprites className="opacity-70" />
         <div className="relative z-[1] grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px] xl:items-end">
           <div>
-            <p className="brand-kicker">Customer Service</p>
-            <h1 className="mt-3 max-w-[13ch] text-[2.55rem] leading-[0.98] text-[var(--shreem-ink)] small:text-[4rem]">
-              Support that chats first
+            <p className="brand-kicker">Care desk</p>
+            <h1 className="brand-page-title mt-3 max-w-[16ch]">
+              Quick help without losing the human thread.
             </h1>
             <p className="mt-4 max-w-[45rem] text-sm leading-7 text-[var(--shreem-muted)] small:text-base">
               Ask for order help, checkout support, payment guidance, or product
-              advice. If the AI cannot solve it, you can send the chat details
-              to the Shreem team.
+              advice. If AI cannot solve it, the chat can be passed to the team
+              with the useful context already attached.
             </p>
           </div>
 
@@ -116,7 +116,7 @@ export default async function CustomerServicePage(props: {
       <section className="mt-6 small:mt-10">
         <div className="brand-surface px-5 py-6 small:px-8 small:py-8">
           <p className="brand-kicker">FAQs</p>
-          <h2 className="mt-3 text-[2rem] leading-[1.04] text-[var(--shreem-ink)] small:text-[2.8rem]">
+          <h2 className="brand-section-title mt-3">
             Quick answers
           </h2>
           <div className="mt-5 grid gap-3">

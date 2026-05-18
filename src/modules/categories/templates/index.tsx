@@ -39,7 +39,7 @@ export default function CategoryTemplate({
   return (
     <div className="content-container py-8 small:py-12" data-testid="category-container">
       <div className="brand-surface mb-6 px-5 py-6 small:px-8 small:py-8">
-        <p className="brand-kicker">Category</p>
+        <p className="brand-kicker">Browse by purpose</p>
         <div className="mt-3 flex flex-wrap items-center gap-2 text-sm text-[var(--shreem-muted)]">
           {parents.map((parent) => (
             <span key={parent.id} className="flex items-center gap-2">
@@ -55,13 +55,13 @@ export default function CategoryTemplate({
           ))}
         </div>
         <h1
-          className="mt-3 text-[2.5rem] leading-none text-[var(--shreem-ink)] small:text-[3.6rem]"
+          className="brand-page-title mt-3 max-w-[16ch]"
           data-testid="category-page-title"
         >
           {category.name}
         </h1>
         {category.description && (
-          <div className="mt-4 max-w-[38rem] text-base-regular text-[var(--shreem-muted)]">
+          <div className="brand-page-copy mt-4 max-w-[38rem]">
             <p>{category.description}</p>
           </div>
         )}

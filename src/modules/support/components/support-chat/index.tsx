@@ -227,8 +227,8 @@ export default function SupportChat({
     <section className="brand-royal-surface overflow-hidden px-3 py-3 small:px-6 small:py-6">
       <div className="grid gap-4 xl:grid-cols-[330px_minmax(0,1fr)]">
         <aside className="rounded-[24px] border border-white/10 bg-black/12 px-4 py-4 text-white/88 small:px-5 small:py-5">
-          <p className="brand-kicker text-[#e8c364]">Shreem Support AI</p>
-          <h2 className="mt-3 text-[2.05rem] leading-[1.02] text-white small:text-[2.7rem]">
+          <p className="brand-kicker text-[#e8c364]">Support AI</p>
+          <h2 className="brand-card-title mt-3 text-white">
             Ask first. Email only when needed.
           </h2>
           <p className="mt-4 text-sm leading-7 text-white/72">

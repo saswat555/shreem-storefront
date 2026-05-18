@@ -23,12 +23,13 @@ export default function CollectionTemplate({
   return (
     <div className="content-container py-8 small:py-12">
       <div className="brand-surface mb-6 px-5 py-6 small:px-8 small:py-8">
-        <p className="brand-kicker">Shreem collection</p>
-        <h1 className="mt-3 text-[2.5rem] leading-none text-[var(--shreem-ink)] small:text-[3.6rem]">
+        <p className="brand-kicker">Curated shelf</p>
+        <h1 className="brand-page-title mt-3 max-w-[16ch]">
           {collection.title}
         </h1>
-        <p className="mt-4 max-w-[38rem] text-sm leading-6 text-[var(--shreem-muted)] small:text-base">
-          Browse products grouped together for easier discovery and comparison.
+        <p className="brand-page-copy mt-4 max-w-[38rem]">
+          Browse a focused set of products grouped for easier discovery,
+          comparison, and checkout.
         </p>
       </div>
       <div className="flex flex-col gap-5">

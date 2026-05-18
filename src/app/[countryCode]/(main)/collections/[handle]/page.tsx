@@ -100,10 +100,10 @@ function CollectionUnavailable({ handle }: { handle: string }) {
     <div className="content-container py-8 small:py-12">
       <section className="brand-surface px-5 py-8 small:px-10 small:py-10">
         <p className="brand-kicker">Collection</p>
-        <h1 className="mt-3 max-w-[15ch] text-[2.3rem] leading-[1.02] text-[var(--shreem-ink)] small:text-[3.6rem]">
+        <h1 className="brand-page-title mt-3 max-w-[16ch]">
           We are reconnecting to {handle.replace(/-/g, " ")}.
         </h1>
-        <p className="mt-4 max-w-[40rem] text-sm leading-7 text-[var(--shreem-muted)] small:text-base">
+        <p className="brand-page-copy mt-4 max-w-[40rem]">
           This collection could not be reached just now. The store remains
           available while the collection data refreshes.
         </p>

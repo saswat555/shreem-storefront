@@ -21,18 +21,17 @@ const Hero = ({
         />
         <div className="relative">
           <div className="brand-pill mx-auto mb-4 w-fit">
-            A2 desi cow products from {shreemCowBreeds.join(", ")}
+            Gaushala essentials from {shreemCowBreeds.join(", ")}
           </div>
           <div className="grid gap-6 xl:grid-cols-[0.94fr_1.06fr] xl:items-center">
             <div className="order-2 xl:order-1">
-              <h1 className="max-w-[13ch] text-center text-[2.25rem] leading-[0.96] text-balance text-[var(--shreem-ink)] small:text-[4.6rem] xl:text-left">
-                Bilona A2 ghee, neem dhoop, gobar cakes, and Jeevamrut from desi-cow farms.
+              <h1 className="brand-page-title mx-auto max-w-[16ch] text-center xl:mx-0 xl:text-left">
+                Cow-based essentials for kitchen, ritual, and living soil.
               </h1>
-              <p className="mt-6 max-w-[44rem] text-center text-base leading-7 text-[var(--shreem-muted)] small:text-lg xl:text-left">
-                Shreem brings everyday cow-based products into one clean
-                storefront: cultured bilona ghee for the kitchen, neem dhoop for
-                home use, cow-dung cakes for havan and dhooni, and Jeevamrut for
-                natural farming routines.
+              <p className="brand-page-copy mt-6 max-w-[44rem] text-center xl:text-left">
+                Cultured bilona ghee, neem dhoop, cow-dung cakes, and Jeevamrut
+                are brought together as practical everyday tools: one shelf for
+                food, fragrance, fire, and farm care.
               </p>
               <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row xl:justify-start">
                 <LocalizedClientLink href="/store" className="brand-primary-button">
@@ -69,10 +68,10 @@ const Hero = ({
           >
             <div className="brand-card px-4 py-4">
               <p className="text-sm font-semibold text-[var(--shreem-ink)]">
-                Desi cow source
+                Desi-cow source
               </p>
               <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
-                Shreem focuses on Gir, Sahiwal, Tharparkar, and Rathi desi-cow lines.
+                Focused on Gir, Sahiwal, Tharparkar, and Rathi desi-cow lines.
               </p>
             </div>
             <div className="brand-card px-4 py-4 animate-shreem-float">
@@ -80,7 +79,7 @@ const Hero = ({
                 Everyday use
               </p>
               <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
-                From bilona ghee to neem dhoop batti, each product is presented for clear daily use.
+                Every product is framed by clear purpose, not vague wellness language.
               </p>
             </div>
             {prakritiGuideEnabled && (

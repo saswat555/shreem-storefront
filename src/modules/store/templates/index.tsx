@@ -20,9 +20,19 @@ const StoreTemplate = ({
 
   return (
     <div className="content-container py-8 small:py-12" data-testid="category-container">
-      <h1 className="sr-only" data-testid="store-page-title">
-        Shreem products
-      </h1>
+      <section className="brand-surface mb-6 px-5 py-6 small:px-8 small:py-8">
+        <p className="brand-kicker">The working shelf</p>
+        <h1
+          className="brand-page-title mt-3 max-w-[16ch]"
+          data-testid="store-page-title"
+        >
+          Products for food, ritual, home, and soil.
+        </h1>
+        <p className="brand-page-copy mt-4 max-w-[42rem]">
+          Compare the daily essentials with live pricing, clear use cases, and
+          region-aware availability.
+        </p>
+      </section>
       <div className="flex flex-col gap-5">
         <RefinementList sortBy={sort} />
         <Suspense fallback={<SkeletonProductGrid />}>

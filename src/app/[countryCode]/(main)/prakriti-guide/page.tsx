@@ -76,14 +76,13 @@ export default async function PrakritiGuidePage(props: {
         <MotionReveal>
           <section className="brand-surface mb-8 px-5 py-8 small:px-10 small:py-10">
             <p className="brand-pill mb-5 w-fit">GrowBuddy AI</p>
-            <h1 className="max-w-[12ch] text-[2.8rem] leading-[0.98] text-[var(--shreem-ink)] small:text-[4.4rem]">
-              Sign in to run GrowBuddy AI
+            <h1 className="brand-page-title max-w-[16ch]">
+              Sign in for photo-based care guidance.
             </h1>
-            <p className="mt-5 max-w-[46rem] text-base leading-7 text-[var(--shreem-muted)] small:text-lg">
-              GrowBuddy AI is Shreem&apos;s plant and animal care assistant for
-              signed-in customers. It keeps the experience connected to your
-              account and checks regional product availability before it
-              recommends anything.
+            <p className="brand-page-copy mt-5 max-w-[46rem]">
+              GrowBuddy reads plant and animal photos for signed-in customers,
+              keeps the guidance connected to your account, and checks regional
+              product availability before recommending anything.
             </p>
           </section>
         </MotionReveal>
@@ -129,13 +128,13 @@ export default async function PrakritiGuidePage(props: {
       <MotionReveal>
         <section className="brand-surface mb-8 px-5 py-8 small:px-10 small:py-10">
           <p className="brand-pill mb-5 w-fit">GrowBuddy AI</p>
-          <h1 className="max-w-[13ch] text-[2.8rem] leading-[0.98] text-[var(--shreem-ink)] small:text-[4.4rem]">
-            Plant and animal care AI from your photos
+          <h1 className="brand-page-title max-w-[17ch]">
+            Photo-based care guidance for plants and animals.
           </h1>
-          <p className="mt-5 max-w-[46rem] text-base leading-7 text-[var(--shreem-muted)] small:text-lg">
+          <p className="brand-page-copy mt-5 max-w-[46rem]">
             Add up to three photos, tell us what is happening, and get a
             cautious first-pass care plan powered by Gemini. GrowBuddy only
-            surfaces a Shreem product when that item is available in your region
+            surfaces a product when that item is available in your region
             and genuinely useful for the situation.
           </p>
           <div className="mt-5 flex flex-wrap gap-2">

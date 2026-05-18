@@ -230,10 +230,10 @@ function ProductUnavailable({ handle }: { handle: string }) {
     <div className="content-container py-8 small:py-12">
       <section className="brand-surface px-5 py-8 small:px-10 small:py-10">
         <p className="brand-kicker">Product</p>
-        <h1 className="mt-3 max-w-[14ch] text-[2.3rem] leading-[1.02] text-[var(--shreem-ink)] small:text-[3.6rem]">
+        <h1 className="brand-page-title mt-3 max-w-[16ch]">
           We are reconnecting to {readableHandle}.
         </h1>
-        <p className="mt-4 max-w-[40rem] text-sm leading-7 text-[var(--shreem-muted)] small:text-base">
+        <p className="brand-page-copy mt-4 max-w-[40rem]">
           The product page loaded, but live pricing and availability could not
           be reached just now. Refresh in a moment or continue browsing the
           store.

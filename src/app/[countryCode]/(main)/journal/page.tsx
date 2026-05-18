@@ -57,14 +57,14 @@ export default async function JournalPage(props: {
       <section className="brand-surface px-5 py-8 small:px-10 small:py-10">
         <div className="grid gap-6 xl:grid-cols-[0.92fr_1.08fr] xl:items-center">
           <div>
-            <p className="brand-pill mb-5 w-fit">Shreem Journal</p>
-            <h1 className="max-w-[12ch] text-[2.8rem] leading-[0.98] text-[var(--shreem-ink)] small:text-[4.4rem]">
-              Stories for the kitchen, the prayer room, and the field
+            <p className="brand-pill mb-5 w-fit">Journal</p>
+            <h1 className="brand-page-title max-w-[17ch]">
+              Field notes for the kitchen, prayer room, and soil.
             </h1>
-            <p className="mt-5 max-w-[42rem] text-base leading-7 text-[var(--shreem-muted)] small:text-lg">
-              The Journal now carries the deeper Shreem story too: bilona ghee,
-              neem dhoop, desi-cow living, and the mascots who give the brand
-              its warmth, color, and memory.
+            <p className="brand-page-copy mt-5 max-w-[42rem]">
+              Read practical notes on bilona ghee, neem dhoop, desi-cow living,
+              and the illustrated world that gives the store its warmth, color,
+              and memory.
             </p>
           </div>
           <div className="grid gap-4">
@@ -82,7 +82,7 @@ export default async function JournalPage(props: {
                   </div>
                   <div className="p-5 small:p-6">
                     <p className="brand-kicker">{mascot.role}</p>
-                    <h2 className="mt-3 text-[2rem] leading-[1.04] text-[var(--shreem-ink)]">
+                    <h2 className="brand-card-title mt-3">
                       {mascot.name}
                     </h2>
                     <p className="mt-3 text-sm leading-6 text-[var(--shreem-muted)]">
@@ -112,7 +112,7 @@ export default async function JournalPage(props: {
               </div>
               <div className="p-6 small:p-8">
                 <p className="brand-kicker">{featuredPost.category}</p>
-                <h2 className="mt-3 text-[2.3rem] leading-[1.02] text-[var(--shreem-ink)] small:text-[3.2rem]">
+                <h2 className="brand-section-title mt-3">
                   {featuredPost.title}
                 </h2>
                 <p className="mt-4 text-sm leading-7 text-[var(--shreem-muted)] small:text-base">

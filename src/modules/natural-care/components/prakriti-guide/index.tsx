@@ -373,7 +373,7 @@ export default function PrakritiGuide({ products, model }: PrakritiGuideProps) {
             </div>
             <div className="min-w-0">
               <p className="brand-kicker text-[#e8c364]">{careToolName}</p>
-              <h1 className="mt-2 text-[2.15rem] leading-[0.98] text-white small:text-[3rem]">
+              <h1 className="brand-card-title mt-2 text-white">
                 Ancient care, modern eyes.
               </h1>
             </div>
@@ -393,7 +393,7 @@ export default function PrakritiGuide({ products, model }: PrakritiGuideProps) {
             <div className="flex flex-col gap-3 small:flex-row small:items-center small:justify-between">
               <div>
                 <p className="brand-kicker">Case console</p>
-                <h2 className="mt-1 text-[1.75rem] leading-[1] text-[var(--shreem-ink)] small:text-[2.2rem]">
+                <h2 className="brand-card-title mt-1">
                   Context and chat move together
                 </h2>
               </div>
@@ -712,7 +712,7 @@ const CareResult = ({ result }: { result: GuideResult }) => (
 
       {!!result.recommended_products.length && (
         <div>
-          <p className="brand-kicker">Useful Shreem products</p>
+          <p className="brand-kicker">Useful products</p>
           <div className="mt-3 grid gap-3">
             {result.recommended_products.map((product) => (
               <div

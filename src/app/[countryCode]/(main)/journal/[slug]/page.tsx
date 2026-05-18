@@ -82,14 +82,14 @@ export default async function JournalArticlePage(props: Props) {
       <article className="brand-surface overflow-hidden px-5 py-8 small:px-10 small:py-10">
         <div className="max-w-[52rem]">
           <p className="brand-pill w-fit">{post.category}</p>
-          <h1 className="mt-5 text-[2.8rem] leading-[0.98] text-[var(--shreem-ink)] small:text-[4.4rem]">
+          <h1 className="brand-page-title mt-5">
             {post.title}
           </h1>
           <div className="mt-5 flex flex-wrap gap-2 text-sm text-[var(--shreem-muted)]">
             <span className="brand-pill px-3 py-1.5">{post.readTime}</span>
             <span className="brand-pill px-3 py-1.5">{post.publishedAt}</span>
           </div>
-          <p className="mt-6 text-base leading-7 text-[var(--shreem-muted)] small:text-lg">
+          <p className="brand-page-copy mt-6">
             {post.description}
           </p>
         </div>

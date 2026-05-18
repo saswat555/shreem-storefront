@@ -118,7 +118,9 @@
     font-family: var(--font-shreem-display);
     font-weight: 600;
     letter-spacing: 0;
-    overflow-wrap: anywhere;
+    overflow-wrap: normal;
+    word-break: normal;
+    hyphens: none;
   }
 
   p,
@@ -129,7 +131,7 @@
   input,
   select,
   textarea {
-    overflow-wrap: anywhere;
+    overflow-wrap: break-word;
   }
 
   a,
@@ -250,6 +252,25 @@
   .brand-kicker {
     @apply text-[11px] font-semibold uppercase tracking-[0.32em];
     color: var(--shreem-gold-deep);
+  }
+
+  .brand-page-title {
+    @apply text-[2.15rem] leading-[1.04] text-[var(--shreem-ink)] small:text-[3.1rem] large:text-[3.55rem];
+    text-wrap: balance;
+  }
+
+  .brand-section-title {
+    @apply text-[1.85rem] leading-[1.08] text-[var(--shreem-ink)] small:text-[2.55rem] large:text-[2.85rem];
+    text-wrap: balance;
+  }
+
+  .brand-card-title {
+    @apply text-[1.65rem] leading-[1.08] text-[var(--shreem-ink)] small:text-[2.1rem];
+    text-wrap: balance;
+  }
+
+  .brand-page-copy {
+    @apply text-sm leading-7 text-[var(--shreem-muted)] small:text-base;
   }
 
   .brand-surface {
