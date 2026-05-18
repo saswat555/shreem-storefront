@@ -1,4 +1,8 @@
 import { INDIA_ASTROLOGY_CITIES } from "./india-astrology-cities"
+import {
+  NEPAL_ASTROLOGY_CITIES,
+  SRI_LANKA_ASTROLOGY_CITIES,
+} from "./south-asia-astrology-cities"
 
 export type AstrologyCity = {
   id: string
@@ -378,7 +382,11 @@ const HINDI_MONTHS_BY_SUN_SIGN: Record<string, HindiMonthInfo> = {
 export const getHindiMonthInfoBySunSign = (sunSign: string) =>
   HINDI_MONTHS_BY_SUN_SIGN[sunSign] || HINDI_MONTHS_BY_SUN_SIGN.Pisces
 
-export const ASTROLOGY_CITIES: AstrologyCity[] = INDIA_ASTROLOGY_CITIES
+export const ASTROLOGY_CITIES: AstrologyCity[] = [
+  ...INDIA_ASTROLOGY_CITIES,
+  ...NEPAL_ASTROLOGY_CITIES,
+  ...SRI_LANKA_ASTROLOGY_CITIES,
+]
 
 const DAY_SEQUENCES: Record<number, ChoghadiyaName[]> = {
   0: ["Udveg", "Char", "Labh", "Amrit", "Kaal", "Shubh", "Rog", "Udveg"],

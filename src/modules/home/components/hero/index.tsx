@@ -23,17 +23,17 @@ const Hero = ({
           <div className="brand-pill mx-auto mb-4 w-fit">
             Gaushala essentials from {shreemCowBreeds.join(", ")}
           </div>
-          <div className="grid gap-6 xl:grid-cols-[0.94fr_1.06fr] xl:items-center">
-            <div className="order-2 xl:order-1">
-              <h1 className="brand-page-title mx-auto max-w-[16ch] text-center xl:mx-0 xl:text-left">
-                Cow-based essentials for kitchen, ritual, and living soil.
+          <div className="grid gap-6 small:grid-cols-[0.88fr_1.12fr] small:items-center">
+            <div>
+              <h1 className="mx-auto max-w-[14ch] text-center text-[1.95rem] leading-[1.06] text-balance text-[var(--shreem-ink)] small:mx-0 small:text-left small:text-[2.7rem] large:text-[3.05rem]">
+                Rooted in desi-cow care. Made for daily ritual.
               </h1>
-              <p className="brand-page-copy mt-6 max-w-[44rem] text-center xl:text-left">
+              <p className="brand-page-copy mt-5 max-w-[38rem] text-center small:text-left">
                 Cultured bilona ghee, neem dhoop, cow-dung cakes, and Jeevamrut
-                are brought together as practical everyday tools: one shelf for
-                food, fragrance, fire, and farm care.
+                come together as one practical shelf for food, fragrance, fire,
+                and farm care.
               </p>
-              <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row xl:justify-start">
+              <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row small:justify-start">
                 <LocalizedClientLink href="/store" className="brand-primary-button">
                   Shop products
                 </LocalizedClientLink>
@@ -48,8 +48,8 @@ const Hero = ({
                 )}
               </div>
             </div>
-            <div className="order-1 xl:order-2 overflow-hidden rounded-[30px] border border-[var(--shreem-border)] bg-[linear-gradient(180deg,rgba(255,252,247,0.98),rgba(247,242,232,0.92))] p-2 shadow-[0_24px_70px_rgba(15,49,70,0.12)]">
-              <div className="relative aspect-[16/10] overflow-hidden rounded-[24px] small:aspect-[16/9] xl:aspect-[16/11]">
+            <div className="overflow-hidden rounded-[24px] border border-[var(--shreem-border)] bg-[linear-gradient(180deg,rgba(255,252,247,0.98),rgba(247,242,232,0.92))] p-2 shadow-[0_24px_70px_rgba(15,49,70,0.12)] small:rounded-[30px]">
+              <div className="relative aspect-[16/10] overflow-hidden rounded-[18px] small:aspect-[16/11] small:rounded-[24px]">
                 <Image
                   src="/shreem-scenes/hero-scene.png"
                   alt="Illustrated Shreem gaushala hero scene with Gauri, Mayur, and bilona ghee"
