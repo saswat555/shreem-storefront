@@ -2,6 +2,8 @@
 
 import {
   ASTROLOGY_CITIES,
+  HOUSE_THEMES,
+  SIGN_LORDS,
   calculateDailyMuhurat,
   getCityById,
   getTodayDateString,
@@ -64,7 +66,15 @@ type KundliAnalysis = {
   shreem_product_suggestions?: {
     title: string
     handle: string
+    product_url?: string
+    image_url?: string
     reason: string
+  }[]
+  planet_effects?: {
+    planet: string
+    placement: string
+    effect: string
+    advice: string
   }[]
   expert_call_recommended?: boolean
   expert_call_reason?: string
@@ -801,6 +811,38 @@ const getPlanetsByHouse = (chart?: PrashnaChart) => {
   }, new Map<number, PrashnaPlanet[]>())
 }
 
+const SIGNS = [
+  "Aries",
+  "Taurus",
+  "Gemini",
+  "Cancer",
+  "Leo",
+  "Virgo",
+  "Libra",
+  "Scorpio",
+  "Sagittarius",
+  "Capricorn",
+  "Aquarius",
+  "Pisces",
+]
+
+const SIGN_NUMBERS = SIGNS.reduce<Record<string, number>>((acc, sign, index) => {
+  acc[sign] = index + 1
+  return acc
+}, {})
+
+const PLANET_SHORT: Record<string, string> = {
+  Sun: "Su",
+  Moon: "Mo",
+  Mars: "Ma",
+  Mercury: "Me",
+  Jupiter: "Ju",
+  Venus: "Ve",
+  Saturn: "Sa",
+  Rahu: "Ra",
+  Ketu: "Ke",
+}
+
 const housePositions: Record<number, string> = {
   1: "left-1/2 top-[7%] -translate-x-1/2",
   2: "left-[23%] top-[18%] -translate-x-1/2",
@@ -816,40 +858,149 @@ const housePositions: Record<number, string> = {
   12: "right-[31%] top-1/2 translate-x-1/2 -translate-y-1/2",
 }
 
-const NorthIndianChart = ({ chart }: { chart?: PrashnaChart }) => {
+const buildChartCells = (
+  chart: PrashnaChart,
+  mode: "lagna" | "moon"
+) => {
   const planetsByHouse = getPlanetsByHouse(chart)
 
+  if (mode === "lagna") {
+    return chart.houses.map((house) => ({
+      house: house.house,
+      sign: house.sign,
+      planets: planetsByHouse.get(house.house) || [],
+      marker: house.house === 1 ? "Lagna" : "",
+    }))
+  }
+
+  const moonSignIndex = Math.max(SIGNS.indexOf(chart.moonSign), 0)
+
+  return Array.from({ length: 12 }, (_, index) => {
+    const house = index + 1
+    const sign = SIGNS[(moonSignIndex + index) % SIGNS.length]
+
+    return {
+      house,
+      sign,
+      planets: chart.planets.filter((planet) => planet.sign === sign),
+      marker: house === 1 ? "Chandra" : "",
+    }
+  })
+}
+
+const NorthIndianChart = ({
+  chart,
+  mode = "lagna",
+  title,
+}: {
+  chart?: PrashnaChart
+  mode?: "lagna" | "moon"
+  title: string
+}) => {
   if (!chart) {
     return null
   }
 
-  return (
-    <div className="relative mx-auto aspect-square w-full max-w-[430px] overflow-hidden rounded-[24px] border border-[rgba(212,161,38,0.28)] bg-[rgba(255,252,248,0.86)] shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_18px_40px_rgba(11,39,53,0.08)]">
-      <svg
-        className="absolute inset-0 h-full w-full text-[rgba(156,105,18,0.34)]"
-        viewBox="0 0 100 100"
-        aria-hidden="true"
-      >
-        <rect x="3" y="3" width="94" height="94" rx="4" fill="none" stroke="currentColor" strokeWidth="1.2" />
-        <path d="M50 3 L97 50 L50 97 L3 50 Z" fill="none" stroke="currentColor" strokeWidth="1.2" />
-        <path d="M3 3 L97 97 M97 3 L3 97 M50 3 L50 97 M3 50 L97 50" fill="none" stroke="currentColor" strokeWidth="0.75" />
-      </svg>
+  const cells = buildChartCells(chart, mode)
 
-      {chart.houses.map((house) => (
-        <div
-          key={house.house}
-          className={`absolute ${housePositions[house.house]} w-[27%] text-center`}
+  return (
+    <div className="rounded-[22px] border border-[rgba(212,161,38,0.28)] bg-[rgba(255,252,248,0.86)] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_18px_40px_rgba(11,39,53,0.08)]">
+      <div className="mb-2 flex items-center justify-between gap-3 px-1">
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
+          {title}
+        </p>
+        <p className="text-xs font-semibold text-[var(--shreem-muted)]">
+          {mode === "lagna" ? chart.ascendant : chart.moonSign}
+        </p>
+      </div>
+      <div className="relative mx-auto aspect-square w-full max-w-[430px] overflow-hidden rounded-[14px] bg-white/58">
+        <svg
+          className="absolute inset-0 h-full w-full text-[rgba(156,105,18,0.38)]"
+          viewBox="0 0 100 100"
+          aria-hidden="true"
         >
-          <p className="text-[0.6rem] font-semibold uppercase tracking-[0.08em] text-[var(--shreem-gold-deep)] small:text-[0.68rem]">
-            {house.house === 1 ? "Asc " : ""}H{house.house} {house.sign.slice(0, 3)}
-          </p>
-          <p className="mt-0.5 line-clamp-3 text-[0.66rem] font-semibold leading-4 text-[var(--shreem-ink)] small:text-[0.72rem]">
-            {(planetsByHouse.get(house.house) || [])
-              .map((planet) => planet.name.slice(0, 2))
-              .join(" ")}
-          </p>
-        </div>
-      ))}
+          <rect x="3" y="3" width="94" height="94" rx="2" fill="none" stroke="currentColor" strokeWidth="1.4" />
+          <path d="M50 3 L97 50 L50 97 L3 50 Z" fill="none" stroke="currentColor" strokeWidth="1.4" />
+          <path d="M3 3 L97 97 M97 3 L3 97 M50 3 L50 97 M3 50 L97 50" fill="none" stroke="currentColor" strokeWidth="0.72" />
+        </svg>
+
+        {cells.map((cell) => (
+          <div
+            key={`${mode}-${cell.house}-${cell.sign}`}
+            className={`absolute ${housePositions[cell.house]} w-[28%] text-center`}
+          >
+            <p className="text-[0.58rem] font-semibold uppercase leading-3 tracking-[0.07em] text-[var(--shreem-gold-deep)] small:text-[0.66rem]">
+              H{cell.house} · {SIGN_NUMBERS[cell.sign]}
+            </p>
+            <p className="mt-0.5 text-[0.58rem] font-medium leading-3 text-[var(--shreem-muted)] small:text-[0.64rem]">
+              {cell.sign.slice(0, 3)}
+              {cell.marker ? ` · ${cell.marker}` : ""}
+            </p>
+            <p className="mt-0.5 line-clamp-3 text-[0.66rem] font-semibold leading-4 text-[var(--shreem-ink)] small:text-[0.72rem]">
+              {cell.planets
+                .map((planet) => PLANET_SHORT[planet.name] || planet.name.slice(0, 2))
+                .join(" ")}
+            </p>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+const buildPlanetEffectsFallback = (chart: PrashnaChart) =>
+  chart.planets.map((planet) => {
+    const theme = HOUSE_THEMES[planet.house - 1] || "life matters"
+    const lord = SIGN_LORDS[planet.sign] || "its sign lord"
+
+    return {
+      planet: planet.name,
+      placement: `${planet.sign}, house ${planet.house}, ${planet.nakshatra} pada ${planet.pada}`,
+      effect: `${planet.name} activates ${theme.toLowerCase()} through the nature of ${planet.sign} and ${lord}.`,
+      advice:
+        planet.name === "Rahu" || planet.name === "Ketu"
+          ? "Keep remedies simple and take expert review before strong pooja or gemstone decisions."
+          : "Use steady discipline, relevant skill-building, and clean daily practice to support this placement.",
+    }
+  })
+
+const PlanetEffectList = ({
+  chart,
+  effects,
+}: {
+  chart: PrashnaChart
+  effects?: KundliAnalysis["planet_effects"]
+}) => {
+  const rows = effects?.length ? effects : buildPlanetEffectsFallback(chart)
+
+  return (
+    <div className="rounded-[20px] border border-[var(--shreem-border)] bg-white/60 px-4 py-4">
+      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
+        Planet effects
+      </p>
+      <div className="mt-3 grid gap-3 md:grid-cols-2">
+        {rows.map((item, index) => (
+          <div
+            key={`${item.planet}-${index}`}
+            className="rounded-[16px] border border-[var(--shreem-border)] bg-white/72 px-3 py-3"
+          >
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-sm font-semibold text-[var(--shreem-ink)]">
+                {item.planet}
+              </p>
+              <span className="rounded-full bg-[rgba(13,129,126,0.08)] px-2 py-0.5 text-[0.66rem] font-semibold text-[var(--shreem-muted)]">
+                {item.placement}
+              </span>
+            </div>
+            <p className="mt-2 text-xs leading-5 text-[var(--shreem-muted)]">
+              {item.effect}
+            </p>
+            <p className="mt-2 rounded-[14px] bg-[rgba(255,248,233,0.74)] px-3 py-2 text-xs leading-5 text-[var(--shreem-muted)]">
+              {item.advice}
+            </p>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }
@@ -939,8 +1090,11 @@ const KundliResultView = ({
 
   return (
     <div className="grid gap-4">
-      <div className="grid gap-4 xl:grid-cols-[360px_minmax(0,1fr)]">
-        <NorthIndianChart chart={chart} />
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(280px,0.65fr)]">
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
+          <NorthIndianChart chart={chart} mode="lagna" title="Lagna chart" />
+          <NorthIndianChart chart={chart} mode="moon" title="Chandra chart" />
+        </div>
         <div className="grid gap-3">
           <ChartMiniCard
             label="Lagna"
@@ -1015,6 +1169,7 @@ const KundliResultView = ({
       )}
 
       <PredictionTable rows={result.analysis?.prediction_table} />
+      <PlanetEffectList chart={chart} effects={result.analysis?.planet_effects} />
 
       <div className="grid gap-3 xl:grid-cols-2">
         <InsightList
@@ -1132,21 +1287,29 @@ const KundliResultView = ({
       {Boolean(result.analysis?.shreem_product_suggestions?.length) && (
         <div className="rounded-[20px] border border-[rgba(13,129,126,0.16)] bg-[rgba(240,248,246,0.74)] px-4 py-4">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
-            Shreem ritual support
+            Helpful support for your remedy
           </p>
           <div className="mt-3 grid gap-3">
             {result.analysis?.shreem_product_suggestions?.map((item) => (
               <LocalizedClientLink
                 key={`${item.handle}-${item.title}`}
-                href={`/products/${item.handle}`}
-                className="rounded-[16px] border border-[var(--shreem-border)] bg-white/70 px-3 py-3"
+                href={item.product_url || `/products/${item.handle}`}
+                className="grid grid-cols-[84px_minmax(0,1fr)] gap-3 rounded-[16px] border border-[var(--shreem-border)] bg-white/70 p-3 transition hover:border-[rgba(13,129,126,0.32)]"
               >
-                <p className="text-sm font-semibold text-[var(--shreem-ink)]">
-                  {item.title}
-                </p>
-                <p className="mt-1 text-xs leading-5 text-[var(--shreem-muted)]">
-                  {item.reason}
-                </p>
+                <img
+                  src={item.image_url || "/shreem-scenes/hero-scene.png"}
+                  alt=""
+                  className="h-[84px] w-[84px] rounded-[12px] object-cover"
+                  loading="lazy"
+                />
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-[var(--shreem-ink)]">
+                    {item.title}
+                  </p>
+                  <p className="mt-1 text-xs leading-5 text-[var(--shreem-muted)]">
+                    {item.reason}
+                  </p>
+                </div>
               </LocalizedClientLink>
             ))}
           </div>
@@ -1742,7 +1905,7 @@ export default function AstrologyExperience({
 
     setKundliResult(result)
 
-    if (result.chart) {
+    if (result.chart && result.analysis?.summary && !result.message) {
       rememberHistory({
         id: `kundli-${Date.now()}`,
         type: "Kundli",
@@ -1787,7 +1950,7 @@ export default function AstrologyExperience({
 
     setMatchmakingResult(result)
 
-    if (result.compatibility) {
+    if (result.compatibility && result.analysis?.summary && !result.message) {
       rememberHistory(
         {
           id: `matchmaking-${Date.now()}`,

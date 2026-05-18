@@ -7,12 +7,10 @@ import {
   getCityById,
   type PrashnaChart,
 } from "@lib/util/astrology"
+import { checkAstrologyDailyQuota } from "@lib/util/ai-quota"
+import { generateGeminiJson } from "@lib/util/gemini"
 import { buildDetailedPrashnaChart } from "@lib/util/vedic-astrology"
-import {
-  getGeminiApiKey,
-  getGeminiModel,
-  isGeminiEnabled,
-} from "@lib/util/prakriti-config"
+import { isGeminiEnabled } from "@lib/util/prakriti-config"
 
 type MatchPersonPayload = {
   name?: unknown
@@ -253,14 +251,6 @@ const sanitizeStringArray = (
         .filter(Boolean)
         .slice(0, maxItems)
     : []
-
-const safeParseJson = (text: string) => {
-  try {
-    return JSON.parse(text)
-  } catch {
-    return null
-  }
-}
 
 const parseBirthDateInput = (value: string) => {
   if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
@@ -628,53 +618,51 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  const model = getGeminiModel().replace(/^models\//, "")
-  const apiKey = getGeminiApiKey()
-  const controller = new AbortController()
-  const timeout = setTimeout(() => controller.abort(), 22000)
-  const geminiResponse = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(
-      model
-    )}:generateContent`,
-    {
-      method: "POST",
-      headers: {
-        "x-goog-api-key": apiKey,
-        "Content-Type": "application/json",
-      },
-      signal: controller.signal,
-      body: JSON.stringify({
-        contents: [
-          {
-            role: "user",
-            parts: [
-              {
-                text: buildPrompt({
-                  girl,
-                  boy,
-                  compatibility,
-                  language,
-                }),
-              },
-            ],
-          },
-        ],
-        generationConfig: {
-          temperature: 0.2,
-          responseMimeType: "application/json",
-          responseSchema: MATCHMAKING_SCHEMA,
-        },
-      }),
-    }
-  ).catch(() => null)
-  clearTimeout(timeout)
+  const quota = await checkAstrologyDailyQuota()
 
-  if (!geminiResponse || !geminiResponse.ok) {
+  if (!quota.synced) {
+    return NextResponse.json(
+      {
+        ...baseResult,
+        message:
+          "AI usage tracking is unavailable, so this reading is paused to protect your daily limit.",
+        retryable: true,
+      },
+      { status: 503 }
+    )
+  }
+
+  if (!quota.allowed) {
+    return NextResponse.json(
+      {
+        ...baseResult,
+        message:
+          `You have used your ${quota.limit} astrology AI readings for today. Please try again tomorrow.`,
+        quota,
+      },
+      { status: 429 }
+    )
+  }
+
+  const gemini = await generateGeminiJson({
+    prompt: buildPrompt({
+      girl,
+      boy,
+      compatibility,
+      language,
+    }),
+    responseSchema: MATCHMAKING_SCHEMA,
+    temperature: 0.2,
+    label: "Matchmaking API",
+  })
+
+  if (!gemini.ok) {
     return NextResponse.json(
       {
         ...baseResult,
         message:
           "Matchmaking AI could not generate the interpretation right now. The calculated score is still shown.",
+        retryable: true,
         analysis: normalizeAnalysis(
           {
             summary:
@@ -689,16 +677,11 @@ export async function POST(request: NextRequest) {
           compatibility.deterministicRecommendation
         ),
       },
-      { status: 200 }
+      { status: 502 }
     )
   }
 
-  const data = await geminiResponse.json()
-  const text = data.candidates?.[0]?.content?.parts
-    ?.map((part: { text?: string }) => part.text || "")
-    .join("")
-    .trim()
-  const parsed = safeParseJson(text || "")
+  const parsed = gemini.parsed
   const analysis = normalizeAnalysis(
     parsed,
     compatibility.percentage,
@@ -707,7 +690,7 @@ export async function POST(request: NextRequest) {
   const result = {
     ...baseResult,
     analysis,
-    model,
+    model: gemini.model,
   }
   const usage = await recordAiUsage({
     tool: "astrology_matchmaking",
@@ -721,7 +704,8 @@ export async function POST(request: NextRequest) {
       customer_email: customer.email,
       compatibility,
     },
-    model,
+    model: gemini.model,
+    ...gemini.usage,
     expert_recommended: analysis.expert_call_recommended,
   })
 

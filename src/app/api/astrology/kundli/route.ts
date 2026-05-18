@@ -1,19 +1,22 @@
 import { NextRequest, NextResponse } from "next/server"
 
+import {
+  astrologyProductCatalog,
+  normalizeAstrologyProductSuggestions,
+} from "@lib/constants/astrology-products"
 import { recordAiUsage } from "@lib/data/ai-usage"
 import { retrieveCustomer } from "@lib/data/customer"
 import {
+  HOUSE_THEMES,
   SIGN_LORDS,
   getCityById,
   type PrashnaChart,
   type PrashnaPlanet,
 } from "@lib/util/astrology"
+import { checkAstrologyDailyQuota } from "@lib/util/ai-quota"
+import { generateGeminiJson } from "@lib/util/gemini"
 import { buildDetailedPrashnaChart } from "@lib/util/vedic-astrology"
-import {
-  getGeminiApiKey,
-  getGeminiModel,
-  isGeminiEnabled,
-} from "@lib/util/prakriti-config"
+import { isGeminiEnabled } from "@lib/util/prakriti-config"
 
 const KUNDLI_SCHEMA = {
   type: "object",
@@ -48,6 +51,19 @@ const KUNDLI_SCHEMA = {
           advice: { type: "string" },
         },
         required: ["area", "chart_basis", "prediction", "advice"],
+      },
+    },
+    planet_effects: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          planet: { type: "string" },
+          placement: { type: "string" },
+          effect: { type: "string" },
+          advice: { type: "string" },
+        },
+        required: ["planet", "placement", "effect", "advice"],
       },
     },
     likely_challenges: {
@@ -90,6 +106,8 @@ const KUNDLI_SCHEMA = {
         properties: {
           title: { type: "string" },
           handle: { type: "string" },
+          product_url: { type: "string" },
+          image_url: { type: "string" },
           reason: { type: "string" },
         },
         required: ["title", "handle", "reason"],
@@ -110,6 +128,7 @@ const KUNDLI_SCHEMA = {
     "health_caution",
     "current_period_analysis",
     "prediction_table",
+    "planet_effects",
     "likely_challenges",
     "issue_analysis",
     "practical_solutions",
@@ -220,14 +239,6 @@ const sanitizeStringArray = (
         .filter(Boolean)
         .slice(0, maxItems)
     : []
-
-const safeParseJson = (text: string) => {
-  try {
-    return JSON.parse(text)
-  } catch {
-    return null
-  }
-}
 
 const parseBirthDateInput = (value: string) => {
   if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
@@ -496,6 +507,67 @@ const getStoneRecommendations = (chart: PrashnaChart) => {
   }
 }
 
+const PLANET_MEANINGS: Record<string, string> = {
+  Sun: "identity, confidence, authority, father figures, visibility",
+  Moon: "mind, emotions, mother, comfort, public response",
+  Mars: "courage, conflict, stamina, land, siblings, decisive action",
+  Mercury: "speech, learning, trade, analysis, writing",
+  Jupiter: "wisdom, teachers, children, ethics, expansion",
+  Venus: "relationships, comforts, art, vehicles, luxuries",
+  Saturn: "discipline, duty, delay, service, endurance",
+  Rahu: "ambition, unusual desire, foreign influence, restlessness",
+  Ketu: "detachment, spirituality, past karma, precision",
+}
+
+const getPlanetDignity = (planet: PrashnaPlanet) => {
+  if (EXALTATION_SIGNS[planet.name] === planet.sign) {
+    return "exalted"
+  }
+
+  if (DEBILITATION_SIGNS[planet.name] === planet.sign) {
+    return "debilitated"
+  }
+
+  if (SIGN_LORDS[planet.sign] === planet.name) {
+    return "own sign"
+  }
+
+  return "neutral dignity"
+}
+
+const buildPlanetEffects = (chart: PrashnaChart) =>
+  chart.planets
+    .filter((planet) =>
+      [
+        "Sun",
+        "Moon",
+        "Mars",
+        "Mercury",
+        "Jupiter",
+        "Venus",
+        "Saturn",
+        "Rahu",
+        "Ketu",
+      ].includes(planet.name)
+    )
+    .map((planet) => {
+      const houseTheme = HOUSE_THEMES[planet.house - 1] || "life matters"
+      const dignity = getPlanetDignity(planet)
+
+      return {
+        planet: planet.name,
+        placement: `${planet.name} in ${planet.sign}, house ${planet.house}, ${planet.nakshatra} pada ${planet.pada}, ${dignity}`,
+        effect: `${planet.name} influences ${houseTheme.toLowerCase()} through ${PLANET_MEANINGS[planet.name] || "its natural significations"}.`,
+        advice:
+          DUSTHANA_HOUSES.includes(planet.house) ||
+          dignity === "debilitated" ||
+          planet.name === "Rahu" ||
+          planet.name === "Ketu"
+            ? "Use discipline, prayer, service, and expert review before strong remedies."
+            : "Strengthen this placement through steady conduct, relevant skill-building, and simple daily worship.",
+      }
+    })
+
 const buildPrompt = ({
   name,
   chart,
@@ -519,10 +591,12 @@ const buildPrompt = ({
     "Also consider period timing from Vimshottari Mahadasha, Antardasha, and Pratyantar Dasha. Keep period analysis grounded in the dasha lords and their houses/signs.",
     "Give a detailed reading with these sections: who the person is, behavioral traits, strengths, life themes, likely challenges/issues, practical solutions, Vedic remedies, and cautious spiritual guidance.",
     "Return prediction_table with rows for Personality, Career, Money, Marriage, Health, Current period, and Remedies. Each row must include chart_basis, prediction, and advice.",
+    "Return planet_effects with one useful row for every graha: Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn, Rahu, and Ketu. Each row must explain placement, effect, and practical advice.",
     "Answer at most three sub-questions. If no sub-questions are provided, return an empty sub_question_answers array.",
     "Every sub-question answer must cite a chart reason using Lagna, Moon sign/nakshatra, houses, or graha placement. Do not answer from generic intuition.",
     "If a yoga is not detected, do not claim it exists. Mention uncertainty clearly.",
-    "Give remedies as Vedic practices: mantra, daan, vrata, worship, discipline, and seva. Suggest Shreem products only when ritually appropriate, such as cow dung cakes for havan or neem dhoop for prayer atmosphere.",
+    "Give remedies as Vedic practices: mantra, daan, vrata, worship, discipline, and seva.",
+    "For product suggestions, use only the provided available_ritual_support handles. Do not invent products, URLs, prices, or claims. Recommend at most three and only when naturally relevant to the remedy.",
     "Never give medical, legal, or financial certainty. Gemstones must always redirect to expert review before wearing.",
     "If strong dosha, gemstone, pooja, marriage, health, or career-defining guidance appears, set expert_call_recommended true and recommend Sanjay Kumar Pandey.",
     LANGUAGE_INSTRUCTIONS[language] || LANGUAGE_INSTRUCTIONS.english,
@@ -555,6 +629,14 @@ const buildPrompt = ({
     })}`,
     `Detected cases: ${JSON.stringify(detectedYogas)}`,
     `General stone indicators: ${JSON.stringify(stones)}`,
+    `available_ritual_support: ${JSON.stringify(
+      astrologyProductCatalog.map((item) => ({
+        title: item.title,
+        handle: item.handle,
+        product_url: item.product_url,
+        image_url: item.image_url,
+      }))
+    )}`,
   ].join("\n")
 
 export async function POST(request: NextRequest) {
@@ -628,69 +710,52 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  const model = getGeminiModel().replace(/^models\//, "")
-  const apiKey = getGeminiApiKey()
-  const controller = new AbortController()
-  const timeout = setTimeout(() => controller.abort(), 20000)
-  let fetchError: unknown = null
-  const geminiResponse = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(
-      model
-    )}:generateContent`,
-    {
-      method: "POST",
-      headers: {
-        "x-goog-api-key": apiKey,
-        "Content-Type": "application/json",
+  const quota = await checkAstrologyDailyQuota()
+
+  if (!quota.synced) {
+    return NextResponse.json(
+      {
+        message:
+          "AI usage tracking is unavailable, so this reading is paused to protect your daily limit.",
+        chart,
+        detected_yogas: detectedYogas,
+        stones,
+        retryable: true,
       },
-      signal: controller.signal,
-      body: JSON.stringify({
-        contents: [
-          {
-            role: "user",
-            parts: [
-              {
-                text: buildPrompt({
-                  name,
-                  chart,
-                  detectedYogas,
-                  stones,
-                  subQuestions,
-                  language,
-                }),
-              },
-            ],
-          },
-        ],
-        generationConfig: {
-          temperature: 0.22,
-          responseMimeType: "application/json",
-          responseSchema: KUNDLI_SCHEMA,
-        },
-      }),
-    }
-  ).catch((error) => {
-    fetchError = error
-    return null
+      { status: 503 }
+    )
+  }
+
+  if (!quota.allowed) {
+    return NextResponse.json(
+      {
+        message:
+          `You have used your ${quota.limit} astrology AI readings for today. Please try again tomorrow.`,
+        chart,
+        detected_yogas: detectedYogas,
+        stones,
+        quota,
+      },
+      { status: 429 }
+    )
+  }
+
+  const prompt = buildPrompt({
+    name,
+    chart,
+    detectedYogas,
+    stones,
+    subQuestions,
+    language,
   })
-  clearTimeout(timeout)
+  const gemini = await generateGeminiJson({
+    prompt,
+    responseSchema: KUNDLI_SCHEMA,
+    temperature: 0.22,
+    label: "Kundli API",
+  })
 
-  if (!geminiResponse || !geminiResponse.ok) {
-    let errorDetails = null
-    if (geminiResponse) {
-      try {
-        errorDetails = await geminiResponse.text()
-      } catch (e) {
-        errorDetails = "Could not read error response body"
-      }
-    }
-    console.error("[Kundli API] Gemini generation failed:", {
-      status: geminiResponse?.status,
-      statusText: geminiResponse?.statusText,
-      errorDetails,
-      fetchError,
-    })
-
+  if (!gemini.ok) {
     return NextResponse.json(
       {
         message:
@@ -698,17 +763,13 @@ export async function POST(request: NextRequest) {
         chart,
         detected_yogas: detectedYogas,
         stones,
+        retryable: true,
       },
       { status: 502 }
     )
   }
 
-  const data = await geminiResponse.json()
-  const text = data.candidates?.[0]?.content?.parts
-    ?.map((part: { text?: string }) => part.text || "")
-    .join("")
-    .trim()
-  const parsed = safeParseJson(text || "")
+  const parsed = gemini.parsed
   const analysis = {
     summary: sanitizeString(parsed?.summary, 900),
     person_information: sanitizeString(parsed?.person_information, 900),
@@ -747,6 +808,24 @@ export async function POST(request: NextRequest) {
           )
           .slice(0, 8)
       : [],
+    planet_effects: Array.isArray(parsed?.planet_effects)
+      ? parsed.planet_effects
+          .map((item: any) => ({
+            planet: sanitizeString(item?.planet, 40),
+            placement: sanitizeString(item?.placement, 220),
+            effect: sanitizeString(item?.effect, 520),
+            advice: sanitizeString(item?.advice, 320),
+          }))
+          .filter(
+            (item: {
+              planet: string
+              placement: string
+              effect: string
+              advice: string
+            }) => Boolean(item.planet && item.effect)
+          )
+          .slice(0, 9)
+      : buildPlanetEffects(chart),
     likely_challenges: sanitizeStringArray(parsed?.likely_challenges, 8, 220),
     issue_analysis: sanitizeStringArray(parsed?.issue_analysis, 8, 260),
     practical_solutions: sanitizeStringArray(parsed?.practical_solutions, 8, 260),
@@ -776,18 +855,9 @@ export async function POST(request: NextRequest) {
           .filter(Boolean)
           .slice(0, 8)
       : [],
-    shreem_product_suggestions: Array.isArray(parsed?.shreem_product_suggestions)
-      ? parsed.shreem_product_suggestions
-          .map((item: any) => ({
-            title: sanitizeString(item?.title, 120),
-            handle: sanitizeString(item?.handle, 120),
-            reason: sanitizeString(item?.reason, 220),
-          }))
-          .filter((item: { title: string; handle: string; reason: string }) =>
-            Boolean(item.title && item.reason)
-          )
-          .slice(0, 3)
-      : [],
+    shreem_product_suggestions: normalizeAstrologyProductSuggestions(
+      parsed?.shreem_product_suggestions
+    ),
     expert_call_recommended: Boolean(parsed?.expert_call_recommended),
     expert_call_reason: sanitizeString(parsed?.expert_call_reason, 600),
   }
@@ -805,7 +875,7 @@ export async function POST(request: NextRequest) {
     detected_yogas: detectedYogas,
     stones,
     analysis,
-    model,
+    model: gemini.model,
   }
 
   const usage = await recordAiUsage({
@@ -817,7 +887,8 @@ export async function POST(request: NextRequest) {
       chart,
       dasha: chart.dasha,
     },
-    model,
+    model: gemini.model,
+    ...gemini.usage,
     expert_recommended: analysis.expert_call_recommended,
   })
 

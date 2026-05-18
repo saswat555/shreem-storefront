@@ -10,6 +10,10 @@ export type AiUsagePayload = {
   response: Record<string, unknown>
   metadata?: Record<string, unknown>
   model?: string
+  prompt_tokens?: number
+  completion_tokens?: number
+  total_tokens?: number
+  estimated_cost_usd?: number
   expert_recommended?: boolean
 }
 
@@ -54,9 +58,13 @@ export const recordAiUsage = async (payload: AiUsagePayload) => {
 export const listAiUsage = async ({
   limit = 12,
   toolPrefix = "astrology",
+  createdFrom,
+  createdTo,
 }: {
   limit?: number
   toolPrefix?: string
+  createdFrom?: string
+  createdTo?: string
 }) => {
   const headers = await getAuthHeaders()
 
@@ -76,6 +84,8 @@ export const listAiUsage = async ({
         query: {
           limit,
           tool_prefix: toolPrefix,
+          ...(createdFrom ? { created_from: createdFrom } : {}),
+          ...(createdTo ? { created_to: createdTo } : {}),
         },
         cache: "no-store",
       }

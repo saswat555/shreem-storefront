@@ -3,12 +3,10 @@ import { NextRequest, NextResponse } from "next/server"
 import { recordAiUsage } from "@lib/data/ai-usage"
 import { retrieveCustomer } from "@lib/data/customer"
 import { buildPrashnaChart, getCityById } from "@lib/util/astrology"
+import { checkAstrologyDailyQuota } from "@lib/util/ai-quota"
+import { generateGeminiJson } from "@lib/util/gemini"
 import { buildDetailedPrashnaChart } from "@lib/util/vedic-astrology"
-import {
-  getGeminiApiKey,
-  getGeminiModel,
-  isGeminiEnabled,
-} from "@lib/util/prakriti-config"
+import { isGeminiEnabled } from "@lib/util/prakriti-config"
 
 const PRASHNA_SCHEMA = {
   type: "object",
@@ -52,14 +50,6 @@ const LANGUAGE_INSTRUCTIONS: Record<string, string> = {
     "Write the answer in natural Hindi using Devanagari, keeping astrology terms understandable.",
   hinglish:
     "Write the answer in friendly Hinglish with common astrology terms like lagna, rashi, bhav, and upaay.",
-}
-
-const safeParseJson = (text: string) => {
-  try {
-    return JSON.parse(text)
-  } catch {
-    return null
-  }
 }
 
 const buildPrompt = ({
@@ -181,59 +171,52 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  const model = getGeminiModel().replace(/^models\//, "")
-  const apiKey = getGeminiApiKey()
-  const controller = new AbortController()
-  const timeout = setTimeout(() => controller.abort(), 18000)
-  const geminiResponse = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(
-      model
-    )}:generateContent`,
-    {
-      method: "POST",
-      headers: {
-        "x-goog-api-key": apiKey,
-        "Content-Type": "application/json",
-      },
-      signal: controller.signal,
-      body: JSON.stringify({
-        contents: [
-          {
-            role: "user",
-            parts: [
-              {
-                text: buildPrompt({ question, chart, language }),
-              },
-            ],
-          },
-        ],
-        generationConfig: {
-          temperature: 0.25,
-          responseMimeType: "application/json",
-          responseSchema: PRASHNA_SCHEMA,
-        },
-      }),
-    }
-  ).catch(() => null)
-  clearTimeout(timeout)
+  const quota = await checkAstrologyDailyQuota()
 
-  if (!geminiResponse || !geminiResponse.ok) {
+  if (!quota.synced) {
+    return NextResponse.json(
+      {
+        message:
+          "AI usage tracking is unavailable, so this reading is paused to protect your daily limit.",
+        chart,
+        retryable: true,
+      },
+      { status: 503 }
+    )
+  }
+
+  if (!quota.allowed) {
+    return NextResponse.json(
+      {
+        message:
+          `You have used your ${quota.limit} astrology AI readings for today. Please try again tomorrow.`,
+        chart,
+        quota,
+      },
+      { status: 429 }
+    )
+  }
+
+  const gemini = await generateGeminiJson({
+    prompt: buildPrompt({ question, chart, language }),
+    responseSchema: PRASHNA_SCHEMA,
+    temperature: 0.25,
+    label: "Prashna API",
+  })
+
+  if (!gemini.ok) {
     return NextResponse.json(
       {
         message:
           "Prashna AI could not answer right now. Please try again in a moment.",
         chart,
+        retryable: true,
       },
       { status: 502 }
     )
   }
 
-  const data = await geminiResponse.json()
-  const text = data.candidates?.[0]?.content?.parts
-    ?.map((part: { text?: string }) => part.text || "")
-    .join("")
-    .trim()
-  const parsed = safeParseJson(text || "")
+  const parsed = gemini.parsed
 
   const result = {
     chart,
@@ -255,7 +238,7 @@ export async function POST(request: NextRequest) {
     favorable_timing: sanitizeString(parsed?.favorable_timing, 500),
     caution: sanitizeString(parsed?.caution, 500),
     next_step: sanitizeString(parsed?.next_step, 500),
-    model,
+    model: gemini.model,
   }
 
   const usage = await recordAiUsage({
@@ -271,7 +254,8 @@ export async function POST(request: NextRequest) {
       chart,
       customer_email: customer.email,
     },
-    model,
+    model: gemini.model,
+    ...gemini.usage,
     expert_recommended: result.expert_call_recommended,
   })
 
