@@ -632,6 +632,7 @@ export async function POST(request: NextRequest) {
   const apiKey = getGeminiApiKey()
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), 20000)
+  let fetchError: unknown = null
   const geminiResponse = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(
       model
@@ -668,10 +669,28 @@ export async function POST(request: NextRequest) {
         },
       }),
     }
-  ).catch(() => null)
+  ).catch((error) => {
+    fetchError = error
+    return null
+  })
   clearTimeout(timeout)
 
   if (!geminiResponse || !geminiResponse.ok) {
+    let errorDetails = null
+    if (geminiResponse) {
+      try {
+        errorDetails = await geminiResponse.text()
+      } catch (e) {
+        errorDetails = "Could not read error response body"
+      }
+    }
+    console.error("[Kundli API] Gemini generation failed:", {
+      status: geminiResponse?.status,
+      statusText: geminiResponse?.statusText,
+      errorDetails,
+      fetchError,
+    })
+
     return NextResponse.json(
       {
         message:
