@@ -1,8 +1,8 @@
 import { MetadataRoute } from "next"
 
+import { listJournalPosts } from "@lib/data/journal"
 import { listProducts } from "@lib/data/products"
 import { listRegions } from "@lib/data/regions"
-import { shreemJournalPosts } from "@lib/constants/shreem-experience"
 import { getBaseURL } from "@lib/util/env"
 import { isPrakritiGuideEnabled } from "@lib/util/prakriti-config"
 
@@ -20,6 +20,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date()
   const countryCodes = await getCountryCodes()
   const prakritiEnabled = isPrakritiGuideEnabled()
+  const journalPosts = await listJournalPosts()
 
   const staticEntries: MetadataRoute.Sitemap = countryCodes.flatMap((countryCode) => {
     const routes = [
@@ -41,7 +42,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   })
 
   const journalEntries: MetadataRoute.Sitemap = countryCodes.flatMap((countryCode) =>
-    shreemJournalPosts.map((post) => ({
+    journalPosts.map((post) => ({
       url: `${baseUrl}/${countryCode}/journal/${post.slug}`,
       lastModified: new Date(post.publishedAt),
       changeFrequency: "monthly",

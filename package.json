@@ -12,6 +12,7 @@
     "build": "next build",
     "start": "next start -p 8000",
     "lint": "next lint",
+    "test:astrology": "node scripts/astrology-regression.js",
     "analyze": "ANALYZE=true next build"
   },
   "dependencies": {

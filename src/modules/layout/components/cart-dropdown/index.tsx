@@ -84,7 +84,7 @@ const CartDropdown = ({
         <PopoverButton className="h-full">
           <LocalizedClientLink
             aria-label={`Open bag with ${totalItems} item${totalItems === 1 ? "" : "s"}`}
-            className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[rgba(245,199,96,0.32)] bg-[rgba(255,248,233,0.12)] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] small:h-auto small:w-auto small:min-h-11 small:px-5 small:py-3 small:text-xs"
+            className="relative flex h-11 w-11 shrink-0 items-center justify-center whitespace-nowrap rounded-full border border-[rgba(245,199,96,0.32)] bg-[rgba(255,248,233,0.12)] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] small:h-auto small:w-auto small:min-h-11 small:min-w-[96px] small:px-5 small:py-3 small:text-xs"
             href="/cart"
             data-testid="nav-cart-link"
           >

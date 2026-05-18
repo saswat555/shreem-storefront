@@ -1,7 +1,10 @@
 import { Metadata } from "next"
 
+import { retrieveCustomer } from "@lib/data/customer"
 import { getBaseURL } from "@lib/util/env"
+import LoginTemplate from "@modules/account/templates/login-template"
 import AstrologyExperience from "@modules/astrology/components/astrology-experience"
+import MotionReveal from "@modules/common/components/motion-reveal"
 
 export async function generateMetadata(props: {
   params: Promise<{ countryCode: string }>
@@ -39,6 +42,7 @@ export default async function ShreemAstrologyPage(props: {
   params: Promise<{ countryCode: string }>
 }) {
   const { countryCode } = await props.params
+  const customer = await retrieveCustomer().catch(() => null)
   const baseUrl = getBaseURL()
   const pageUrl = `${baseUrl}/${countryCode}/shreem-astrology`
   const schema = {
@@ -106,6 +110,35 @@ export default async function ShreemAstrologyPage(props: {
     ],
   }
 
+  if (!customer) {
+    return (
+      <div className="content-container py-5 pb-14 small:py-10 small:pb-24">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+        />
+        <MotionReveal>
+          <section className="brand-surface mb-6 px-5 py-8 small:px-10 small:py-11">
+            <p className="brand-pill mb-5 w-fit">Shreem Astrology</p>
+            <h1 className="max-w-[13ch] text-[2.75rem] leading-[0.98] text-[var(--shreem-ink)] small:text-[4.6rem]">
+              Sign in for astrology tools
+            </h1>
+            <p className="mt-5 max-w-[52rem] text-base leading-7 text-[var(--shreem-muted)] small:text-lg">
+              Muhurth, Hindu calendar, Prashna Kundli, birth Kundli generation,
+              chart history, and PDF-ready reports are available after sign in.
+            </p>
+          </section>
+        </MotionReveal>
+
+        <MotionReveal delayMs={70}>
+          <section className="brand-card px-4 py-4 small:px-8 small:py-8">
+            <LoginTemplate />
+          </section>
+        </MotionReveal>
+      </div>
+    )
+  }
+
   return (
     <div className="content-container py-5 pb-14 small:py-10 small:pb-24">
       <script
@@ -130,45 +163,12 @@ export default async function ShreemAstrologyPage(props: {
         </div>
       </section>
 
-      <AstrologyExperience />
-
-      <section className="brand-surface mt-6 px-5 py-7 small:px-8 small:py-9">
-        <p className="brand-kicker">How it works</p>
-        <h2 className="mt-2 max-w-[17ch] text-[2.2rem] leading-[1.02] text-[var(--shreem-ink)] small:text-[3.4rem]">
-          Vedic timing with clear chart context
-        </h2>
-        <div className="mt-5 grid gap-4 small:grid-cols-3">
-          <div className="brand-card px-4 py-4">
-            <h3 className="text-lg font-semibold text-[var(--shreem-ink)]">
-              Shubh Muhurth
-            </h3>
-            <p className="mt-2 text-sm leading-7 text-[var(--shreem-muted)]">
-              Select a city and date to see local sunrise, sunset, day
-              Choghadiya, night Choghadiya, and Hindi calendar context.
-            </p>
-          </div>
-          <div className="brand-card px-4 py-4">
-            <h3 className="text-lg font-semibold text-[var(--shreem-ink)]">
-              Prashna Kundli
-            </h3>
-            <p className="mt-2 text-sm leading-7 text-[var(--shreem-muted)]">
-              Ask one focused question. The system calculates Lagna, Moon
-              nakshatra, tithi, yoga, karana, graha positions, and houses before
-              AI interpretation.
-            </p>
-          </div>
-          <div className="brand-card px-4 py-4">
-            <h3 className="text-lg font-semibold text-[var(--shreem-ink)]">
-              Human guidance
-            </h3>
-            <p className="mt-2 text-sm leading-7 text-[var(--shreem-muted)]">
-              For ritual timing, stone recommendation, pooja direction, or
-              sensitive life decisions, book a paid call with Sanjay Kumar
-              Pandey through checkout.
-            </p>
-          </div>
-        </div>
-      </section>
+      <AstrologyExperience
+        customerEmail={customer.email}
+        customerName={`${customer.first_name || ""} ${
+          customer.last_name || ""
+        }`.trim()}
+      />
     </div>
   )
 }

@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 
+import { recordAiUsage } from "@lib/data/ai-usage"
+import { retrieveCustomer } from "@lib/data/customer"
 import {
   getGeminiApiKey,
   getGeminiModel,
@@ -35,6 +37,12 @@ const SUPPORT_CHAT_SCHEMA = {
     "escalation_prompt",
   ],
 } as const
+
+const LANGUAGE_INSTRUCTIONS: Record<string, string> = {
+  english: "Reply in polished English.",
+  hindi: "Reply in natural Hindi using Devanagari.",
+  hinglish: "Reply in friendly Hinglish with simple Hindi-English phrasing.",
+}
 
 type SupportMessage = {
   role?: string
@@ -82,9 +90,11 @@ const safeParseJson = (text: string) => {
 const buildPrompt = ({
   messages,
   customerContext,
+  language,
 }: {
   messages: Required<SupportMessage>[]
   customerContext: string
+  language: string
 }) => {
   return [
     "You are Shreem Support AI, a warm, concise support assistant for Shreem Cow Products.",
@@ -95,6 +105,7 @@ const buildPrompt = ({
     "If the customer asks for exact order status, payment confirmation, refunds, cancellation, address changes, account access problems, or anything requiring private records, ask for the missing details and set needs_email true only when human follow-up is needed.",
     `Escalation email is ${SUPPORT_TO_EMAIL}. Do not say an email was sent. The website will send it only after the user explicitly submits details.`,
     "Keep the answer practical and short enough for a mobile chat bubble.",
+    LANGUAGE_INSTRUCTIONS[language] || LANGUAGE_INSTRUCTIONS.english,
     "Return JSON only.",
     customerContext ? `Customer context: ${customerContext}` : "",
     "Conversation:",
@@ -107,6 +118,7 @@ const buildPrompt = ({
 }
 
 export async function POST(request: NextRequest) {
+  const customer = await retrieveCustomer().catch(() => null)
   const payload = await request.json().catch(() => null)
 
   if (!payload || typeof payload !== "object") {
@@ -121,6 +133,14 @@ export async function POST(request: NextRequest) {
     (payload as { customerContext?: unknown }).customerContext,
     700
   )
+  const rawLanguage = sanitizeString(
+    (payload as { language?: unknown }).language,
+    20
+  )
+  const language =
+    rawLanguage === "hindi" || rawLanguage === "hinglish"
+      ? rawLanguage
+      : "english"
 
   if (!messages.length) {
     return NextResponse.json(
@@ -163,7 +183,7 @@ export async function POST(request: NextRequest) {
             role: "user",
             parts: [
               {
-                text: buildPrompt({ messages, customerContext }),
+                text: buildPrompt({ messages, customerContext, language }),
               },
             ],
           },
@@ -198,8 +218,7 @@ export async function POST(request: NextRequest) {
     .join("")
     .trim()
   const parsed = safeParseJson(text || "")
-
-  return NextResponse.json({
+  const result = {
     answer:
       sanitizeString(parsed?.answer, 1600) ||
       "I can help with that. Share your order number or the product you are asking about, and I will guide you.",
@@ -212,5 +231,26 @@ export async function POST(request: NextRequest) {
       "Would you like to send these details to the Shreem team?",
     support_email: SUPPORT_TO_EMAIL,
     model,
+  }
+  const usage = customer
+    ? await recordAiUsage({
+        tool: "support_ai",
+        input: {
+          messages,
+          customer_context: customerContext,
+          language,
+        },
+        response: result,
+        metadata: {
+          customer_email: customer.email,
+        },
+        model,
+        expert_recommended: result.needs_email,
+      })
+    : { synced: false }
+
+  return NextResponse.json({
+    ...result,
+    usage_synced: usage.synced,
   })
 }

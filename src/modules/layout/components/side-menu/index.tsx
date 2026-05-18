@@ -14,7 +14,7 @@ import {
   XMark,
 } from "@medusajs/icons"
 import { Text, clx, useToggleState } from "@medusajs/ui"
-import { Fragment, type ComponentType, useEffect } from "react"
+import { Fragment, type ComponentType, useEffect, useState } from "react"
 import { useParams, usePathname } from "next/navigation"
 
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
@@ -30,6 +30,15 @@ type SideMenuItem = {
   description: string
   icon: ComponentType<{ className?: string }>
 }
+
+type SiteLanguage = "english" | "hindi" | "hinglish"
+
+const SITE_LANGUAGE_KEY = "shreem_site_language_v1"
+const siteLanguageOptions: { value: SiteLanguage; label: string }[] = [
+  { value: "english", label: "English" },
+  { value: "hindi", label: "Hindi" },
+  { value: "hinglish", label: "Hinglish" },
+]
 
 const SideMenuItems: SideMenuItem[] = [
   {
@@ -114,6 +123,8 @@ const SideMenu = ({
 }: SideMenuProps) => {
   const countryToggleState = useToggleState()
   const languageToggleState = useToggleState()
+  const [siteLanguage, setSiteLanguage] = useState<SiteLanguage>("english")
+  const [siteLanguageReady, setSiteLanguageReady] = useState(false)
   const pathname = usePathname()
   const { countryCode } = useParams()
   const currentCountryCode = Array.isArray(countryCode)
@@ -126,6 +137,30 @@ const SideMenu = ({
   const visibleMenuItems = SideMenuItems.filter(
     (item) => item.href !== "/prakriti-guide" || prakritiGuideEnabled
   )
+
+  useEffect(() => {
+    const saved = window.localStorage.getItem(SITE_LANGUAGE_KEY)
+
+    if (saved === "hindi" || saved === "hinglish") {
+      setSiteLanguage(saved)
+    }
+
+    setSiteLanguageReady(true)
+  }, [])
+
+  useEffect(() => {
+    if (!siteLanguageReady) {
+      return
+    }
+
+    window.localStorage.setItem(SITE_LANGUAGE_KEY, siteLanguage)
+    document.documentElement.lang =
+      siteLanguage === "hindi"
+        ? "hi"
+        : siteLanguage === "hinglish"
+        ? "hi-Latn"
+        : "en"
+  }, [siteLanguage, siteLanguageReady])
 
   return (
     <div className="h-full">
@@ -270,6 +305,28 @@ const SideMenu = ({
                       })}
                     </ul>
                     <div className="relative z-[1] mt-5 flex flex-col gap-y-5 rounded-[18px] border border-white/10 bg-[#143646] px-4 py-4 text-white/75 small:mt-8 small:gap-y-6 small:rounded-[28px] small:py-5">
+                      <div>
+                        <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#e8c364]">
+                          Site and AI language
+                        </p>
+                        <div className="grid grid-cols-3 gap-2">
+                          {siteLanguageOptions.map((option) => (
+                            <button
+                              key={option.value}
+                              type="button"
+                              onClick={() => setSiteLanguage(option.value)}
+                              className={clx(
+                                "rounded-full border px-2 py-2 text-[11px] font-semibold transition",
+                                siteLanguage === option.value
+                                  ? "border-[#e8c364]/70 bg-[#e8c364] text-[#0b2735]"
+                                  : "border-white/10 bg-white/8 text-white/72"
+                              )}
+                            >
+                              {option.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
                       {!!locales?.length && (
                         <div
                           className="flex justify-between gap-4"

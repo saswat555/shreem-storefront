@@ -23,7 +23,7 @@ export const shreemSupportFaqs = [
   {
     question: "Can I update my address and profile details after creating an account?",
     answer:
-      "Yes. Your Shreem account already uses Medusa's customer flows for profile details, phone number, address book, and order lookup, so you can manage the important basics without needing to start over each time.",
+      "Yes. Your Shreem account keeps profile details, phone number, address book, and order lookup in one secure place, so you can manage the important basics without needing to start over each time.",
   },
   {
     question: "What should I do if I need help choosing between products?",
@@ -157,7 +157,7 @@ export const shreemSupportHighlights = [
   {
     title: "Profile and address book",
     description:
-      "Maintain your delivery information, billing details, and customer profile through the existing Medusa customer flows.",
+      "Maintain your delivery information, billing details, and customer profile through your secure Shreem account.",
   },
   {
     title: "Guided product help",

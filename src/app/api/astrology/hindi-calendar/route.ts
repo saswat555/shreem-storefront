@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 
+import { retrieveCustomer } from "@lib/data/customer"
 import { getCityById, getTodayDateString } from "@lib/util/astrology"
 import { buildHindiCalendarDay } from "@lib/util/vedic-astrology"
 
@@ -9,6 +10,15 @@ const sanitizeString = (value: unknown, maxLength: number) =>
 const isValidDate = (date: string) => /^\d{4}-\d{2}-\d{2}$/.test(date)
 
 export async function GET(request: NextRequest) {
+  const customer = await retrieveCustomer().catch(() => null)
+
+  if (!customer) {
+    return NextResponse.json(
+      { message: "Sign in to view Hindi calendar details." },
+      { status: 401 }
+    )
+  }
+
   const city = getCityById(
     sanitizeString(request.nextUrl.searchParams.get("cityId"), 80)
   )

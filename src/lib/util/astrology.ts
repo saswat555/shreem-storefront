@@ -48,6 +48,7 @@ export type HindiMonthInfo = {
   sunSign: string
   significance: string
   focus: string
+  festivals: string[]
 }
 
 export type HindiCalendarDay = {
@@ -89,6 +90,7 @@ export type PrashnaChart = {
   karana: string
   planets: PrashnaPlanet[]
   houses: PrashnaHouse[]
+  dasha?: VimshottariDasha
   prashnaFactors: string[]
   accuracyNote: string
 }
@@ -111,6 +113,28 @@ export type PrashnaHouse = {
   sign: string
   signLord: string
   theme: string
+}
+
+export type DashaPeriod = {
+  lord: string
+  level: "mahadasha" | "antardasha" | "pratyantar"
+  startIso: string
+  endIso: string
+  startLabel: string
+  endLabel: string
+  durationYears: number
+}
+
+export type VimshottariDasha = {
+  system: "Vimshottari"
+  balanceAtBirth: DashaPeriod
+  currentDateIso: string
+  mahadasha: DashaPeriod
+  antardasha: DashaPeriod
+  pratyantar: DashaPeriod
+  sequence: string[]
+  moonNakshatraLord: string
+  note: string
 }
 
 const WEEKDAYS = [
@@ -246,6 +270,7 @@ const HINDI_MONTHS_BY_SUN_SIGN: Record<string, HindiMonthInfo> = {
     significance:
       "Chaitra begins the traditional Hindu year in many panchang traditions and is associated with renewal, Navratri, Ram Navami, and fresh sankalpa.",
     focus: "Renewal, discipline, worship, and beginning clean routines.",
+    festivals: ["Chaitra Navratri", "Ram Navami", "Hanuman Jayanti"],
   },
   Aries: {
     name: "Vaishakha",
@@ -254,6 +279,7 @@ const HINDI_MONTHS_BY_SUN_SIGN: Record<string, HindiMonthInfo> = {
     significance:
       "Vaishakha is praised for snan, daan, japa, Akshaya Tritiya, and steady punya-oriented work.",
     focus: "Charity, purity, water offering, and stable prosperity.",
+    festivals: ["Akshaya Tritiya", "Parashurama Jayanti", "Buddha Purnima"],
   },
   Taurus: {
     name: "Jyeshtha",
@@ -262,6 +288,7 @@ const HINDI_MONTHS_BY_SUN_SIGN: Record<string, HindiMonthInfo> = {
     significance:
       "Jyeshtha falls in the intense summer period and emphasizes water charity, protection from heat, restraint, Vat Savitri, and Ganga Dussehra observances.",
     focus: "Cooling care, patience, protection, and family wellbeing.",
+    festivals: ["Ganga Dussehra", "Nirjala Ekadashi", "Vat Savitri Vrat"],
   },
   Gemini: {
     name: "Ashadha",
@@ -270,6 +297,7 @@ const HINDI_MONTHS_BY_SUN_SIGN: Record<string, HindiMonthInfo> = {
     significance:
       "Ashadha carries Guru Purnima energy and leads into Chaturmas, a period for learning, vows, and spiritual steadiness.",
     focus: "Guru bhakti, study, vows, and inner discipline.",
+    festivals: ["Jagannath Rath Yatra", "Devshayani Ekadashi", "Guru Purnima"],
   },
   Cancer: {
     name: "Shravana",
@@ -278,6 +306,7 @@ const HINDI_MONTHS_BY_SUN_SIGN: Record<string, HindiMonthInfo> = {
     significance:
       "Shravana is deeply connected with Shiva worship, rainfall, greenery, fasting, and devotional practice.",
     focus: "Shiva bhakti, healing, devotion, and simple living.",
+    festivals: ["Shravan Somwar", "Nag Panchami", "Raksha Bandhan"],
   },
   Leo: {
     name: "Bhadrapada",
@@ -286,6 +315,7 @@ const HINDI_MONTHS_BY_SUN_SIGN: Record<string, HindiMonthInfo> = {
     significance:
       "Bhadrapada is known for Shri Krishna, Ganesha Chaturthi, Anant Chaturdashi, and dharmic household observances.",
     focus: "Wisdom, remover-of-obstacles worship, and family dharma.",
+    festivals: ["Krishna Janmashtami", "Ganesh Chaturthi", "Anant Chaturdashi"],
   },
   Virgo: {
     name: "Ashwin",
@@ -294,6 +324,7 @@ const HINDI_MONTHS_BY_SUN_SIGN: Record<string, HindiMonthInfo> = {
     significance:
       "Ashwin includes Pitru Paksha, Sharad Navratri, and Vijayadashami, balancing ancestral remembrance with Devi worship.",
     focus: "Ancestral gratitude, Devi sadhana, and victory over inertia.",
+    festivals: ["Pitru Paksha", "Sharad Navratri", "Vijayadashami"],
   },
   Libra: {
     name: "Kartik",
@@ -302,6 +333,7 @@ const HINDI_MONTHS_BY_SUN_SIGN: Record<string, HindiMonthInfo> = {
     significance:
       "Kartik is treasured for deepdaan, Tulsi worship, Govardhan, and devotion around light, purity, and bhakti.",
     focus: "Light, devotion, gratitude, and sacred household rituals.",
+    festivals: ["Diwali", "Govardhan Puja", "Tulsi Vivah"],
   },
   Scorpio: {
     name: "Margashirsha",
@@ -310,6 +342,7 @@ const HINDI_MONTHS_BY_SUN_SIGN: Record<string, HindiMonthInfo> = {
     significance:
       "Margashirsha is associated with Krishna bhakti, Gita Jayanti, and quiet nourishment of faith and knowledge.",
     focus: "Learning, Krishna smaran, and grounded prosperity.",
+    festivals: ["Gita Jayanti", "Vivah Panchami", "Margashirsha Lakshmi Vrat"],
   },
   Sagittarius: {
     name: "Pausha",
@@ -318,6 +351,7 @@ const HINDI_MONTHS_BY_SUN_SIGN: Record<string, HindiMonthInfo> = {
     significance:
       "Pausha is a winter month for Surya worship, discipline, warmth, and preserving health through restrained living.",
     focus: "Health, warmth, Surya upasana, and restraint.",
+    festivals: ["Pausha Putrada Ekadashi", "Makar Sankranti season", "Surya worship"],
   },
   Capricorn: {
     name: "Magha",
@@ -326,6 +360,7 @@ const HINDI_MONTHS_BY_SUN_SIGN: Record<string, HindiMonthInfo> = {
     significance:
       "Magha is known for sacred bathing, daan, Mauni Amavasya, and deep purification practices.",
     focus: "Purification, silence, charity, and ancestral respect.",
+    festivals: ["Mauni Amavasya", "Vasant Panchami", "Magha Purnima"],
   },
   Aquarius: {
     name: "Phalguna",
@@ -334,6 +369,7 @@ const HINDI_MONTHS_BY_SUN_SIGN: Record<string, HindiMonthInfo> = {
     significance:
       "Phalguna brings Holika, Holi, seasonal transition, forgiveness, joy, and completion before the new yearly cycle.",
     focus: "Joy, forgiveness, completion, and community harmony.",
+    festivals: ["Maha Shivratri", "Holika Dahan", "Holi"],
   },
 }
 

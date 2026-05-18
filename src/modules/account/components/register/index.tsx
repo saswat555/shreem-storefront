@@ -7,13 +7,22 @@ import ErrorMessage from "@modules/checkout/components/error-message"
 import { SubmitButton } from "@modules/checkout/components/submit-button"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import { signup } from "@lib/data/customer"
+import { useParams } from "next/navigation"
 
 type Props = {
   setCurrentView: (view: LOGIN_VIEW) => void
 }
 
 const Register = ({ setCurrentView }: Props) => {
+  const params = useParams<{ countryCode?: string }>()
+  const countryCode = params?.countryCode || "in"
   const [message, formAction] = useActionState(signup, null)
+  const isNotice =
+    typeof message === "string" && message.startsWith("VERIFY_EMAIL_SENT:")
+  const displayMessage =
+    typeof message === "string"
+      ? message.replace("VERIFY_EMAIL_SENT:", "")
+      : null
 
   return (
     <div
@@ -28,6 +37,7 @@ const Register = ({ setCurrentView }: Props) => {
         more personal shopping journey.
       </p>
       <form className="w-full flex flex-col" action={formAction}>
+        <input type="hidden" name="country_code" value={countryCode} />
         <div className="flex flex-col w-full gap-y-2">
           <Input
             label="First name"
@@ -67,7 +77,13 @@ const Register = ({ setCurrentView }: Props) => {
             data-testid="password-input"
           />
         </div>
-        <ErrorMessage error={message} data-testid="register-error" />
+        {isNotice ? (
+          <div className="pt-3 text-center text-small-regular font-medium text-emerald-700">
+            {displayMessage}
+          </div>
+        ) : (
+          <ErrorMessage error={displayMessage} data-testid="register-error" />
+        )}
         <span className="text-center text-ui-fg-base text-small-regular mt-6">
           By creating an account, you agree to Shreem&apos;s{" "}
           <LocalizedClientLink

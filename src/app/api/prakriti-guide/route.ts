@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 
+import { recordAiUsage } from "@lib/data/ai-usage"
 import { retrieveCustomer } from "@lib/data/customer"
 import {
   getPrakritiGuideApiKey,
@@ -74,6 +75,12 @@ const REMEDY_SCHEMA = {
   ],
 } as const
 
+const LANGUAGE_INSTRUCTIONS: Record<string, string> = {
+  english: "Write the care plan in polished English.",
+  hindi: "Write the care plan in natural Hindi using Devanagari.",
+  hinglish: "Write the care plan in friendly Hinglish with simple care terms.",
+}
+
 type PrakritiGuidePayload = {
   subject?: PrakritiSubject
   notes?: string
@@ -84,6 +91,7 @@ type PrakritiGuidePayload = {
   }
   products?: PrakritiProduct[]
   images?: { dataUrl?: string }[]
+  language?: string
 }
 
 const buildPrompt = ({
@@ -91,6 +99,7 @@ const buildPrompt = ({
   notes,
   caseMeta,
   products,
+  language,
 }: {
   subject: PrakritiSubject
   notes: string
@@ -100,6 +109,7 @@ const buildPrompt = ({
     duration: string
   }
   products: PrakritiProduct[]
+  language: string
 }) => {
   return [
     `You are GrowBuddy AI, Shreem's careful plant and animal visual-care assistant for ${subject}s.`,
@@ -113,6 +123,7 @@ const buildPrompt = ({
     "Do not recommend bilona ghee as a treatment for plant or animal disease.",
     "For animal cases, avoid medical treatment claims and keep product suggestions limited to environment-supportive use when clearly relevant.",
     "Keep remedies practical, conservative, and low-risk. Mention dosage/frequency only when it is a general non-medical care practice.",
+    LANGUAGE_INSTRUCTIONS[language] || LANGUAGE_INSTRUCTIONS.english,
     `Subject name/type: ${caseMeta.subjectName || "Not provided."}`,
     `Environment/location: ${caseMeta.environment || "Not provided."}`,
     `How long visible: ${caseMeta.duration || "Not provided."}`,
@@ -122,6 +133,14 @@ const buildPrompt = ({
 
 const sanitizeString = (value: unknown, maxLength: number) =>
   typeof value === "string" ? value.trim().slice(0, maxLength) : ""
+
+const safeParseJson = (text: string) => {
+  try {
+    return JSON.parse(text)
+  } catch {
+    return null
+  }
+}
 
 const getGeminiErrorMessage = (body: string) => {
   const fallback =
@@ -238,6 +257,11 @@ export async function POST(request: NextRequest) {
   }
   const products = sanitizeProducts(payload.products)
   const images = sanitizeImages(payload.images)
+  const rawLanguage = sanitizeString(payload.language, 20)
+  const language =
+    rawLanguage === "hindi" || rawLanguage === "hinglish"
+      ? rawLanguage
+      : "english"
 
   if (!images.length) {
     return NextResponse.json(
@@ -264,7 +288,13 @@ export async function POST(request: NextRequest) {
             role: "user",
             parts: [
               {
-                text: buildPrompt({ subject, notes, caseMeta, products }),
+                text: buildPrompt({
+                  subject,
+                  notes,
+                  caseMeta,
+                  products,
+                  language,
+                }),
               },
               ...images.map((image) => ({
                 inline_data: {
@@ -299,9 +329,37 @@ export async function POST(request: NextRequest) {
   const result = data.candidates?.[0]?.content?.parts
     ?.map((part: { text?: string }) => part.text || "")
     .join("")
+  const parsedResult = safeParseJson(result || "")
+  const response =
+    parsedResult && typeof parsedResult === "object" && !Array.isArray(parsedResult)
+      ? (parsedResult as Record<string, unknown>)
+      : { raw_result: String(result || "").slice(0, 4000) }
+  const urgentCareSigns = Array.isArray(response.urgent_care_signs)
+    ? response.urgent_care_signs
+    : []
+  const usage = await recordAiUsage({
+    tool: "grow_ai",
+    input: {
+      subject,
+      notes,
+      case_meta: caseMeta,
+      language,
+      image_count: images.length,
+      product_handles: products.map((product) => product.handle),
+    },
+    response,
+    metadata: {
+      customer_email: customer.email,
+      image_mime_types: images.map((image) => image.mimeType),
+    },
+    model,
+    expert_recommended:
+      response.confidence === "low" || urgentCareSigns.length > 0,
+  })
 
   return NextResponse.json({
     result,
     model,
+    usage_synced: usage.synced,
   })
 }

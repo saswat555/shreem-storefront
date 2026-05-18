@@ -89,7 +89,7 @@ const CheckoutSummary = ({ cart }: { cart: any }) => {
             </div>
             {!shiprocketSynced && (
               <p className="mt-2 font-medium text-amber-800">
-                Payment is paused until this live rate is synced into Medusa.
+                Payment is paused until this live rate is synced into checkout.
               </p>
             )}
           </div>

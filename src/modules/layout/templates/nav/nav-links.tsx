@@ -13,6 +13,10 @@ const navItems = [
   { label: "Account", href: "/account" },
 ]
 
+type NavLinksProps = {
+  side?: "left" | "right" | "all"
+}
+
 const getNormalizedPath = (
   pathname: string,
   countryCode: string | string[] | undefined
@@ -40,14 +44,25 @@ const getNormalizedPath = (
     : pathname
 }
 
-export default function NavLinks() {
+export default function NavLinks({ side = "all" }: NavLinksProps) {
   const pathname = usePathname()
   const { countryCode } = useParams()
   const currentPath = getNormalizedPath(pathname, countryCode)
+  const visibleItems =
+    side === "left"
+      ? navItems.slice(0, 2)
+      : side === "right"
+      ? navItems.slice(2)
+      : navItems
 
   return (
-    <div className="hidden items-center gap-x-2 md:flex">
-      {navItems.map((item) => {
+    <div
+      className={clx(
+        "hidden min-w-0 items-center gap-x-1.5 small:flex medium:gap-x-2",
+        side === "right" ? "justify-end" : "justify-start"
+      )}
+    >
+      {visibleItems.map((item) => {
         const isActive =
           item.href === "/"
             ? currentPath === "/"
@@ -57,7 +72,10 @@ export default function NavLinks() {
           <LocalizedClientLink
             key={item.href}
             className={clx(
-              "inline-flex items-center justify-center rounded-full border px-4 py-2 text-sm font-medium transition-all duration-300",
+              "inline-flex min-h-11 shrink-0 items-center justify-center whitespace-nowrap rounded-full border px-3 py-2 text-xs font-semibold leading-none tracking-normal transition-all duration-300 medium:px-4 medium:text-sm large:px-5",
+              item.label === "Astrology"
+                ? "min-w-[104px] medium:min-w-[118px]"
+                : "min-w-[78px] medium:min-w-[92px]",
               isActive
                 ? "border-[rgba(245,199,96,0.9)] bg-[linear-gradient(135deg,#f3d37f,#d6a63a)] text-[var(--shreem-ink)] shadow-[0_12px_28px_rgba(156,105,18,0.22)]"
                 : "border-[rgba(245,199,96,0.32)] bg-white/8 text-white hover:border-[rgba(245,199,96,0.58)] hover:bg-white/12"

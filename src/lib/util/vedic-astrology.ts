@@ -14,6 +14,8 @@ import {
   type PrashnaChart,
   type PrashnaHouse,
   type PrashnaPlanet,
+  type DashaPeriod,
+  type VimshottariDasha,
 } from "./astrology"
 
 type AstroCoord = {
@@ -77,6 +79,42 @@ const TITHI_NAMES = [
   "Trayodashi",
   "Chaturdashi",
   "Amavasya",
+]
+
+const VIMSHOTTARI_SEQUENCE = [
+  "Ketu",
+  "Venus",
+  "Sun",
+  "Moon",
+  "Mars",
+  "Rahu",
+  "Jupiter",
+  "Saturn",
+  "Mercury",
+]
+
+const VIMSHOTTARI_YEARS: Record<string, number> = {
+  Ketu: 7,
+  Venus: 20,
+  Sun: 6,
+  Moon: 10,
+  Mars: 7,
+  Rahu: 18,
+  Jupiter: 16,
+  Saturn: 19,
+  Mercury: 17,
+}
+
+const NAKSHATRA_LORDS = [
+  "Ketu",
+  "Venus",
+  "Sun",
+  "Moon",
+  "Mars",
+  "Rahu",
+  "Jupiter",
+  "Saturn",
+  "Mercury",
 ]
 
 const normalizeDegrees = (value: number) => ((value % 360) + 360) % 360
@@ -163,17 +201,190 @@ const getAscendantLongitude = ({
   const obliquity = nutation.meanObliquity(jd)
   const latitude = toRadians(city.latitude)
   const theta = toRadians(localSiderealDegree)
+  const denominator =
+    Math.sin(theta) * Math.cos(obliquity) +
+    Math.tan(latitude) * Math.sin(obliquity)
   const tropicalAscendant = normalizeDegrees(
     toDegrees(
       Math.atan2(
-        -Math.cos(theta),
-        Math.sin(theta) * Math.cos(obliquity) +
-          Math.tan(latitude) * Math.sin(obliquity)
+        Math.cos(theta),
+        -denominator
       )
     )
   )
 
   return toSidereal(tropicalAscendant, ayanamsa)
+}
+
+const addYears = (date: Date, years: number) =>
+  new Date(date.getTime() + years * 365.2425 * 86400000)
+
+const formatDashaDate = (date: Date, city: AstrologyCity) =>
+  new Intl.DateTimeFormat("en-IN", {
+    timeZone: city.timeZone,
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  }).format(date)
+
+const createDashaPeriod = ({
+  lord,
+  level,
+  start,
+  durationYears,
+  city,
+}: {
+  lord: string
+  level: DashaPeriod["level"]
+  start: Date
+  durationYears: number
+  city: AstrologyCity
+}): DashaPeriod => {
+  const end = addYears(start, durationYears)
+
+  return {
+    lord,
+    level,
+    startIso: start.toISOString(),
+    endIso: end.toISOString(),
+    startLabel: formatDashaDate(start, city),
+    endLabel: formatDashaDate(end, city),
+    durationYears: roundDegree(durationYears),
+  }
+}
+
+const getDashaOrderFromLord = (lord: string) => {
+  const startIndex = Math.max(VIMSHOTTARI_SEQUENCE.indexOf(lord), 0)
+
+  return Array.from({ length: VIMSHOTTARI_SEQUENCE.length }, (_, index) => {
+    return VIMSHOTTARI_SEQUENCE[(startIndex + index) % VIMSHOTTARI_SEQUENCE.length]
+  })
+}
+
+const findRunningDasha = ({
+  start,
+  order,
+  parentDurationYears,
+  target,
+  level,
+  city,
+}: {
+  start: Date
+  order: string[]
+  parentDurationYears: number
+  target: Date
+  level: DashaPeriod["level"]
+  city: AstrologyCity
+}) => {
+  let cursor = new Date(start)
+
+  for (const lord of order) {
+    const durationYears =
+      (parentDurationYears * VIMSHOTTARI_YEARS[lord]) / 120
+    const period = createDashaPeriod({
+      lord,
+      level,
+      start: cursor,
+      durationYears,
+      city,
+    })
+
+    if (target >= cursor && target < new Date(period.endIso)) {
+      return period
+    }
+
+    cursor = new Date(period.endIso)
+  }
+
+  const lord = order[order.length - 1]
+
+  return createDashaPeriod({
+    lord,
+    level,
+    start: cursor,
+    durationYears: (parentDurationYears * VIMSHOTTARI_YEARS[lord]) / 120,
+    city,
+  })
+}
+
+const buildVimshottariDasha = ({
+  moonLongitude,
+  birthDate,
+  city,
+  targetDate = new Date(),
+}: {
+  moonLongitude: number
+  birthDate: Date
+  city: AstrologyCity
+  targetDate?: Date
+}): VimshottariDasha => {
+  const nakshatraSpan = 360 / 27
+  const nakshatraIndex = Math.floor(normalizeDegrees(moonLongitude) / nakshatraSpan)
+  const nakshatraLord = NAKSHATRA_LORDS[nakshatraIndex % 9]
+  const elapsedInNakshatra = normalizeDegrees(moonLongitude) % nakshatraSpan
+  const remainingRatio = 1 - elapsedInNakshatra / nakshatraSpan
+  const birthBalanceYears = VIMSHOTTARI_YEARS[nakshatraLord] * remainingRatio
+  const firstMahadasha = createDashaPeriod({
+    lord: nakshatraLord,
+    level: "mahadasha",
+    start: birthDate,
+    durationYears: birthBalanceYears,
+    city,
+  })
+  const mahadashaOrder = getDashaOrderFromLord(nakshatraLord)
+  const mahadashas: DashaPeriod[] = [firstMahadasha]
+  let cursor = new Date(firstMahadasha.endIso)
+
+  for (let index = 1; index < 18; index += 1) {
+    const lord = mahadashaOrder[index % mahadashaOrder.length]
+    const period = createDashaPeriod({
+      lord,
+      level: "mahadasha",
+      start: cursor,
+      durationYears: VIMSHOTTARI_YEARS[lord],
+      city,
+    })
+    mahadashas.push(period)
+    cursor = new Date(period.endIso)
+  }
+
+  const mahadasha =
+    mahadashas.find(
+      (period) =>
+        targetDate >= new Date(period.startIso) &&
+        targetDate < new Date(period.endIso)
+    ) || mahadashas[0]
+  const antardashaOrder = getDashaOrderFromLord(mahadasha.lord)
+  const antardasha = findRunningDasha({
+    start: new Date(mahadasha.startIso),
+    order: antardashaOrder,
+    parentDurationYears: mahadasha.durationYears,
+    target: targetDate,
+    level: "antardasha",
+    city,
+  })
+  const pratyantarOrder = getDashaOrderFromLord(antardasha.lord)
+  const pratyantar = findRunningDasha({
+    start: new Date(antardasha.startIso),
+    order: pratyantarOrder,
+    parentDurationYears: antardasha.durationYears,
+    target: targetDate,
+    level: "pratyantar",
+    city,
+  })
+
+  return {
+    system: "Vimshottari",
+    balanceAtBirth: firstMahadasha,
+    currentDateIso: targetDate.toISOString(),
+    mahadasha,
+    antardasha,
+    pratyantar,
+    sequence: VIMSHOTTARI_SEQUENCE,
+    moonNakshatraLord: nakshatraLord,
+    note:
+      "Vimshottari dasha is calculated from the Moon nakshatra balance at birth using sidereal Lahiri Moon longitude.",
+  }
 }
 
 const getGeocentricPlanetLongitude = (planet: any, jd: number): AstroCoord => {
@@ -291,9 +502,11 @@ const getPlanetByName = (planets: PrashnaPlanet[], name: string) =>
 export const buildDetailedPrashnaChart = ({
   city,
   date = new Date(),
+  dashaDate,
 }: {
   city: AstrologyCity
   date?: Date
+  dashaDate?: Date
 }): PrashnaChart => {
   const jd = julianDay(date)
   const ayanamsa = getMeanLahiriAyanamsa(jd)
@@ -313,6 +526,12 @@ export const buildDetailedPrashnaChart = ({
   )
   const paksha = tithiNumber <= 15 ? "Shukla" : "Krishna"
   const houses = buildHouses(ascendantLongitude)
+  const dasha = buildVimshottariDasha({
+    moonLongitude,
+    birthDate: date,
+    city,
+    targetDate: dashaDate,
+  })
 
   const planets: PrashnaPlanet[] = [
     createPlanet({
@@ -398,6 +617,7 @@ export const buildDetailedPrashnaChart = ({
     karana: getKarana(moonSunDistance),
     planets,
     houses,
+    dasha,
     prashnaFactors: [
       `Prashna cast for ${getLocalDateTime(date, city)} at ${city.name}, ${
         city.region
@@ -415,6 +635,7 @@ export const buildDetailedPrashnaChart = ({
       `${paksha} paksha, ${TITHI_NAMES[tithiNumber - 1]} tithi, ${
         YOGAS[yogaIndex] || "Unknown"
       } yoga, ${getKarana(moonSunDistance)} karana.`,
+      `Current period: ${dasha.mahadasha.lord} Mahadasha, ${dasha.antardasha.lord} Antardasha, ${dasha.pratyantar.lord} Pratyantar Dasha.`,
     ],
     accuracyNote:
       "Chart is calculated with astronomical ephemeris and an approximate mean Lahiri ayanamsa. It is suitable for first-pass Prashna guidance; final ritual, gemstone, medical, legal, or financial decisions should be confirmed with a qualified astrologer or professional.",

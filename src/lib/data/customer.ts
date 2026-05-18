@@ -14,6 +14,46 @@ import {
   setAuthToken,
 } from "./cookies"
 
+const VERIFY_EMAIL_PREFIX = "VERIFY_EMAIL_SENT:"
+const SUCCESS_PREFIX = "SUCCESS:"
+
+const getCountryCodeFromForm = (formData: FormData) => {
+  const countryCode = (formData.get("country_code") as string) || "in"
+
+  return countryCode.toLowerCase().replace(/[^a-z]/g, "").slice(0, 4) || "in"
+}
+
+const requiresEmailVerification = (
+  customer: HttpTypes.StoreCustomer | null | undefined
+) => {
+  const metadata = (customer?.metadata || {}) as Record<string, unknown>
+
+  return (
+    metadata.email_verification_required === true &&
+    metadata.email_verified !== true
+  )
+}
+
+const requestEmailVerificationForCurrentCustomer = async (
+  countryCode: string
+) => {
+  const headers = {
+    ...(await getAuthHeaders()),
+  }
+
+  return sdk.client.fetch<{ sent: boolean; verified: boolean }>(
+    "/store/auth/email-verification/request",
+    {
+      method: "POST",
+      body: {
+        country_code: countryCode,
+      },
+      headers,
+      cache: "no-store",
+    }
+  )
+}
+
 export const retrieveCustomer =
   async (): Promise<HttpTypes.StoreCustomer | null> => {
     const authHeaders = await getAuthHeaders()
@@ -28,7 +68,7 @@ export const retrieveCustomer =
       .fetch<{ customer: HttpTypes.StoreCustomer }>(`/store/customers/me`, {
         method: "GET",
         query: {
-          fields: "*orders",
+          fields: "*orders,+metadata",
         },
         headers,
         cache: "no-store",
@@ -55,11 +95,17 @@ export const updateCustomer = async (body: HttpTypes.StoreUpdateCustomer) => {
 
 export async function signup(_currentState: unknown, formData: FormData) {
   const password = formData.get("password") as string
+  const countryCode = getCountryCodeFromForm(formData)
   const customerForm = {
     email: formData.get("email") as string,
     first_name: formData.get("first_name") as string,
     last_name: formData.get("last_name") as string,
     phone: formData.get("phone") as string,
+    metadata: {
+      email_verification_required: true,
+      email_verified: false,
+      email_verification_started_at: new Date().toISOString(),
+    },
   }
 
   try {
@@ -80,20 +126,15 @@ export async function signup(_currentState: unknown, formData: FormData) {
       headers
     )
 
-    const loginToken = await sdk.auth.login("customer", "emailpass", {
-      email: customerForm.email,
-      password,
-    })
-
-    await setAuthToken(loginToken as string)
+    await requestEmailVerificationForCurrentCustomer(countryCode)
+    await removeAuthToken()
 
     const customerCacheTag = await getCacheTag("customers")
     revalidateTag(customerCacheTag)
 
-    await transferCart()
-
-    return createdCustomer
+    return `${VERIFY_EMAIL_PREFIX}Account created. We sent a verification link to ${createdCustomer.email}. Please verify your email before signing in.`
   } catch (error: any) {
+    await removeAuthToken().catch(() => undefined)
     return error.toString()
   }
 }
@@ -101,16 +142,33 @@ export async function signup(_currentState: unknown, formData: FormData) {
 export async function login(_currentState: unknown, formData: FormData) {
   const email = formData.get("email") as string
   const password = formData.get("password") as string
+  const countryCode = getCountryCodeFromForm(formData)
 
   try {
-    await sdk.auth
-      .login("customer", "emailpass", { email, password })
-      .then(async (token) => {
-        await setAuthToken(token as string)
-        const customerCacheTag = await getCacheTag("customers")
-        revalidateTag(customerCacheTag)
-      })
+    const token = await sdk.auth.login("customer", "emailpass", {
+      email,
+      password,
+    })
+
+    await setAuthToken(token as string)
+
+    const customer = await retrieveCustomer()
+
+    if (requiresEmailVerification(customer)) {
+      await requestEmailVerificationForCurrentCustomer(countryCode).catch(
+        () => undefined
+      )
+      await removeAuthToken()
+      const customerCacheTag = await getCacheTag("customers")
+      revalidateTag(customerCacheTag)
+
+      return `${VERIFY_EMAIL_PREFIX}Please verify your email before signing in. We sent a fresh verification link to ${email}.`
+    }
+
+    const customerCacheTag = await getCacheTag("customers")
+    revalidateTag(customerCacheTag)
   } catch (error: any) {
+    await removeAuthToken().catch(() => undefined)
     return error.toString()
   }
 
@@ -119,6 +177,120 @@ export async function login(_currentState: unknown, formData: FormData) {
   } catch (error: any) {
     return error.toString()
   }
+}
+
+export async function requestPasswordReset(
+  _currentState: unknown,
+  formData: FormData
+) {
+  const email = ((formData.get("email") as string) || "").trim().toLowerCase()
+  const countryCode = getCountryCodeFromForm(formData)
+
+  if (!email) {
+    return "Email is required."
+  }
+
+  try {
+    await sdk.auth.resetPassword("customer", "emailpass", {
+      identifier: email,
+      metadata: {
+        country_code: countryCode,
+      },
+    })
+
+    return `${SUCCESS_PREFIX}If a Shreem account exists for ${email}, a reset link has been sent.`
+  } catch (error: any) {
+    return error.toString()
+  }
+}
+
+export async function requestAuthenticatedPasswordReset(
+  _currentState: unknown,
+  formData: FormData
+) {
+  const countryCode = getCountryCodeFromForm(formData)
+  const customer = await retrieveCustomer()
+
+  if (!customer?.email) {
+    return "Please sign in again to reset your password."
+  }
+
+  try {
+    await sdk.auth.resetPassword("customer", "emailpass", {
+      identifier: customer.email,
+      metadata: {
+        country_code: countryCode,
+      },
+    })
+
+    return `${SUCCESS_PREFIX}Password reset link sent to ${customer.email}.`
+  } catch (error: any) {
+    return error.toString()
+  }
+}
+
+export async function resetPassword(_currentState: unknown, formData: FormData) {
+  const token = formData.get("token") as string
+  const password = formData.get("password") as string
+  const confirmPassword = formData.get("confirm_password") as string
+
+  if (!token) {
+    return "Reset token is missing."
+  }
+
+  if (!password || password.length < 8) {
+    return "Password must be at least 8 characters."
+  }
+
+  if (password !== confirmPassword) {
+    return "Passwords do not match."
+  }
+
+  try {
+    await sdk.auth.updateProvider(
+      "customer",
+      "emailpass",
+      {
+        password,
+      },
+      token
+    )
+
+    return `${SUCCESS_PREFIX}Password updated. You can sign in with the new password.`
+  } catch (error: any) {
+    return error.toString()
+  }
+}
+
+export async function confirmEmailVerificationToken(token: string) {
+  if (!token) {
+    return {
+      verified: false,
+      message: "Verification token is missing.",
+    }
+  }
+
+  return sdk.client
+    .fetch<{ verified: boolean; message?: string }>(
+      "/store/auth/email-verification/confirm",
+      {
+        method: "POST",
+        body: {
+          token,
+        },
+        cache: "no-store",
+      }
+    )
+    .then((result) => ({
+      verified: result.verified,
+      message: result.verified
+        ? "Your email is verified. You can sign in now."
+        : result.message || "Unable to verify email.",
+    }))
+    .catch((error) => ({
+      verified: false,
+      message: error.toString(),
+    }))
 }
 
 export async function signout(countryCode: string) {

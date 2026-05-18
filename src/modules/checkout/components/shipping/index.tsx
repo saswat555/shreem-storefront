@@ -188,7 +188,7 @@ const Shipping: React.FC<ShippingProps> = ({
     }
 
     if (!hasCalculatedShiprocketOption) {
-      return "Live Shiprocket price is ready, but no Medusa calculated Shiprocket shipping option is available yet. Payment is blocked so the order is not undercharged."
+      return "Live Shiprocket price is ready, but the checkout delivery option is not available yet. Payment is blocked so the order is not undercharged."
     }
 
     if (!selectedIsShiprocket) {
@@ -430,14 +430,13 @@ const Shipping: React.FC<ShippingProps> = ({
                     </p>
                     {hasCalculatedShiprocketOption ? (
                       <p className="font-medium text-[var(--shreem-accent-dark)]">
-                        Ready to sync with Medusa payment using the configured
-                        calculated shipping option.
+                        Ready to sync with secure checkout payment using the
+                        configured delivery option.
                       </p>
                     ) : (
                       <p className="font-medium text-amber-800">
                         Quote is visible, but payment is blocked until a
-                        Medusa calculated Shiprocket shipping option is
-                        available.
+                        Shiprocket checkout delivery option is available.
                       </p>
                     )}
                   </div>

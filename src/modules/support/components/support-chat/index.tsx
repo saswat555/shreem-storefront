@@ -27,6 +27,17 @@ type EmailDraft = {
 }
 
 const SUPPORT_EMAIL = "brajsavitrikrishisansthan@gmail.com"
+const LANGUAGE_KEY = "shreem_site_language_v1"
+
+const getSavedLanguage = () => {
+  if (typeof window === "undefined") {
+    return "english"
+  }
+
+  const saved = window.localStorage.getItem(LANGUAGE_KEY)
+
+  return saved === "hindi" || saved === "hinglish" ? saved : "english"
+}
 
 const quickPrompts = [
   "Help me choose the right product",
@@ -131,6 +142,7 @@ export default function SupportChat({
             text: message.text,
           })),
           customerContext,
+          language: getSavedLanguage(),
         }),
       })
       const payload = await response.json().catch(() => null)

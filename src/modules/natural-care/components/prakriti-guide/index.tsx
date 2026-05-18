@@ -60,8 +60,19 @@ type PrakritiGuideProps = {
 }
 
 const careToolName = "GrowBuddy AI"
+const LANGUAGE_KEY = "shreem_site_language_v1"
 
 const makeId = () => Math.random().toString(36).slice(2)
+
+const getSavedLanguage = () => {
+  if (typeof window === "undefined") {
+    return "english"
+  }
+
+  const saved = window.localStorage.getItem(LANGUAGE_KEY)
+
+  return saved === "hindi" || saved === "hinglish" ? saved : "english"
+}
 
 const resizeImageToDataUrl = async (file: File) => {
   if (!file.type.startsWith("image/")) {
@@ -297,6 +308,7 @@ export default function PrakritiGuide({ products, model }: PrakritiGuideProps) {
           subject,
           caseMeta,
           notes,
+          language: getSavedLanguage(),
           products: relevantProducts,
           images: images.map((image) => ({ dataUrl: image.dataUrl })),
         }),

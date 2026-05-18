@@ -2,7 +2,7 @@ import { Metadata } from "next"
 import Image from "next/image"
 
 import { shreemMascots } from "@lib/constants/shreem"
-import { shreemJournalPosts } from "@lib/constants/shreem-experience"
+import { listJournalPosts } from "@lib/data/journal"
 import { getBaseURL } from "@lib/util/env"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 
@@ -34,12 +34,13 @@ export default async function JournalPage(props: {
 }) {
   const { countryCode } = await props.params
   const baseUrl = getBaseURL()
-  const [featuredPost, ...posts] = shreemJournalPosts
+  const journalPosts = await listJournalPosts()
+  const [featuredPost, ...posts] = journalPosts
   const itemListSchema = {
     "@context": "https://schema.org",
     "@type": "ItemList",
     name: "Shreem Journal articles",
-    itemListElement: shreemJournalPosts.map((post, index) => ({
+    itemListElement: journalPosts.map((post, index) => ({
       "@type": "ListItem",
       position: index + 1,
       name: post.title,

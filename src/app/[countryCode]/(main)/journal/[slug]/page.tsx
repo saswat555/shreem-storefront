@@ -2,7 +2,7 @@ import { Metadata } from "next"
 import Image from "next/image"
 import { notFound } from "next/navigation"
 
-import { shreemJournalPosts } from "@lib/constants/shreem-experience"
+import { getJournalPost, listJournalPosts } from "@lib/data/journal"
 import { getBaseURL } from "@lib/util/env"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 
@@ -11,12 +11,14 @@ type Props = {
 }
 
 export async function generateStaticParams() {
-  return shreemJournalPosts.map((post) => ({ slug: post.slug }))
+  const posts = await listJournalPosts()
+
+  return posts.map((post) => ({ slug: post.slug }))
 }
 
 export async function generateMetadata(props: Props): Promise<Metadata> {
   const { countryCode, slug } = await props.params
-  const post = shreemJournalPosts.find((entry) => entry.slug === slug)
+  const post = await getJournalPost(slug)
 
   if (!post) {
     return {
@@ -42,7 +44,7 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
 
 export default async function JournalArticlePage(props: Props) {
   const { countryCode, slug } = await props.params
-  const post = shreemJournalPosts.find((entry) => entry.slug === slug)
+  const post = await getJournalPost(slug)
 
   if (!post) {
     notFound()

@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 
+import { recordAiUsage } from "@lib/data/ai-usage"
+import { retrieveCustomer } from "@lib/data/customer"
 import { buildPrashnaChart, getCityById } from "@lib/util/astrology"
 import { buildDetailedPrashnaChart } from "@lib/util/vedic-astrology"
 import {
@@ -15,6 +17,9 @@ const PRASHNA_SCHEMA = {
     chart_summary: { type: "string" },
     direct_indication: { type: "string" },
     house_focus: { type: "string" },
+    expert_call_recommended: { type: "boolean" },
+    expert_call_reason: { type: "string" },
+    recommended_service: { type: "string" },
     key_chart_factors: {
       type: "array",
       items: { type: "string" },
@@ -28,6 +33,9 @@ const PRASHNA_SCHEMA = {
     "chart_summary",
     "direct_indication",
     "house_focus",
+    "expert_call_recommended",
+    "expert_call_reason",
+    "recommended_service",
     "key_chart_factors",
     "favorable_timing",
     "caution",
@@ -37,6 +45,14 @@ const PRASHNA_SCHEMA = {
 
 const sanitizeString = (value: unknown, maxLength: number) =>
   typeof value === "string" ? value.trim().slice(0, maxLength) : ""
+
+const LANGUAGE_INSTRUCTIONS: Record<string, string> = {
+  english: "Write the answer in polished English.",
+  hindi:
+    "Write the answer in natural Hindi using Devanagari, keeping astrology terms understandable.",
+  hinglish:
+    "Write the answer in friendly Hinglish with common astrology terms like lagna, rashi, bhav, and upaay.",
+}
 
 const safeParseJson = (text: string) => {
   try {
@@ -49,9 +65,11 @@ const safeParseJson = (text: string) => {
 const buildPrompt = ({
   question,
   chart,
+  language,
 }: {
   question: string
   chart: ReturnType<typeof buildDetailedPrashnaChart>
+  language: string
 }) =>
   [
     "You are Shreem Astrology's Prashna Kundli assistant.",
@@ -59,8 +77,10 @@ const buildPrompt = ({
     "Interpret through traditional Vedic Prashna factors: lagna, lagna lord, Moon, relevant houses, tithi, nakshatra, yoga, karana, Rahu/Ketu, and retrograde grahas when relevant.",
     "Keep the answer concise, realistic, and practical. Separate calculated chart facts from interpretation.",
     "Do not mix personal opinion, do not invent missing aspects, do not claim certainty, and do not prescribe gemstones without recommending a paid human consultation.",
+    "If the question involves gemstones, pooja, marriage, medical matters, legal/financial risk, repeated blocks, strong dosha indications, or anything requiring detailed personal judgement, set expert_call_recommended true and recommend a call with Sanjay Kumar Pandey.",
     "For health, legal, financial, pregnancy, or emergency questions, keep the answer cautious and tell the user to consult a qualified professional.",
     "Never guarantee outcomes. Avoid fear-based language.",
+    LANGUAGE_INSTRUCTIONS[language] || LANGUAGE_INSTRUCTIONS.english,
     "Return JSON only with the exact requested fields.",
     `Question: ${question}`,
     `Calculated Prashna Kundli context: ${JSON.stringify({
@@ -108,6 +128,15 @@ const buildPrompt = ({
   ].join("\n")
 
 export async function POST(request: NextRequest) {
+  const customer = await retrieveCustomer().catch(() => null)
+
+  if (!customer) {
+    return NextResponse.json(
+      { message: "Sign in to use Prashna Kundli." },
+      { status: 401 }
+    )
+  }
+
   const payload = await request.json().catch(() => null)
   const question = sanitizeString(
     (payload as { question?: unknown } | null)?.question,
@@ -116,6 +145,14 @@ export async function POST(request: NextRequest) {
   const city = getCityById(
     sanitizeString((payload as { cityId?: unknown } | null)?.cityId, 80)
   )
+  const rawLanguage = sanitizeString(
+    (payload as { language?: unknown } | null)?.language,
+    20
+  )
+  const language =
+    rawLanguage === "hindi" || rawLanguage === "hinglish"
+      ? rawLanguage
+      : "english"
 
   if (question.length < 8) {
     return NextResponse.json(
@@ -165,7 +202,7 @@ export async function POST(request: NextRequest) {
             role: "user",
             parts: [
               {
-                text: buildPrompt({ question, chart }),
+                text: buildPrompt({ question, chart, language }),
               },
             ],
           },
@@ -198,12 +235,17 @@ export async function POST(request: NextRequest) {
     .trim()
   const parsed = safeParseJson(text || "")
 
-  return NextResponse.json({
+  const result = {
     chart,
     answer: sanitizeString(parsed?.answer, 1200),
     chart_summary: sanitizeString(parsed?.chart_summary, 700),
     direct_indication: sanitizeString(parsed?.direct_indication, 700),
     house_focus: sanitizeString(parsed?.house_focus, 500),
+    expert_call_recommended: Boolean(parsed?.expert_call_recommended),
+    expert_call_reason: sanitizeString(parsed?.expert_call_reason, 500),
+    recommended_service:
+      sanitizeString(parsed?.recommended_service, 160) ||
+      "Book a call with Sanjay Kumar Pandey",
     key_chart_factors: Array.isArray(parsed?.key_chart_factors)
       ? parsed.key_chart_factors
           .map((item: unknown) => sanitizeString(item, 180))
@@ -214,5 +256,27 @@ export async function POST(request: NextRequest) {
     caution: sanitizeString(parsed?.caution, 500),
     next_step: sanitizeString(parsed?.next_step, 500),
     model,
+  }
+
+  const usage = await recordAiUsage({
+    tool: "astrology_prashna",
+    input: {
+      question,
+      city_id: city.id,
+      city: `${city.name}, ${city.region}`,
+      language,
+    },
+    response: result,
+    metadata: {
+      chart,
+      customer_email: customer.email,
+    },
+    model,
+    expert_recommended: result.expert_call_recommended,
+  })
+
+  return NextResponse.json({
+    ...result,
+    usage_synced: usage.synced,
   })
 }
