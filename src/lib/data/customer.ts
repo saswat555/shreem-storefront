@@ -17,6 +17,18 @@ import {
 const VERIFY_EMAIL_PREFIX = "VERIFY_EMAIL_SENT:"
 const SUCCESS_PREFIX = "SUCCESS:"
 
+const formatAuthError = (error: unknown) => {
+  if (error instanceof Error) {
+    return error.message.replace(/^Error:\s*/i, "")
+  }
+
+  return String(error).replace(/^Error:\s*/i, "")
+}
+
+const buildBearerHeaders = (token: string) => ({
+  authorization: `Bearer ${token}`,
+})
+
 const getCountryCodeFromForm = (formData: FormData) => {
   const countryCode = (formData.get("country_code") as string) || "in"
 
@@ -35,9 +47,10 @@ const requiresEmailVerification = (
 }
 
 const requestEmailVerificationForCurrentCustomer = async (
-  countryCode: string
+  countryCode: string,
+  authHeaders?: { authorization: string }
 ) => {
-  const headers = {
+  const headers = authHeaders || {
     ...(await getAuthHeaders()),
   }
 
@@ -114,28 +127,37 @@ export async function signup(_currentState: unknown, formData: FormData) {
       password: password,
     })
 
-    await setAuthToken(token as string)
-
-    const headers = {
-      ...(await getAuthHeaders()),
-    }
+    const authHeaders = buildBearerHeaders(token as string)
 
     const { customer: createdCustomer } = await sdk.store.customer.create(
       customerForm,
       {},
-      headers
+      authHeaders
     )
 
-    await requestEmailVerificationForCurrentCustomer(countryCode)
+    let verificationEmailSent = true
+
+    try {
+      await requestEmailVerificationForCurrentCustomer(countryCode, authHeaders)
+    } catch (error) {
+      console.error("Verification email could not be sent after signup", error)
+      verificationEmailSent = false
+    }
+
     await removeAuthToken()
 
     const customerCacheTag = await getCacheTag("customers")
     revalidateTag(customerCacheTag)
 
-    return `${VERIFY_EMAIL_PREFIX}Account created. We sent a verification link to ${createdCustomer.email}. Please verify your email before signing in.`
-  } catch (error: any) {
+    const email = createdCustomer.email || customerForm.email
+    const deliveryNote = verificationEmailSent
+      ? `We sent a verification link to ${email}.`
+      : `Your account was created, but we could not send the verification email right now. Sign in and use "Resend verification email" to try again.`
+
+    return `${VERIFY_EMAIL_PREFIX}Account created. ${deliveryNote} Please verify your email before signing in. Check your inbox, spam, and promotions folders — the link expires in 24 hours.`
+  } catch (error: unknown) {
     await removeAuthToken().catch(() => undefined)
-    return error.toString()
+    return formatAuthError(error)
   }
 }
 
@@ -162,21 +184,23 @@ export async function login(_currentState: unknown, formData: FormData) {
       const customerCacheTag = await getCacheTag("customers")
       revalidateTag(customerCacheTag)
 
-      return `${VERIFY_EMAIL_PREFIX}Please verify your email before signing in. We sent a fresh verification link to ${email}.`
+      return `${VERIFY_EMAIL_PREFIX}Please verify your email before signing in. We sent a fresh verification link to ${email}. Check your inbox, spam, and promotions folders — the link expires in 24 hours.`
     }
 
     const customerCacheTag = await getCacheTag("customers")
     revalidateTag(customerCacheTag)
-  } catch (error: any) {
+  } catch (error: unknown) {
     await removeAuthToken().catch(() => undefined)
-    return error.toString()
+    return formatAuthError(error)
   }
 
   try {
     await transferCart()
-  } catch (error: any) {
-    return error.toString()
+  } catch (error: unknown) {
+    return formatAuthError(error)
   }
+
+  redirect(`/${countryCode}/account`)
 }
 
 export async function requestPasswordReset(
@@ -198,9 +222,9 @@ export async function requestPasswordReset(
       },
     })
 
-    return `${SUCCESS_PREFIX}If a Shreem account exists for ${email}, a reset link has been sent.`
-  } catch (error: any) {
-    return error.toString()
+    return `${SUCCESS_PREFIX}If a Shreem account exists for ${email}, a reset link has been sent. Check your inbox, spam, and promotions folders.`
+  } catch (error: unknown) {
+    return formatAuthError(error)
   }
 }
 
@@ -223,9 +247,9 @@ export async function requestAuthenticatedPasswordReset(
       },
     })
 
-    return `${SUCCESS_PREFIX}Password reset link sent to ${customer.email}.`
-  } catch (error: any) {
-    return error.toString()
+    return `${SUCCESS_PREFIX}Password reset link sent to ${customer.email}. Check your inbox, spam, and promotions folders.`
+  } catch (error: unknown) {
+    return formatAuthError(error)
   }
 }
 
@@ -257,8 +281,8 @@ export async function resetPassword(_currentState: unknown, formData: FormData) 
     )
 
     return `${SUCCESS_PREFIX}Password updated. You can sign in with the new password.`
-  } catch (error: any) {
-    return error.toString()
+  } catch (error: unknown) {
+    return formatAuthError(error)
   }
 }
 

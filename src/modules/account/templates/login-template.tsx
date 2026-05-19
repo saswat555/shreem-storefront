@@ -11,14 +11,25 @@ export enum LOGIN_VIEW {
 }
 
 const LoginTemplate = () => {
-  const [currentView, setCurrentView] = useState("sign-in")
+  const [currentView, setCurrentView] = useState(LOGIN_VIEW.SIGN_IN)
+  const [signupNotice, setSignupNotice] = useState<string | null>(null)
 
   return (
     <div className="flex w-full justify-center px-0 py-2 small:justify-start small:px-8 small:py-8">
-      {currentView === "sign-in" ? (
-        <Login setCurrentView={setCurrentView} />
+      {currentView === LOGIN_VIEW.SIGN_IN ? (
+        <Login
+          setCurrentView={setCurrentView}
+          signupNotice={signupNotice}
+          onSignupNoticeConsumed={() => setSignupNotice(null)}
+        />
       ) : (
-        <Register setCurrentView={setCurrentView} />
+        <Register
+          setCurrentView={setCurrentView}
+          onSignupSuccess={(message) => {
+            setSignupNotice(message)
+            setCurrentView(LOGIN_VIEW.SIGN_IN)
+          }}
+        />
       )}
     </div>
   )

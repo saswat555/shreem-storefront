@@ -19,7 +19,10 @@ import {
   retrieveAstrologyKnowledge,
   type RetrievedAstrologyPassage,
 } from "@lib/util/astrology-knowledge"
-import { checkAstrologyDailyQuota } from "@lib/util/ai-quota"
+import {
+  checkAstrologyDailyQuota,
+  isAstrologyQuotaExceeded,
+} from "@lib/util/ai-quota"
 import { generateGeminiJson } from "@lib/util/gemini"
 import { buildDetailedPrashnaChart } from "@lib/util/vedic-astrology"
 import { isGeminiEnabled } from "@lib/util/prakriti-config"
@@ -1116,23 +1119,7 @@ export async function POST(request: NextRequest) {
 
   const quota = await checkAstrologyDailyQuota()
 
-  if (!quota.synced) {
-    return NextResponse.json(
-      {
-        message:
-          "AI usage tracking is unavailable, so this reading is paused to protect your daily limit.",
-        chart,
-        detected_yogas: detectedYogas,
-        stones,
-        health_indicators: healthIndicators,
-        targeted_remedies: targetedRemedySeeds,
-        retryable: true,
-      },
-      { status: 503 }
-    )
-  }
-
-  if (!quota.allowed) {
+  if (isAstrologyQuotaExceeded(quota)) {
     return NextResponse.json(
       {
         message:

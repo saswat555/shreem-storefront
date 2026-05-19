@@ -1,9 +1,11 @@
 import { Metadata } from "next"
 
 import { confirmEmailVerificationToken } from "@lib/data/customer"
+import { privatePageMetadata } from "@lib/seo/metadata"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 
 export const metadata: Metadata = {
+  ...privatePageMetadata,
   title: "Verify Email",
   description: "Verify your Shreem Farms account email.",
 }
@@ -30,6 +32,13 @@ export default async function VerifyEmailPage(props: {
         >
           {result.message}
         </p>
+        {!result.verified && (
+          <p className="mx-auto mt-4 max-w-xl text-sm leading-6 text-[var(--shreem-muted)]">
+            If you just signed up, open the latest Shreem email from your inbox,
+            spam, or promotions folder and use the verification link there. Links
+            expire after 24 hours.
+          </p>
+        )}
         <LocalizedClientLink
           href="/account"
           className="mt-7 inline-flex min-h-11 items-center justify-center rounded-full bg-[var(--shreem-teal)] px-6 py-3 text-small-regular font-semibold text-white"

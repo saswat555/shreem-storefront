@@ -1,8 +1,20 @@
 import { MetadataRoute } from "next"
 
+import { isSeoEnabled } from "@lib/seo/config"
 import { getBaseURL } from "@lib/util/env"
 
 export default function robots(): MetadataRoute.Robots {
+  if (!isSeoEnabled()) {
+    return {
+      rules: [
+        {
+          userAgent: "*",
+          disallow: "/",
+        },
+      ],
+    }
+  }
+
   const baseUrl = getBaseURL()
 
   return {
@@ -16,6 +28,8 @@ export default function robots(): MetadataRoute.Robots {
           "/*/cart",
           "/*/checkout",
           "/*/order/",
+          "/*/verify-email",
+          "/*/reset-password",
         ],
       },
     ],

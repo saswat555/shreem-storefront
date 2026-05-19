@@ -52,7 +52,12 @@ export const checkAstrologyDailyQuota = async () => {
     limit,
     used,
     remaining: Math.max(0, limit - used),
-    allowed: used < limit,
+    allowed: usage.synced ? used < limit : true,
     reset_at: endIso,
   }
 }
+
+/** Block only when usage tracking works and the daily cap is reached. */
+export const isAstrologyQuotaExceeded = (
+  quota: Awaited<ReturnType<typeof checkAstrologyDailyQuota>>
+) => quota.synced && !quota.allowed

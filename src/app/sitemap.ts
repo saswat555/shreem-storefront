@@ -3,6 +3,7 @@ import { MetadataRoute } from "next"
 import { listJournalPosts } from "@lib/data/journal"
 import { listProducts } from "@lib/data/products"
 import { listRegions } from "@lib/data/regions"
+import { isSeoEnabled } from "@lib/seo/config"
 import { getBaseURL } from "@lib/util/env"
 import { isPrakritiGuideEnabled } from "@lib/util/prakriti-config"
 
@@ -16,6 +17,10 @@ const getCountryCodes = async () => {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  if (!isSeoEnabled()) {
+    return []
+  }
+
   const baseUrl = getBaseURL()
   const now = new Date()
   const countryCodes = await getCountryCodes()

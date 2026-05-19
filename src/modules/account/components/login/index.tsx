@@ -1,16 +1,24 @@
+"use client"
+
 import { login, requestPasswordReset } from "@lib/data/customer"
 import { LOGIN_VIEW } from "@modules/account/templates/login-template"
 import ErrorMessage from "@modules/checkout/components/error-message"
 import { SubmitButton } from "@modules/checkout/components/submit-button"
 import Input from "@modules/common/components/input"
 import { useParams } from "next/navigation"
-import { useActionState, useState } from "react"
+import { useActionState, useEffect, useState } from "react"
 
 type Props = {
   setCurrentView: (view: LOGIN_VIEW) => void
+  signupNotice?: string | null
+  onSignupNoticeConsumed?: () => void
 }
 
-const Login = ({ setCurrentView }: Props) => {
+const Login = ({
+  setCurrentView,
+  signupNotice = null,
+  onSignupNoticeConsumed,
+}: Props) => {
   const params = useParams<{ countryCode?: string }>()
   const countryCode = params?.countryCode || "in"
   const [message, formAction] = useActionState(login, null)
@@ -29,6 +37,15 @@ const Login = ({ setCurrentView }: Props) => {
     typeof resetMessage === "string"
       ? resetMessage.replace("SUCCESS:", "")
       : null
+  const noticeMessage = signupNotice || (loginNotice ? displayLoginMessage : null)
+
+  useEffect(() => {
+    if (!signupNotice || !onSignupNoticeConsumed) {
+      return
+    }
+
+    onSignupNoticeConsumed()
+  }, [onSignupNoticeConsumed, signupNotice])
 
   return (
     <div
@@ -43,6 +60,12 @@ const Login = ({ setCurrentView }: Props) => {
           ? "Enter your account email and we will send a secure reset link."
           : "Sign in to revisit your orders, saved details, and Shreem favourites."}
       </p>
+      {noticeMessage && !isResetView && (
+        <div className="mb-5 w-full rounded-[18px] border border-emerald-200 bg-emerald-50 px-4 py-4 text-sm leading-6 text-emerald-800">
+          <p className="font-semibold">Check your email</p>
+          <p className="mt-2">{noticeMessage}</p>
+        </div>
+      )}
       {isResetView ? (
         <form className="w-full" action={resetAction}>
           <input type="hidden" name="country_code" value={countryCode} />
@@ -93,7 +116,7 @@ const Login = ({ setCurrentView }: Props) => {
               data-testid="password-input"
             />
           </div>
-          {loginNotice ? (
+          {loginNotice && !signupNotice ? (
             <div className="pt-3 text-center text-small-regular font-medium text-emerald-700">
               {displayLoginMessage}
             </div>

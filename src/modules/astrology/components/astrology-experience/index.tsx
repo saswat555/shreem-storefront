@@ -33,6 +33,7 @@ type PrashnaResult = {
   caution?: string
   next_step?: string
   message?: string
+  retryable?: boolean
   usage_synced?: boolean
 }
 
@@ -2024,6 +2025,10 @@ export default function AstrologyExperience({
   }
 
   const askPrashna = async () => {
+    if (loadingPrashna) {
+      return
+    }
+
     setLoadingPrashna(true)
     setPrashna(null)
 
@@ -2040,10 +2045,22 @@ export default function AstrologyExperience({
       cache: "no-store",
     }).catch(() => null)
     const data = (await response?.json().catch(() => null)) as PrashnaResult | null
-    const result =
-      data || ({
-        message: "Prashna AI could not answer right now. Please try again.",
-      } satisfies PrashnaResult)
+
+    if (!response?.ok || !data?.answer) {
+      const retryHint = data?.retryable
+        ? " This looks temporary — wait a few seconds and try again."
+        : ""
+      setPrashna({
+        message:
+          data?.message ||
+          `Prashna AI could not answer right now. Please try again.${retryHint}`,
+        retryable: data?.retryable,
+      })
+      setLoadingPrashna(false)
+      return
+    }
+
+    const result = data
 
     setPrashna(result)
 
@@ -2490,12 +2507,12 @@ export default function AstrologyExperience({
                     and next step.
                   </p>
                 )}
-                {prashna?.message && (
+                {prashna?.message && !prashna?.answer && (
                   <p className="mt-3 rounded-[16px] border border-rose-200 bg-rose-50 px-4 py-3 text-sm leading-6 text-rose-700">
                     {prashna.message}
                   </p>
                 )}
-                {prashna?.chart && (
+                {prashna?.answer && prashna.chart && (
                   <div className="mt-4">
                     <PrashnaChartView result={prashna} />
                   </div>

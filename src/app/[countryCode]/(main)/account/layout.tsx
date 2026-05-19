@@ -1,6 +1,11 @@
+import { Metadata } from "next"
+
 import { retrieveCustomer } from "@lib/data/customer"
+import { privatePageMetadata } from "@lib/seo/metadata"
 import { Toaster } from "@medusajs/ui"
 import AccountLayout from "@modules/account/templates/account-layout"
+
+export const metadata: Metadata = privatePageMetadata
 
 export default async function AccountPageLayout({
   dashboard,

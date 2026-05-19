@@ -1,8 +1,10 @@
 import { Metadata } from "next"
 
+import { privatePageMetadata } from "@lib/seo/metadata"
 import ResetPassword from "@modules/account/components/reset-password"
 
 export const metadata: Metadata = {
+  ...privatePageMetadata,
   title: "Reset Password",
   description: "Reset your Shreem Farms account password securely.",
 }

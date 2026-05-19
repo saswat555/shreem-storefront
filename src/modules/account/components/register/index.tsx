@@ -1,6 +1,6 @@
 "use client"
 
-import { useActionState } from "react"
+import { useActionState, useEffect, useRef } from "react"
 import Input from "@modules/common/components/input"
 import { LOGIN_VIEW } from "@modules/account/templates/login-template"
 import ErrorMessage from "@modules/checkout/components/error-message"
@@ -11,18 +11,33 @@ import { useParams } from "next/navigation"
 
 type Props = {
   setCurrentView: (view: LOGIN_VIEW) => void
+  onSignupSuccess: (message: string) => void
 }
 
-const Register = ({ setCurrentView }: Props) => {
+const Register = ({ setCurrentView, onSignupSuccess }: Props) => {
   const params = useParams<{ countryCode?: string }>()
   const countryCode = params?.countryCode || "in"
   const [message, formAction] = useActionState(signup, null)
+  const handledSuccessRef = useRef<string | null>(null)
   const isNotice =
     typeof message === "string" && message.startsWith("VERIFY_EMAIL_SENT:")
   const displayMessage =
     typeof message === "string"
       ? message.replace("VERIFY_EMAIL_SENT:", "")
       : null
+
+  useEffect(() => {
+    if (!isNotice || !displayMessage) {
+      return
+    }
+
+    if (handledSuccessRef.current === displayMessage) {
+      return
+    }
+
+    handledSuccessRef.current = displayMessage
+    onSignupSuccess(displayMessage)
+  }, [displayMessage, isNotice, onSignupSuccess])
 
   return (
     <div
@@ -77,12 +92,12 @@ const Register = ({ setCurrentView }: Props) => {
             data-testid="password-input"
           />
         </div>
-        {isNotice ? (
-          <div className="pt-3 text-center text-small-regular font-medium text-emerald-700">
-            {displayMessage}
-          </div>
-        ) : (
+        {!isNotice ? (
           <ErrorMessage error={displayMessage} data-testid="register-error" />
+        ) : (
+          <p className="pt-3 text-center text-small-regular text-[var(--shreem-muted)]">
+            Creating your account and opening sign in...
+          </p>
         )}
         <span className="text-center text-ui-fg-base text-small-regular mt-6">
           By creating an account, you agree to Shreem&apos;s{" "}

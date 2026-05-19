@@ -13,7 +13,10 @@ import {
   retrieveAstrologyKnowledge,
   type RetrievedAstrologyPassage,
 } from "@lib/util/astrology-knowledge"
-import { checkAstrologyDailyQuota } from "@lib/util/ai-quota"
+import {
+  checkAstrologyDailyQuota,
+  isAstrologyQuotaExceeded,
+} from "@lib/util/ai-quota"
 import { generateGeminiJson } from "@lib/util/gemini"
 import { buildDetailedPrashnaChart } from "@lib/util/vedic-astrology"
 import { isGeminiEnabled } from "@lib/util/prakriti-config"
@@ -232,19 +235,7 @@ export async function POST(request: NextRequest) {
 
   const quota = await checkAstrologyDailyQuota()
 
-  if (!quota.synced) {
-    return NextResponse.json(
-      {
-        message:
-          "AI usage tracking is unavailable, so this reading is paused to protect your daily limit.",
-        chart,
-        retryable: true,
-      },
-      { status: 503 }
-    )
-  }
-
-  if (!quota.allowed) {
+  if (isAstrologyQuotaExceeded(quota)) {
     return NextResponse.json(
       {
         message:
@@ -277,10 +268,24 @@ export async function POST(request: NextRequest) {
 
   const parsed = gemini.parsed
 
+  const answer = sanitizeString(parsed?.answer, 1200)
+
+  if (!answer) {
+    return NextResponse.json(
+      {
+        message:
+          "Prashna AI returned an empty answer. Please try again in a moment.",
+        chart,
+        retryable: true,
+      },
+      { status: 502 }
+    )
+  }
+
   const result = {
     chart,
     knowledge_references: getKnowledgeIds(knowledgePassages),
-    answer: sanitizeString(parsed?.answer, 1200),
+    answer,
     chart_summary: sanitizeString(parsed?.chart_summary, 700),
     direct_indication: sanitizeString(parsed?.direct_indication, 700),
     house_focus: sanitizeString(parsed?.house_focus, 500),
@@ -323,6 +328,6 @@ export async function POST(request: NextRequest) {
 
   return NextResponse.json({
     ...result,
-    usage_synced: usage.synced,
+    usage_synced: usage.synced && quota.synced,
   })
 }

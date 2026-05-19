@@ -1,65 +1,7 @@
-import { getBaseURL } from "@lib/util/env"
-import { Metadata } from "next"
+import { buildRootMetadata } from "@lib/seo/metadata"
 import "styles/globals.css"
 
-export const metadata: Metadata = {
-  metadataBase: new URL(getBaseURL()),
-  applicationName: "Shreem Cow Products",
-  title: {
-    default: "Shreem Cow Products | Bilona A2 Ghee, Neem Dhoop, Cow Dung Cakes",
-    template: "%s | Shreem",
-  },
-  icons: {
-    icon: [
-      { url: "/icon.jpg", type: "image/jpeg", sizes: "512x512" },
-      { url: "/logo.jpeg", type: "image/jpeg", sizes: "1024x1024" },
-    ],
-    shortcut: [{ url: "/icon.jpg", type: "image/jpeg" }],
-    apple: [{ url: "/apple-icon.jpg", type: "image/jpeg", sizes: "180x180" }],
-  },
-  description:
-    "Shop Shreem Cow Products for bilona ghee, neem dhoop, cow dung cakes, and Jeevamrut from naturally grazing desi cows.",
-  keywords: [
-    "Shreem",
-    "Shreem Cow Products",
-    "bilona ghee",
-    "neem dhoop",
-    "cow dung cake",
-    "Jeevamrut",
-    "A2 desi cow products",
-  ],
-  alternates: {
-    canonical: "/",
-  },
-  openGraph: {
-    title: "Shreem Cow Products",
-    description:
-      "Shop Shreem Cow Products for bilona ghee, neem dhoop, cow dung cakes, and Jeevamrut from naturally grazing desi cows.",
-    url: getBaseURL(),
-    siteName: "Shreem",
-    images: [{ url: "/logo.jpeg", alt: "Shreem peacock-feather inspired logo" }],
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Shreem Cow Products",
-    description:
-      "Shop bilona ghee, neem dhoop, cow dung cakes, and Jeevamrut from Shreem.",
-    images: ["/logo.jpeg"],
-  },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      "max-image-preview": "large",
-      "max-snippet": -1,
-      "max-video-preview": -1,
-    },
-  },
-  category: "Ecommerce",
-}
+export const metadata = buildRootMetadata()
 
 export default function RootLayout(props: { children: React.ReactNode }) {
   return (
