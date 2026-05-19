@@ -7,6 +7,7 @@ import {
   getGeminiModel,
   isGeminiEnabled,
 } from "@lib/util/prakriti-config"
+import { normalizeGeminiUsage } from "@lib/util/gemini"
 import { shreemAssurances, shreemRituals } from "@lib/constants/shreem"
 
 const SUPPORT_TO_EMAIL = "brajsavitrikrishisansthan@gmail.com"
@@ -245,6 +246,7 @@ export async function POST(request: NextRequest) {
           customer_email: customer.email,
         },
         model,
+        ...normalizeGeminiUsage(data.usageMetadata, model),
         expert_recommended: result.needs_email,
       })
     : { synced: false }

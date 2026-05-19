@@ -14,6 +14,7 @@ export type AiUsagePayload = {
   completion_tokens?: number
   total_tokens?: number
   estimated_cost_usd?: number
+  estimated_cost_inr?: number
   expert_recommended?: boolean
 }
 

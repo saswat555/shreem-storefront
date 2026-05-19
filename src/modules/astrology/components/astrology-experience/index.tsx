@@ -28,11 +28,17 @@ type PrashnaResult = {
   expert_call_reason?: string
   recommended_service?: string
   key_chart_factors?: string[]
+  book_citations?: BookCitation[]
   favorable_timing?: string
   caution?: string
   next_step?: string
   message?: string
   usage_synced?: boolean
+}
+
+type BookCitation = {
+  citation: string
+  relevance: string
 }
 
 type KundliAnalysis = {
@@ -45,6 +51,7 @@ type KundliAnalysis = {
   career_direction?: string
   relationship_pattern?: string
   health_caution?: string
+  health_indicators?: string[]
   current_period_analysis?: string
   prediction_table?: {
     area: string
@@ -63,6 +70,12 @@ type KundliAnalysis = {
   }[]
   special_cases?: string[]
   upaay?: string[]
+  targeted_remedies?: {
+    pain_point: string
+    chart_basis: string
+    mantra_or_pooja: string
+    daily_practice: string
+  }[]
   shreem_product_suggestions?: {
     title: string
     handle: string
@@ -70,6 +83,7 @@ type KundliAnalysis = {
     image_url?: string
     reason: string
   }[]
+  book_citations?: BookCitation[]
   planet_effects?: {
     planet: string
     placement: string
@@ -93,6 +107,16 @@ type KundliResult = {
   chart?: PrashnaChart
   detected_yogas?: string[]
   stones?: {
+    trinal?: {
+      house?: number
+      label?: string
+      sign?: string
+      lord?: string
+      primary?: string
+      alternatives?: string[]
+      chart_basis?: string
+      caution?: string
+    }[]
     lagna?: {
       sign?: string
       lord?: string
@@ -109,6 +133,13 @@ type KundliResult = {
     }
     caution?: string
   }
+  health_indicators?: string[]
+  targeted_remedy_seeds?: {
+    pain_point: string
+    chart_basis: string
+    mantra_or_pooja: string
+    daily_practice: string
+  }[]
   analysis?: KundliAnalysis
   message?: string
   usage_synced?: boolean
@@ -155,6 +186,7 @@ type MatchmakingResult = {
     family_discussion_points?: string[]
     marriage_timing_note?: string
     remedies?: string[]
+    book_citations?: BookCitation[]
     expert_call_recommended?: boolean
     expert_call_reason?: string
   }
@@ -747,6 +779,8 @@ const PrashnaChartView = ({ result }: { result: PrashnaResult }) => {
         </div>
       )}
 
+      <BookCitationList items={result.book_citations} />
+
       {result.expert_call_recommended && (
         <div className="rounded-[20px] border border-[rgba(212,161,38,0.32)] bg-[rgba(255,248,233,0.84)] px-4 py-4">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
@@ -843,19 +877,33 @@ const PLANET_SHORT: Record<string, string> = {
   Ketu: "Ke",
 }
 
-const housePositions: Record<number, string> = {
-  1: "left-1/2 top-[7%] -translate-x-1/2",
-  2: "left-[23%] top-[18%] -translate-x-1/2",
-  3: "left-[9%] top-1/2 -translate-y-1/2",
-  4: "left-[23%] bottom-[18%] -translate-x-1/2",
-  5: "left-1/2 bottom-[7%] -translate-x-1/2",
-  6: "right-[23%] bottom-[18%] translate-x-1/2",
-  7: "right-[9%] top-1/2 -translate-y-1/2",
-  8: "right-[23%] top-[18%] translate-x-1/2",
-  9: "left-1/2 top-[31%] -translate-x-1/2",
-  10: "left-[31%] top-1/2 -translate-x-1/2 -translate-y-1/2",
-  11: "left-1/2 bottom-[31%] -translate-x-1/2",
-  12: "right-[31%] top-1/2 translate-x-1/2 -translate-y-1/2",
+const northIndianHouseSlots: Record<
+  number,
+  { x: number; y: number; signX: number; signY: number; anchor?: "start" | "middle" | "end" }
+> = {
+  1: { x: 70, y: 20, signX: 70, signY: 31 },
+  2: { x: 45, y: 13, signX: 53, signY: 22 },
+  3: { x: 21, y: 27, signX: 31, signY: 36 },
+  4: { x: 25, y: 51, signX: 39, signY: 53 },
+  5: { x: 21, y: 73, signX: 31, signY: 65 },
+  6: { x: 45, y: 87, signX: 53, signY: 78 },
+  7: { x: 70, y: 82, signX: 70, signY: 69 },
+  8: { x: 95, y: 87, signX: 87, signY: 78 },
+  9: { x: 119, y: 73, signX: 109, signY: 65 },
+  10: { x: 115, y: 51, signX: 101, signY: 53 },
+  11: { x: 119, y: 27, signX: 109, signY: 36 },
+  12: { x: 95, y: 13, signX: 87, signY: 22 },
+}
+
+const splitPlanetLabels = (labels: string[]) => {
+  if (labels.length <= 2) {
+    return [labels.join(" ")]
+  }
+
+  return [
+    labels.slice(0, Math.ceil(labels.length / 2)).join(" "),
+    labels.slice(Math.ceil(labels.length / 2)).join(" "),
+  ]
 }
 
 const buildChartCells = (
@@ -913,36 +961,71 @@ const NorthIndianChart = ({
           {mode === "lagna" ? chart.ascendant : chart.moonSign}
         </p>
       </div>
-      <div className="relative mx-auto aspect-square w-full max-w-[430px] overflow-hidden rounded-[14px] bg-white/58">
+      <div className="relative mx-auto aspect-[7/5] w-full max-w-[520px] overflow-hidden rounded-[14px] bg-white shadow-[inset_0_0_0_1px_rgba(156,105,18,0.08)]">
         <svg
-          className="absolute inset-0 h-full w-full text-[rgba(156,105,18,0.38)]"
-          viewBox="0 0 100 100"
-          aria-hidden="true"
+          className="absolute inset-0 h-full w-full"
+          viewBox="0 0 140 100"
+          role="img"
+          aria-label={`${title} in North Indian style`}
         >
-          <rect x="3" y="3" width="94" height="94" rx="2" fill="none" stroke="currentColor" strokeWidth="1.4" />
-          <path d="M50 3 L97 50 L50 97 L3 50 Z" fill="none" stroke="currentColor" strokeWidth="1.4" />
-          <path d="M3 3 L97 97 M97 3 L3 97 M50 3 L50 97 M3 50 L97 50" fill="none" stroke="currentColor" strokeWidth="0.72" />
-        </svg>
+          <rect
+            x="2"
+            y="2"
+            width="136"
+            height="96"
+            fill="white"
+            stroke="#111827"
+            strokeWidth="1.8"
+          />
+          <path
+            d="M2 2 L138 98 M138 2 L2 98"
+            fill="none"
+            stroke="#111827"
+            strokeWidth="1.55"
+          />
+          <path
+            d="M70 2 L138 50 L70 98 L2 50 Z"
+            fill="none"
+            stroke="#111827"
+            strokeWidth="1.55"
+          />
 
-        {cells.map((cell) => (
-          <div
-            key={`${mode}-${cell.house}-${cell.sign}`}
-            className={`absolute ${housePositions[cell.house]} w-[28%] text-center`}
-          >
-            <p className="text-[0.58rem] font-semibold uppercase leading-3 tracking-[0.07em] text-[var(--shreem-gold-deep)] small:text-[0.66rem]">
-              H{cell.house} · {SIGN_NUMBERS[cell.sign]}
-            </p>
-            <p className="mt-0.5 text-[0.58rem] font-medium leading-3 text-[var(--shreem-muted)] small:text-[0.64rem]">
-              {cell.sign.slice(0, 3)}
-              {cell.marker ? ` · ${cell.marker}` : ""}
-            </p>
-            <p className="mt-0.5 line-clamp-3 text-[0.66rem] font-semibold leading-4 text-[var(--shreem-ink)] small:text-[0.72rem]">
-              {cell.planets
-                .map((planet) => PLANET_SHORT[planet.name] || planet.name.slice(0, 2))
-                .join(" ")}
-            </p>
-          </div>
-        ))}
+          {cells.map((cell) => {
+            const slot = northIndianHouseSlots[cell.house]
+            const planetLabels = splitPlanetLabels([
+              ...(cell.marker
+                ? [cell.marker === "Lagna" ? "Asc" : "Ch"]
+                : []),
+              ...cell.planets.map(
+                (planet) => PLANET_SHORT[planet.name] || planet.name.slice(0, 2)
+              ),
+            ])
+
+            return (
+              <g key={`${mode}-${cell.house}-${cell.sign}`}>
+                {planetLabels.map((line, index) => (
+                  <text
+                    key={`${cell.house}-${line}-${index}`}
+                    x={slot.x}
+                    y={slot.y + index * 5.4}
+                    textAnchor={slot.anchor || "middle"}
+                    className="fill-[var(--shreem-accent-dark)] text-[4.7px] font-semibold"
+                  >
+                    {line}
+                  </text>
+                ))}
+                <text
+                  x={slot.signX}
+                  y={slot.signY}
+                  textAnchor="middle"
+                  className="fill-[var(--shreem-ink)] text-[5.6px] font-semibold"
+                >
+                  {SIGN_NUMBERS[cell.sign]}
+                </text>
+              </g>
+            )
+          })}
+        </svg>
       </div>
     </div>
   )
@@ -1075,6 +1158,64 @@ const InsightList = ({
   )
 }
 
+const BookCitationList = ({ items }: { items?: BookCitation[] }) => {
+  if (!items?.length) {
+    return null
+  }
+
+  return (
+    <div className="rounded-[20px] border border-[rgba(212,161,38,0.24)] bg-[rgba(255,248,233,0.72)] px-4 py-4">
+      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
+        Classical references
+      </p>
+      <div className="mt-3 grid gap-2">
+        {items.map((item, index) => (
+          <div
+            key={`${item.citation}-${index}`}
+            className="rounded-[14px] bg-white/70 px-3 py-2"
+          >
+            <p className="text-xs font-semibold leading-5 text-[var(--shreem-ink)]">
+              {item.citation}
+            </p>
+            <p className="mt-1 text-xs leading-5 text-[var(--shreem-muted)]">
+              {item.relevance}
+            </p>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+const getStoneCards = (stones?: KundliResult["stones"]) => {
+  if (stones?.trinal?.length) {
+    return stones.trinal
+  }
+
+  return [
+    stones?.lagna
+      ? {
+          ...stones.lagna,
+          house: 1,
+          label: "1st house / Lagna",
+          chart_basis: `${stones.lagna.sign || ""} lagna, lord ${
+            stones.lagna.lord || ""
+          }.`,
+        }
+      : null,
+    stones?.rashi
+      ? {
+          ...stones.rashi,
+          house: undefined,
+          label: "Legacy rashi stone",
+          chart_basis: `${stones.rashi.sign || ""} rashi, lord ${
+            stones.rashi.lord || ""
+          }.`,
+        }
+      : null,
+  ].filter(Boolean) as NonNullable<KundliResult["stones"]>["trinal"]
+}
+
 const KundliResultView = ({
   result,
   onPrint,
@@ -1083,6 +1224,7 @@ const KundliResultView = ({
   onPrint: () => void
 }) => {
   const chart = result.chart
+  const stoneCards = getStoneCards(result.stones)
 
   if (!chart) {
     return null
@@ -1170,6 +1312,7 @@ const KundliResultView = ({
 
       <PredictionTable rows={result.analysis?.prediction_table} />
       <PlanetEffectList chart={chart} effects={result.analysis?.planet_effects} />
+      <BookCitationList items={result.analysis?.book_citations} />
 
       <div className="grid gap-3 xl:grid-cols-2">
         <InsightList
@@ -1178,6 +1321,10 @@ const KundliResultView = ({
         />
         <InsightList title="Strengths" items={result.analysis?.strengths} />
         <InsightList title="Life themes" items={result.analysis?.life_themes} />
+        <InsightList
+          title="Health watchlist"
+          items={result.analysis?.health_indicators || result.health_indicators}
+        />
         <InsightList
           title="Likely issues"
           items={result.analysis?.likely_challenges}
@@ -1218,32 +1365,30 @@ const KundliResultView = ({
         </div>
       )}
 
-      <div className="grid gap-3 small:grid-cols-2">
-        <div className="rounded-[18px] border border-[var(--shreem-border)] bg-white/66 px-4 py-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
-            Lagna stone
-          </p>
-          <p className="mt-2 text-base font-semibold text-[var(--shreem-ink)]">
-            {result.stones?.lagna?.primary}
-          </p>
-          <p className="mt-1 text-xs leading-5 text-[var(--shreem-muted)]">
-            {result.stones?.lagna?.sign} lagna, lord {result.stones?.lagna?.lord}.
-            {result.stones?.lagna?.caution}
-          </p>
-        </div>
-        <div className="rounded-[18px] border border-[var(--shreem-border)] bg-white/66 px-4 py-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
-            Rashi stone
-          </p>
-          <p className="mt-2 text-base font-semibold text-[var(--shreem-ink)]">
-            {result.stones?.rashi?.primary}
-          </p>
-          <p className="mt-1 text-xs leading-5 text-[var(--shreem-muted)]">
-            {result.stones?.rashi?.sign} rashi, lord {result.stones?.rashi?.lord}.
-            {result.stones?.rashi?.caution}
-          </p>
-        </div>
+      <div className="grid gap-3 small:grid-cols-3">
+        {stoneCards?.map((stone, index) => (
+          <div
+            key={`${stone?.label || "stone"}-${stone?.primary || index}`}
+            className="rounded-[18px] border border-[var(--shreem-border)] bg-white/66 px-4 py-4"
+          >
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
+              {stone?.label || "Trinal stone"}
+            </p>
+            <p className="mt-2 text-base font-semibold text-[var(--shreem-ink)]">
+              {stone?.primary}
+            </p>
+            <p className="mt-1 text-xs leading-5 text-[var(--shreem-muted)]">
+              {stone?.chart_basis || `${stone?.sign} sign, lord ${stone?.lord}.`}{" "}
+              {stone?.caution}
+            </p>
+          </div>
+        ))}
       </div>
+      {result.stones?.caution && (
+        <p className="rounded-[16px] border border-[rgba(212,161,38,0.26)] bg-[rgba(255,248,233,0.74)] px-4 py-3 text-xs leading-5 text-[var(--shreem-muted)]">
+          {result.stones.caution}
+        </p>
+      )}
 
       {Boolean(result.analysis?.special_cases?.length || result.detected_yogas?.length) && (
         <div className="rounded-[20px] border border-[var(--shreem-border)] bg-white/60 px-4 py-4">
@@ -1261,6 +1406,35 @@ const KundliResultView = ({
               >
                 {item}
               </p>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {Boolean(result.analysis?.targeted_remedies?.length) && (
+        <div className="rounded-[20px] border border-[var(--shreem-border)] bg-white/60 px-4 py-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
+            Pain-point mantra and pooja
+          </p>
+          <div className="mt-3 grid gap-3">
+            {result.analysis?.targeted_remedies?.map((item, index) => (
+              <div
+                key={`${item.pain_point}-${index}`}
+                className="rounded-[16px] border border-[var(--shreem-border)] bg-white/72 px-3 py-3"
+              >
+                <p className="text-sm font-semibold leading-6 text-[var(--shreem-ink)]">
+                  {item.pain_point}
+                </p>
+                <p className="mt-2 text-xs leading-5 text-[var(--shreem-muted)]">
+                  {item.chart_basis}
+                </p>
+                <p className="mt-2 rounded-[14px] bg-[rgba(255,248,233,0.74)] px-3 py-2 text-xs leading-5 text-[var(--shreem-muted)]">
+                  {item.mantra_or_pooja}
+                </p>
+                <p className="mt-2 text-xs leading-5 text-[var(--shreem-muted)]">
+                  {item.daily_practice}
+                </p>
+              </div>
             ))}
           </div>
         </div>
@@ -1486,6 +1660,8 @@ const MatchmakingResultView = ({ result }: { result: MatchmakingResult }) => {
         <InsightList title="Remedies" items={result.analysis?.remedies} />
       </div>
 
+      <BookCitationList items={result.analysis?.book_citations} />
+
       {result.analysis?.marriage_timing_note && (
         <div className="rounded-[20px] border border-[var(--shreem-border)] bg-white/60 px-4 py-4">
           <p className="brand-kicker">Timing note</p>
@@ -1538,6 +1714,7 @@ const printKundliReport = (result: KundliResult) => {
   const analysis = result.analysis
   const profile = result.profile
   const dasha = chart.dasha
+  const stoneCards = getStoneCards(result.stones)
   const win = window.open("", "_blank", "width=900,height=1200")
 
   if (!win) {
@@ -1580,7 +1757,9 @@ const printKundliReport = (result: KundliResult) => {
   <h2>Prediction Table</h2>
   <table><thead><tr><th>Area</th><th>Chart Basis</th><th>Prediction</th><th>Advice</th></tr></thead><tbody>${(analysis?.prediction_table || []).map((row) => `<tr><td>${escapeHtml(row.area)}</td><td>${escapeHtml(row.chart_basis)}</td><td>${escapeHtml(row.prediction)}</td><td>${escapeHtml(row.advice)}</td></tr>`).join("")}</tbody></table>
   <h2>Analysis</h2>
-  <div class="card"><p>${escapeHtml(analysis?.summary)}</p><p>${escapeHtml(analysis?.person_information)}</p><p>${escapeHtml(analysis?.temperament)}</p><p>${escapeHtml(analysis?.career_direction)}</p><p>${escapeHtml(analysis?.relationship_pattern)}</p><p>${escapeHtml(analysis?.current_period_analysis)}</p><p>${escapeHtml(analysis?.spiritual_guidance)}</p></div>
+  <div class="card"><p>${escapeHtml(analysis?.summary)}</p><p>${escapeHtml(analysis?.person_information)}</p><p>${escapeHtml(analysis?.temperament)}</p><p>${escapeHtml(analysis?.career_direction)}</p><p>${escapeHtml(analysis?.relationship_pattern)}</p><p><strong>Health caution:</strong> ${escapeHtml(analysis?.health_caution)}</p><p>${escapeHtml(analysis?.current_period_analysis)}</p><p>${escapeHtml(analysis?.spiritual_guidance)}</p></div>
+  <h2>Health Watchlist</h2>
+  <div class="card"><ul>${(analysis?.health_indicators || result.health_indicators || []).map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul></div>
   <h2>Traits, Issues, and Solutions</h2>
   <div class="card">
     <p><strong>Behavioral traits:</strong> ${(analysis?.behavioral_traits || []).map(escapeHtml).join(", ")}</p>
@@ -1596,8 +1775,10 @@ const printKundliReport = (result: KundliResult) => {
   <div class="card"><ul>${(analysis?.special_cases || result.detected_yogas || []).map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul></div>
   <h2>Upaay</h2>
   <div class="card"><ul>${(analysis?.upaay || []).map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul></div>
-  <h2>General Stone Indicators</h2>
-  <div class="card"><p>Lagna: ${escapeHtml(result.stones?.lagna?.primary)} (${escapeHtml(result.stones?.lagna?.sign)})</p><p>Rashi: ${escapeHtml(result.stones?.rashi?.primary)} (${escapeHtml(result.stones?.rashi?.sign)})</p><p class="small">${escapeHtml(result.stones?.caution)}</p></div>
+  <h2>Pain-point Mantra and Pooja</h2>
+  <div class="card"><ul>${(analysis?.targeted_remedies || []).map((item) => `<li><strong>${escapeHtml(item.pain_point)}</strong><br/>${escapeHtml(item.chart_basis)}<br/>${escapeHtml(item.mantra_or_pooja)}<br/><span class="small">${escapeHtml(item.daily_practice)}</span></li>`).join("")}</ul></div>
+  <h2>1st, 5th, and 9th House Stone Indicators</h2>
+  <div class="card">${(stoneCards || []).map((stone) => `<p><strong>${escapeHtml(stone?.label)}</strong>: ${escapeHtml(stone?.primary)} (${escapeHtml(stone?.sign)}, lord ${escapeHtml(stone?.lord)})<br/><span class="small">${escapeHtml(stone?.chart_basis)} ${escapeHtml(stone?.caution)}</span></p>`).join("")}<p class="small">${escapeHtml(result.stones?.caution)}</p></div>
 </body>
 </html>`)
   win.document.close()

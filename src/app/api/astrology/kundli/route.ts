@@ -13,6 +13,12 @@ import {
   type PrashnaChart,
   type PrashnaPlanet,
 } from "@lib/util/astrology"
+import {
+  formatAstrologyKnowledgeForPrompt,
+  getKnowledgeIds,
+  retrieveAstrologyKnowledge,
+  type RetrievedAstrologyPassage,
+} from "@lib/util/astrology-knowledge"
 import { checkAstrologyDailyQuota } from "@lib/util/ai-quota"
 import { generateGeminiJson } from "@lib/util/gemini"
 import { buildDetailedPrashnaChart } from "@lib/util/vedic-astrology"
@@ -39,6 +45,10 @@ const KUNDLI_SCHEMA = {
     career_direction: { type: "string" },
     relationship_pattern: { type: "string" },
     health_caution: { type: "string" },
+    health_indicators: {
+      type: "array",
+      items: { type: "string" },
+    },
     current_period_analysis: { type: "string" },
     prediction_table: {
       type: "array",
@@ -99,6 +109,24 @@ const KUNDLI_SCHEMA = {
       type: "array",
       items: { type: "string" },
     },
+    targeted_remedies: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          pain_point: { type: "string" },
+          chart_basis: { type: "string" },
+          mantra_or_pooja: { type: "string" },
+          daily_practice: { type: "string" },
+        },
+        required: [
+          "pain_point",
+          "chart_basis",
+          "mantra_or_pooja",
+          "daily_practice",
+        ],
+      },
+    },
     shreem_product_suggestions: {
       type: "array",
       items: {
@@ -111,6 +139,17 @@ const KUNDLI_SCHEMA = {
           reason: { type: "string" },
         },
         required: ["title", "handle", "reason"],
+      },
+    },
+    book_citations: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          citation: { type: "string" },
+          relevance: { type: "string" },
+        },
+        required: ["citation", "relevance"],
       },
     },
     expert_call_recommended: { type: "boolean" },
@@ -126,6 +165,7 @@ const KUNDLI_SCHEMA = {
     "career_direction",
     "relationship_pattern",
     "health_caution",
+    "health_indicators",
     "current_period_analysis",
     "prediction_table",
     "planet_effects",
@@ -136,7 +176,9 @@ const KUNDLI_SCHEMA = {
     "sub_question_answers",
     "special_cases",
     "upaay",
+    "targeted_remedies",
     "shreem_product_suggestions",
+    "book_citations",
     "expert_call_recommended",
     "expert_call_reason",
   ],
@@ -193,6 +235,69 @@ const GEMSTONES_BY_LORD: Record<
   },
 }
 
+const HEALTH_TENDENCIES_BY_PLANET: Record<string, string> = {
+  Sun: "heart vitality, eyes, blood-pressure heat, headaches, and pitta-type fatigue",
+  Moon: "sleep quality, anxiety, fluid balance, digestion sensitivity, and emotional eating",
+  Mars: "inflammation, feverish tendency, blood pressure spikes, injuries, cuts, burns, and accidents",
+  Mercury: "nerves, skin, speech stress, allergies, respiratory sensitivity, and gut-brain imbalance",
+  Jupiter: "liver, weight, sugar/metabolic balance, cholesterol tendency, and over-nourishment",
+  Venus: "kidney, urinary, reproductive, hormonal, sugar cravings, and venous circulation sensitivity",
+  Saturn: "bones, teeth, joints, chronic pain, stiffness, vata dryness, and slow recovery",
+  Rahu: "toxins, allergies, anxiety loops, addictive habits, unusual symptoms, and sudden flare-ups",
+  Ketu: "nerve pain, hidden inflammation, surgical indications, detachment from body signals, and sudden dips",
+}
+
+const PLANET_REMEDIES: Record<
+  string,
+  { mantra: string; practice: string; painPoint: string }
+> = {
+  Sun: {
+    painPoint: "confidence, vitality, father/authority, and visibility pressure",
+    mantra: "Offer water to Surya at sunrise and chant Om Suryaya Namah 108 times on Sundays.",
+    practice: "Keep promises, wake early, respect fatherly figures, and donate wheat or jaggery when suitable.",
+  },
+  Moon: {
+    painPoint: "sleep, anxiety, emotional steadiness, and mother/home comfort",
+    mantra: "Do Shiva jal abhishek on Mondays and chant Om Som Somaya Namah 108 times.",
+    practice: "Keep evening screen time low, support motherly figures, and donate rice or milk when suitable.",
+  },
+  Mars: {
+    painPoint: "anger, conflict, inflammation, injury risk, and rushed decisions",
+    mantra: "Read Hanuman Chalisa on Tuesdays and chant Om Angarakaya Namah 108 times.",
+    practice: "Use disciplined exercise, avoid impulsive arguments, and donate red lentils when suitable.",
+  },
+  Mercury: {
+    painPoint: "speech, overthinking, trade, study, skin/nerves, and decision clarity",
+    mantra: "Chant Om Bum Budhaya Namah 108 times on Wednesdays and worship Vishnu or Ganesha.",
+    practice: "Write decisions before acting, keep accounts clean, and donate green moong when suitable.",
+  },
+  Jupiter: {
+    painPoint: "guidance, children, wisdom, digestion/metabolism, and dharmic judgment",
+    mantra: "Chant Om Brim Brihaspataye Namah 108 times on Thursdays and honor Guru/Vishnu.",
+    practice: "Study scripture, mentor someone, avoid excess sweets, and donate chana dal or turmeric.",
+  },
+  Venus: {
+    painPoint: "relationship harmony, comfort, reproductive/urinary sensitivity, and indulgence",
+    mantra: "Chant Om Shum Shukraya Namah 108 times on Fridays and worship Lakshmi-Narayana.",
+    practice: "Practice cleanliness, artistic discipline, respectful partnership, and donate white sweets when suitable.",
+  },
+  Saturn: {
+    painPoint: "delay, chronic stress, bones/joints, duty, debt, and fear",
+    mantra: "Light a sesame-oil diya for Shani or Hanuman on Saturdays and chant Om Sham Shanicharaya Namah 108 times.",
+    practice: "Serve workers, elders, or disabled people; keep strict sleep, debt, and work routines.",
+  },
+  Rahu: {
+    painPoint: "obsession, anxiety loops, toxins, sudden reversals, foreign/unusual blocks",
+    mantra: "Chant Om Rahave Namah 108 times on Saturdays and worship Durga or Bhairav with a sober mind.",
+    practice: "Avoid intoxicants, misinformation, and shortcuts; donate dark sesame or blankets when suitable.",
+  },
+  Ketu: {
+    painPoint: "detachment, hidden fear, nerve sensitivity, sudden breaks, and spiritual confusion",
+    mantra: "Chant Om Ketave Namah 108 times on Tuesdays or Saturdays and offer prayers to Ganesha.",
+    practice: "Simplify possessions, complete pending duties, feed stray dogs when appropriate, and maintain grounding routines.",
+  },
+}
+
 const DEBILITATION_SIGNS: Record<string, string> = {
   Sun: "Libra",
   Moon: "Scorpio",
@@ -214,6 +319,7 @@ const EXALTATION_SIGNS: Record<string, string> = {
 }
 
 const TRINAL_HOUSES = [1, 5, 9]
+const STONE_HOUSES = [1, 5, 9] as const
 const KENDRA_HOUSES = [1, 4, 7, 10]
 const DUSTHANA_HOUSES = [6, 8, 12]
 
@@ -238,6 +344,17 @@ const sanitizeStringArray = (
         .map((item) => sanitizeString(item, maxLength))
         .filter(Boolean)
         .slice(0, maxItems)
+    : []
+
+const sanitizeBookCitations = (value: unknown) =>
+  Array.isArray(value)
+    ? value
+        .map((item: any) => ({
+          citation: sanitizeString(item?.citation, 240),
+          relevance: sanitizeString(item?.relevance, 320),
+        }))
+        .filter((item) => item.citation && item.relevance)
+        .slice(0, 8)
     : []
 
 const parseBirthDateInput = (value: string) => {
@@ -487,23 +604,260 @@ const detectYogas = (chart: PrashnaChart) => {
       ]
 }
 
+const pushUnique = (items: string[], value: string) => {
+  if (!items.includes(value)) {
+    items.push(value)
+  }
+}
+
+const getHousePlanets = (chart: PrashnaChart, houseNumber: number) =>
+  chart.planets.filter((planet) => planet.house === houseNumber)
+
+const getPlanetHealthTendency = (planetName: string) =>
+  HEALTH_TENDENCIES_BY_PLANET[planetName] || "general vitality and recovery"
+
+const buildHealthIndicators = (
+  chart: PrashnaChart,
+  detectedYogas: string[]
+) => {
+  const indicators: string[] = []
+  const lagnaLord = getPlanet(chart, SIGN_LORDS[chart.ascendant])
+  const moon = getPlanet(chart, "Moon")
+
+  if (lagnaLord) {
+    const dignity = getPlanetDignity(lagnaLord)
+
+    if (DUSTHANA_HOUSES.includes(lagnaLord.house) || dignity === "debilitated") {
+      pushUnique(
+        indicators,
+        `Vitality watch: Lagna lord ${lagnaLord.name} is in house ${lagnaLord.house} with ${dignity}; monitor ${getPlanetHealthTendency(lagnaLord.name)}. This is a tendency, not a diagnosis.`
+      )
+    }
+  }
+
+  if (moon) {
+    const dignity = getPlanetDignity(moon)
+
+    if (DUSTHANA_HOUSES.includes(moon.house) || dignity === "debilitated") {
+      pushUnique(
+        indicators,
+        `Mind-body watch: Moon is in house ${moon.house} with ${dignity}; monitor ${getPlanetHealthTendency("Moon")} and seek medical help for persistent sleep, anxiety, or mood concerns.`
+      )
+    }
+  }
+
+  ;[6, 8, 12].forEach((houseNumber) => {
+    const occupants = getHousePlanets(chart, houseNumber).filter(
+      (planet) => planet.name !== "Ketu" || houseNumber !== 12
+    )
+    const house = chart.houses[houseNumber - 1]
+    const houseLord = house?.signLord ? getPlanet(chart, house.signLord) : null
+    const houseLabel =
+      houseNumber === 6
+        ? "disease and recovery"
+        : houseNumber === 8
+          ? "chronic/sudden vulnerability"
+          : "sleep, isolation, and hospitalization"
+
+    occupants.slice(0, 3).forEach((planet) => {
+      pushUnique(
+        indicators,
+        `House ${houseNumber} ${houseLabel}: ${planet.name} placed here can show ${getPlanetHealthTendency(planet.name)}. Use this as a prevention checklist and consult a doctor for symptoms.`
+      )
+    })
+
+    if (!occupants.length && houseLord) {
+      pushUnique(
+        indicators,
+        `House ${houseNumber} ${houseLabel}: ${house.sign} is ruled by ${houseLord.name} in house ${houseLord.house}; watch ${getPlanetHealthTendency(houseLord.name)} during its dasha or heavy transits.`
+      )
+    }
+  })
+
+  const yogaText = detectedYogas.join(" ").toLowerCase()
+
+  if (yogaText.includes("angarak") || yogaText.includes("chandra-mangal")) {
+    pushUnique(
+      indicators,
+      "Heat and inflammation watch: Mars-linked combinations can correlate with anger spikes, blood-pressure heat, cuts, burns, infections, or accident-prone haste. Treat this as a caution to slow down and get medical checks for recurring symptoms."
+    )
+  }
+
+  if (yogaText.includes("saturn-ketu") || yogaText.includes("kemadruma")) {
+    pushUnique(
+      indicators,
+      "Chronic stress watch: Saturn/Ketu or isolated Moon patterns can correlate with low mood, sleep disruption, joints, nerves, stiffness, or slow recovery. Use steady routines and professional care for persistent symptoms."
+    )
+  }
+
+  if (yogaText.includes("kaal sarp") || yogaText.includes("rahu")) {
+    pushUnique(
+      indicators,
+      "Rahu-Ketu axis watch: stress, allergies, toxins, unusual flare-ups, obsessive worry, or sudden health swings can become more visible under nodal periods. Avoid fear and use preventive checkups."
+    )
+  }
+
+  pushUnique(
+    indicators,
+    "Medical safety: these are astrological prevention signals, not disease diagnosis. Emergency, severe, or persistent symptoms need a qualified doctor."
+  )
+
+  return indicators.slice(0, 7)
+}
+
+type TargetedRemedy = {
+  pain_point: string
+  chart_basis: string
+  mantra_or_pooja: string
+  daily_practice: string
+}
+
+const buildTargetedRemedySeeds = (
+  chart: PrashnaChart,
+  detectedYogas: string[],
+  healthIndicators: string[]
+): TargetedRemedy[] => {
+  const remedies: TargetedRemedy[] = []
+  const addRemedy = (remedy: TargetedRemedy) => {
+    if (!remedies.some((item) => item.pain_point === remedy.pain_point)) {
+      remedies.push(remedy)
+    }
+  }
+  const yogaText = detectedYogas.join(" ").toLowerCase()
+
+  if (yogaText.includes("kaal sarp")) {
+    addRemedy({
+      pain_point: "Rahu-Ketu pressure, sudden reversals, fear, and obsessive loops",
+      chart_basis: "Detected Kaal Sarp-style enclosure by the Rahu-Ketu axis.",
+      mantra_or_pooja:
+        "Do Rahu-Ketu shanti only after expert review; meanwhile chant Om Rahave Namah and Om Ketave Namah 108 times on Saturdays.",
+      daily_practice:
+        "Avoid intoxicants, shortcuts, and fear-based decisions; keep a simple Saturday daan/service routine.",
+    })
+  }
+
+  if (yogaText.includes("manglik") || yogaText.includes("angarak")) {
+    addRemedy({
+      pain_point: "conflict, anger, inflammation, haste, and relationship heat",
+      chart_basis: "Mars sensitivity is detected through Manglik/Angarak-style indicators.",
+      mantra_or_pooja:
+        "Read Hanuman Chalisa on Tuesdays and chant Om Angarakaya Namah 108 times.",
+      daily_practice:
+        "Do disciplined physical exercise, pause before arguments, and donate red lentils when suitable.",
+    })
+  }
+
+  if (yogaText.includes("kemadruma") || yogaText.includes("shakata")) {
+    addRemedy({
+      pain_point: "emotional isolation, fluctuating confidence, sleep, and mental steadiness",
+      chart_basis: "Moon support appears sensitive by Kemadruma/Shakata-style indicators.",
+      mantra_or_pooja:
+        "Do Monday Shiva jal abhishek and chant Om Som Somaya Namah 108 times.",
+      daily_practice:
+        "Keep a fixed sleep routine, reduce late-night stimulation, and donate rice or milk when suitable.",
+    })
+  }
+
+  if (yogaText.includes("saturn-ketu")) {
+    addRemedy({
+      pain_point: "chronic pressure, duty fatigue, detachment, joints/nerves, and delays",
+      chart_basis: "Saturn-Ketu influence is detected in the chart.",
+      mantra_or_pooja:
+        "Light a sesame-oil diya for Shani or Hanuman on Saturdays and chant Om Sham Shanicharaya Namah 108 times.",
+      daily_practice:
+        "Serve elders/workers, keep debt and sleep discipline, and avoid isolation as a default response.",
+    })
+  }
+
+  if (yogaText.includes("budhaditya")) {
+    addRemedy({
+      pain_point: "speech pressure, pride, overthinking, study/business decisions, and authority friction",
+      chart_basis: "Sun and Mercury share a sign in the automated Budhaditya-style check.",
+      mantra_or_pooja:
+        "Offer Surya arghya at sunrise and chant Om Bum Budhaya Namah 108 times on Wednesdays.",
+      daily_practice:
+        "Write decisions before speaking, keep accounts clean, and avoid ego-driven communication.",
+    })
+  }
+
+  const dashaLords = [
+    chart.dasha?.mahadasha?.lord,
+    chart.dasha?.antardasha?.lord,
+    chart.dasha?.pratyantar?.lord,
+  ].filter(Boolean) as string[]
+
+  dashaLords.slice(0, 2).forEach((lord) => {
+    const remedy = PLANET_REMEDIES[lord]
+
+    if (remedy) {
+      addRemedy({
+        pain_point: remedy.painPoint,
+        chart_basis: `${lord} is active in the current Vimshottari period sequence.`,
+        mantra_or_pooja: remedy.mantra,
+        daily_practice: remedy.practice,
+      })
+    }
+  })
+
+  const lagnaLord = getPlanet(chart, SIGN_LORDS[chart.ascendant])
+
+  if (lagnaLord && remedies.length < 4) {
+    const remedy = PLANET_REMEDIES[lagnaLord.name]
+
+    if (remedy) {
+      addRemedy({
+        pain_point: remedy.painPoint,
+        chart_basis: `${lagnaLord.name} rules the Lagna and therefore directly affects body, direction, and resilience.`,
+        mantra_or_pooja: remedy.mantra,
+        daily_practice: remedy.practice,
+      })
+    }
+  }
+
+  if (healthIndicators.length) {
+    addRemedy({
+      pain_point: "health prevention and recovery discipline",
+      chart_basis: healthIndicators[0],
+      mantra_or_pooja:
+        "Chant Maha Mrityunjaya Mantra 108 times daily for 21 or 40 days, without skipping medical advice.",
+      daily_practice:
+        "Keep sleep, hydration, movement, and checkups steady; consult a qualified doctor for symptoms.",
+    })
+  }
+
+  return remedies.slice(0, 6)
+}
+
 const getStoneRecommendations = (chart: PrashnaChart) => {
-  const lagnaLord = SIGN_LORDS[chart.ascendant]
-  const rashiLord = SIGN_LORDS[chart.moonSign]
+  const trinal = STONE_HOUSES.map((houseNumber) => {
+    const house = chart.houses[houseNumber - 1]
+    const sign = house?.sign || (houseNumber === 1 ? chart.ascendant : "")
+    const lord = SIGN_LORDS[sign]
+    const gemstone = lord ? GEMSTONES_BY_LORD[lord] : null
+
+    if (!sign || !lord || !gemstone) {
+      return null
+    }
+
+    return {
+      house: houseNumber,
+      label:
+        houseNumber === 1
+          ? "1st house / Lagna"
+          : houseNumber === 5
+            ? "5th house"
+            : "9th house",
+      sign,
+      lord,
+      chart_basis: `The ${houseNumber} house falls in ${sign}, ruled by ${lord}.`,
+      ...gemstone,
+    }
+  }).filter(Boolean)
 
   return {
-    lagna: {
-      sign: chart.ascendant,
-      lord: lagnaLord,
-      ...GEMSTONES_BY_LORD[lagnaLord],
-    },
-    rashi: {
-      sign: chart.moonSign,
-      lord: rashiLord,
-      ...GEMSTONES_BY_LORD[rashiLord],
-    },
+    trinal,
     caution:
-      "These are general lagna/rashi stone indications. Gemstones should not be worn without expert review of strength, affliction, dasha, health, and suitability.",
+      "Only 1st, 5th, and 9th house lord stones are shown. Do not wear gemstones without expert review of strength, affliction, dasha, health, and suitability.",
   }
 }
 
@@ -573,29 +927,43 @@ const buildPrompt = ({
   chart,
   detectedYogas,
   stones,
+  healthIndicators,
+  targetedRemedySeeds,
   subQuestions,
   language,
+  knowledgePassages,
 }: {
   name: string
   chart: PrashnaChart
   detectedYogas: string[]
   stones: ReturnType<typeof getStoneRecommendations>
+  healthIndicators: string[]
+  targetedRemedySeeds: TargetedRemedy[]
   subQuestions: string[]
   language: string
+  knowledgePassages: RetrievedAstrologyPassage[]
 }) =>
   [
     "You are Shreem Astrology's Vedic Kundli analysis assistant.",
     "Use only the calculated chart data and deterministic yoga detections below. Do not invent yogas that are not present.",
     "The chart calculation layer is authoritative. Do not move planets into different houses, do not alter Lagna, and do not infer chart facts that are absent.",
+    "Use the retrieved classical reference pack below to deepen interpretation. Treat it as guidance, not as extra chart facts, and do not quote it verbatim.",
+    "When a retrieved note identifies a later convention such as Kaal Sarp, say so plainly and judge it through Rahu/Ketu, houses, dignity, and dasha.",
+    "Follow calculation-first discipline: if a combination is partial, call it partial and explain what supports or weakens it.",
     "Cover special astrological cases when indicated, including Kaal Sarp, Manglik/Mars sensitivity, debilitation, possible Neechabhanga, Gajakesari, Budhaditya, and Chandra-Mangal.",
+    "When you use the reference pack, return book_citations with the exact Citation values and one-line relevance notes.",
     "Also consider period timing from Vimshottari Mahadasha, Antardasha, and Pratyantar Dasha. Keep period analysis grounded in the dasha lords and their houses/signs.",
     "Give a detailed reading with these sections: who the person is, behavioral traits, strengths, life themes, likely challenges/issues, practical solutions, Vedic remedies, and cautious spiritual guidance.",
+    "Health analysis must be deeper than generic caution: name likely vulnerability areas and possible disease tendencies from chart indicators, but use cautious language like tendency/watch/monitor. Do not diagnose. Tell the user to consult a qualified doctor for symptoms, emergencies, or persistent issues.",
+    "Return health_indicators with 4 to 7 specific watchlist items. Each item must include chart basis and a practical prevention note.",
     "Return prediction_table with rows for Personality, Career, Money, Marriage, Health, Current period, and Remedies. Each row must include chart_basis, prediction, and advice.",
     "Return planet_effects with one useful row for every graha: Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn, Rahu, and Ketu. Each row must explain placement, effect, and practical advice.",
     "Answer at most three sub-questions. If no sub-questions are provided, return an empty sub_question_answers array.",
     "Every sub-question answer must cite a chart reason using Lagna, Moon sign/nakshatra, houses, or graha placement. Do not answer from generic intuition.",
     "If a yoga is not detected, do not claim it exists. Mention uncertainty clearly.",
     "Give remedies as Vedic practices: mantra, daan, vrata, worship, discipline, and seva.",
+    "Return targeted_remedies with 3 to 6 exact pain-point remedies. Each row must map pain_point -> chart_basis -> mantra_or_pooja -> daily_practice. Avoid generic advice like simply do pooja; name the graha, day, mantra or deity, and the pain point it addresses.",
+    "Gemstone guidance must only use the provided 1st, 5th, and 9th house lord stone indicators. Do not recommend a separate rashi/Moon stone unless it is already one of those trinal house indicators.",
     "For product suggestions, use only the provided available_ritual_support handles. Do not invent products, URLs, prices, or claims. Recommend at most three and only when naturally relevant to the remedy.",
     "Never give medical, legal, or financial certainty. Gemstones must always redirect to expert review before wearing.",
     "If strong dosha, gemstone, pooja, marriage, health, or career-defining guidance appears, set expert_call_recommended true and recommend Sanjay Kumar Pandey.",
@@ -603,6 +971,13 @@ const buildPrompt = ({
     "Return JSON only.",
     `Native name: ${name || "Not provided"}`,
     `Sub-questions: ${JSON.stringify(subQuestions)}`,
+    `Retrieved classical reference pack: ${formatAstrologyKnowledgeForPrompt(
+      knowledgePassages
+    )}`,
+    `Deterministic health watchlist: ${JSON.stringify(healthIndicators)}`,
+    `Deterministic targeted remedy seeds: ${JSON.stringify(
+      targetedRemedySeeds
+    )}`,
     `Chart: ${JSON.stringify({
       generated_at: chart.generatedAtLocal,
       city: `${chart.city.name}, ${chart.city.region}`,
@@ -628,7 +1003,7 @@ const buildPrompt = ({
       })),
     })}`,
     `Detected cases: ${JSON.stringify(detectedYogas)}`,
-    `General stone indicators: ${JSON.stringify(stones)}`,
+    `Trinal stone indicators: ${JSON.stringify(stones)}`,
     `available_ritual_support: ${JSON.stringify(
       astrologyProductCatalog.map((item) => ({
         title: item.title,
@@ -697,6 +1072,33 @@ export async function POST(request: NextRequest) {
   const chart = buildDetailedPrashnaChart({ city, date: birthDateTime })
   const detectedYogas = detectYogas(chart)
   const stones = getStoneRecommendations(chart)
+  const healthIndicators = buildHealthIndicators(chart, detectedYogas)
+  const targetedRemedySeeds = buildTargetedRemedySeeds(
+    chart,
+    detectedYogas,
+    healthIndicators
+  )
+  const knowledgePassages = retrieveAstrologyKnowledge({
+    query: [
+      "kundli birth chart classical parashari special combinations dasha",
+      detectedYogas.join(" "),
+      subQuestions.join(" "),
+      `${chart.ascendant} lagna ${chart.moonSign} moon ${chart.nakshatra}`,
+      chart.planets
+        .map(
+          (planet) =>
+            `${planet.name} ${planet.sign} house ${planet.house} ${planet.nakshatra}`
+        )
+        .join(" "),
+    ].join(" "),
+    chart,
+    detectedCases: detectedYogas,
+    min: detectedYogas.length ? 4 : 3,
+    max: Math.min(
+      10,
+      Math.max(5, detectedYogas.length + subQuestions.length + 4)
+    ),
+  })
 
   if (!isGeminiEnabled()) {
     return NextResponse.json(
@@ -705,6 +1107,8 @@ export async function POST(request: NextRequest) {
         chart,
         detected_yogas: detectedYogas,
         stones,
+        health_indicators: healthIndicators,
+        targeted_remedies: targetedRemedySeeds,
       },
       { status: 503 }
     )
@@ -720,6 +1124,8 @@ export async function POST(request: NextRequest) {
         chart,
         detected_yogas: detectedYogas,
         stones,
+        health_indicators: healthIndicators,
+        targeted_remedies: targetedRemedySeeds,
         retryable: true,
       },
       { status: 503 }
@@ -734,6 +1140,8 @@ export async function POST(request: NextRequest) {
         chart,
         detected_yogas: detectedYogas,
         stones,
+        health_indicators: healthIndicators,
+        targeted_remedies: targetedRemedySeeds,
         quota,
       },
       { status: 429 }
@@ -745,8 +1153,11 @@ export async function POST(request: NextRequest) {
     chart,
     detectedYogas,
     stones,
+    healthIndicators,
+    targetedRemedySeeds,
     subQuestions,
     language,
+    knowledgePassages,
   })
   const gemini = await generateGeminiJson({
     prompt,
@@ -779,7 +1190,11 @@ export async function POST(request: NextRequest) {
     life_themes: sanitizeStringArray(parsed?.life_themes, 8, 220),
     career_direction: sanitizeString(parsed?.career_direction, 700),
     relationship_pattern: sanitizeString(parsed?.relationship_pattern, 700),
-    health_caution: sanitizeString(parsed?.health_caution, 600),
+    health_caution: sanitizeString(parsed?.health_caution, 1000),
+    health_indicators:
+      sanitizeStringArray(parsed?.health_indicators, 7, 320).length > 0
+        ? sanitizeStringArray(parsed?.health_indicators, 7, 320)
+        : healthIndicators,
     current_period_analysis: sanitizeString(
       parsed?.current_period_analysis,
       800
@@ -855,9 +1270,28 @@ export async function POST(request: NextRequest) {
           .filter(Boolean)
           .slice(0, 8)
       : [],
+    targeted_remedies: Array.isArray(parsed?.targeted_remedies)
+      ? parsed.targeted_remedies
+          .map((item: any) => ({
+            pain_point: sanitizeString(item?.pain_point, 180),
+            chart_basis: sanitizeString(item?.chart_basis, 260),
+            mantra_or_pooja: sanitizeString(item?.mantra_or_pooja, 360),
+            daily_practice: sanitizeString(item?.daily_practice, 320),
+          }))
+          .filter((item: TargetedRemedy) =>
+            Boolean(
+              item.pain_point &&
+                item.chart_basis &&
+                item.mantra_or_pooja &&
+                item.daily_practice
+            )
+          )
+          .slice(0, 6)
+      : targetedRemedySeeds,
     shreem_product_suggestions: normalizeAstrologyProductSuggestions(
       parsed?.shreem_product_suggestions
     ),
+    book_citations: sanitizeBookCitations(parsed?.book_citations),
     expert_call_recommended: Boolean(parsed?.expert_call_recommended),
     expert_call_reason: sanitizeString(parsed?.expert_call_reason, 600),
   }
@@ -873,7 +1307,10 @@ export async function POST(request: NextRequest) {
     },
     chart,
     detected_yogas: detectedYogas,
+    knowledge_references: getKnowledgeIds(knowledgePassages),
     stones,
+    health_indicators: healthIndicators,
+    targeted_remedy_seeds: targetedRemedySeeds,
     analysis,
     model: gemini.model,
   }
@@ -886,6 +1323,9 @@ export async function POST(request: NextRequest) {
       customer_email: customer.email,
       chart,
       dasha: chart.dasha,
+      knowledge_references: getKnowledgeIds(knowledgePassages),
+      health_indicators: healthIndicators,
+      targeted_remedy_seeds: targetedRemedySeeds,
     },
     model: gemini.model,
     ...gemini.usage,

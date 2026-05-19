@@ -2,7 +2,17 @@ import { NextRequest, NextResponse } from "next/server"
 
 import { recordAiUsage } from "@lib/data/ai-usage"
 import { retrieveCustomer } from "@lib/data/customer"
-import { buildPrashnaChart, getCityById } from "@lib/util/astrology"
+import {
+  buildPrashnaChart,
+  getCityById,
+  type PrashnaChart,
+} from "@lib/util/astrology"
+import {
+  formatAstrologyKnowledgeForPrompt,
+  getKnowledgeIds,
+  retrieveAstrologyKnowledge,
+  type RetrievedAstrologyPassage,
+} from "@lib/util/astrology-knowledge"
 import { checkAstrologyDailyQuota } from "@lib/util/ai-quota"
 import { generateGeminiJson } from "@lib/util/gemini"
 import { buildDetailedPrashnaChart } from "@lib/util/vedic-astrology"
@@ -22,6 +32,17 @@ const PRASHNA_SCHEMA = {
       type: "array",
       items: { type: "string" },
     },
+    book_citations: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          citation: { type: "string" },
+          relevance: { type: "string" },
+        },
+        required: ["citation", "relevance"],
+      },
+    },
     favorable_timing: { type: "string" },
     caution: { type: "string" },
     next_step: { type: "string" },
@@ -35,6 +56,7 @@ const PRASHNA_SCHEMA = {
     "expert_call_reason",
     "recommended_service",
     "key_chart_factors",
+    "book_citations",
     "favorable_timing",
     "caution",
     "next_step",
@@ -43,6 +65,17 @@ const PRASHNA_SCHEMA = {
 
 const sanitizeString = (value: unknown, maxLength: number) =>
   typeof value === "string" ? value.trim().slice(0, maxLength) : ""
+
+const sanitizeBookCitations = (value: unknown) =>
+  Array.isArray(value)
+    ? value
+        .map((item: any) => ({
+          citation: sanitizeString(item?.citation, 240),
+          relevance: sanitizeString(item?.relevance, 320),
+        }))
+        .filter((item) => item.citation && item.relevance)
+        .slice(0, 8)
+    : []
 
 const LANGUAGE_INSTRUCTIONS: Record<string, string> = {
   english: "Write the answer in polished English.",
@@ -56,14 +89,19 @@ const buildPrompt = ({
   question,
   chart,
   language,
+  knowledgePassages,
 }: {
   question: string
-  chart: ReturnType<typeof buildDetailedPrashnaChart>
+  chart: PrashnaChart
   language: string
+  knowledgePassages: RetrievedAstrologyPassage[]
 }) =>
   [
     "You are Shreem Astrology's Prashna Kundli assistant.",
     "Use only the calculated Prashna Kundli context and the user's question.",
+    "Use the retrieved classical reference pack below to strengthen the answer, but keep Prashna tied to the exact question and do not quote the pack verbatim.",
+    "When you use the reference pack, return book_citations with the exact Citation values and one-line relevance notes.",
+    "Follow calculation-first discipline: Prashna Lagna, Moon, significator house, relevant lord, and timing signals must lead the answer.",
     "Interpret through traditional Vedic Prashna factors: lagna, lagna lord, Moon, relevant houses, tithi, nakshatra, yoga, karana, Rahu/Ketu, and retrograde grahas when relevant.",
     "Keep the answer concise, realistic, and practical. Separate calculated chart facts from interpretation.",
     "Do not mix personal opinion, do not invent missing aspects, do not claim certainty, and do not prescribe gemstones without recommending a paid human consultation.",
@@ -73,6 +111,9 @@ const buildPrompt = ({
     LANGUAGE_INSTRUCTIONS[language] || LANGUAGE_INSTRUCTIONS.english,
     "Return JSON only with the exact requested fields.",
     `Question: ${question}`,
+    `Retrieved classical reference pack: ${formatAstrologyKnowledgeForPrompt(
+      knowledgePassages
+    )}`,
     `Calculated Prashna Kundli context: ${JSON.stringify({
       generated_at: chart.generatedAtIso,
       generated_at_local: chart.generatedAtLocal,
@@ -159,6 +200,24 @@ export async function POST(request: NextRequest) {
       return buildPrashnaChart({ city })
     }
   })()
+  const knowledgePassages = retrieveAstrologyKnowledge({
+    query: [
+      "prashna kundli question answer classical lagna moon significator timing",
+      question,
+      chart.prashnaFactors.join(" "),
+      `${chart.ascendant} lagna ${chart.moonSign} moon ${chart.nakshatra}`,
+      chart.planets
+        .map(
+          (planet) =>
+            `${planet.name} ${planet.sign} house ${planet.house} ${planet.nakshatra}`
+        )
+        .join(" "),
+    ].join(" "),
+    chart,
+    detectedCases: chart.prashnaFactors,
+    min: 3,
+    max: 6,
+  })
 
   if (!isGeminiEnabled()) {
     return NextResponse.json(
@@ -198,7 +257,7 @@ export async function POST(request: NextRequest) {
   }
 
   const gemini = await generateGeminiJson({
-    prompt: buildPrompt({ question, chart, language }),
+    prompt: buildPrompt({ question, chart, language, knowledgePassages }),
     responseSchema: PRASHNA_SCHEMA,
     temperature: 0.25,
     label: "Prashna API",
@@ -220,6 +279,7 @@ export async function POST(request: NextRequest) {
 
   const result = {
     chart,
+    knowledge_references: getKnowledgeIds(knowledgePassages),
     answer: sanitizeString(parsed?.answer, 1200),
     chart_summary: sanitizeString(parsed?.chart_summary, 700),
     direct_indication: sanitizeString(parsed?.direct_indication, 700),
@@ -235,6 +295,7 @@ export async function POST(request: NextRequest) {
           .filter(Boolean)
           .slice(0, 6)
       : chart.prashnaFactors.slice(0, 4),
+    book_citations: sanitizeBookCitations(parsed?.book_citations),
     favorable_timing: sanitizeString(parsed?.favorable_timing, 500),
     caution: sanitizeString(parsed?.caution, 500),
     next_step: sanitizeString(parsed?.next_step, 500),
@@ -253,6 +314,7 @@ export async function POST(request: NextRequest) {
     metadata: {
       chart,
       customer_email: customer.email,
+      knowledge_references: getKnowledgeIds(knowledgePassages),
     },
     model: gemini.model,
     ...gemini.usage,

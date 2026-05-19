@@ -7,6 +7,7 @@ import {
   getPrakritiGuideModel,
   isPrakritiGuideEnabled,
 } from "@lib/util/prakriti-config"
+import { normalizeGeminiUsage } from "@lib/util/gemini"
 import type { PrakritiProduct, PrakritiSubject } from "@lib/util/prakriti"
 
 const REMEDY_SCHEMA = {
@@ -353,6 +354,7 @@ export async function POST(request: NextRequest) {
       image_mime_types: images.map((image) => image.mimeType),
     },
     model,
+    ...normalizeGeminiUsage(data.usageMetadata, model),
     expert_recommended:
       response.confidence === "low" || urgentCareSigns.length > 0,
   })

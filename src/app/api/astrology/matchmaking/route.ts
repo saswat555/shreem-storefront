@@ -7,6 +7,12 @@ import {
   getCityById,
   type PrashnaChart,
 } from "@lib/util/astrology"
+import {
+  formatAstrologyKnowledgeForPrompt,
+  getKnowledgeIds,
+  retrieveAstrologyKnowledge,
+  type RetrievedAstrologyPassage,
+} from "@lib/util/astrology-knowledge"
 import { checkAstrologyDailyQuota } from "@lib/util/ai-quota"
 import { generateGeminiJson } from "@lib/util/gemini"
 import { buildDetailedPrashnaChart } from "@lib/util/vedic-astrology"
@@ -59,6 +65,17 @@ const MATCHMAKING_SCHEMA = {
       type: "array",
       items: { type: "string" },
     },
+    book_citations: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          citation: { type: "string" },
+          relevance: { type: "string" },
+        },
+        required: ["citation", "relevance"],
+      },
+    },
     expert_call_recommended: { type: "boolean" },
     expert_call_reason: { type: "string" },
   },
@@ -72,6 +89,7 @@ const MATCHMAKING_SCHEMA = {
     "family_discussion_points",
     "marriage_timing_note",
     "remedies",
+    "book_citations",
     "expert_call_recommended",
     "expert_call_reason",
   ],
@@ -250,6 +268,17 @@ const sanitizeStringArray = (
         .map((item) => sanitizeString(item, maxLength))
         .filter(Boolean)
         .slice(0, maxItems)
+    : []
+
+const sanitizeBookCitations = (value: unknown) =>
+  Array.isArray(value)
+    ? value
+        .map((item: any) => ({
+          citation: sanitizeString(item?.citation, 240),
+          relevance: sanitizeString(item?.relevance, 320),
+        }))
+        .filter((item) => item.citation && item.relevance)
+        .slice(0, 8)
     : []
 
 const parseBirthDateInput = (value: string) => {
@@ -469,15 +498,20 @@ const buildPrompt = ({
   boy,
   compatibility,
   language,
+  knowledgePassages,
 }: {
   girl: NonNullable<ReturnType<typeof buildPersonChart>>
   boy: NonNullable<ReturnType<typeof buildPersonChart>>
   compatibility: ReturnType<typeof getCompatibilityScores>
   language: string
+  knowledgePassages: RetrievedAstrologyPassage[]
 }) =>
   [
     "You are Shreem Astrology's Kundli matchmaking assistant.",
     "Use only the calculated chart data and deterministic Ashtakoota-style score below. Do not change chart facts or invent missing placements.",
+    "Use the retrieved classical reference pack below for marriage judgment, especially Nadi, Bhakoot, Manglik/Mars sensitivity, 7th house, Venus, Moon, Saturn, Rahu/Ketu, and dasha. Do not quote it verbatim.",
+    "When you use the reference pack, return book_citations with the exact Citation values and one-line relevance notes.",
+    "Follow calculation-first discipline: if a compatibility issue is partial or has cancellation, explain the support and weakness plainly.",
     "Give a clear marriage suitability percentage. Use the deterministic percentage unless a chart red flag justifies a small cautious adjustment, and explain it.",
     "Recommendation must be one of: go, caution, avoid.",
     "Do not guarantee marriage outcomes. Keep the answer realistic, respectful, and useful for families.",
@@ -485,6 +519,9 @@ const buildPrompt = ({
     "If Nadi, Bhakoot, Manglik, severe 7th house, Venus/Mars, Saturn/Rahu/Ketu, health, or family concerns appear, recommend an expert call with Sanjay Kumar Pandey before final decision.",
     LANGUAGE_INSTRUCTIONS[language] || LANGUAGE_INSTRUCTIONS.english,
     "Return JSON only.",
+    `Retrieved classical reference pack: ${formatAstrologyKnowledgeForPrompt(
+      knowledgePassages
+    )}`,
     `Girl: ${JSON.stringify({
       profile: girl.profile,
       lagna: girl.chart.ascendant,
@@ -541,6 +578,7 @@ const normalizeAnalysis = (parsed: any, fallbackPercentage: number, fallbackReco
   ),
   marriage_timing_note: sanitizeString(parsed?.marriage_timing_note, 700),
   remedies: sanitizeStringArray(parsed?.remedies, 8, 240),
+  book_citations: sanitizeBookCitations(parsed?.book_citations),
   expert_call_recommended: Boolean(parsed?.expert_call_recommended),
   expert_call_reason: sanitizeString(parsed?.expert_call_reason, 600),
 })
@@ -585,6 +623,27 @@ export async function POST(request: NextRequest) {
   }
 
   const compatibility = getCompatibilityScores(girl.chart, boy.chart)
+  const compatibilityFlags = compatibility.scores
+    .filter((score) => score.score < score.max)
+    .map((score) => `${score.name}: ${score.reason}`)
+  const knowledgePassages = retrieveAstrologyKnowledge({
+    query: [
+      "kundli matchmaking marriage compatibility ashtakoota nadi bhakoot manglik",
+      compatibilityFlags.join(" "),
+      `girl ${girl.chart.ascendant} lagna ${girl.chart.moonSign} moon ${girl.chart.nakshatra}`,
+      `boy ${boy.chart.ascendant} lagna ${boy.chart.moonSign} moon ${boy.chart.nakshatra}`,
+      girl.chart.planets
+        .map((planet) => `${planet.name} ${planet.sign} house ${planet.house}`)
+        .join(" "),
+      boy.chart.planets
+        .map((planet) => `${planet.name} ${planet.sign} house ${planet.house}`)
+        .join(" "),
+    ].join(" "),
+    chart: girl.chart,
+    detectedCases: compatibilityFlags,
+    min: 3,
+    max: 7,
+  })
   const baseResult = {
     girl: {
       profile: girl.profile,
@@ -650,6 +709,7 @@ export async function POST(request: NextRequest) {
       boy,
       compatibility,
       language,
+      knowledgePassages,
     }),
     responseSchema: MATCHMAKING_SCHEMA,
     temperature: 0.2,
@@ -690,6 +750,7 @@ export async function POST(request: NextRequest) {
   const result = {
     ...baseResult,
     analysis,
+    knowledge_references: getKnowledgeIds(knowledgePassages),
     model: gemini.model,
   }
   const usage = await recordAiUsage({
@@ -703,6 +764,7 @@ export async function POST(request: NextRequest) {
     metadata: {
       customer_email: customer.email,
       compatibility,
+      knowledge_references: getKnowledgeIds(knowledgePassages),
     },
     model: gemini.model,
     ...gemini.usage,

@@ -15,6 +15,7 @@ export type GeminiUsage = {
   completion_tokens: number
   total_tokens: number
   estimated_cost_usd: number
+  estimated_cost_inr: number
 }
 
 export type GeminiGenerateResult = {
@@ -55,33 +56,69 @@ const safeParseJson = (text: string) => {
   }
 }
 
-const estimateGeminiCostUsd = ({
+const getDefaultGeminiRates = (model: string, promptTokens: number) => {
+  const normalizedModel = model.toLowerCase()
+
+  if (normalizedModel.includes("2.5-pro")) {
+    return promptTokens > 200_000
+      ? { input: 2.5, output: 15 }
+      : { input: 1.25, output: 10 }
+  }
+
+  if (normalizedModel.includes("2.5-flash-lite")) {
+    return { input: 0.1, output: 0.4 }
+  }
+
+  if (normalizedModel.includes("2.0-flash-lite")) {
+    return { input: 0.075, output: 0.3 }
+  }
+
+  if (normalizedModel.includes("2.0-flash")) {
+    return { input: 0.1, output: 0.4 }
+  }
+
+  return { input: 0.3, output: 2.5 }
+}
+
+const estimateGeminiCost = ({
   promptTokens,
   completionTokens,
+  model,
 }: {
   promptTokens: number
   completionTokens: number
+  model: string
 }) => {
+  const defaults = getDefaultGeminiRates(model, promptTokens)
   const inputRate = parsePositiveNumber(
     process.env.GEMINI_INPUT_COST_PER_1M_TOKENS ||
       process.env.AI_INPUT_COST_PER_1M_TOKENS,
-    0
+    defaults.input
   )
   const outputRate = parsePositiveNumber(
     process.env.GEMINI_OUTPUT_COST_PER_1M_TOKENS ||
       process.env.AI_OUTPUT_COST_PER_1M_TOKENS,
-    0
+    defaults.output
+  )
+  const usdToInr = parsePositiveNumber(
+    process.env.AI_USD_TO_INR || process.env.USD_TO_INR,
+    85
   )
 
-  return Number(
-    (
-      (promptTokens / 1_000_000) * inputRate +
-      (completionTokens / 1_000_000) * outputRate
-    ).toFixed(6)
-  )
+  const usd =
+    (promptTokens / 1_000_000) * inputRate +
+    (completionTokens / 1_000_000) * outputRate
+
+  return {
+    estimated_cost_usd: Number(usd.toFixed(6)),
+    estimated_cost_inr: Number((usd * usdToInr).toFixed(4)),
+  }
 }
 
-const normalizeUsage = (usageMetadata: any): GeminiUsage => {
+export const normalizeGeminiUsage = (
+  usageMetadata: any,
+  model = getGeminiModel().replace(/^models\//, "")
+): GeminiUsage => {
   const promptTokens = Math.max(
     0,
     Math.floor(Number(usageMetadata?.promptTokenCount || 0))
@@ -105,9 +142,10 @@ const normalizeUsage = (usageMetadata: any): GeminiUsage => {
     prompt_tokens: promptTokens,
     completion_tokens: completionTokens,
     total_tokens: totalTokens,
-    estimated_cost_usd: estimateGeminiCostUsd({
+    ...estimateGeminiCost({
       promptTokens,
       completionTokens,
+      model,
     }),
   }
 }
@@ -117,6 +155,7 @@ export const emptyGeminiUsage = (): GeminiUsage => ({
   completion_tokens: 0,
   total_tokens: 0,
   estimated_cost_usd: 0,
+  estimated_cost_inr: 0,
 })
 
 export const generateGeminiJson = async ({
@@ -219,7 +258,7 @@ export const generateGeminiJson = async ({
     parsed,
     text: text || "",
     model,
-    usage: normalizeUsage(data.usageMetadata),
+    usage: normalizeGeminiUsage(data.usageMetadata, model),
     status: response.status,
     statusText: response.statusText,
     error: parsed ? undefined : "invalid_json",
