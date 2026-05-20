@@ -4,7 +4,6 @@ import { retrieveCustomer } from "@lib/data/customer"
 import { listOrders } from "@lib/data/orders"
 import { shreemSupportFaqs } from "@lib/constants/shreem-experience"
 import { getBaseURL } from "@lib/util/env"
-import MascotSprites from "@modules/common/components/mascot-sprites"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import SupportChat from "@modules/support/components/support-chat"
 
@@ -70,7 +69,6 @@ export default async function CustomerServicePage(props: {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(contactSchema) }}
       />
       <section className="brand-surface relative overflow-hidden px-5 py-7 small:px-8 small:py-10">
-        <MascotSprites className="opacity-70" />
         <div className="relative z-[1] grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px] xl:items-end">
           <div>
             <p className="brand-kicker">Care desk</p>

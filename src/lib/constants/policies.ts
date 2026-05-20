@@ -230,6 +230,7 @@ export const policyPages = {
         body: [
           "Orders are usually prepared for dispatch within 1-3 business days after payment confirmation, unless the product page or support team states otherwise.",
           "Estimated delivery time is shown from Shiprocket/courier data where available. Delivery may be delayed by weather, strikes, holidays, incorrect address, customer unavailability, remote areas, courier disruptions, or force majeure.",
+          "The order will be delivered within a maximum period of 15-20 days.",
         ],
       },
       {
