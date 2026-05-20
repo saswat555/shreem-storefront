@@ -1258,6 +1258,7 @@ export async function POST(request: NextRequest) {
       : "english"
   const city = getCityById(sanitizeString(payload.cityId, 80))
   const subQuestions = sanitizeStringArray(payload.subQuestions, 3, 220)
+  const panchangSystemId = sanitizeString(payload.panchangSystemId, 40)
   const normalizedBirthDate = parseBirthDateInput(birthDate)
 
   if (!normalizedBirthDate || !/^\d{2}:\d{2}$/.test(birthTime)) {
@@ -1283,7 +1284,11 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  const chart = buildDetailedPrashnaChart({ city, date: birthDateTime })
+  const chart = buildDetailedPrashnaChart({
+    city,
+    date: birthDateTime,
+    panchangSystemId,
+  })
   const detectedYogas = detectYogas(chart)
   const stones = getStoneRecommendations(chart)
   const healthIndicators = buildHealthIndicators(chart, detectedYogas)
@@ -1539,6 +1544,7 @@ export async function POST(request: NextRequest) {
       birth_date: birthDate,
       birth_time: birthTime,
       city: `${city.name}, ${city.region}`,
+      panchang_system_id: chart.panchangSystem?.id,
       language,
       sub_questions: subQuestions,
     },
@@ -1559,6 +1565,7 @@ export async function POST(request: NextRequest) {
     metadata: {
       customer_email: customer.email,
       chart,
+      panchangSystem: chart.panchangSystem,
       dasha: chart.dasha,
       knowledge_references: getKnowledgeIds(knowledgePassages),
       knowledge_context: knowledgeTrace(knowledgePassages),

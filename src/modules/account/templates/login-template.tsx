@@ -15,7 +15,7 @@ const LoginTemplate = () => {
   const [signupNotice, setSignupNotice] = useState<string | null>(null)
 
   return (
-    <div className="flex w-full justify-center px-0 py-2 small:justify-start small:px-8 small:py-8">
+    <div className="flex min-h-[52vh] w-full items-center justify-center px-0 py-2 small:px-8 small:py-8">
       {currentView === LOGIN_VIEW.SIGN_IN ? (
         <Login
           setCurrentView={setCurrentView}

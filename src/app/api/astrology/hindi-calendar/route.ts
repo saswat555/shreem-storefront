@@ -26,12 +26,18 @@ export async function GET(request: NextRequest) {
     request.nextUrl.searchParams.get("date"),
     20
   )
+  const panchangSystemId = sanitizeString(
+    request.nextUrl.searchParams.get("panchangSystemId"),
+    40
+  )
   const date = isValidDate(requestedDate)
     ? requestedDate
     : getTodayDateString(new Date(), city.timeZone)
 
   try {
-    return NextResponse.json(buildHindiCalendarDay({ city, date }))
+    return NextResponse.json(
+      buildHindiCalendarDay({ city, date, panchangSystemId })
+    )
   } catch (error) {
     console.error("Hindi calendar calculation failed", error)
 

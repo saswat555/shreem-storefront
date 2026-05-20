@@ -18,12 +18,8 @@ const ImageGallery = ({ images }: ImageGalleryProps) => {
   )
   const [activeIndex, setActiveIndex] = useState(0)
   const [isPaused, setIsPaused] = useState(false)
-  const [ratios, setRatios] = useState<Record<string, number>>({})
 
   const activeImage = availableImages[activeIndex]
-  const activeRatio = activeImage
-    ? ratios[activeImage.id] ?? 1.18
-    : 1.18
 
   useEffect(() => {
     if (activeIndex <= availableImages.length - 1) {
@@ -70,27 +66,13 @@ const ImageGallery = ({ images }: ImageGalleryProps) => {
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
-      <div
-        className="relative w-full min-h-0 overflow-hidden rounded-[16px] bg-[linear-gradient(180deg,rgba(255,252,247,0.96),rgba(240,248,246,0.88))] small:min-h-[520px] small:rounded-[24px]"
-        style={{ aspectRatio: String(Math.min(Math.max(activeRatio, 0.78), 1.65)) }}
-      >
+      <div className="relative aspect-[4/5] w-full min-h-[360px] overflow-hidden rounded-[16px] bg-[linear-gradient(180deg,rgba(255,252,247,0.96),rgba(240,248,246,0.88))] small:aspect-[5/4] small:min-h-[520px] small:rounded-[24px]">
         <img
           key={activeImage.id}
           src={activeImage.url!}
           alt={`Product image ${activeIndex + 1}`}
           loading={activeIndex === 0 ? "eager" : "lazy"}
           className="absolute inset-0 h-full w-full object-contain p-3 transition-transform duration-700 ease-out small:p-5"
-          onLoad={(event) => {
-            const target = event.currentTarget
-            const ratio = target.naturalWidth / target.naturalHeight
-
-            if (Number.isFinite(ratio) && ratio > 0) {
-              setRatios((current) => ({
-                ...current,
-                [activeImage.id]: ratio,
-              }))
-            }
-          }}
         />
 
         <div className="absolute left-3 top-3 inline-flex items-center gap-2 rounded-full border border-[rgba(18,63,99,0.12)] bg-white/86 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--shreem-accent-dark)] shadow-[0_12px_28px_rgba(15,49,70,0.12)]">

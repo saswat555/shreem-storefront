@@ -18,7 +18,13 @@ const AccountLayout: React.FC<AccountLayoutProps> = ({
     <div className="flex-1 py-8 small:py-12" data-testid="account-page">
       <div className="content-container max-w-5xl">
         <div className="brand-surface flex h-full flex-col px-4 py-6 small:px-8 small:py-10">
-          <div className="grid grid-cols-1 gap-8 small:grid-cols-[240px_1fr]">
+          <div
+            className={
+              customer
+                ? "grid grid-cols-1 gap-8 small:grid-cols-[240px_1fr]"
+                : "grid grid-cols-1"
+            }
+          >
             <div>{customer && <AccountNav customer={customer} />}</div>
             <div className="flex-1">{children}</div>
           </div>

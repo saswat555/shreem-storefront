@@ -74,6 +74,7 @@ export type PrashnaChart = {
   generatedAtIso: string
   generatedAtLocal: string
   city: AstrologyCity
+  panchangSystem?: PanchangSystem
   calculationSystem: string
   weekday: string
   ayanamsa: number
@@ -100,6 +101,58 @@ export type PrashnaChart = {
   prashnaFactors: string[]
   accuracyNote: string
 }
+
+export type PanchangSystemId =
+  | "lahiri-mean"
+  | "rishikesh-lahiri"
+  | "raman"
+  | "kp-lahiri"
+
+export type PanchangSystem = {
+  id: PanchangSystemId
+  label: string
+  shortLabel: string
+  description: string
+  ayanamsaOffsetDegrees: number
+}
+
+export const PANCHANG_SYSTEMS: PanchangSystem[] = [
+  {
+    id: "lahiri-mean",
+    label: "Astronomical Lahiri",
+    shortLabel: "Lahiri",
+    description:
+      "Current engine: sidereal zodiac with mean Lahiri ayanamsa and astronomical ephemeris.",
+    ayanamsaOffsetDegrees: 0,
+  },
+  {
+    id: "rishikesh-lahiri",
+    label: "Rishikesh Panchang style",
+    shortLabel: "Rishikesh",
+    description:
+      "Lahiri/Chitra Paksha reference for users who follow Rishikesh Panchang tradition. Exact printed edition rules should be verified for borderline cases.",
+    ayanamsaOffsetDegrees: 0,
+  },
+  {
+    id: "raman",
+    label: "B. V. Raman ayanamsa",
+    shortLabel: "Raman",
+    description:
+      "Alternative ayanamsa used by some astrologers. This can move sensitive lagna/nakshatra boundaries.",
+    ayanamsaOffsetDegrees: -1.45,
+  },
+  {
+    id: "kp-lahiri",
+    label: "KP Lahiri",
+    shortLabel: "KP",
+    description:
+      "KP-style Lahiri offset for users comparing KP-oriented readings and house sensitivities.",
+    ayanamsaOffsetDegrees: -0.1,
+  },
+]
+
+export const getPanchangSystem = (id?: string | null) =>
+  PANCHANG_SYSTEMS.find((system) => system.id === id) || PANCHANG_SYSTEMS[0]
 
 export type PrashnaPlanet = {
   key: string

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 
 import { getAiWallet } from "@lib/data/ai-wallet"
 import { retrieveCustomer } from "@lib/data/customer"
+import { checkAstrologyDailyQuota } from "@lib/util/ai-quota"
 
 export async function GET() {
   const customer = await retrieveCustomer().catch(() => null)
@@ -13,7 +14,10 @@ export async function GET() {
     )
   }
 
-  const wallet = await getAiWallet()
+  const [wallet, quota] = await Promise.all([
+    getAiWallet(),
+    checkAstrologyDailyQuota(),
+  ])
 
-  return NextResponse.json(wallet)
+  return NextResponse.json({ ...wallet, quota })
 }

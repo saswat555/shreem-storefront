@@ -27,6 +27,7 @@ type MatchPersonPayload = {
   birthDate?: unknown
   birthTime?: unknown
   cityId?: unknown
+  panchangSystemId?: unknown
 }
 
 type MatchmakingPayload = {
@@ -330,6 +331,7 @@ const buildPersonChart = (payload: MatchPersonPayload | undefined) => {
   const birthDate = sanitizeString(payload?.birthDate, 20)
   const birthTime = sanitizeString(payload?.birthTime, 20)
   const city = getCityById(sanitizeString(payload?.cityId, 80))
+  const panchangSystemId = sanitizeString(payload?.panchangSystemId, 40)
   const normalizedBirthDate = parseBirthDateInput(birthDate)
 
   if (!name || !normalizedBirthDate || !/^\d{2}:\d{2}$/.test(birthTime)) {
@@ -352,8 +354,9 @@ const buildPersonChart = (payload: MatchPersonPayload | undefined) => {
       birth_date: birthDate,
       birth_time: birthTime,
       city: `${city.name}, ${city.region}`,
+      panchang_system_id: panchangSystemId,
     },
-    chart: buildDetailedPrashnaChart({ city, date }),
+    chart: buildDetailedPrashnaChart({ city, date, panchangSystemId }),
   }
 }
 
@@ -758,6 +761,10 @@ export async function POST(request: NextRequest) {
     metadata: {
       customer_email: customer.email,
       compatibility,
+      panchangSystems: {
+        girl: girl.chart.panchangSystem,
+        boy: boy.chart.panchangSystem,
+      },
       knowledge_references: getKnowledgeIds(knowledgePassages),
     },
     model: gemini.model,

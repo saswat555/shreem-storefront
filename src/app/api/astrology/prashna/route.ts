@@ -203,6 +203,10 @@ export async function POST(request: NextRequest) {
     (payload as { language?: unknown } | null)?.language,
     20
   )
+  const panchangSystemId = sanitizeString(
+    (payload as { panchangSystemId?: unknown } | null)?.panchangSystemId,
+    40
+  )
   const language =
     rawLanguage === "hindi" || rawLanguage === "hinglish"
       ? rawLanguage
@@ -217,7 +221,7 @@ export async function POST(request: NextRequest) {
 
   const chart = (() => {
     try {
-      return buildDetailedPrashnaChart({ city })
+      return buildDetailedPrashnaChart({ city, panchangSystemId })
     } catch (error) {
       console.error("Prashna chart calculation failed", error)
       return buildPrashnaChart({ city })
@@ -338,12 +342,14 @@ export async function POST(request: NextRequest) {
       question,
       city_id: city.id,
       city: `${city.name}, ${city.region}`,
+      panchang_system_id: chart.panchangSystem?.id,
       language,
     },
     response: result,
     metadata: {
       chart,
       customer_email: customer.email,
+      panchangSystem: chart.panchangSystem,
       knowledge_references: getKnowledgeIds(knowledgePassages),
       knowledge_context: knowledgeTrace(knowledgePassages),
     },

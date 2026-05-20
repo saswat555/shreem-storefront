@@ -6,6 +6,7 @@ import {
   SIGN_LORDS,
   YOGAS,
   getHindiMonthInfoBySunSign,
+  getPanchangSystem,
   getDegreeInSign,
   getNakshatraFromDegree,
   getSignFromDegree,
@@ -503,13 +504,18 @@ export const buildDetailedPrashnaChart = ({
   city,
   date = new Date(),
   dashaDate,
+  panchangSystemId,
 }: {
   city: AstrologyCity
   date?: Date
   dashaDate?: Date
+  panchangSystemId?: string
 }): PrashnaChart => {
   const jd = julianDay(date)
-  const ayanamsa = getMeanLahiriAyanamsa(jd)
+  const panchangSystem = getPanchangSystem(panchangSystemId)
+  const ayanamsa = normalizeDegrees(
+    getMeanLahiriAyanamsa(jd) + panchangSystem.ayanamsaOffsetDegrees
+  )
   const ascendantLongitude = getAscendantLongitude({ jd, city, ayanamsa })
   const ascendantNakshatra = getNakshatraFromDegree(ascendantLongitude)
   const sunLongitude = toSidereal(
@@ -594,8 +600,9 @@ export const buildDetailedPrashnaChart = ({
     generatedAtIso: date.toISOString(),
     generatedAtLocal: getLocalDateTime(date, city),
     city,
+    panchangSystem,
     calculationSystem:
-      "Astronomia 4.2.0 Meeus/VSOP87 ephemeris, mean Lahiri ayanamsa, sidereal zodiac, whole-sign Prashna houses.",
+      `${panchangSystem.label}: Astronomia 4.2.0 Meeus/VSOP87 ephemeris, sidereal zodiac, whole-sign houses.`,
     weekday: getWeekday(date, city),
     ayanamsa: roundDegree(ayanamsa),
     ascendant,
@@ -638,20 +645,23 @@ export const buildDetailedPrashnaChart = ({
       `Current period: ${dasha.mahadasha.lord} Mahadasha, ${dasha.antardasha.lord} Antardasha, ${dasha.pratyantar.lord} Pratyantar Dasha.`,
     ],
     accuracyNote:
-      "Chart is calculated with astronomical ephemeris and an approximate mean Lahiri ayanamsa. It is suitable for first-pass Prashna guidance; final ritual, gemstone, medical, legal, or financial decisions should be confirmed with a qualified astrologer or professional.",
+      `Chart is calculated with astronomical ephemeris and ${panchangSystem.label}. Printed panchang editions can differ around sunrise, ayanamsa, and boundary moments; final ritual, gemstone, medical, legal, or financial decisions should be confirmed with a qualified astrologer or professional.`,
   }
 }
 
 export const buildHindiCalendarDay = ({
   city,
   date,
+  panchangSystemId,
 }: {
   city: AstrologyCity
   date: string
+  panchangSystemId?: string
 }): HindiCalendarDay => {
   const chart = buildDetailedPrashnaChart({
     city,
     date: getLocalNoonDate(date, city),
+    panchangSystemId,
   })
 
   return {

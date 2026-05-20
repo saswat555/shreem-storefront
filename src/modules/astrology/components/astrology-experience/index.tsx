@@ -3,6 +3,7 @@
 import {
   ASTROLOGY_CITIES,
   HOUSE_THEMES,
+  PANCHANG_SYSTEMS,
   SIGN_LORDS,
   calculateDailyMuhurat,
   getCityById,
@@ -118,6 +119,7 @@ type KundliResult = {
     birth_time?: string
     city?: string
     language?: string
+    panchang_system_id?: string
     sub_questions?: string[]
   }
   chart?: PrashnaChart
@@ -171,6 +173,7 @@ type MatchmakingResult = {
       birth_date?: string
       birth_time?: string
       city?: string
+      panchang_system_id?: string
     }
     chart?: PrashnaChart
   }
@@ -180,6 +183,7 @@ type MatchmakingResult = {
       birth_date?: string
       birth_time?: string
       city?: string
+      panchang_system_id?: string
     }
     chart?: PrashnaChart
   }
@@ -951,18 +955,18 @@ const northIndianHouseSlots: Record<
   number,
   { x: number; y: number; signX: number; signY: number; anchor?: "start" | "middle" | "end" }
 > = {
-  1: { x: 70, y: 20, signX: 70, signY: 31 },
-  2: { x: 45, y: 13, signX: 53, signY: 22 },
-  3: { x: 21, y: 27, signX: 31, signY: 36 },
-  4: { x: 25, y: 51, signX: 39, signY: 53 },
-  5: { x: 21, y: 73, signX: 31, signY: 65 },
-  6: { x: 45, y: 87, signX: 53, signY: 78 },
-  7: { x: 70, y: 82, signX: 70, signY: 69 },
-  8: { x: 95, y: 87, signX: 87, signY: 78 },
-  9: { x: 119, y: 73, signX: 109, signY: 65 },
-  10: { x: 115, y: 51, signX: 101, signY: 53 },
-  11: { x: 119, y: 27, signX: 109, signY: 36 },
-  12: { x: 95, y: 13, signX: 87, signY: 22 },
+  1: { x: 70, y: 22, signX: 70, signY: 36 },
+  2: { x: 42, y: 16, signX: 45, signY: 27 },
+  3: { x: 28, y: 34, signX: 37, signY: 43 },
+  4: { x: 22, y: 50, signX: 30, signY: 58 },
+  5: { x: 28, y: 68, signX: 37, signY: 66 },
+  6: { x: 42, y: 84, signX: 45, signY: 76 },
+  7: { x: 70, y: 80, signX: 70, signY: 67 },
+  8: { x: 98, y: 84, signX: 95, signY: 76 },
+  9: { x: 112, y: 68, signX: 103, signY: 66 },
+  10: { x: 118, y: 50, signX: 110, signY: 58 },
+  11: { x: 112, y: 34, signX: 103, signY: 43 },
+  12: { x: 98, y: 16, signX: 95, signY: 27 },
 }
 
 const splitPlanetLabels = (labels: string[]) => {
@@ -1084,11 +1088,18 @@ const NorthIndianChart = ({
                     {line}
                   </text>
                 ))}
+                <circle
+                  cx={slot.signX}
+                  cy={slot.signY - 1.8}
+                  r="4.2"
+                  className="fill-[rgba(255,248,233,0.94)] stroke-[rgba(212,161,38,0.3)]"
+                  strokeWidth="0.45"
+                />
                 <text
                   x={slot.signX}
                   y={slot.signY}
                   textAnchor="middle"
-                  className="fill-[var(--shreem-ink)] text-[5.6px] font-semibold"
+                  className="fill-[var(--shreem-ink)] text-[4.8px] font-semibold"
                 >
                   {SIGN_NUMBERS[cell.sign]}
                 </text>
@@ -2009,6 +2020,7 @@ export default function AstrologyExperience({
   const [activeTab, setActiveTab] = useState<AstrologyTab>("muhurth")
   const [language, setLanguage] = useState<AstrologyLanguage>("english")
   const [languageReady, setLanguageReady] = useState(false)
+  const [panchangSystemId, setPanchangSystemId] = useState("lahiri-mean")
   const [cityId, setCityId] = useState("rewa")
   const [date, setDate] = useState(() => getTodayDateString())
   const [question, setQuestion] = useState("")
@@ -2020,6 +2032,7 @@ export default function AstrologyExperience({
   const [loadingCalendar, setLoadingCalendar] = useState(true)
   const [history, setHistory] = useState<AstrologyHistoryItem[]>([])
   const [aiWallet, setAiWallet] = useState<AiWallet | null>(null)
+  const [aiQuota, setAiQuota] = useState<AiQuota | null>(null)
   const [aiPacks, setAiPacks] = useState<AiCreditPack[]>([])
   const [kundliForm, setKundliForm] = useState({
     name: customerName || "",
@@ -2051,6 +2064,7 @@ export default function AstrologyExperience({
       .then((response) => (response.ok ? response.json() : null))
       .then((data) => {
         setAiWallet(data?.wallet || null)
+        setAiQuota(data?.quota || null)
         setAiPacks(Array.isArray(data?.packs) ? data.packs : [])
       })
       .catch(() => null)
@@ -2082,7 +2096,9 @@ export default function AstrologyExperience({
     fetch(
       `/api/astrology/hindi-calendar?cityId=${encodeURIComponent(
         cityId
-      )}&date=${encodeURIComponent(date)}`,
+      )}&date=${encodeURIComponent(date)}&panchangSystemId=${encodeURIComponent(
+        panchangSystemId
+      )}`,
       { cache: "no-store" }
     )
       .then((response) => (response.ok ? response.json() : null))
@@ -2105,7 +2121,7 @@ export default function AstrologyExperience({
     return () => {
       active = false
     }
-  }, [cityId, date])
+  }, [cityId, date, panchangSystemId])
 
   useEffect(() => {
     refreshWallet()
@@ -2163,6 +2179,7 @@ export default function AstrologyExperience({
         question,
         cityId,
         language,
+        panchangSystemId,
       }),
       cache: "no-store",
     }).catch(() => null)
@@ -2187,6 +2204,9 @@ export default function AstrologyExperience({
     setPrashna(result)
     if (result.wallet) {
       setAiWallet(result.wallet)
+    }
+    if (result.quota) {
+      setAiQuota(result.quota)
     }
 
     if (result.chart && result.answer) {
@@ -2218,6 +2238,7 @@ export default function AstrologyExperience({
       body: JSON.stringify({
         ...kundliForm,
         language,
+        panchangSystemId,
       }),
       cache: "no-store",
     }).catch(() => null)
@@ -2230,6 +2251,9 @@ export default function AstrologyExperience({
     setKundliResult(result)
     if (result.wallet) {
       setAiWallet(result.wallet)
+    }
+    if (result.quota) {
+      setAiQuota(result.quota)
     }
     if (Array.isArray(result.packs)) {
       setAiPacks(result.packs)
@@ -2265,8 +2289,10 @@ export default function AstrologyExperience({
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        ...matchmakingForm,
+        girl: { ...matchmakingForm.girl, panchangSystemId },
+        boy: { ...matchmakingForm.boy, panchangSystemId },
         language,
+        panchangSystemId,
       }),
       cache: "no-store",
     }).catch(() => null)
@@ -2282,6 +2308,9 @@ export default function AstrologyExperience({
     setMatchmakingResult(result)
     if (result.wallet) {
       setAiWallet(result.wallet)
+    }
+    if (result.quota) {
+      setAiQuota(result.quota)
     }
     if (Array.isArray(result.packs)) {
       setAiPacks(result.packs)
@@ -2326,6 +2355,7 @@ export default function AstrologyExperience({
       setKundliResult(result)
       if (profile) {
         const restoredCityId = findCityIdFromLabel(profile.city)
+        const restoredPanchangId = profile.panchang_system_id
 
         setKundliForm((current) => ({
           ...current,
@@ -2344,6 +2374,9 @@ export default function AstrologyExperience({
                 ]
               : current.subQuestions,
         }))
+        if (restoredPanchangId) {
+          setPanchangSystemId(restoredPanchangId)
+        }
       }
       setActiveTab("kundli")
       return
@@ -2399,9 +2432,64 @@ export default function AstrologyExperience({
     </div>
   )
 
+  const PanchangControls = () => {
+    const selectedPanchang =
+      PANCHANG_SYSTEMS.find((system) => system.id === panchangSystemId) ||
+      PANCHANG_SYSTEMS[0]
+
+    return (
+      <div className="grid gap-2">
+        <span className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--shreem-gold-deep)]">
+          Panchang system
+        </span>
+        <div className="grid gap-2">
+          {PANCHANG_SYSTEMS.map((system) => (
+            <button
+              key={system.id}
+              type="button"
+              onClick={() => setPanchangSystemId(system.id)}
+              className={`rounded-[16px] border px-3 py-3 text-left transition ${
+                selectedPanchang.id === system.id
+                  ? "border-[rgba(212,161,38,0.45)] bg-[rgba(255,248,233,0.88)] text-[var(--shreem-ink)]"
+                  : "border-[var(--shreem-border)] bg-white/62 text-[var(--shreem-muted)]"
+              }`}
+            >
+              <span className="block text-sm font-semibold">
+                {system.shortLabel}
+              </span>
+              <span className="mt-1 block text-[0.68rem] leading-4">
+                {system.description}
+              </span>
+            </button>
+          ))}
+        </div>
+        <p className="text-xs leading-5 text-[var(--shreem-muted)]">
+          Default is astronomical Lahiri. Use Rishikesh when comparing against
+          that tradition; exact printed editions can still differ for borderline
+          births.
+        </p>
+      </div>
+    )
+  }
+
   const AiWalletCard = () => {
     const balance = Math.max(0, Number(aiWallet?.credit_balance || 0))
     const proActive = Boolean(aiWallet?.pro_active)
+    const freeLimit = Math.max(0, Number(aiQuota?.limit ?? 3))
+    const freeUsed = Math.min(
+      freeLimit,
+      Math.max(0, Number(aiQuota?.used ?? 0))
+    )
+    const freeRemaining = Math.max(0, Number(aiQuota?.remaining ?? freeLimit))
+    const resetLabel = aiQuota?.reset_at
+      ? new Intl.DateTimeFormat("en-IN", {
+          hour: "numeric",
+          minute: "2-digit",
+          day: "numeric",
+          month: "short",
+          timeZone: "Asia/Kolkata",
+        }).format(new Date(aiQuota.reset_at))
+      : "midnight IST"
     const primaryPack = aiPacks[0]
     const premiumPack =
       aiPacks.find((pack) => pack.plan === "premium") || aiPacks[aiPacks.length - 1]
@@ -2415,8 +2503,12 @@ export default function AstrologyExperience({
               {proActive ? "Premium active" : `${balance} paid credits`}
             </p>
             <p className="mt-1 text-xs leading-5 text-[var(--shreem-muted)]">
-              You get 3 free astrology AI readings daily. Extra readings use
-              credits or Premium.
+              {freeRemaining} of {freeLimit} free readings left today across
+              Prashna, Kundli, and Matchmaking. Used {freeUsed}; refreshes at
+              {" "}{resetLabel}.
+            </p>
+            <p className="mt-1 text-xs leading-5 text-[var(--shreem-muted)]">
+              Extra readings use paid credits or Premium.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -2467,6 +2559,9 @@ export default function AstrologyExperience({
             </p>
             <div className="mt-4">
               <LanguageControls />
+            </div>
+            <div className="mt-4 border-t border-[var(--shreem-border)] pt-4">
+              <PanchangControls />
             </div>
           </div>
         </div>
@@ -2826,6 +2921,9 @@ export default function AstrologyExperience({
                 <div className="rounded-[20px] border border-[var(--shreem-border)] bg-white/52 px-3 py-3">
                   <LanguageControls />
                 </div>
+                <div className="rounded-[20px] border border-[var(--shreem-border)] bg-white/52 px-3 py-3">
+                  <PanchangControls />
+                </div>
                 <div className="rounded-[20px] border border-[rgba(13,129,126,0.14)] bg-[rgba(240,248,246,0.62)] px-3 py-3">
                   <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
                     Ask up to 3 chart questions
@@ -2942,6 +3040,9 @@ export default function AstrologyExperience({
                 />
                 <div className="rounded-[20px] border border-[var(--shreem-border)] bg-white/52 px-3 py-3">
                   <LanguageControls />
+                </div>
+                <div className="rounded-[20px] border border-[var(--shreem-border)] bg-white/52 px-3 py-3">
+                  <PanchangControls />
                 </div>
                 <button
                   type="button"
