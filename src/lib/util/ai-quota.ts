@@ -1,5 +1,10 @@
 import "server-only"
 
+import {
+  consumeAiCredit,
+  getAiWallet,
+  type AiWallet,
+} from "@lib/data/ai-wallet"
 import { listAiUsage } from "@lib/data/ai-usage"
 
 const IST_OFFSET_MS = 5.5 * 60 * 60 * 1000
@@ -61,3 +66,85 @@ export const checkAstrologyDailyQuota = async () => {
 export const isAstrologyQuotaExceeded = (
   quota: Awaited<ReturnType<typeof checkAstrologyDailyQuota>>
 ) => quota.synced && !quota.allowed
+
+export type AstrologyAccess = Awaited<ReturnType<typeof checkAstrologyAccess>>
+
+export const checkAstrologyAccess = async () => {
+  const [quota, walletResult] = await Promise.all([
+    checkAstrologyDailyQuota(),
+    getAiWallet(),
+  ])
+  const wallet = walletResult.wallet
+  const hasPremium = Boolean(wallet?.pro_active)
+  const credits = Math.max(0, Number(wallet?.credit_balance || 0))
+  const freeAllowed = !isAstrologyQuotaExceeded(quota)
+
+  if (hasPremium) {
+    return {
+      allowed: true,
+      reason: "premium",
+      charge_required: false,
+      quota,
+      wallet,
+      wallet_synced: walletResult.synced,
+      packs: walletResult.packs,
+    }
+  }
+
+  if (freeAllowed) {
+    return {
+      allowed: true,
+      reason: "daily_free",
+      charge_required: false,
+      quota,
+      wallet,
+      wallet_synced: walletResult.synced,
+      packs: walletResult.packs,
+    }
+  }
+
+  if (credits > 0) {
+    return {
+      allowed: true,
+      reason: "credit",
+      charge_required: true,
+      quota,
+      wallet,
+      wallet_synced: walletResult.synced,
+      packs: walletResult.packs,
+    }
+  }
+
+  return {
+    allowed: walletResult.synced ? false : true,
+    reason: walletResult.synced ? "limit_reached" : "wallet_unavailable",
+    charge_required: false,
+    quota,
+    wallet: wallet as AiWallet | null,
+    wallet_synced: walletResult.synced,
+    packs: walletResult.packs,
+  }
+}
+
+export const isAstrologyAccessBlocked = (access: AstrologyAccess) =>
+  !access.allowed
+
+export const consumeChargeableAstrologyCredit = async ({
+  access,
+  tool,
+  usageId,
+}: {
+  access: AstrologyAccess
+  tool: string
+  usageId?: string
+}) => {
+  if (!access.charge_required) {
+    return { charged: false, synced: true }
+  }
+
+  return consumeAiCredit({
+    tool,
+    usageId,
+    note: "Daily astrology free quota exceeded",
+  })
+}

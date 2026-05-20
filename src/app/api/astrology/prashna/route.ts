@@ -14,8 +14,9 @@ import {
   type RetrievedAstrologyPassage,
 } from "@lib/util/astrology-knowledge"
 import {
-  checkAstrologyDailyQuota,
-  isAstrologyQuotaExceeded,
+  checkAstrologyAccess,
+  consumeChargeableAstrologyCredit,
+  isAstrologyAccessBlocked,
 } from "@lib/util/ai-quota"
 import { generateGeminiJson } from "@lib/util/gemini"
 import { buildDetailedPrashnaChart } from "@lib/util/vedic-astrology"
@@ -86,6 +87,25 @@ const LANGUAGE_INSTRUCTIONS: Record<string, string> = {
     "Write the answer in natural Hindi using Devanagari, keeping astrology terms understandable.",
   hinglish:
     "Write the answer in friendly Hinglish with common astrology terms like lagna, rashi, bhav, and upaay.",
+}
+
+const knowledgeTrace = (passages: RetrievedAstrologyPassage[]) =>
+  passages.map((passage) => ({
+    id: passage.id,
+    citation: passage.citation,
+    score: Number(passage.score.toFixed(4)),
+    keywords: passage.keywords.slice(0, 8),
+  }))
+
+const retrievePrashnaKnowledgeSafely = (
+  args: Parameters<typeof retrieveAstrologyKnowledge>[0]
+) => {
+  try {
+    return retrieveAstrologyKnowledge(args)
+  } catch (error) {
+    console.error("Prashna RAG retrieval failed", error)
+    return []
+  }
 }
 
 const buildPrompt = ({
@@ -203,11 +223,14 @@ export async function POST(request: NextRequest) {
       return buildPrashnaChart({ city })
     }
   })()
-  const knowledgePassages = retrieveAstrologyKnowledge({
+  const prashnaFactors = Array.isArray(chart.prashnaFactors)
+    ? chart.prashnaFactors
+    : []
+  const knowledgePassages = retrievePrashnaKnowledgeSafely({
     query: [
       "prashna kundli question answer classical lagna moon significator timing",
       question,
-      chart.prashnaFactors.join(" "),
+      prashnaFactors.join(" "),
       `${chart.ascendant} lagna ${chart.moonSign} moon ${chart.nakshatra}`,
       chart.planets
         .map(
@@ -217,7 +240,7 @@ export async function POST(request: NextRequest) {
         .join(" "),
     ].join(" "),
     chart,
-    detectedCases: chart.prashnaFactors,
+    detectedCases: prashnaFactors,
     min: 3,
     max: 6,
   })
@@ -233,15 +256,17 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  const quota = await checkAstrologyDailyQuota()
+  const access = await checkAstrologyAccess()
 
-  if (isAstrologyQuotaExceeded(quota)) {
+  if (isAstrologyAccessBlocked(access)) {
     return NextResponse.json(
       {
         message:
-          `You have used your ${quota.limit} astrology AI readings for today. Please try again tomorrow.`,
+          `You have used your ${access.quota.limit} free astrology AI readings for today. Buy credits or upgrade to Premium to continue.`,
         chart,
-        quota,
+        quota: access.quota,
+        wallet: access.wallet,
+        packs: access.packs,
       },
       { status: 429 }
     )
@@ -320,14 +345,23 @@ export async function POST(request: NextRequest) {
       chart,
       customer_email: customer.email,
       knowledge_references: getKnowledgeIds(knowledgePassages),
+      knowledge_context: knowledgeTrace(knowledgePassages),
     },
     model: gemini.model,
     ...gemini.usage,
     expert_recommended: result.expert_call_recommended,
   })
+  const credit = await consumeChargeableAstrologyCredit({
+    access,
+    tool: "astrology_prashna",
+    usageId: usage.synced ? usage.usage?.id : undefined,
+  })
 
   return NextResponse.json({
     ...result,
-    usage_synced: usage.synced && quota.synced,
+    usage_synced: usage.synced && access.quota.synced,
+    credit,
+    wallet: "wallet" in credit ? credit.wallet : access.wallet,
+    quota: access.quota,
   })
 }

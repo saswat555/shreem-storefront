@@ -1,8 +1,21 @@
 const fs = require("fs")
 const path = require("path")
+const crypto = require("crypto")
 
 const ROOT = path.resolve(__dirname, "..")
-const SOURCE_PATH = path.join(ROOT, "data", "MP-BPHS.txt")
+const SOURCE_FILES = [
+  {
+    file: "data/MP-BPHS.txt",
+    volume: "Volume 1",
+    title: "Brihat Parashara Hora Shastra",
+  },
+  {
+    file: "data/MP-BPHS-2.txt",
+    volume: "Volume 2",
+    title: "Brihat Parashara Hora Shastra Hindi Commentary",
+    allowLooseBody: true,
+  },
+]
 const OUTPUT_PATH = path.join(ROOT, "data", "bphs-rag.json")
 
 const VECTOR_SIZE = 512
@@ -75,7 +88,7 @@ const normalizeText = (value) =>
     .normalize("NFKD")
     .replace(/[\u0300-\u036f]/g, "")
     .replace(/&/g, " and ")
-    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/[^\p{L}\p{N}]+/gu, " ")
     .replace(/\s+/g, " ")
     .trim()
 
@@ -123,7 +136,55 @@ const vectorize = (tokens, idf) => {
   return vector.map((item) => Number((item / magnitude).toFixed(6)))
 }
 
-const extractBookBody = (raw) => {
+const sha256 = (value) => crypto.createHash("sha256").update(value).digest("hex")
+
+const getSourceFingerprints = () =>
+  SOURCE_FILES.map((source) => {
+    const sourcePath = path.join(ROOT, source.file)
+
+    if (!fs.existsSync(sourcePath)) {
+      return {
+        file: source.file,
+        volume: source.volume,
+        missing: true,
+        size: 0,
+        sha256: "",
+      }
+    }
+
+    const raw = fs.readFileSync(sourcePath)
+
+    return {
+      file: source.file,
+      volume: source.volume,
+      missing: false,
+      size: raw.length,
+      sha256: sha256(raw),
+    }
+  })
+
+const shouldSkipBuild = (fingerprints) => {
+  if (process.argv.includes("--force") || !fs.existsSync(OUTPUT_PATH)) {
+    return false
+  }
+
+  try {
+    const artifact = JSON.parse(fs.readFileSync(OUTPUT_PATH, "utf8"))
+
+    return (
+      artifact?.version === 2 &&
+      artifact?.vectorizer?.vectorSize === VECTOR_SIZE &&
+      artifact?.vectorizer?.chunkWords === CHUNK_WORDS &&
+      artifact?.vectorizer?.overlapWords === OVERLAP_WORDS &&
+      JSON.stringify(artifact?.sourceFingerprints || []) ===
+        JSON.stringify(fingerprints)
+    )
+  } catch {
+    return false
+  }
+}
+
+const extractBookBody = (raw, source) => {
   const normalized = normalizeSpaces(raw)
   const chapterOneMatches = [
     ...normalized.matchAll(/Ch\.\s*1\s*\.?\s*The\s+Creation/gi),
@@ -133,10 +194,22 @@ const extractBookBody = (raw) => {
       ? chapterOneMatches[1].index
       : chapterOneMatches[0]?.index
 
-  return start && start > -1 ? normalized.slice(start) : normalized
+  if (start && start > -1) {
+    return normalized.slice(start)
+  }
+
+  if (source.allowLooseBody) {
+    const looseStart = normalized.search(
+      /अथ\s+|अध्याय|दशाध्याय|फलाध्याय|ग्रह|राहु|केतु|लग्न/
+    )
+
+    return looseStart > -1 ? normalized.slice(looseStart) : normalized
+  }
+
+  return normalized
 }
 
-const parseChapters = (body) => {
+const parseChapters = (body, source) => {
   const lines = body.split("\n")
   const chapters = []
   let current = null
@@ -150,6 +223,9 @@ const parseChapters = (body) => {
 
     if (text.length > 120) {
       chapters.push({
+        sourceFile: source.file,
+        sourceVolume: source.volume,
+        sourceTitle: source.title,
         number: current.number,
         title: current.title || `Chapter ${current.number}`,
         text,
@@ -159,13 +235,17 @@ const parseChapters = (body) => {
 
   lines.forEach((line) => {
     const trimmed = line.trim()
-    const heading = trimmed.match(/^Ch\.\s*(\d+)\s*\.?\s*(.+)?$/i)
+    const heading =
+      trimmed.match(/^Ch\.\s*(\d+)\s*\.?\s*(.+)?$/i) ||
+      trimmed.match(/^(\d{1,3})\.\s*(.+अध्याय.*)$/u) ||
+      trimmed.match(/^\|\s*\|?\s*(.+अध्याय.*)$/u)
 
     if (heading) {
       pushCurrent()
+      const number = Number(heading[1])
       current = {
-        number: Number(heading[1]),
-        title: normalizeSpaces(heading[2] || ""),
+        number: Number.isFinite(number) ? number : chapters.length + 1,
+        title: normalizeSpaces(heading[2] || heading[1] || ""),
         lines: [],
       }
       return
@@ -180,6 +260,46 @@ const parseChapters = (body) => {
 
   pushCurrent()
 
+  if (!chapters.length) {
+    chapters.push({
+      sourceFile: source.file,
+      sourceVolume: source.volume,
+      sourceTitle: source.title,
+      number: 1,
+      title: source.volume,
+      text: body,
+    })
+  }
+
+  return chapters
+}
+
+const makeLooseChapters = (body, source) => {
+  const words = normalizeSpaces(body)
+    .replace(/\s+([,.;:!?])/g, "$1")
+    .replace(/([a-z])-\s+([a-z])/gi, "$1$2")
+    .split(/\s+/)
+    .filter(Boolean)
+  const sectionWords = 3000
+  const chapters = []
+
+  for (let start = 0; start < words.length; start += sectionWords) {
+    const slice = words.slice(start, start + sectionWords)
+
+    if (slice.length < 120) {
+      continue
+    }
+
+    chapters.push({
+      sourceFile: source.file,
+      sourceVolume: source.volume,
+      sourceTitle: source.title,
+      number: chapters.length + 1,
+      title: `${source.volume} OCR section ${chapters.length + 1}`,
+      text: slice.join(" "),
+    })
+  }
+
   return chapters
 }
 
@@ -193,7 +313,10 @@ const makeChunks = (chapters) => {
   const chunks = []
 
   chapters.forEach((chapter) => {
-    const words = cleanChunkText(chapter.text).split(/\s+/).filter(Boolean)
+    const chapterText = normalizeSpaces(chapter.text)
+      .replace(/\s+([,.;:!?])/g, "$1")
+      .replace(/([a-z])-\s+([a-z])/gi, "$1$2")
+    const words = chapterText.split(/\s+/).filter(Boolean)
     const step = CHUNK_WORDS - OVERLAP_WORDS
 
     for (let start = 0; start < words.length; start += step) {
@@ -204,19 +327,32 @@ const makeChunks = (chapters) => {
       }
 
       const chunkIndex =
-        chunks.filter((item) => item.chapterNumber === chapter.number).length + 1
+        chunks.filter(
+          (item) =>
+            item.sourceFile === chapter.sourceFile &&
+            item.chapterNumber === chapter.number
+        ).length + 1
       const text = cleanChunkText(slice.join(" "))
       const tokens = tokenize(
-        `${chapter.title} chapter ${chapter.number} ${text}`
+        `${chapter.sourceVolume} ${chapter.title} chapter ${chapter.number} ${text}`
       )
+      const sourcePrefix = chapter.sourceFile
+        .replace(/^data\//, "")
+        .replace(/[^a-z0-9]+/gi, "-")
+        .replace(/^-|-$/g, "")
+        .toLowerCase()
 
       chunks.push({
-        id: `bphs-ch${chapter.number}-${String(chunkIndex).padStart(3, "0")}`,
-        source: "Brihat Parashara Hora Shastra",
+        id: `bphs-${sourcePrefix}-ch${chapter.number}-${String(
+          chunkIndex
+        ).padStart(3, "0")}`,
+        source: chapter.sourceTitle,
+        sourceFile: chapter.sourceFile,
+        sourceVolume: chapter.sourceVolume,
         chapterNumber: chapter.number,
         chapterTitle: chapter.title,
         chunkIndex,
-        citation: `Brihat Parashara Hora Shastra, Chapter ${chapter.number}: ${chapter.title}, passage ${chunkIndex}`,
+        citation: `${chapter.sourceTitle}, ${chapter.sourceVolume}, Chapter ${chapter.number}: ${chapter.title}, passage ${chunkIndex}`,
         text,
         tokenCount: tokens.length,
         tokens,
@@ -260,13 +396,43 @@ const topKeywords = (tokens, idf) => {
 }
 
 const main = () => {
-  if (!fs.existsSync(SOURCE_PATH)) {
-    throw new Error(`Missing source file: ${SOURCE_PATH}`)
+  const fingerprints = getSourceFingerprints()
+  const missingRequired = fingerprints.find(
+    (fingerprint, index) => index === 0 && fingerprint.missing
+  )
+
+  if (missingRequired) {
+    throw new Error(`Missing source file: ${missingRequired.file}`)
   }
 
-  const raw = fs.readFileSync(SOURCE_PATH, "utf8")
-  const body = extractBookBody(raw)
-  const chapters = parseChapters(body)
+  if (shouldSkipBuild(fingerprints)) {
+    console.log(
+      `BPHS RAG artifact is current; skipped rebuild -> ${path.relative(
+        ROOT,
+        OUTPUT_PATH
+      )}`
+    )
+    return
+  }
+
+  const chapters = SOURCE_FILES.flatMap((source) => {
+    const sourcePath = path.join(ROOT, source.file)
+
+    if (!fs.existsSync(sourcePath)) {
+      console.warn(`Skipping missing optional source: ${source.file}`)
+      return []
+    }
+
+    const raw = fs.readFileSync(sourcePath, "utf8")
+    const body = extractBookBody(raw, source)
+
+    if (source.allowLooseBody) {
+      return makeLooseChapters(body, source)
+    }
+
+    return parseChapters(body, source)
+  })
+
   const rawChunks = makeChunks(chapters)
   const idf = buildIdf(rawChunks)
   const chunks = rawChunks.map(({ tokens, ...chunk }) => ({
@@ -276,9 +442,10 @@ const main = () => {
   }))
 
   const artifact = {
-    version: 1,
+    version: 2,
     generatedAt: new Date().toISOString(),
-    sourceFile: "data/MP-BPHS.txt",
+    sourceFiles: SOURCE_FILES.map((source) => source.file),
+    sourceFingerprints: fingerprints,
     sourceTitle: "Brihat Parashara Hora Shastra",
     vectorizer: {
       kind: "local-hashed-tfidf",
@@ -294,7 +461,7 @@ const main = () => {
 
   fs.writeFileSync(OUTPUT_PATH, JSON.stringify(artifact))
   console.log(
-    `Built BPHS RAG artifact: ${chunks.length} chunks from ${chapters.length} chapters -> ${path.relative(
+    `Built BPHS RAG artifact: ${chunks.length} chunks from ${chapters.length} parsed sections across ${SOURCE_FILES.length} source files -> ${path.relative(
       ROOT,
       OUTPUT_PATH
     )}`

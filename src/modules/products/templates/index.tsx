@@ -6,6 +6,7 @@ import ProductOnboardingCta from "@modules/products/components/product-onboardin
 import ProductTabs from "@modules/products/components/product-tabs"
 import RelatedProducts from "@modules/products/components/related-products"
 import ProductReviews from "@modules/products/components/product-reviews"
+import ProductDeliveryChecker from "@modules/products/components/product-delivery-checker"
 import ProductInfo from "@modules/products/templates/product-info"
 import SkeletonRelatedProducts from "@modules/skeletons/templates/skeleton-related-products"
 import { notFound } from "next/navigation"
@@ -18,6 +19,7 @@ type ProductTemplateProps = {
   region: HttpTypes.StoreRegion
   countryCode: string
   images: HttpTypes.StoreProductImage[]
+  initialDeliveryPincode?: string
 }
 
 const ProductTemplate: React.FC<ProductTemplateProps> = ({
@@ -25,6 +27,7 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
   region,
   countryCode,
   images,
+  initialDeliveryPincode,
 }) => {
   if (!product || !product.id) {
     return notFound()
@@ -63,6 +66,10 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
             >
               <ProductActionsWrapper id={product.id} region={region} />
             </Suspense>
+            <ProductDeliveryChecker
+              product={product}
+              initialPincode={initialDeliveryPincode}
+            />
           </div>
 
           <div className="order-1 min-w-0 xl:order-2">

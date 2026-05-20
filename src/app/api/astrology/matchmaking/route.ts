@@ -14,8 +14,9 @@ import {
   type RetrievedAstrologyPassage,
 } from "@lib/util/astrology-knowledge"
 import {
-  checkAstrologyDailyQuota,
-  isAstrologyQuotaExceeded,
+  checkAstrologyAccess,
+  consumeChargeableAstrologyCredit,
+  isAstrologyAccessBlocked,
 } from "@lib/util/ai-quota"
 import { generateGeminiJson } from "@lib/util/gemini"
 import { buildDetailedPrashnaChart } from "@lib/util/vedic-astrology"
@@ -680,15 +681,17 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  const quota = await checkAstrologyDailyQuota()
+  const access = await checkAstrologyAccess()
 
-  if (isAstrologyQuotaExceeded(quota)) {
+  if (isAstrologyAccessBlocked(access)) {
     return NextResponse.json(
       {
         ...baseResult,
         message:
-          `You have used your ${quota.limit} astrology AI readings for today. Please try again tomorrow.`,
-        quota,
+          `You have used your ${access.quota.limit} free astrology AI readings for today. Buy credits or upgrade to Premium to continue.`,
+        quota: access.quota,
+        wallet: access.wallet,
+        packs: access.packs,
       },
       { status: 429 }
     )
@@ -761,9 +764,17 @@ export async function POST(request: NextRequest) {
     ...gemini.usage,
     expert_recommended: analysis.expert_call_recommended,
   })
+  const credit = await consumeChargeableAstrologyCredit({
+    access,
+    tool: "astrology_matchmaking",
+    usageId: usage.synced ? usage.usage?.id : undefined,
+  })
 
   return NextResponse.json({
     ...result,
     usage_synced: usage.synced,
+    credit,
+    wallet: "wallet" in credit ? credit.wallet : access.wallet,
+    quota: access.quota,
   })
 }

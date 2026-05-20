@@ -7,6 +7,8 @@ import type { PrashnaChart } from "./astrology"
 type BphsRagChunk = {
   id: string
   source: string
+  sourceFile?: string
+  sourceVolume?: string
   chapterNumber: number
   chapterTitle: string
   chunkIndex: number
@@ -31,6 +33,8 @@ type BphsRagArtifact = {
 export type RetrievedAstrologyPassage = {
   id: string
   source: string
+  sourceFile?: string
+  sourceVolume?: string
   section: string
   citation: string
   chapterNumber: number
@@ -100,7 +104,7 @@ const normalizeText = (value: string) =>
     .normalize("NFKD")
     .replace(/[\u0300-\u036f]/g, "")
     .replace(/&/g, " and ")
-    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/[^a-z0-9\u0900-\u097f]+/g, " ")
     .replace(/\s+/g, " ")
     .trim()
 
@@ -179,13 +183,56 @@ const specialCaseBoost = (normalizedQuery: string, chunk: BphsRagChunk) => {
     `${chunk.chapterTitle} ${chunk.keywords.join(" ")} ${chunk.text.slice(0, 600)}`
   )
   const boosts: [RegExp, string[], number][] = [
-    [/budh|mercury|budhaditya/, ["budh", "mercury", "surya", "sun"], 0.18],
-    [/sarpa|kaal|kalsarp|rahu|ketu/, ["sarpa", "rahu", "ketu"], 0.2],
-    [/manglik|mangal|mars|kuja/, ["mangal", "mars"], 0.18],
-    [/health|disease|illness|rog|ari|sixth/, ["disease", "ari", "illness"], 0.22],
-    [/marriage|match|nadi|bhakoot|yoni|gana/, ["marriage", "nadi", "bhakoot", "yoni"], 0.18],
-    [/dasha|mahadasha|antardasha/, ["dasha", "vimshottari"], 0.18],
-    [/remed|mantra|pooja|puja|gem|stone|daan/, ["remed", "mantra", "graha"], 0.18],
+    [
+      /budh|mercury|budhaditya|बुध|बुधादित्य/,
+      ["budh", "mercury", "surya", "sun", "बुध", "सूर्य"],
+      0.18,
+    ],
+    [
+      /sarpa|kaal|kalsarp|rahu|ketu|राहु|केतु|सर्प|काल/,
+      ["sarpa", "rahu", "ketu", "राहु", "केतु", "सर्प"],
+      0.2,
+    ],
+    [
+      /gajakesari|gaja|jupiter|guru|गज|गुरु|बृहस्पति/,
+      ["gaja", "jupiter", "guru", "गुरु", "बृहस्पति"],
+      0.18,
+    ],
+    [/manglik|mangal|mars|kuja|मंगल/, ["mangal", "mars", "मंगल"], 0.18],
+    [
+      /health|disease|illness|rog|ari|sixth|रोग|अरिष्ट|षष्ठ/,
+      ["disease", "ari", "illness", "रोग", "अरिष्ट", "षष्ठ"],
+      0.22,
+    ],
+    [
+      /accident|incident|injury|sudden|eighth|randhr|twelfth|दुर्घटना|मृत्यु|आयु|अष्टम/,
+      [
+        "accident",
+        "injury",
+        "randhr",
+        "eighth",
+        "दुर्घटना",
+        "अरिष्ट",
+        "मृत्यु",
+        "अष्टम",
+      ],
+      0.24,
+    ],
+    [
+      /marriage|match|nadi|bhakoot|yoni|gana|विवाह|नाड़ी/,
+      ["marriage", "nadi", "bhakoot", "yoni", "विवाह", "नाड़ी"],
+      0.18,
+    ],
+    [
+      /dasha|mahadasha|antardasha|pratyantar|दशा|महादशा|अन्तर्दशा/,
+      ["dasha", "vimshottari", "दशा", "महादशा"],
+      0.22,
+    ],
+    [
+      /remed|mantra|pooja|puja|gem|stone|daan|उपाय|मंत्र|पूजा|दान/,
+      ["remed", "mantra", "graha", "उपाय", "मंत्र", "दान"],
+      0.18,
+    ],
   ]
 
   return boosts.reduce((score, [pattern, terms, boost]) => {
@@ -227,6 +274,8 @@ export const retrieveAstrologyKnowledge = ({
     .map((chunk) => ({
       id: chunk.id,
       source: chunk.source,
+      sourceFile: chunk.sourceFile,
+      sourceVolume: chunk.sourceVolume,
       section: `Chapter ${chunk.chapterNumber}: ${chunk.chapterTitle}`,
       citation: chunk.citation,
       chapterNumber: chunk.chapterNumber,

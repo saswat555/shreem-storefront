@@ -35,6 +35,8 @@ type PrashnaResult = {
   message?: string
   retryable?: boolean
   usage_synced?: boolean
+  wallet?: AiWallet
+  quota?: AiQuota
 }
 
 type BookCitation = {
@@ -54,6 +56,19 @@ type KundliAnalysis = {
   health_caution?: string
   health_indicators?: string[]
   current_period_analysis?: string
+  dasha_predictions?: {
+    period: string
+    chart_basis: string
+    classical_basis: string
+    prediction: string
+    action: string
+  }[]
+  risk_watch?: {
+    theme: string
+    chart_basis: string
+    dasha_trigger: string
+    prevention: string
+  }[]
   prediction_table?: {
     area: string
     chart_basis: string
@@ -144,6 +159,9 @@ type KundliResult = {
   analysis?: KundliAnalysis
   message?: string
   usage_synced?: boolean
+  wallet?: AiWallet
+  quota?: AiQuota
+  packs?: AiCreditPack[]
 }
 
 type MatchmakingResult = {
@@ -193,6 +211,32 @@ type MatchmakingResult = {
   }
   message?: string
   usage_synced?: boolean
+  wallet?: AiWallet
+  quota?: AiQuota
+  packs?: AiCreditPack[]
+}
+
+type AiQuota = {
+  limit?: number
+  used?: number
+  remaining?: number
+  reset_at?: string
+}
+
+type AiWallet = {
+  credit_balance?: number
+  plan?: string
+  plan_expires_at?: string | null
+  pro_active?: boolean
+}
+
+type AiCreditPack = {
+  id: string
+  label: string
+  credits: number
+  price_inr: number
+  product_handle: string
+  plan?: string
 }
 
 type AstrologyHistoryItem = {
@@ -307,6 +351,31 @@ const normalizeCitySearch = (value: string) =>
     .trim()
 
 const cityLabel = (city: AstrologyCity) => `${city.name}, ${city.region}`
+
+const findCityIdFromLabel = (value?: string) => {
+  const normalized = normalizeCitySearch(value || "")
+
+  if (!normalized) {
+    return ""
+  }
+
+  const exact = ASTROLOGY_CITIES.find(
+    (city) => normalizeCitySearch(cityLabel(city)) === normalized
+  )
+
+  if (exact) {
+    return exact.id
+  }
+
+  const partial = ASTROLOGY_CITIES.find((city) => {
+    const cityName = normalizeCitySearch(city.name)
+    const regionName = normalizeCitySearch(city.region)
+
+    return normalized.includes(cityName) && normalized.includes(regionName)
+  })
+
+  return partial?.id || ""
+}
 
 const CityPicker = ({
   label = "Birth city",
@@ -1089,6 +1158,87 @@ const PlanetEffectList = ({
   )
 }
 
+const DashaPredictionList = ({
+  rows,
+}: {
+  rows?: KundliAnalysis["dasha_predictions"]
+}) => {
+  if (!rows?.length) {
+    return null
+  }
+
+  return (
+    <div className="rounded-[20px] border border-[rgba(13,129,126,0.18)] bg-[rgba(240,248,246,0.68)] px-4 py-4">
+      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
+        Dasha-first reading
+      </p>
+      <div className="mt-3 grid gap-3">
+        {rows.map((item, index) => (
+          <div
+            key={`${item.period}-${index}`}
+            className="rounded-[16px] border border-[var(--shreem-border)] bg-white/72 px-3 py-3"
+          >
+            <p className="text-sm font-semibold text-[var(--shreem-ink)]">
+              {item.period}
+            </p>
+            <p className="mt-2 text-xs leading-5 text-[var(--shreem-muted)]">
+              Chart basis: {item.chart_basis}
+            </p>
+            <p className="mt-2 text-xs leading-5 text-[var(--shreem-muted)]">
+              BPHS basis: {item.classical_basis}
+            </p>
+            <p className="mt-2 text-sm leading-6 text-[var(--shreem-ink)]">
+              {item.prediction}
+            </p>
+            <p className="mt-2 rounded-[14px] bg-[rgba(255,248,233,0.78)] px-3 py-2 text-xs leading-5 text-[var(--shreem-muted)]">
+              {item.action}
+            </p>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+const RiskWatchList = ({
+  rows,
+}: {
+  rows?: KundliAnalysis["risk_watch"]
+}) => {
+  if (!rows?.length) {
+    return null
+  }
+
+  return (
+    <div className="rounded-[20px] border border-[rgba(111,33,31,0.16)] bg-[rgba(255,248,233,0.7)] px-4 py-4">
+      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
+        Watch periods and prevention
+      </p>
+      <div className="mt-3 grid gap-3 md:grid-cols-2">
+        {rows.map((item, index) => (
+          <div
+            key={`${item.theme}-${index}`}
+            className="rounded-[16px] border border-[var(--shreem-border)] bg-white/72 px-3 py-3"
+          >
+            <p className="text-sm font-semibold text-[var(--shreem-ink)]">
+              {item.theme}
+            </p>
+            <p className="mt-2 text-xs leading-5 text-[var(--shreem-muted)]">
+              {item.chart_basis}
+            </p>
+            <p className="mt-2 text-xs leading-5 text-[var(--shreem-muted)]">
+              Timing: {item.dasha_trigger}
+            </p>
+            <p className="mt-2 rounded-[14px] bg-white/78 px-3 py-2 text-xs leading-5 text-[var(--shreem-muted)]">
+              {item.prevention}
+            </p>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 const HistoryPanel = ({
   items,
   onSelect,
@@ -1312,6 +1462,8 @@ const KundliResultView = ({
       )}
 
       <PredictionTable rows={result.analysis?.prediction_table} />
+      <DashaPredictionList rows={result.analysis?.dasha_predictions} />
+      <RiskWatchList rows={result.analysis?.risk_watch} />
       <PlanetEffectList chart={chart} effects={result.analysis?.planet_effects} />
       <BookCitationList items={result.analysis?.book_citations} />
 
@@ -1787,27 +1939,6 @@ const printKundliReport = (result: KundliResult) => {
   setTimeout(() => win.print(), 300)
 }
 
-const parseLocalHistory = (): AstrologyHistoryItem[] => {
-  if (typeof window === "undefined") {
-    return []
-  }
-
-  try {
-    const raw = window.localStorage.getItem(HISTORY_KEY)
-    const items = raw ? JSON.parse(raw) : []
-
-    if (!Array.isArray(items)) {
-      return []
-    }
-
-    return items
-      .filter((item) => item?.id && item?.title)
-      .slice(0, 12) as AstrologyHistoryItem[]
-  } catch {
-    return []
-  }
-}
-
 const asRecord = (value: unknown): Record<string, unknown> =>
   value && typeof value === "object" ? (value as Record<string, unknown>) : {}
 
@@ -1888,6 +2019,8 @@ export default function AstrologyExperience({
   )
   const [loadingCalendar, setLoadingCalendar] = useState(true)
   const [history, setHistory] = useState<AstrologyHistoryItem[]>([])
+  const [aiWallet, setAiWallet] = useState<AiWallet | null>(null)
+  const [aiPacks, setAiPacks] = useState<AiCreditPack[]>([])
   const [kundliForm, setKundliForm] = useState({
     name: customerName || "",
     gender: "",
@@ -1913,6 +2046,14 @@ export default function AstrologyExperience({
   const bestDaySlots = muhurat.daySlots.filter(
     (slot) => slot.quality === "auspicious"
   )
+  const refreshWallet = () =>
+    fetch("/api/ai-wallet", { cache: "no-store" })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((data) => {
+        setAiWallet(data?.wallet || null)
+        setAiPacks(Array.isArray(data?.packs) ? data.packs : [])
+      })
+      .catch(() => null)
 
   useEffect(() => {
     const saved = window.localStorage.getItem(LANGUAGE_KEY)
@@ -1967,8 +2108,12 @@ export default function AstrologyExperience({
   }, [cityId, date])
 
   useEffect(() => {
-    const localHistory = parseLocalHistory()
-    setHistory(localHistory)
+    refreshWallet()
+  }, [])
+
+  useEffect(() => {
+    window.localStorage.removeItem(HISTORY_KEY)
+    setHistory([])
 
     fetch("/api/astrology/history", { cache: "no-store" })
       .then((response) => (response.ok ? response.json() : null))
@@ -1980,22 +2125,7 @@ export default function AstrologyExperience({
           : []
 
         if (remoteItems.length) {
-          const localFallbackItems = localHistory.filter(
-            (item) => item.synced === false
-          )
-          const next = mergeHistory([
-            ...remoteItems,
-            ...localFallbackItems,
-          ]).slice(0, 12)
-
-          setHistory(next)
-
-          if (typeof window !== "undefined") {
-            window.localStorage.setItem(
-              HISTORY_KEY,
-              JSON.stringify(localFallbackItems.slice(0, 12))
-            )
-          }
+          setHistory(mergeHistory(remoteItems).slice(0, 12))
         }
       })
       .catch(() => null)
@@ -2011,14 +2141,6 @@ export default function AstrologyExperience({
         synced: !options.persistLocal,
       }
       const next = mergeHistory([nextItem, ...current]).slice(0, 12)
-
-      if (typeof window !== "undefined" && options.persistLocal) {
-        const fallbackItems = next.filter((historyItem) => !historyItem.synced)
-        window.localStorage.setItem(
-          HISTORY_KEY,
-          JSON.stringify(fallbackItems.slice(0, 12))
-        )
-      }
 
       return next
     })
@@ -2063,6 +2185,9 @@ export default function AstrologyExperience({
     const result = data
 
     setPrashna(result)
+    if (result.wallet) {
+      setAiWallet(result.wallet)
+    }
 
     if (result.chart && result.answer) {
       rememberHistory({
@@ -2078,6 +2203,7 @@ export default function AstrologyExperience({
     }
 
     setLoadingPrashna(false)
+    refreshWallet()
   }
 
   const generateKundli = async () => {
@@ -2102,6 +2228,12 @@ export default function AstrologyExperience({
       } satisfies KundliResult)
 
     setKundliResult(result)
+    if (result.wallet) {
+      setAiWallet(result.wallet)
+    }
+    if (Array.isArray(result.packs)) {
+      setAiPacks(result.packs)
+    }
 
     if (result.chart && result.analysis?.summary && !result.message) {
       rememberHistory({
@@ -2120,6 +2252,7 @@ export default function AstrologyExperience({
     }
 
     setLoadingKundli(false)
+    refreshWallet()
   }
 
   const generateMatchmaking = async () => {
@@ -2147,6 +2280,12 @@ export default function AstrologyExperience({
       } satisfies MatchmakingResult)
 
     setMatchmakingResult(result)
+    if (result.wallet) {
+      setAiWallet(result.wallet)
+    }
+    if (Array.isArray(result.packs)) {
+      setAiPacks(result.packs)
+    }
 
     if (result.compatibility && result.analysis?.summary && !result.message) {
       rememberHistory(
@@ -2170,6 +2309,7 @@ export default function AstrologyExperience({
     }
 
     setLoadingMatchmaking(false)
+    refreshWallet()
   }
 
   const selectHistoryItem = (item: AstrologyHistoryItem) => {
@@ -2180,7 +2320,31 @@ export default function AstrologyExperience({
     }
 
     if (item.type === "Kundli") {
-      setKundliResult(item.response as KundliResult)
+      const result = item.response as KundliResult
+      const profile = result?.profile
+
+      setKundliResult(result)
+      if (profile) {
+        const restoredCityId = findCityIdFromLabel(profile.city)
+
+        setKundliForm((current) => ({
+          ...current,
+          name: profile.name || current.name,
+          gender: profile.gender || current.gender,
+          birthDate: profile.birth_date || current.birthDate,
+          birthTime: profile.birth_time || current.birthTime,
+          cityId: restoredCityId || current.cityId,
+          subQuestions:
+            Array.isArray(profile.sub_questions) &&
+            profile.sub_questions.some(Boolean)
+              ? [
+                  profile.sub_questions[0] || "",
+                  profile.sub_questions[1] || "",
+                  profile.sub_questions[2] || "",
+                ]
+              : current.subQuestions,
+        }))
+      }
       setActiveTab("kundli")
       return
     }
@@ -2235,6 +2399,49 @@ export default function AstrologyExperience({
     </div>
   )
 
+  const AiWalletCard = () => {
+    const balance = Math.max(0, Number(aiWallet?.credit_balance || 0))
+    const proActive = Boolean(aiWallet?.pro_active)
+    const primaryPack = aiPacks[0]
+    const premiumPack =
+      aiPacks.find((pack) => pack.plan === "premium") || aiPacks[aiPacks.length - 1]
+
+    return (
+      <div className="brand-card px-4 py-4">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <p className="brand-kicker">AI wallet</p>
+            <p className="mt-2 text-sm font-semibold text-[var(--shreem-ink)]">
+              {proActive ? "Premium active" : `${balance} paid credits`}
+            </p>
+            <p className="mt-1 text-xs leading-5 text-[var(--shreem-muted)]">
+              You get 3 free astrology AI readings daily. Extra readings use
+              credits or Premium.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {primaryPack && (
+              <LocalizedClientLink
+                href={`/products/${primaryPack.product_handle}`}
+                className="rounded-full border border-[rgba(13,129,126,0.24)] bg-white/70 px-3 py-2 text-xs font-semibold text-[var(--shreem-ink)]"
+              >
+                Buy {primaryPack.credits}
+              </LocalizedClientLink>
+            )}
+            {premiumPack && (
+              <LocalizedClientLink
+                href={`/products/${premiumPack.product_handle}`}
+                className="rounded-full bg-[linear-gradient(135deg,#0d817e_0%,#123f63_58%,#6f211f_100%)] px-3 py-2 text-xs font-semibold text-white"
+              >
+                Premium
+              </LocalizedClientLink>
+            )}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="grid gap-6 small:gap-8">
       <section className="brand-surface overflow-hidden px-5 py-7 small:px-8 small:py-9">
@@ -2262,6 +2469,10 @@ export default function AstrologyExperience({
               <LanguageControls />
             </div>
           </div>
+        </div>
+
+        <div className="mt-5">
+          <AiWalletCard />
         </div>
 
         <div className="mt-6 grid gap-2 min-[520px]:grid-cols-2 xl:grid-cols-4">

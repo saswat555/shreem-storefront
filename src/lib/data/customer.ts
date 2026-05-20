@@ -81,7 +81,7 @@ export const retrieveCustomer =
       .fetch<{ customer: HttpTypes.StoreCustomer }>(`/store/customers/me`, {
         method: "GET",
         query: {
-          fields: "*orders,+metadata",
+          fields: "*orders,*addresses,+metadata",
         },
         headers,
         cache: "no-store",

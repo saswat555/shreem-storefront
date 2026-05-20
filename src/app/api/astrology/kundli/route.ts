@@ -20,8 +20,9 @@ import {
   type RetrievedAstrologyPassage,
 } from "@lib/util/astrology-knowledge"
 import {
-  checkAstrologyDailyQuota,
-  isAstrologyQuotaExceeded,
+  checkAstrologyAccess,
+  consumeChargeableAstrologyCredit,
+  isAstrologyAccessBlocked,
 } from "@lib/util/ai-quota"
 import { generateGeminiJson } from "@lib/util/gemini"
 import { buildDetailedPrashnaChart } from "@lib/util/vedic-astrology"
@@ -53,6 +54,39 @@ const KUNDLI_SCHEMA = {
       items: { type: "string" },
     },
     current_period_analysis: { type: "string" },
+    dasha_predictions: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          period: { type: "string" },
+          chart_basis: { type: "string" },
+          classical_basis: { type: "string" },
+          prediction: { type: "string" },
+          action: { type: "string" },
+        },
+        required: [
+          "period",
+          "chart_basis",
+          "classical_basis",
+          "prediction",
+          "action",
+        ],
+      },
+    },
+    risk_watch: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          theme: { type: "string" },
+          chart_basis: { type: "string" },
+          dasha_trigger: { type: "string" },
+          prevention: { type: "string" },
+        },
+        required: ["theme", "chart_basis", "dasha_trigger", "prevention"],
+      },
+    },
     prediction_table: {
       type: "array",
       items: {
@@ -170,6 +204,8 @@ const KUNDLI_SCHEMA = {
     "health_caution",
     "health_indicators",
     "current_period_analysis",
+    "dasha_predictions",
+    "risk_watch",
     "prediction_table",
     "planet_effects",
     "likely_challenges",
@@ -925,6 +961,175 @@ const buildPlanetEffects = (chart: PrashnaChart) =>
       }
     })
 
+const planetPlacementText = (chart: PrashnaChart, names: string[]) =>
+  names
+    .map((name) => getPlanet(chart, name))
+    .filter(Boolean)
+    .map(
+      (planet) =>
+        `${planet!.name} in ${planet!.sign} house ${planet!.house} ${
+          planet!.nakshatra
+        } pada ${planet!.pada}`
+    )
+    .join("; ")
+
+const activeDashaText = (chart: PrashnaChart) =>
+  chart.dasha
+    ? [
+        `Mahadasha ${chart.dasha.mahadasha.lord} ${chart.dasha.mahadasha.startLabel} to ${chart.dasha.mahadasha.endLabel}`,
+        `Antardasha ${chart.dasha.antardasha.lord} ${chart.dasha.antardasha.startLabel} to ${chart.dasha.antardasha.endLabel}`,
+        `Pratyantar ${chart.dasha.pratyantar.lord} ${chart.dasha.pratyantar.startLabel} to ${chart.dasha.pratyantar.endLabel}`,
+        `Moon nakshatra lord ${chart.dasha.moonNakshatraLord}`,
+        planetPlacementText(chart, [
+          chart.dasha.mahadasha.lord,
+          chart.dasha.antardasha.lord,
+          chart.dasha.pratyantar.lord,
+        ]),
+      ].join("; ")
+    : "Vimshottari dasha unavailable"
+
+const mergeKnowledgePassages = (
+  ...groups: RetrievedAstrologyPassage[][]
+): RetrievedAstrologyPassage[] => {
+  const seen = new Set<string>()
+
+  return groups
+    .flat()
+    .sort((left, right) => right.score - left.score)
+    .filter((passage) => {
+      if (seen.has(passage.id)) {
+        return false
+      }
+
+      seen.add(passage.id)
+      return true
+    })
+    .slice(0, 10)
+}
+
+const knowledgeTrace = (passages: RetrievedAstrologyPassage[]) =>
+  passages.map((passage) => ({
+    id: passage.id,
+    citation: passage.citation,
+    score: Number(passage.score.toFixed(4)),
+    keywords: passage.keywords.slice(0, 8),
+  }))
+
+const retrieveKnowledgeSafely = (
+  args: Parameters<typeof retrieveAstrologyKnowledge>[0]
+) => {
+  try {
+    return retrieveAstrologyKnowledge(args)
+  } catch (error) {
+    console.error("Astrology RAG retrieval failed", error)
+    return []
+  }
+}
+
+const buildKundliKnowledgePassages = ({
+  chart,
+  detectedYogas,
+  healthIndicators,
+  targetedRemedySeeds,
+  subQuestions,
+}: {
+  chart: PrashnaChart
+  detectedYogas: string[]
+  healthIndicators: string[]
+  targetedRemedySeeds: TargetedRemedy[]
+  subQuestions: string[]
+}) => {
+  const dashaLords = chart.dasha
+    ? [
+        chart.dasha.mahadasha.lord,
+        chart.dasha.antardasha.lord,
+        chart.dasha.pratyantar.lord,
+      ]
+    : []
+  const afflictedRiskPlanets = chart.planets
+    .filter(
+      (planet) =>
+        DUSTHANA_HOUSES.includes(planet.house) ||
+        ["Mars", "Saturn", "Rahu", "Ketu"].includes(planet.name)
+    )
+    .map(
+      (planet) =>
+        `${planet.name} ${planet.sign} house ${planet.house} ${planet.nakshatra}`
+    )
+
+  return mergeKnowledgePassages(
+    retrieveKnowledgeSafely({
+      query: [
+        "vimshottari dasha mahadasha antardasha pratyantar dasha lord effects दशा महादशा अन्तर्दशा",
+        activeDashaText(chart),
+      ].join(" "),
+      chart,
+      detectedCases: dashaLords,
+      min: 2,
+      max: 4,
+    }),
+    retrieveKnowledgeSafely({
+      query: [
+        "parashari yoga special combination gajakesari budhaditya kaal sarp rahu ketu conjunction aspect result",
+        detectedYogas.join(" "),
+        planetPlacementText(chart, [
+          "Moon",
+          "Jupiter",
+          "Sun",
+          "Mercury",
+          "Mars",
+          "Rahu",
+          "Ketu",
+        ]),
+      ].join(" "),
+      chart,
+      detectedCases: detectedYogas,
+      min: detectedYogas.length ? 3 : 2,
+      max: 5,
+    }),
+    retrieveKnowledgeSafely({
+      query: [
+        "health disease accident injury ari randhra sixth eighth twelfth mars saturn rahu ketu रोग अरिष्ट दुर्घटना अष्टम षष्ठ",
+        healthIndicators.join(" "),
+        afflictedRiskPlanets.join(" "),
+        activeDashaText(chart),
+      ].join(" "),
+      chart,
+      detectedCases: healthIndicators,
+      min: 2,
+      max: 4,
+    }),
+    retrieveKnowledgeSafely({
+      query: [
+        "remedy mantra pooja daan graha shanti upaya mantra deity gemstone सावधानी उपाय मंत्र दान पूजा",
+        targetedRemedySeeds
+          .map(
+            (item) =>
+              `${item.pain_point} ${item.chart_basis} ${item.mantra_or_pooja}`
+          )
+          .join(" "),
+      ].join(" "),
+      chart,
+      detectedCases: targetedRemedySeeds.map((item) => item.pain_point),
+      min: 2,
+      max: 4,
+    }),
+    subQuestions.length
+      ? retrieveKnowledgeSafely({
+          query: [
+            "specific question parashari prediction chart result",
+            subQuestions.join(" "),
+            activeDashaText(chart),
+          ].join(" "),
+          chart,
+          detectedCases: subQuestions,
+          min: 1,
+          max: 3,
+        })
+      : []
+  )
+}
+
 const buildPrompt = ({
   name,
   chart,
@@ -950,7 +1155,9 @@ const buildPrompt = ({
     "You are Shreem Astrology's Vedic Kundli analysis assistant.",
     "Use only the calculated chart data and deterministic yoga detections below. Do not invent yogas that are not present.",
     "The chart calculation layer is authoritative. Do not move planets into different houses, do not alter Lagna, and do not infer chart facts that are absent.",
-    "Use the retrieved classical reference pack below to deepen interpretation. Treat it as guidance, not as extra chart facts, and do not quote it verbatim.",
+    "Use the retrieved Brihat Parashara Hora Shastra reference pack as the interpretive base for dasha, yoga, health-risk, and remedy judgement. It is not decorative citation. Apply it only after checking the calculated chart facts.",
+    "First read Vimshottari timing: Mahadasha, Antardasha, and Pratyantar lord placement by house, sign, dignity, association, and relevant houses. Then explain how the BPHS reference pack modifies timing and outcomes.",
+    "When two strong combinations coexist, synthesize them rather than listing them separately. Example: if Gajakesari support and Kaal Sarp/Rahu-Ketu pressure both appear, judge which dominates by dasha, house relevance, and afflicted/protective grahas.",
     "When a retrieved note identifies a later convention such as Kaal Sarp, say so plainly and judge it through Rahu/Ketu, houses, dignity, and dasha.",
     "Follow calculation-first discipline: if a combination is partial, call it partial and explain what supports or weakens it.",
     "Cover special astrological cases when indicated, including Kaal Sarp, Manglik/Mars sensitivity, debilitation, possible Neechabhanga, Gajakesari, Budhaditya, and Chandra-Mangal.",
@@ -958,7 +1165,10 @@ const buildPrompt = ({
     "Also consider period timing from Vimshottari Mahadasha, Antardasha, and Pratyantar Dasha. Keep period analysis grounded in the dasha lords and their houses/signs.",
     "Give a detailed reading with these sections: who the person is, behavioral traits, strengths, life themes, likely challenges/issues, practical solutions, Vedic remedies, and cautious spiritual guidance.",
     "Health analysis must be deeper than generic caution: name likely vulnerability areas and possible disease tendencies from chart indicators, but use cautious language like tendency/watch/monitor. Do not diagnose. Tell the user to consult a qualified doctor for symptoms, emergencies, or persistent issues.",
+    "Accident or major-incident analysis must be framed only as watch periods and preventive care. Mention it only when 6th/8th/12th houses, Mars/Saturn/Rahu/Ketu, and active dasha signals support it. Never guarantee harm or use frightening certainty.",
     "Return health_indicators with 4 to 7 specific watchlist items. Each item must include chart basis and a practical prevention note.",
+    "Return dasha_predictions with one row each for Mahadasha, Antardasha, and Pratyantar. Each row must include chart_basis, classical_basis from the retrieved pack, prediction, and action.",
+    "Return risk_watch with 2 to 5 practical watch areas only when supported by chart and dasha; include prevention, not fear.",
     "Return prediction_table with rows for Personality, Career, Money, Marriage, Health, Current period, and Remedies. Each row must include chart_basis, prediction, and advice.",
     "Return planet_effects with one useful row for every graha: Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn, Rahu, and Ketu. Each row must explain placement, effect, and practical advice.",
     "Answer at most three sub-questions. If no sub-questions are provided, return an empty sub_question_answers array.",
@@ -977,6 +1187,7 @@ const buildPrompt = ({
     `Retrieved classical reference pack: ${formatAstrologyKnowledgeForPrompt(
       knowledgePassages
     )}`,
+    `Active dasha discipline: ${activeDashaText(chart)}`,
     `Deterministic health watchlist: ${JSON.stringify(healthIndicators)}`,
     `Deterministic targeted remedy seeds: ${JSON.stringify(
       targetedRemedySeeds
@@ -1081,26 +1292,12 @@ export async function POST(request: NextRequest) {
     detectedYogas,
     healthIndicators
   )
-  const knowledgePassages = retrieveAstrologyKnowledge({
-    query: [
-      "kundli birth chart classical parashari special combinations dasha",
-      detectedYogas.join(" "),
-      subQuestions.join(" "),
-      `${chart.ascendant} lagna ${chart.moonSign} moon ${chart.nakshatra}`,
-      chart.planets
-        .map(
-          (planet) =>
-            `${planet.name} ${planet.sign} house ${planet.house} ${planet.nakshatra}`
-        )
-        .join(" "),
-    ].join(" "),
+  const knowledgePassages = buildKundliKnowledgePassages({
     chart,
-    detectedCases: detectedYogas,
-    min: detectedYogas.length ? 4 : 3,
-    max: Math.min(
-      10,
-      Math.max(5, detectedYogas.length + subQuestions.length + 4)
-    ),
+    detectedYogas,
+    healthIndicators,
+    targetedRemedySeeds,
+    subQuestions,
   })
 
   if (!isGeminiEnabled()) {
@@ -1117,19 +1314,21 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  const quota = await checkAstrologyDailyQuota()
+  const access = await checkAstrologyAccess()
 
-  if (isAstrologyQuotaExceeded(quota)) {
+  if (isAstrologyAccessBlocked(access)) {
     return NextResponse.json(
       {
         message:
-          `You have used your ${quota.limit} astrology AI readings for today. Please try again tomorrow.`,
+          `You have used your ${access.quota.limit} free astrology AI readings for today. Buy credits or upgrade to Premium to continue.`,
         chart,
         detected_yogas: detectedYogas,
         stones,
         health_indicators: healthIndicators,
         targeted_remedies: targetedRemedySeeds,
-        quota,
+        quota: access.quota,
+        wallet: access.wallet,
+        packs: access.packs,
       },
       { status: 429 }
     )
@@ -1186,6 +1385,57 @@ export async function POST(request: NextRequest) {
       parsed?.current_period_analysis,
       800
     ),
+    dasha_predictions: Array.isArray(parsed?.dasha_predictions)
+      ? parsed.dasha_predictions
+          .map((item: any) => ({
+            period: sanitizeString(item?.period, 80),
+            chart_basis: sanitizeString(item?.chart_basis, 320),
+            classical_basis: sanitizeString(item?.classical_basis, 360),
+            prediction: sanitizeString(item?.prediction, 560),
+            action: sanitizeString(item?.action, 320),
+          }))
+          .filter(
+            (item: {
+              period: string
+              chart_basis: string
+              classical_basis: string
+              prediction: string
+              action: string
+            }) =>
+              Boolean(
+                item.period &&
+                  item.chart_basis &&
+                  item.classical_basis &&
+                  item.prediction &&
+                  item.action
+              )
+          )
+          .slice(0, 4)
+      : [],
+    risk_watch: Array.isArray(parsed?.risk_watch)
+      ? parsed.risk_watch
+          .map((item: any) => ({
+            theme: sanitizeString(item?.theme, 120),
+            chart_basis: sanitizeString(item?.chart_basis, 320),
+            dasha_trigger: sanitizeString(item?.dasha_trigger, 260),
+            prevention: sanitizeString(item?.prevention, 320),
+          }))
+          .filter(
+            (item: {
+              theme: string
+              chart_basis: string
+              dasha_trigger: string
+              prevention: string
+            }) =>
+              Boolean(
+                item.theme &&
+                  item.chart_basis &&
+                  item.dasha_trigger &&
+                  item.prevention
+              )
+          )
+          .slice(0, 5)
+      : [],
     prediction_table: Array.isArray(parsed?.prediction_table)
       ? parsed.prediction_table
           .map((item: any) => ({
@@ -1311,6 +1561,7 @@ export async function POST(request: NextRequest) {
       chart,
       dasha: chart.dasha,
       knowledge_references: getKnowledgeIds(knowledgePassages),
+      knowledge_context: knowledgeTrace(knowledgePassages),
       health_indicators: healthIndicators,
       targeted_remedy_seeds: targetedRemedySeeds,
     },
@@ -1318,9 +1569,17 @@ export async function POST(request: NextRequest) {
     ...gemini.usage,
     expert_recommended: analysis.expert_call_recommended,
   })
+  const credit = await consumeChargeableAstrologyCredit({
+    access,
+    tool: "astrology_kundli",
+    usageId: usage.synced ? usage.usage?.id : undefined,
+  })
 
   return NextResponse.json({
     ...result,
     usage_synced: usage.synced,
+    credit,
+    wallet: "wallet" in credit ? credit.wallet : access.wallet,
+    quota: access.quota,
   })
 }

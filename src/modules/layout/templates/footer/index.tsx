@@ -30,6 +30,13 @@ export default function Footer() {
     "Animal care",
     "The farm",
   ]
+  const policyLinks = [
+    { href: "/terms-and-conditions", label: "Terms" },
+    { href: "/privacy-policy", label: "Privacy" },
+    { href: "/refund-policy", label: "Refunds" },
+    { href: "/return-policy", label: "Returns" },
+    { href: "/shipping-policy", label: "Shipping" },
+  ]
 
   return (
     <footer className="w-full pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-8 small:pb-8 small:pt-16">
@@ -122,12 +129,17 @@ export default function Footer() {
               © {new Date().getFullYear()} Shreem Cow Products. Crafted around
               bilona ghee, desi cows, and quieter everyday rituals.
             </Text>
-            <LocalizedClientLink
-              href="/journal"
-              className="hidden text-xs leading-5 hover:text-[var(--shreem-gold)] small:inline-flex"
-            >
-              Read Journal
-            </LocalizedClientLink>
+            <div className="flex flex-wrap gap-x-4 gap-y-2 text-xs leading-5">
+              {policyLinks.map((link) => (
+                <LocalizedClientLink
+                  key={link.href}
+                  href={link.href}
+                  className="hover:text-[var(--shreem-gold)]"
+                >
+                  {link.label}
+                </LocalizedClientLink>
+              ))}
+            </div>
           </div>
         </div>
       </div>
