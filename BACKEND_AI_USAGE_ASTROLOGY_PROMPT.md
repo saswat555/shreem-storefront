@@ -32,7 +32,7 @@ The current frontend helper is `src/lib/data/ai-usage.ts` and sends this payload
     "customer_email": "customer@example.com",
     "chart": {}
   },
-  "model": "gemini-flash-latest",
+  "model": "gemini-2.5-flash",
   "expert_recommended": true
 }
 ```
@@ -90,7 +90,7 @@ Do not store raw image base64 in this table. Store only image metadata, uploaded
     "input": {},
     "response": {},
     "metadata": {},
-    "model": "gemini-flash-latest",
+    "model": "gemini-2.5-flash",
     "expert_recommended": true,
     "created_at": "2026-05-17T..."
   }
