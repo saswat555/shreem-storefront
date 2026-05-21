@@ -5,6 +5,10 @@ import { getGeminiApiKey, getGeminiModel } from "./prakriti-config"
 type GeminiGenerateOptions = {
   prompt: string
   responseSchema: unknown
+  parts?: Array<
+    | { text: string }
+    | { inline_data: { mime_type: string; data: string } }
+  >
   temperature?: number
   timeoutMs?: number
   maxAttempts?: number
@@ -67,7 +71,7 @@ const getGeminiMaxAttempts = (override?: number) =>
     override ||
       process.env.ASTROLOGY_AI_MAX_ATTEMPTS ||
       process.env.GEMINI_MAX_ATTEMPTS,
-    2,
+    3,
     1,
     4
   )
@@ -270,6 +274,7 @@ export const emptyGeminiUsage = (): GeminiUsage => ({
 export const generateGeminiJson = async ({
   prompt,
   responseSchema,
+  parts = [],
   temperature = 0.22,
   timeoutMs = getAstrologyAiTimeoutMs(),
   maxAttempts,
@@ -281,6 +286,7 @@ export const generateGeminiJson = async ({
   const attempts = getGeminiMaxAttempts(maxAttempts)
   const limitTokens = getGeminiMaxOutputTokens(maxOutputTokens)
   const finalPrompt = `${prompt}\n\nIMPORTANT: Please ensure your JSON response is complete and does not exceed ${limitTokens} tokens. Keep your response concise to avoid truncation.`
+  const requestParts = [{ text: finalPrompt }, ...parts]
   const queuedAt = Date.now()
   const releaseSlot = await waitForGeminiSlot()
   const queuedMs = Date.now() - queuedAt
@@ -307,11 +313,12 @@ export const generateGeminiJson = async ({
             contents: [
               {
                 role: "user",
-                parts: [{ text: finalPrompt }],
+                parts: requestParts,
               },
             ],
             generationConfig: {
               temperature,
+              maxOutputTokens: limitTokens,
               responseMimeType: "application/json",
               responseSchema,
             },

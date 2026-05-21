@@ -13,6 +13,7 @@ import {
 } from "@lib/util/shiprocket"
 import ItemsPreviewTemplate from "@modules/cart/templates/preview"
 import DiscountCode from "@modules/checkout/components/discount-code"
+import FirstOrderOffer from "@modules/checkout/components/first-order-offer"
 import { useShiprocketCheckout } from "@modules/checkout/context/shiprocket-context"
 import CartTotals from "@modules/common/components/cart-totals"
 import Divider from "@modules/common/components/divider"
@@ -33,12 +34,19 @@ const CheckoutSummary = ({ cart }: { cart: any }) => {
   const shiprocketEta = getShiprocketEtaLabel(shiprocket.rate)
   const selectedShippingMethod = cart.shipping_methods?.at(-1)
   const shiprocketSynced = isShiprocketShippingOption(selectedShippingMethod)
+  const hasFirstOrderFreeShipping = Boolean(
+    cart.promotions?.some(
+      (promotion: any) => promotion.code?.toUpperCase() === "FREESHIPFIRST"
+    )
+  )
   const totals = useMemo(() => {
     if (!isIndianDelivery || !shiprocketFresh) {
       return cart
     }
 
-    const shippingAmount = getShiprocketAmountMajor(shiprocket.rate)
+    const shippingAmount = hasFirstOrderFreeShipping
+      ? 0
+      : getShiprocketAmountMajor(shiprocket.rate)
     const existingShipping = Number(cart.shipping_subtotal || 0)
     const total = Number(cart.total || 0) - existingShipping + shippingAmount
 
@@ -47,7 +55,13 @@ const CheckoutSummary = ({ cart }: { cart: any }) => {
       shipping_subtotal: shippingAmount,
       total,
     }
-  }, [cart, isIndianDelivery, shiprocket.rate, shiprocketFresh])
+  }, [
+    cart,
+    hasFirstOrderFreeShipping,
+    isIndianDelivery,
+    shiprocket.rate,
+    shiprocketFresh,
+  ])
 
   return (
     <aside className="flex flex-col-reverse gap-y-4 py-0 small:flex-col xl:sticky xl:top-28">
@@ -68,6 +82,9 @@ const CheckoutSummary = ({ cart }: { cart: any }) => {
         </div>
         <Divider className="my-5" />
         <CartTotals totals={totals} />
+        <div className="mt-4">
+          <FirstOrderOffer cart={cart} />
+        </div>
         {isIndianDelivery && shiprocketFresh && (
           <div className="mt-4 rounded-[16px] border border-[rgba(13,129,126,0.18)] bg-[rgba(240,248,246,0.82)] px-4 py-3 text-sm leading-6 text-[var(--shreem-muted)]">
             <div className="flex items-start justify-between gap-3">
@@ -81,10 +98,12 @@ const CheckoutSummary = ({ cart }: { cart: any }) => {
                 {shiprocketEta && <p>{shiprocketEta}</p>}
               </div>
               <span className="shrink-0 font-semibold text-[var(--shreem-ink)]">
-                {formatShiprocketAmount(
-                  shiprocketAmountPaise,
-                  cart.currency_code
-                )}
+                {hasFirstOrderFreeShipping
+                  ? "Free"
+                  : formatShiprocketAmount(
+                      shiprocketAmountPaise,
+                      cart.currency_code
+                    )}
               </span>
             </div>
             {!shiprocketSynced && (

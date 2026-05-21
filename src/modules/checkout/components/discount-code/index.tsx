@@ -21,6 +21,7 @@ const DiscountCode: React.FC<DiscountCodeProps> = ({ cart }) => {
   const [errorMessage, setErrorMessage] = React.useState("")
 
   const { promotions = [] } = cart
+  const firstOrderCodes = new Set(["FIRST10", "FREESHIPFIRST"])
   const removePromotionCode = async (code: string) => {
     const validPromotions = promotions.filter(
       (promotion) => promotion.code !== code
@@ -66,7 +67,7 @@ const DiscountCode: React.FC<DiscountCodeProps> = ({ cart }) => {
               className="txt-medium text-ui-fg-interactive hover:text-ui-fg-interactive-hover"
               data-testid="add-discount-button"
             >
-              Add Promotion Code(s)
+              Have another coupon?
             </button>
 
             {/* <Tooltip content="You can add multiple promotion codes">
@@ -110,6 +111,10 @@ const DiscountCode: React.FC<DiscountCodeProps> = ({ cart }) => {
               </Heading>
 
               {promotions.map((promotion) => {
+                const code = promotion.code?.toUpperCase()
+                const isFirstOrderOffer = Boolean(
+                  code && firstOrderCodes.has(code)
+                )
                 return (
                   <div
                     key={promotion.id}
@@ -122,13 +127,18 @@ const DiscountCode: React.FC<DiscountCodeProps> = ({ cart }) => {
                           color={promotion.is_automatic ? "green" : "grey"}
                           size="small"
                         >
-                          {promotion.code}
+                          {isFirstOrderOffer
+                            ? code === "FIRST10"
+                              ? "First order 10% off"
+                              : "First order free delivery"
+                            : promotion.code}
                         </Badge>{" "}
-                        (
                         {promotion.application_method?.value !== undefined &&
                           promotion.application_method.currency_code !==
                             undefined && (
                             <>
+                              {" "}
+                              (
                               {promotion.application_method.type ===
                               "percentage"
                                 ? `${promotion.application_method.value}%`
@@ -138,9 +148,9 @@ const DiscountCode: React.FC<DiscountCodeProps> = ({ cart }) => {
                                       promotion.application_method
                                         .currency_code,
                                   })}
+                              )
                             </>
                           )}
-                        )
                         {/* {promotion.is_automatic && (
                           <Tooltip content="This promotion is automatically applied">
                             <InformationCircleSolid className="inline text-zinc-400" />
@@ -148,7 +158,7 @@ const DiscountCode: React.FC<DiscountCodeProps> = ({ cart }) => {
                         )} */}
                       </span>
                     </Text>
-                    {!promotion.is_automatic && (
+                    {!promotion.is_automatic && !isFirstOrderOffer && (
                       <button
                         className="flex items-center"
                         onClick={() => {

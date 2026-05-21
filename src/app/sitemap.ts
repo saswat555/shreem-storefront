@@ -3,7 +3,7 @@ import { MetadataRoute } from "next"
 import { listBlogPosts } from "@lib/data/journal"
 import { listCategories } from "@lib/data/categories"
 import { listCollections } from "@lib/data/collections"
-import { listProducts } from "@lib/data/products"
+import { listAllProducts } from "@lib/data/products"
 import { listRegions } from "@lib/data/regions"
 import { isSeoEnabled } from "@lib/seo/config"
 import { getBaseURL } from "@lib/util/env"
@@ -94,14 +94,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const productEntries = await Promise.all(
     countryCodes.map(async (countryCode) => {
-      const products = await listProducts({
+      const products = await listAllProducts({
         countryCode,
         queryParams: {
-          limit: 100,
           fields: "handle,updated_at,created_at",
         },
       })
-        .then(({ response }) => response.products)
         .catch(() => [])
 
       return products

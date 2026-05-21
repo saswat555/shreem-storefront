@@ -584,8 +584,16 @@ export default function PrakritiGuide({ products, model }: PrakritiGuideProps) {
           </div>
 
           {error && (
-            <div className="mx-4 mb-3 rounded-[20px] border border-rose-200 bg-rose-50 px-4 py-3 text-sm leading-6 text-rose-700 small:mx-5">
-              {error}
+            <div className="mx-4 mb-3 flex flex-col gap-3 rounded-[20px] border border-rose-200 bg-rose-50 px-4 py-3 text-sm leading-6 text-rose-700 small:mx-5 small:flex-row small:items-center small:justify-between">
+              <span>{error}</span>
+              <button
+                type="button"
+                onClick={() => runGuide()}
+                disabled={isAnalyzing || !canAnalyze}
+                className="shrink-0 rounded-full border border-rose-200 bg-white px-4 py-2 text-xs font-semibold text-rose-800 disabled:opacity-50"
+              >
+                Retry same case
+              </button>
             </div>
           )}
 

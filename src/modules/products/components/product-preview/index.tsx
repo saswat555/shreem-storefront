@@ -1,4 +1,5 @@
 import { getProductPrice } from "@lib/util/get-product-price"
+import { toAbsoluteProductImageUrl } from "@lib/util/absolute-url"
 import { HttpTypes } from "@medusajs/types"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import Thumbnail from "../thumbnail"
@@ -24,8 +25,11 @@ export default async function ProductPreview({
     >
       <div className="space-y-2 small:space-y-4" data-testid="product-wrapper">
         <Thumbnail
-          thumbnail={product.thumbnail}
-          images={product.images}
+          thumbnail={toAbsoluteProductImageUrl(product.thumbnail)}
+          images={product.images?.map((image) => ({
+            ...image,
+            url: toAbsoluteProductImageUrl(image.url),
+          }))}
           size="full"
           isFeatured={isFeatured}
         />

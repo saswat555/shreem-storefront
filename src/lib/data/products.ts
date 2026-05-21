@@ -96,6 +96,42 @@ export const listProducts = async ({
     })
 }
 
+export const listAllProducts = async ({
+  countryCode,
+  regionId,
+  queryParams,
+  pageSize = 100,
+  maxPages = 20,
+}: {
+  countryCode?: string
+  regionId?: string
+  queryParams?: HttpTypes.FindParams & HttpTypes.StoreProductListParams
+  pageSize?: number
+  maxPages?: number
+}) => {
+  const products: HttpTypes.StoreProduct[] = []
+  let pageParam = 1
+  let nextPage: number | null = 1
+
+  while (nextPage && pageParam <= maxPages) {
+    const result = await listProducts({
+      pageParam,
+      countryCode,
+      regionId,
+      queryParams: {
+        ...queryParams,
+        limit: pageSize,
+      },
+    })
+
+    products.push(...result.response.products)
+    nextPage = result.nextPage
+    pageParam += 1
+  }
+
+  return products
+}
+
 /**
  * This will fetch 100 products to the Next.js cache and sort them based on the sortBy parameter.
  * It will then return the paginated products based on the page and limit parameters.

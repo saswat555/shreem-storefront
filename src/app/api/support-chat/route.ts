@@ -2,12 +2,8 @@ import { NextRequest, NextResponse } from "next/server"
 
 import { recordAiUsage } from "@lib/data/ai-usage"
 import { retrieveCustomer } from "@lib/data/customer"
-import {
-  getGeminiApiKey,
-  getGeminiModel,
-  isGeminiEnabled,
-} from "@lib/util/prakriti-config"
-import { normalizeGeminiUsage } from "@lib/util/gemini"
+import { isGeminiEnabled } from "@lib/util/prakriti-config"
+import { generateGeminiJson } from "@lib/util/gemini"
 import { shreemAssurances, shreemRituals } from "@lib/constants/shreem"
 
 const SUPPORT_TO_EMAIL = "brajsavitrikrishisansthan@gmail.com"
@@ -78,14 +74,6 @@ const sanitizeMessages = (messages: unknown): Required<SupportMessage>[] => {
     })
     .filter(Boolean)
     .slice(-10) as Required<SupportMessage>[]
-}
-
-const safeParseJson = (text: string) => {
-  try {
-    return JSON.parse(text)
-  } catch {
-    return null
-  }
 }
 
 const buildPrompt = ({
@@ -165,40 +153,15 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  const model = getGeminiModel().replace(/^models\//, "")
-  const apiKey = getGeminiApiKey()
+  const gemini = await generateGeminiJson({
+    prompt: buildPrompt({ messages, customerContext, language }),
+    responseSchema: SUPPORT_CHAT_SCHEMA,
+    temperature: 0.18,
+    timeoutMs: 75_000,
+    label: "Support Chat API",
+  })
 
-  const geminiResponse = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(
-      model
-    )}:generateContent`,
-    {
-      method: "POST",
-      headers: {
-        "x-goog-api-key": apiKey,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        contents: [
-          {
-            role: "user",
-            parts: [
-              {
-                text: buildPrompt({ messages, customerContext, language }),
-              },
-            ],
-          },
-        ],
-        generationConfig: {
-          temperature: 0.18,
-          responseMimeType: "application/json",
-          responseSchema: SUPPORT_CHAT_SCHEMA,
-        },
-      }),
-    }
-  ).catch(() => null)
-
-  if (!geminiResponse || !geminiResponse.ok) {
+  if (!gemini.ok) {
     return NextResponse.json(
       {
         answer:
@@ -213,12 +176,7 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  const data = await geminiResponse.json()
-  const text = data.candidates?.[0]?.content?.parts
-    ?.map((part: { text?: string }) => part.text || "")
-    .join("")
-    .trim()
-  const parsed = safeParseJson(text || "")
+  const parsed = gemini.parsed
   const result = {
     answer:
       sanitizeString(parsed?.answer, 1600) ||
@@ -231,7 +189,7 @@ export async function POST(request: NextRequest) {
       sanitizeString(parsed?.escalation_prompt, 260) ||
       "Would you like to send these details to the Shreem team?",
     support_email: SUPPORT_TO_EMAIL,
-    model,
+    model: gemini.model,
   }
   const usage = customer
     ? await recordAiUsage({
@@ -245,8 +203,8 @@ export async function POST(request: NextRequest) {
         metadata: {
           customer_email: customer.email,
         },
-        model,
-        ...normalizeGeminiUsage(data.usageMetadata, model),
+        model: gemini.model,
+        ...gemini.usage,
         expert_recommended: result.needs_email,
       })
     : { synced: false }

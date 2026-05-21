@@ -1,9 +1,10 @@
 import { Metadata } from "next"
 import { notFound } from "next/navigation"
-import { listProducts } from "@lib/data/products"
+import { listAllProducts, listProducts } from "@lib/data/products"
 import { getRegion, listRegions } from "@lib/data/regions"
 import { getProductPrice } from "@lib/util/get-product-price"
 import { getBaseURL } from "@lib/util/env"
+import { toAbsoluteProductImageUrl } from "@lib/util/absolute-url"
 import { retrieveCustomer } from "@lib/data/customer"
 import ProductTemplate from "@modules/products/templates"
 import { HttpTypes } from "@medusajs/types"
@@ -25,14 +26,14 @@ export async function generateStaticParams() {
     }
 
     const promises = countryCodes.map(async (country) => {
-      const { response } = await listProducts({
+      const products = await listAllProducts({
         countryCode: country,
-        queryParams: { limit: 100, fields: "handle" },
+        queryParams: { fields: "handle" },
       })
 
       return {
         country,
-        products: response.products,
+        products,
       }
     })
 
@@ -60,18 +61,35 @@ function getImagesForVariant(
   product: HttpTypes.StoreProduct,
   selectedVariantId?: string
 ) {
+  const fallbackImages =
+    product.images?.length || !product.thumbnail
+      ? product.images ?? []
+      : [
+          {
+            id: `${product.id}-thumbnail`,
+            url: product.thumbnail,
+          } as HttpTypes.StoreProductImage,
+        ]
+
   if (!selectedVariantId || !product.variants) {
-    return product.images ?? []
+    return fallbackImages
   }
 
   const variant = product.variants!.find((v) => v.id === selectedVariantId)
   if (!variant || !(variant.images?.length ?? 0)) {
-    return product.images ?? []
+    return fallbackImages
   }
 
   const imageIdsMap = new Map((variant.images ?? []).map((i) => [i.id, true]))
-  return (product.images ?? []).filter((i) => imageIdsMap.has(i.id))
+  const variantImages = (product.images ?? []).filter((i) => imageIdsMap.has(i.id))
+
+  return variantImages.length ? variantImages : fallbackImages
 }
+
+const normalizeProductImage = <T extends { url?: string | null }>(image: T): T => ({
+  ...image,
+  url: toAbsoluteProductImageUrl(image.url),
+})
 
 export async function generateMetadata(props: Props): Promise<Metadata> {
   const params = await props.params
@@ -100,6 +118,9 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
     product.description?.slice(0, 155) ||
     `Shop ${product.title} from Shreem Cow Products with live pricing, product details, and secure checkout.`
   const canonical = `/${countryCode}/products/${handle}`
+  const productImage = toAbsoluteProductImageUrl(
+    product.thumbnail || product.images?.[0]?.url
+  )
 
   return {
     title: `${product.title} | Shreem Cow Products`,
@@ -112,15 +133,15 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
       description,
       url: canonical,
       type: "website",
-      images: product.thumbnail
-        ? [{ url: product.thumbnail, alt: product.title }]
+      images: productImage
+        ? [{ url: productImage, alt: product.title }]
         : [],
     },
     twitter: {
       card: "summary_large_image",
       title: `${product.title} | Shreem`,
       description,
-      images: product.thumbnail ? [product.thumbnail] : [],
+      images: productImage ? [productImage] : [],
     },
   }
 }
@@ -147,7 +168,9 @@ export default async function ProductPage(props: Props) {
     return <ProductUnavailable handle={params.handle} />
   }
 
-  const images = getImagesForVariant(pricedProduct, selectedVariantId)
+  const images = getImagesForVariant(pricedProduct, selectedVariantId).map(
+    normalizeProductImage
+  )
   const customer = await retrieveCustomer().catch(() => null)
   const defaultShippingAddress =
     customer?.addresses?.find((address) => address.is_default_shipping) ||
@@ -162,7 +185,12 @@ export default async function ProductPage(props: Props) {
   const imageUrls = [
     pricedProduct.thumbnail,
     ...(images || []).map((image) => image.url),
-  ].filter(Boolean)
+  ]
+    .map(toAbsoluteProductImageUrl)
+    .filter(Boolean)
+  const currencyCode = cheapestPrice?.currency_code?.toUpperCase() || "INR"
+  const priceValidUntil = new Date()
+  priceValidUntil.setFullYear(priceValidUntil.getFullYear() + 1)
   const productSchema = {
     "@context": "https://schema.org",
     "@type": "Product",
@@ -181,10 +209,47 @@ export default async function ProductPage(props: Props) {
       ? {
           "@type": "Offer",
           url: `${baseUrl}/${params.countryCode}/products/${pricedProduct.handle}`,
-          priceCurrency: cheapestPrice.currency_code?.toUpperCase(),
+          priceCurrency: currencyCode,
           price: cheapestPrice.calculated_price_number,
+          priceValidUntil: priceValidUntil.toISOString().slice(0, 10),
           availability: "https://schema.org/InStock",
           itemCondition: "https://schema.org/NewCondition",
+          shippingDetails: {
+            "@type": "OfferShippingDetails",
+            shippingDestination: {
+              "@type": "DefinedRegion",
+              addressCountry: "IN",
+            },
+            shippingRate: {
+              "@type": "MonetaryAmount",
+              currency: currencyCode,
+              value: "0",
+            },
+            deliveryTime: {
+              "@type": "ShippingDeliveryTime",
+              handlingTime: {
+                "@type": "QuantitativeValue",
+                minValue: 1,
+                maxValue: 2,
+                unitCode: "DAY",
+              },
+              transitTime: {
+                "@type": "QuantitativeValue",
+                minValue: 3,
+                maxValue: 7,
+                unitCode: "DAY",
+              },
+            },
+          },
+          hasMerchantReturnPolicy: {
+            "@type": "MerchantReturnPolicy",
+            applicableCountry: "IN",
+            returnPolicyCategory:
+              "https://schema.org/MerchantReturnFiniteReturnWindow",
+            merchantReturnDays: 7,
+            returnMethod: "https://schema.org/ReturnByMail",
+            returnFees: "https://schema.org/ReturnShippingFees",
+          },
         }
       : undefined,
   }

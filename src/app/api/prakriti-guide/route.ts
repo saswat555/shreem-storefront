@@ -2,12 +2,8 @@ import { NextRequest, NextResponse } from "next/server"
 
 import { recordAiUsage } from "@lib/data/ai-usage"
 import { retrieveCustomer } from "@lib/data/customer"
-import {
-  getPrakritiGuideApiKey,
-  getPrakritiGuideModel,
-  isPrakritiGuideEnabled,
-} from "@lib/util/prakriti-config"
-import { normalizeGeminiUsage } from "@lib/util/gemini"
+import { isPrakritiGuideEnabled } from "@lib/util/prakriti-config"
+import { generateGeminiJson } from "@lib/util/gemini"
 import type { PrakritiProduct, PrakritiSubject } from "@lib/util/prakriti"
 
 const REMEDY_SCHEMA = {
@@ -135,37 +131,6 @@ const buildPrompt = ({
 const sanitizeString = (value: unknown, maxLength: number) =>
   typeof value === "string" ? value.trim().slice(0, maxLength) : ""
 
-const safeParseJson = (text: string) => {
-  try {
-    return JSON.parse(text)
-  } catch {
-    return null
-  }
-}
-
-const getGeminiErrorMessage = (body: string) => {
-  const fallback =
-    "GrowBuddy could not analyze this case right now. Please try again in a moment."
-
-  if (!body) {
-    return fallback
-  }
-
-  try {
-    const parsed = JSON.parse(body)
-    const message =
-      typeof parsed?.error?.message === "string" ? parsed.error.message : ""
-
-    if (message.includes("Invalid JSON payload")) {
-      return "GrowBuddy could not start the structured analysis. Please try once more."
-    }
-
-    return message || fallback
-  } catch {
-    return body.includes("Invalid JSON payload") ? fallback : body.slice(0, 260)
-  }
-}
-
 const sanitizeProducts = (products: unknown): PrakritiProduct[] => {
   if (!Array.isArray(products)) {
     return []
@@ -271,66 +236,41 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  const apiKey = getPrakritiGuideApiKey()
-  const model = getPrakritiGuideModel().replace(/^models\//, "")
-  const geminiResponse = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(
-      model
-    )}:generateContent`,
-    {
-      method: "POST",
-      headers: {
-        "x-goog-api-key": apiKey,
-        "Content-Type": "application/json",
+  const gemini = await generateGeminiJson({
+    prompt: buildPrompt({
+      subject,
+      notes,
+      caseMeta,
+      products,
+      language,
+    }),
+    parts: images.map((image) => ({
+      inline_data: {
+        mime_type: image.mimeType,
+        data: image.data,
       },
-      body: JSON.stringify({
-        contents: [
-          {
-            role: "user",
-            parts: [
-              {
-                text: buildPrompt({
-                  subject,
-                  notes,
-                  caseMeta,
-                  products,
-                  language,
-                }),
-              },
-              ...images.map((image) => ({
-                inline_data: {
-                  mime_type: image.mimeType,
-                  data: image.data,
-                },
-              })),
-            ],
-          },
-        ],
-        generationConfig: {
-          temperature: 0.25,
-          responseMimeType: "application/json",
-          responseSchema: REMEDY_SCHEMA,
-        },
-      }),
-    }
-  ).catch(() => null)
+    })),
+    responseSchema: REMEDY_SCHEMA,
+    temperature: 0.25,
+    timeoutMs: 120_000,
+    maxOutputTokens: 8192,
+    label: "GrowBuddy API",
+  })
 
-  if (!geminiResponse || !geminiResponse.ok) {
-    const errorBody = geminiResponse ? await geminiResponse.text() : ""
-
+  if (!gemini.ok) {
     return NextResponse.json(
       {
-        message: getGeminiErrorMessage(errorBody),
+        message:
+          gemini.error ||
+          "GrowBuddy could not analyze this case right now. Please try again in a moment.",
+        retryable: true,
       },
       { status: 502 }
     )
   }
 
-  const data = await geminiResponse.json()
-  const result = data.candidates?.[0]?.content?.parts
-    ?.map((part: { text?: string }) => part.text || "")
-    .join("")
-  const parsedResult = safeParseJson(result || "")
+  const result = gemini.text
+  const parsedResult = gemini.parsed
   const response =
     parsedResult && typeof parsedResult === "object" && !Array.isArray(parsedResult)
       ? (parsedResult as Record<string, unknown>)
@@ -353,15 +293,15 @@ export async function POST(request: NextRequest) {
       customer_email: customer.email,
       image_mime_types: images.map((image) => image.mimeType),
     },
-    model,
-    ...normalizeGeminiUsage(data.usageMetadata, model),
+    model: gemini.model,
+    ...gemini.usage,
     expert_recommended:
       response.confidence === "low" || urgentCareSigns.length > 0,
   })
 
   return NextResponse.json({
     result,
-    model,
+    model: gemini.model,
     usage_synced: usage.synced,
   })
 }

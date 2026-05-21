@@ -89,6 +89,8 @@ const buildRevalidationPlan = (payload: RevalidatePayload = {}) => {
   const paths = [
     ...asStringList(payload.path),
     ...asStringList(payload.paths),
+    "/sitemap.xml",
+    "/api/google/products.xml",
     ...effectiveCountryCodes.flatMap((countryCode) => [
       `/${countryCode}`,
       `/${countryCode}/store`,
