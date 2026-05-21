@@ -101,6 +101,26 @@ type KundliAnalysis = {
     reason: string
   }[]
   book_citations?: BookCitation[]
+  personality_markers?: {
+    trait: string
+    chart_basis: string
+    lived_experience: string
+  }[]
+  deep_case_analysis?: {
+    case: string
+    chart_basis: string
+    book_basis: string
+    prediction: string
+    confidence: string
+    caution: string
+  }[]
+  life_event_windows?: {
+    period: string
+    likely_theme: string
+    chart_basis: string
+    book_basis: string
+    guidance: string
+  }[]
   planet_effects?: {
     planet: string
     placement: string
@@ -121,6 +141,8 @@ type KundliResult = {
     language?: string
     panchang_system_id?: string
     sub_questions?: string[]
+    analysis_mode?: "standard" | "deep"
+    usage_units?: number
   }
   chart?: PrashnaChart
   detected_yogas?: string[]
@@ -160,10 +182,13 @@ type KundliResult = {
   }[]
   analysis?: KundliAnalysis
   message?: string
+  retryable?: boolean
   usage_synced?: boolean
   wallet?: AiWallet
   quota?: AiQuota
   packs?: AiCreditPack[]
+  analysis_mode?: "standard" | "deep"
+  usage_units?: number
 }
 
 type MatchmakingResult = {
@@ -214,6 +239,7 @@ type MatchmakingResult = {
     expert_call_reason?: string
   }
   message?: string
+  retryable?: boolean
   usage_synced?: boolean
   wallet?: AiWallet
   quota?: AiQuota
@@ -224,6 +250,7 @@ type AiQuota = {
   limit?: number
   used?: number
   remaining?: number
+  requested_units?: number
   reset_at?: string
 }
 
@@ -1250,6 +1277,133 @@ const RiskWatchList = ({
   )
 }
 
+const PersonalityMarkerList = ({
+  rows,
+}: {
+  rows?: KundliAnalysis["personality_markers"]
+}) => {
+  if (!rows?.length) {
+    return null
+  }
+
+  return (
+    <div className="rounded-[20px] border border-[rgba(13,129,126,0.18)] bg-white/64 px-4 py-4">
+      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
+        Lived personality markers
+      </p>
+      <div className="mt-3 grid gap-3 md:grid-cols-2">
+        {rows.map((item, index) => (
+          <div
+            key={`${item.trait}-${index}`}
+            className="rounded-[16px] border border-[var(--shreem-border)] bg-white/72 px-3 py-3"
+          >
+            <p className="text-sm font-semibold text-[var(--shreem-ink)]">
+              {item.trait}
+            </p>
+            <p className="mt-2 text-xs leading-5 text-[var(--shreem-muted)]">
+              {item.chart_basis}
+            </p>
+            <p className="mt-2 rounded-[14px] bg-[rgba(240,248,246,0.72)] px-3 py-2 text-xs leading-5 text-[var(--shreem-muted)]">
+              {item.lived_experience}
+            </p>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+const DeepCaseAnalysisList = ({
+  rows,
+}: {
+  rows?: KundliAnalysis["deep_case_analysis"]
+}) => {
+  if (!rows?.length) {
+    return null
+  }
+
+  return (
+    <div className="rounded-[20px] border border-[rgba(212,161,38,0.24)] bg-[rgba(255,248,233,0.7)] px-4 py-4">
+      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
+        Deep case analysis
+      </p>
+      <div className="mt-3 grid gap-3">
+        {rows.map((item, index) => (
+          <div
+            key={`${item.case}-${index}`}
+            className="rounded-[16px] border border-[var(--shreem-border)] bg-white/74 px-3 py-3"
+          >
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <p className="text-sm font-semibold text-[var(--shreem-ink)]">
+                {item.case}
+              </p>
+              <span className="rounded-full bg-[rgba(13,129,126,0.08)] px-2 py-0.5 text-[0.66rem] font-semibold text-[var(--shreem-muted)]">
+                {item.confidence}
+              </span>
+            </div>
+            <p className="mt-2 text-xs leading-5 text-[var(--shreem-muted)]">
+              Chart: {item.chart_basis}
+            </p>
+            <p className="mt-2 text-xs leading-5 text-[var(--shreem-muted)]">
+              BPHS: {item.book_basis}
+            </p>
+            <p className="mt-2 text-sm leading-6 text-[var(--shreem-ink)]">
+              {item.prediction}
+            </p>
+            {item.caution && (
+              <p className="mt-2 rounded-[14px] bg-white/78 px-3 py-2 text-xs leading-5 text-[var(--shreem-muted)]">
+                {item.caution}
+              </p>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+const LifeEventWindowList = ({
+  rows,
+}: {
+  rows?: KundliAnalysis["life_event_windows"]
+}) => {
+  if (!rows?.length) {
+    return null
+  }
+
+  return (
+    <div className="rounded-[20px] border border-[rgba(111,33,31,0.14)] bg-white/64 px-4 py-4">
+      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
+        Dasha event windows
+      </p>
+      <div className="mt-3 grid gap-3 md:grid-cols-2">
+        {rows.map((item, index) => (
+          <div
+            key={`${item.period}-${index}`}
+            className="rounded-[16px] border border-[var(--shreem-border)] bg-white/72 px-3 py-3"
+          >
+            <p className="text-sm font-semibold text-[var(--shreem-ink)]">
+              {item.period}
+            </p>
+            <p className="mt-2 text-sm leading-6 text-[var(--shreem-ink)]">
+              {item.likely_theme}
+            </p>
+            <p className="mt-2 text-xs leading-5 text-[var(--shreem-muted)]">
+              Chart: {item.chart_basis}
+            </p>
+            <p className="mt-2 text-xs leading-5 text-[var(--shreem-muted)]">
+              BPHS: {item.book_basis}
+            </p>
+            <p className="mt-2 rounded-[14px] bg-[rgba(255,248,233,0.78)] px-3 py-2 text-xs leading-5 text-[var(--shreem-muted)]">
+              {item.guidance}
+            </p>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 const HistoryPanel = ({
   items,
   onSelect,
@@ -1394,6 +1548,24 @@ const KundliResultView = ({
 
   return (
     <div className="grid gap-4">
+      <div className="rounded-[20px] border border-[var(--shreem-border)] bg-white/62 px-4 py-3">
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
+          {result.analysis_mode === "deep" ||
+          result.profile?.analysis_mode === "deep"
+            ? "Deep Kundli reading"
+            : "Standard Kundli reading"}
+        </p>
+        <p className="mt-1 text-xs leading-5 text-[var(--shreem-muted)]">
+          Used {result.usage_units || result.profile?.usage_units || 1} AI{" "}
+          {Number(result.usage_units || result.profile?.usage_units || 1) > 1
+            ? "turns"
+            : "turn"}
+          {result.analysis_mode === "deep" ||
+          result.profile?.analysis_mode === "deep"
+            ? " with separate BPHS case retrieval."
+            : "."}
+        </p>
+      </div>
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(280px,0.65fr)]">
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
           <NorthIndianChart chart={chart} mode="lagna" title="Lagna chart" />
@@ -1475,6 +1647,9 @@ const KundliResultView = ({
       <PredictionTable rows={result.analysis?.prediction_table} />
       <DashaPredictionList rows={result.analysis?.dasha_predictions} />
       <RiskWatchList rows={result.analysis?.risk_watch} />
+      <PersonalityMarkerList rows={result.analysis?.personality_markers} />
+      <DeepCaseAnalysisList rows={result.analysis?.deep_case_analysis} />
+      <LifeEventWindowList rows={result.analysis?.life_event_windows} />
       <PlanetEffectList chart={chart} effects={result.analysis?.planet_effects} />
       <BookCitationList items={result.analysis?.book_citations} />
 
@@ -2040,6 +2215,7 @@ export default function AstrologyExperience({
     birthDate: "",
     birthTime: "",
     cityId: "rewa",
+    deepMode: false,
     subQuestions: ["", "", ""],
   })
   const [kundliResult, setKundliResult] = useState<KundliResult | null>(null)
@@ -2364,6 +2540,10 @@ export default function AstrologyExperience({
           birthDate: profile.birth_date || current.birthDate,
           birthTime: profile.birth_time || current.birthTime,
           cityId: restoredCityId || current.cityId,
+          deepMode:
+            profile.analysis_mode === "deep" ||
+            result.analysis_mode === "deep" ||
+            current.deepMode,
           subQuestions:
             Array.isArray(profile.sub_questions) &&
             profile.sub_questions.some(Boolean)
@@ -2476,10 +2656,7 @@ export default function AstrologyExperience({
     const balance = Math.max(0, Number(aiWallet?.credit_balance || 0))
     const proActive = Boolean(aiWallet?.pro_active)
     const freeLimit = Math.max(0, Number(aiQuota?.limit ?? 3))
-    const freeUsed = Math.min(
-      freeLimit,
-      Math.max(0, Number(aiQuota?.used ?? 0))
-    )
+    const freeUsed = Math.max(0, Number(aiQuota?.used ?? 0))
     const freeRemaining = Math.max(0, Number(aiQuota?.remaining ?? freeLimit))
     const resetLabel = aiQuota?.reset_at
       ? new Intl.DateTimeFormat("en-IN", {
@@ -2508,7 +2685,8 @@ export default function AstrologyExperience({
               {" "}{resetLabel}.
             </p>
             <p className="mt-1 text-xs leading-5 text-[var(--shreem-muted)]">
-              Extra readings use paid credits or Premium.
+              Extra readings use paid credits or Premium. Deep Kundli uses 2
+              turns because it retrieves separate BPHS case packs.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -2814,9 +2992,21 @@ export default function AstrologyExperience({
                   </p>
                 )}
                 {prashna?.message && !prashna?.answer && (
-                  <p className="mt-3 rounded-[16px] border border-rose-200 bg-rose-50 px-4 py-3 text-sm leading-6 text-rose-700">
-                    {prashna.message}
-                  </p>
+                  <div className="mt-3 rounded-[16px] border border-rose-200 bg-rose-50 px-4 py-3">
+                    <p className="text-sm leading-6 text-rose-700">
+                      {prashna.message}
+                    </p>
+                    {prashna.retryable && (
+                      <button
+                        type="button"
+                        onClick={askPrashna}
+                        disabled={loadingPrashna || question.trim().length < 8}
+                        className="mt-3 rounded-full bg-white px-4 py-2 text-xs font-semibold text-rose-700 shadow-sm disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        Retry same Prashna
+                      </button>
+                    )}
+                  </div>
                 )}
                 {prashna?.answer && prashna.chart && (
                   <div className="mt-4">
@@ -2924,6 +3114,43 @@ export default function AstrologyExperience({
                 <div className="rounded-[20px] border border-[var(--shreem-border)] bg-white/52 px-3 py-3">
                   <PanchangControls />
                 </div>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setKundliForm((current) => ({
+                      ...current,
+                      deepMode: !current.deepMode,
+                    }))
+                  }
+                  className={`rounded-[20px] border px-3 py-3 text-left transition ${
+                    kundliForm.deepMode
+                      ? "border-[rgba(212,161,38,0.42)] bg-[rgba(255,248,233,0.86)]"
+                      : "border-[var(--shreem-border)] bg-white/52"
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
+                        Deep AI mode
+                      </p>
+                      <p className="mt-1 text-sm font-semibold text-[var(--shreem-ink)]">
+                        Case-by-case BPHS reading
+                      </p>
+                      <p className="mt-1 text-xs leading-5 text-[var(--shreem-muted)]">
+                        Uses 2 free turns or 2 paid credits. Best for deeper
+                        dasha, yoga, health, remedy, and life-event analysis.
+                      </p>
+                    </div>
+                    <span
+                      className={`mt-1 h-5 w-5 rounded-full border ${
+                        kundliForm.deepMode
+                          ? "border-[var(--shreem-gold-deep)] bg-[var(--shreem-gold)]"
+                          : "border-[var(--shreem-border)] bg-white"
+                      }`}
+                      aria-hidden="true"
+                    />
+                  </div>
+                </button>
                 <div className="rounded-[20px] border border-[rgba(13,129,126,0.14)] bg-[rgba(240,248,246,0.62)] px-3 py-3">
                   <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
                     Ask up to 3 chart questions
@@ -2965,7 +3192,13 @@ export default function AstrologyExperience({
                   onClick={generateKundli}
                   className="mt-2 w-full rounded-full border-0 bg-[linear-gradient(135deg,#0d817e_0%,#123f63_52%,#6f211f_100%)] px-5 py-3 text-sm font-semibold text-white shadow-[0_18px_34px_rgba(18,63,99,0.26)] disabled:cursor-not-allowed disabled:opacity-45"
                 >
-                  {loadingKundli ? "Generating Kundli..." : "Generate Kundli"}
+                  {loadingKundli
+                    ? kundliForm.deepMode
+                      ? "Running deep Kundli..."
+                      : "Generating Kundli..."
+                    : kundliForm.deepMode
+                    ? "Generate deep Kundli"
+                    : "Generate Kundli"}
                 </button>
                 <p className="text-xs leading-5 text-[var(--shreem-muted)]">
                   The generated stone indicators are general. Wear gemstones or
@@ -2979,8 +3212,16 @@ export default function AstrologyExperience({
                 <p className="brand-kicker">Generated chart</p>
                 {loadingKundli && (
                   <LogoLoader
-                    label="Generating your Kundli..."
-                    detail="Preparing the North Indian chart, dasha context, yogas, house table, and AI reading."
+                    label={
+                      kundliForm.deepMode
+                        ? "Running deep Kundli..."
+                        : "Generating your Kundli..."
+                    }
+                    detail={
+                      kundliForm.deepMode
+                        ? "Building BPHS case packs for dasha, yogas, health, remedies, and life-event windows before the AI reading."
+                        : "Preparing the North Indian chart, dasha context, yogas, house table, and AI reading."
+                    }
                   />
                 )}
                 {!loadingKundli && !kundliResult && (
@@ -2991,9 +3232,25 @@ export default function AstrologyExperience({
                   </p>
                 )}
                 {kundliResult?.message && (
-                  <p className="mt-3 rounded-[16px] border border-rose-200 bg-rose-50 px-4 py-3 text-sm leading-6 text-rose-700">
-                    {kundliResult.message}
-                  </p>
+                  <div className="mt-3 rounded-[16px] border border-rose-200 bg-rose-50 px-4 py-3">
+                    <p className="text-sm leading-6 text-rose-700">
+                      {kundliResult.message}
+                    </p>
+                    {kundliResult.retryable && (
+                      <button
+                        type="button"
+                        onClick={generateKundli}
+                        disabled={
+                          loadingKundli ||
+                          !kundliForm.birthDate ||
+                          !kundliForm.birthTime
+                        }
+                        className="mt-3 rounded-full bg-white px-4 py-2 text-xs font-semibold text-rose-700 shadow-sm disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        Retry same Kundli
+                      </button>
+                    )}
+                  </div>
                 )}
                 {kundliResult?.chart && (
                   <div className="mt-4">
@@ -3087,9 +3344,21 @@ export default function AstrologyExperience({
                   </p>
                 )}
                 {matchmakingResult?.message && (
-                  <p className="mt-3 rounded-[16px] border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-800">
-                    {matchmakingResult.message}
-                  </p>
+                  <div className="mt-3 rounded-[16px] border border-amber-200 bg-amber-50 px-4 py-3">
+                    <p className="text-sm leading-6 text-amber-800">
+                      {matchmakingResult.message}
+                    </p>
+                    {matchmakingResult.retryable && (
+                      <button
+                        type="button"
+                        onClick={generateMatchmaking}
+                        disabled={loadingMatchmaking}
+                        className="mt-3 rounded-full bg-white px-4 py-2 text-xs font-semibold text-amber-800 shadow-sm disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        Retry same match
+                      </button>
+                    )}
+                  </div>
                 )}
                 {matchmakingResult?.compatibility && (
                   <div className="mt-4">

@@ -113,6 +113,50 @@ const tokenize = (value: string) =>
     .split(" ")
     .filter((token) => token.length > 2 && !STOP_WORDS.has(token))
 
+const SEMANTIC_EXPANSIONS: [RegExp, string][] = [
+  [
+    /personality|temperament|nature|mind|emotion|liking|habit|identity|confidence/,
+    "lagna ascendant moon chandra sun surya first house mind temperament nature character mental disposition",
+  ],
+  [
+    /career|profession|work|job|business|status|authority|success/,
+    "tenth house karma career profession saturn sun mercury jupiter authority status livelihood work",
+  ],
+  [
+    /money|wealth|income|saving|finance|profit|loss/,
+    "second house eleventh house dhana labha wealth income gains venus jupiter mercury saturn",
+  ],
+  [
+    /marriage|relationship|spouse|partner|match|compatibility/,
+    "seventh house venus jupiter mars mangal marriage spouse yoni gana nadi bhakoot relationship",
+  ],
+  [
+    /children|education|intelligence|study|creativity|mantra/,
+    "fifth house putra vidya intelligence mantra purva punya jupiter mercury children education",
+  ],
+  [
+    /health|disease|illness|pain|body|injury|accident|surgery|major incident/,
+    "sixth house eighth house twelfth house ari randhra vyaya disease injury accident arishta mars saturn rahu ketu",
+  ],
+  [
+    /dasha|period|timing|event|incident|phase|mahadasha|antardasha/,
+    "vimshottari dasha mahadasha antardasha pratyantar period result timing phala bhukti",
+  ],
+  [
+    /remedy|pooja|puja|mantra|daan|stone|gem|upay|peace/,
+    "upaya shanti mantra daan graha remedy worship deity vrata seva gemstone caution",
+  ],
+]
+
+const expandSemanticQuery = (value: string) => {
+  const normalized = normalizeText(value)
+  const additions = SEMANTIC_EXPANSIONS.flatMap(([pattern, expansion]) =>
+    pattern.test(normalized) ? [expansion] : []
+  )
+
+  return additions.length ? `${value} ${additions.join(" ")}` : value
+}
+
 const hashToken = (token: string) => {
   let hash = 2166136261
 
@@ -164,6 +208,12 @@ const chartSearchText = (chart?: PrashnaChart) => {
       .map(
         (planet) =>
           `${planet.name} ${planet.sign} house ${planet.house} ${planet.nakshatra}`
+      )
+      .join(" "),
+    chart.houses
+      .map(
+        (house) =>
+          `house ${house.house} ${house.sign} ${house.signLord} ${house.theme}`
       )
       .join(" "),
   ].join(" ")
@@ -233,6 +283,21 @@ const specialCaseBoost = (normalizedQuery: string, chunk: BphsRagChunk) => {
       ["remed", "mantra", "graha", "उपाय", "मंत्र", "दान"],
       0.18,
     ],
+    [
+      /personality|temperament|nature|mind|emotion|लग्न|चन्द्र/,
+      ["lagna", "moon", "chandra", "first", "mind", "लग्न", "चन्द्र"],
+      0.16,
+    ],
+    [
+      /career|profession|karma|income|wealth|धन|कर्म/,
+      ["karma", "tenth", "profession", "wealth", "dhana", "कर्म", "धन"],
+      0.16,
+    ],
+    [
+      /children|education|intelligence|fifth|putra|विद्या|पुत्र/,
+      ["fifth", "putra", "vidya", "jupiter", "विद्या", "पुत्र"],
+      0.14,
+    ],
   ]
 
   return boosts.reduce((score, [pattern, terms, boost]) => {
@@ -266,9 +331,10 @@ export const retrieveAstrologyKnowledge = ({
     chartSearchText(chart),
     detectedCases.join(" "),
   ].join(" ")
-  const normalizedSearch = normalizeText(searchText)
-  const queryTokens = new Set(tokenize(searchText))
-  const queryVector = vectorizeQuery(searchText)
+  const expandedSearchText = expandSemanticQuery(searchText)
+  const normalizedSearch = normalizeText(expandedSearchText)
+  const queryTokens = new Set(tokenize(expandedSearchText))
+  const queryVector = vectorizeQuery(expandedSearchText)
 
   return rag.chunks
     .map((chunk) => ({

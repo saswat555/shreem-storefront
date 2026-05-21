@@ -7,6 +7,8 @@ type GeminiGenerateOptions = {
   responseSchema: unknown
   temperature?: number
   timeoutMs?: number
+  maxAttempts?: number
+  maxOutputTokens?: number
   label?: string
 }
 
@@ -28,9 +30,11 @@ export type GeminiGenerateResult = {
   statusText?: string
   error?: string
   timedOut?: boolean
+  attempts?: number
+  queuedMs?: number
 }
 
-const DEFAULT_TIMEOUT_MS = 60_000
+const DEFAULT_TIMEOUT_MS = 90_000
 
 const parsePositiveNumber = (value: unknown, fallback: number) => {
   const parsed = Number(value)
@@ -45,12 +49,117 @@ export const getAstrologyAiTimeoutMs = () =>
         process.env.GEMINI_TIMEOUT_MS,
       DEFAULT_TIMEOUT_MS
     ),
-    120_000
+    180_000
+  )
+
+const clampInteger = (value: unknown, fallback: number, min: number, max: number) => {
+  const parsed = Math.floor(Number(value))
+
+  if (!Number.isFinite(parsed)) {
+    return fallback
+  }
+
+  return Math.min(Math.max(parsed, min), max)
+}
+
+const getGeminiMaxAttempts = (override?: number) =>
+  clampInteger(
+    override ||
+      process.env.ASTROLOGY_AI_MAX_ATTEMPTS ||
+      process.env.GEMINI_MAX_ATTEMPTS,
+    2,
+    1,
+    4
+  )
+
+const getGeminiConcurrency = () =>
+  clampInteger(
+    process.env.ASTROLOGY_AI_CONCURRENCY ||
+      process.env.GEMINI_MAX_CONCURRENT_REQUESTS,
+    3,
+    1,
+    10
+  )
+
+const getGeminiMaxOutputTokens = (override?: number) =>
+  clampInteger(
+    override ||
+      process.env.ASTROLOGY_AI_MAX_OUTPUT_TOKENS ||
+      process.env.GEMINI_MAX_OUTPUT_TOKENS,
+    8192,
+    1024,
+    16384
+  )
+
+let activeGeminiRequests = 0
+const geminiQueue: Array<() => void> = []
+
+const waitForGeminiSlot = async () => {
+  const startedAt = Date.now()
+
+  if (activeGeminiRequests < getGeminiConcurrency()) {
+    activeGeminiRequests += 1
+    return () => {
+      activeGeminiRequests = Math.max(0, activeGeminiRequests - 1)
+      geminiQueue.shift()?.()
+    }
+  }
+
+  await new Promise<void>((resolve) => {
+    geminiQueue.push(() => {
+      activeGeminiRequests += 1
+      resolve()
+    })
+  })
+
+  return () => {
+    activeGeminiRequests = Math.max(0, activeGeminiRequests - 1)
+    geminiQueue.shift()?.()
+  }
+}
+
+const sleep = (ms: number) =>
+  new Promise((resolve) => {
+    setTimeout(resolve, ms)
+  })
+
+const shouldRetryGemini = ({
+  status,
+  timedOut,
+  invalidJson,
+  networkError,
+}: {
+  status?: number
+  timedOut?: boolean
+  invalidJson?: boolean
+  networkError?: boolean
+}) =>
+  Boolean(
+    timedOut ||
+      networkError ||
+      invalidJson ||
+      status === 408 ||
+      status === 409 ||
+      status === 429 ||
+      (status && status >= 500)
   )
 
 const safeParseJson = (text: string) => {
   try {
-    return JSON.parse(text)
+    let cleanText = text.trim()
+    
+    // Remove markdown code blocks if present
+    if (cleanText.startsWith("```")) {
+      const match = cleanText.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/i)
+      if (match && match[1]) {
+        cleanText = match[1]
+      } else {
+        // Fallback if the closing backticks are missing (truncated response)
+        cleanText = cleanText.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "")
+      }
+    }
+
+    return JSON.parse(cleanText)
   } catch {
     return null
   }
@@ -163,104 +272,179 @@ export const generateGeminiJson = async ({
   responseSchema,
   temperature = 0.22,
   timeoutMs = getAstrologyAiTimeoutMs(),
+  maxAttempts,
+  maxOutputTokens,
   label = "Gemini",
 }: GeminiGenerateOptions): Promise<GeminiGenerateResult> => {
   const model = getGeminiModel().replace(/^models\//, "")
   const apiKey = getGeminiApiKey()
-  const controller = new AbortController()
-  const timeout = setTimeout(() => controller.abort(), timeoutMs)
-  let fetchError: unknown = null
+  const attempts = getGeminiMaxAttempts(maxAttempts)
+  const queuedAt = Date.now()
+  const releaseSlot = await waitForGeminiSlot()
+  const queuedMs = Date.now() - queuedAt
+  let lastResult: GeminiGenerateResult | null = null
 
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(
-      model
-    )}:generateContent`,
-    {
-      method: "POST",
-      headers: {
-        "x-goog-api-key": apiKey,
-        "Content-Type": "application/json",
-      },
-      signal: controller.signal,
-      body: JSON.stringify({
-        contents: [
-          {
-            role: "user",
-            parts: [{ text: prompt }],
+  try {
+    for (let attempt = 1; attempt <= attempts; attempt += 1) {
+      const controller = new AbortController()
+      const timeout = setTimeout(() => controller.abort(), timeoutMs)
+      let fetchError: unknown = null
+
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(
+          model
+        )}:generateContent`,
+        {
+          method: "POST",
+          headers: {
+            "x-goog-api-key": apiKey,
+            "Content-Type": "application/json",
           },
-        ],
-        generationConfig: {
-          temperature,
-          responseMimeType: "application/json",
-          responseSchema,
-        },
-      }),
-    }
-  ).catch((error) => {
-    fetchError = error
-    return null
-  })
+          signal: controller.signal,
+          body: JSON.stringify({
+            contents: [
+              {
+                role: "user",
+                parts: [{ text: prompt }],
+              },
+            ],
+            generationConfig: {
+              temperature,
+              maxOutputTokens: getGeminiMaxOutputTokens(maxOutputTokens),
+              responseMimeType: "application/json",
+              responseSchema,
+            },
+          }),
+        }
+      ).catch((error) => {
+        fetchError = error
+        return null
+      })
 
-  clearTimeout(timeout)
+      clearTimeout(timeout)
 
-  if (!response || !response.ok) {
-    let errorDetails = ""
+      if (!response || !response.ok) {
+        let errorDetails = ""
 
-    if (response) {
-      try {
-        errorDetails = await response.text()
-      } catch {
-        errorDetails = "Could not read error response body"
+        if (response) {
+          try {
+            errorDetails = await response.text()
+          } catch {
+            errorDetails = "Could not read error response body"
+          }
+        }
+
+        const timedOut =
+          fetchError instanceof Error && fetchError.name === "AbortError"
+        const errorMessage =
+          fetchError instanceof Error
+            ? fetchError.message
+            : errorDetails || "No response from Gemini"
+
+        lastResult = {
+          ok: false,
+          parsed: null,
+          text: "",
+          model,
+          usage: emptyGeminiUsage(),
+          status: response?.status,
+          statusText: response?.statusText,
+          error: errorMessage,
+          timedOut,
+          attempts: attempt,
+          queuedMs,
+        }
+
+        console.error(`[${label}] Gemini generation failed`, {
+          attempt,
+          attempts,
+          queuedMs,
+          status: response?.status,
+          statusText: response?.statusText,
+          error: errorMessage,
+        })
+
+        if (
+          attempt < attempts &&
+          shouldRetryGemini({
+            status: response?.status,
+            timedOut,
+            networkError: !response,
+          })
+        ) {
+          await sleep(700 * attempt)
+          continue
+        }
+
+        return lastResult
+      }
+
+      const data = await response.json()
+      const text = data.candidates?.[0]?.content?.parts
+        ?.map((part: { text?: string }) => part.text || "")
+        .join("")
+        .trim()
+      const parsed = safeParseJson(text || "")
+
+      if (!parsed) {
+        lastResult = {
+          ok: false,
+          parsed: null,
+          text: text || "",
+          model,
+          usage: normalizeGeminiUsage(data.usageMetadata, model),
+          status: response.status,
+          statusText: response.statusText,
+          error: "invalid_json",
+          attempts: attempt,
+          queuedMs,
+        }
+
+        console.error(`[${label}] Gemini returned invalid JSON`, {
+          attempt,
+          attempts,
+          model,
+          queuedMs,
+          textPreview: (text || "").slice(0, 500),
+        })
+
+        if (
+          attempt < attempts &&
+          shouldRetryGemini({ status: response.status, invalidJson: true })
+        ) {
+          await sleep(700 * attempt)
+          continue
+        }
+
+        return lastResult
+      }
+
+      return {
+        ok: true,
+        parsed,
+        text: text || "",
+        model,
+        usage: normalizeGeminiUsage(data.usageMetadata, model),
+        status: response.status,
+        statusText: response.statusText,
+        attempts: attempt,
+        queuedMs,
       }
     }
+  } finally {
+    releaseSlot()
+  }
 
-    const errorMessage =
-      fetchError instanceof Error
-        ? fetchError.message
-        : errorDetails || "No response from Gemini"
-
-    console.error(`[${label}] Gemini generation failed`, {
-      status: response?.status,
-      statusText: response?.statusText,
-      error: errorMessage,
-    })
-
-    return {
+  return (
+    lastResult || {
       ok: false,
       parsed: null,
       text: "",
       model,
       usage: emptyGeminiUsage(),
-      status: response?.status,
-      statusText: response?.statusText,
-      error: errorMessage,
-      timedOut:
-        fetchError instanceof Error && fetchError.name === "AbortError",
+      error: "No response from Gemini",
+      attempts,
+      queuedMs,
     }
-  }
-
-  const data = await response.json()
-  const text = data.candidates?.[0]?.content?.parts
-    ?.map((part: { text?: string }) => part.text || "")
-    .join("")
-    .trim()
-  const parsed = safeParseJson(text || "")
-
-  if (!parsed) {
-    console.error(`[${label}] Gemini returned invalid JSON`, {
-      model,
-      textPreview: (text || "").slice(0, 500),
-    })
-  }
-
-  return {
-    ok: Boolean(parsed),
-    parsed,
-    text: text || "",
-    model,
-    usage: normalizeGeminiUsage(data.usageMetadata, model),
-    status: response.status,
-    statusText: response.statusText,
-    error: parsed ? undefined : "invalid_json",
-  }
+  )
 }

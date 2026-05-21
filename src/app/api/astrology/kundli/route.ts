@@ -28,6 +28,9 @@ import { generateGeminiJson } from "@lib/util/gemini"
 import { buildDetailedPrashnaChart } from "@lib/util/vedic-astrology"
 import { isGeminiEnabled } from "@lib/util/prakriti-config"
 
+export const runtime = "nodejs"
+export const maxDuration = 180
+
 const KUNDLI_SCHEMA = {
   type: "object",
   properties: {
@@ -189,6 +192,60 @@ const KUNDLI_SCHEMA = {
         required: ["citation", "relevance"],
       },
     },
+    personality_markers: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          trait: { type: "string" },
+          chart_basis: { type: "string" },
+          lived_experience: { type: "string" },
+        },
+        required: ["trait", "chart_basis", "lived_experience"],
+      },
+    },
+    deep_case_analysis: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          case: { type: "string" },
+          chart_basis: { type: "string" },
+          book_basis: { type: "string" },
+          prediction: { type: "string" },
+          confidence: { type: "string" },
+          caution: { type: "string" },
+        },
+        required: [
+          "case",
+          "chart_basis",
+          "book_basis",
+          "prediction",
+          "confidence",
+          "caution",
+        ],
+      },
+    },
+    life_event_windows: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          period: { type: "string" },
+          likely_theme: { type: "string" },
+          chart_basis: { type: "string" },
+          book_basis: { type: "string" },
+          guidance: { type: "string" },
+        },
+        required: [
+          "period",
+          "likely_theme",
+          "chart_basis",
+          "book_basis",
+          "guidance",
+        ],
+      },
+    },
     expert_call_recommended: { type: "boolean" },
     expert_call_reason: { type: "string" },
   },
@@ -218,6 +275,9 @@ const KUNDLI_SCHEMA = {
     "targeted_remedies",
     "shreem_product_suggestions",
     "book_citations",
+    "personality_markers",
+    "deep_case_analysis",
+    "life_event_windows",
     "expert_call_recommended",
     "expert_call_reason",
   ],
@@ -230,6 +290,9 @@ type KundliPayload = {
   cityId?: unknown
   gender?: unknown
   language?: unknown
+  panchangSystemId?: unknown
+  deepMode?: unknown
+  analysisMode?: unknown
   subQuestions?: unknown
 }
 
@@ -988,7 +1051,15 @@ const activeDashaText = (chart: PrashnaChart) =>
       ].join("; ")
     : "Vimshottari dasha unavailable"
 
+type KundliCaseReferencePack = {
+  case_name: string
+  chart_basis: string
+  query: string
+  passages: RetrievedAstrologyPassage[]
+}
+
 const mergeKnowledgePassages = (
+  limit: number,
   ...groups: RetrievedAstrologyPassage[][]
 ): RetrievedAstrologyPassage[] => {
   const seen = new Set<string>()
@@ -1004,7 +1075,7 @@ const mergeKnowledgePassages = (
       seen.add(passage.id)
       return true
     })
-    .slice(0, 10)
+    .slice(0, Math.min(Math.max(limit, 1), 24))
 }
 
 const knowledgeTrace = (passages: RetrievedAstrologyPassage[]) =>
@@ -1013,6 +1084,13 @@ const knowledgeTrace = (passages: RetrievedAstrologyPassage[]) =>
     citation: passage.citation,
     score: Number(passage.score.toFixed(4)),
     keywords: passage.keywords.slice(0, 8),
+  }))
+
+const casePackTrace = (packs: KundliCaseReferencePack[]) =>
+  packs.map((pack) => ({
+    case_name: pack.case_name,
+    chart_basis: pack.chart_basis,
+    references: knowledgeTrace(pack.passages),
   }))
 
 const retrieveKnowledgeSafely = (
@@ -1024,6 +1102,204 @@ const retrieveKnowledgeSafely = (
     console.error("Astrology RAG retrieval failed", error)
     return []
   }
+}
+
+const getImportantHouseBasis = (chart: PrashnaChart, houses: number[]) =>
+  houses
+    .map((houseNumber) => {
+      const house = chart.houses.find((item) => item.house === houseNumber)
+      const planets = chart.planets
+        .filter((planet) => planet.house === houseNumber)
+        .map(
+          (planet) =>
+            `${planet.name} in ${planet.sign} ${planet.nakshatra} pada ${planet.pada}`
+        )
+
+      if (!house) {
+        return ""
+      }
+
+      return `House ${houseNumber}: ${house.sign}, lord ${house.signLord}, ${
+        house.theme
+      }${planets.length ? `, planets ${planets.join("; ")}` : ""}`
+    })
+    .filter(Boolean)
+    .join(" | ")
+
+const buildKundliCaseReferencePacks = ({
+  chart,
+  detectedYogas,
+  healthIndicators,
+  targetedRemedySeeds,
+  subQuestions,
+}: {
+  chart: PrashnaChart
+  detectedYogas: string[]
+  healthIndicators: string[]
+  targetedRemedySeeds: TargetedRemedy[]
+  subQuestions: string[]
+}): KundliCaseReferencePack[] => {
+  const packs: KundliCaseReferencePack[] = []
+
+  const addPack = ({
+    caseName,
+    chartBasis,
+    query,
+    detectedCases = [],
+    min = 2,
+    max = 4,
+  }: {
+    caseName: string
+    chartBasis: string
+    query: string
+    detectedCases?: string[]
+    min?: number
+    max?: number
+  }) => {
+    const passages = retrieveKnowledgeSafely({
+      query: `${query} ${chartBasis}`,
+      chart,
+      detectedCases,
+      min,
+      max,
+    })
+
+    if (passages.length) {
+      packs.push({
+        case_name: caseName,
+        chart_basis: chartBasis,
+        query,
+        passages,
+      })
+    }
+  }
+
+  addPack({
+    caseName: "Vimshottari dasha timing and life-event windows",
+    chartBasis: activeDashaText(chart),
+    query:
+      "BPHS vimshottari dasha mahadasha antardasha pratyantar dasha lord result timing event phala",
+    detectedCases: chart.dasha
+      ? [
+          chart.dasha.mahadasha.lord,
+          chart.dasha.antardasha.lord,
+          chart.dasha.pratyantar.lord,
+        ]
+      : [],
+    min: 3,
+    max: 5,
+  })
+
+  addPack({
+    caseName: "Personality, temperament, inner experience, and liking",
+    chartBasis: [
+      getImportantHouseBasis(chart, [1, 4, 5]),
+      planetPlacementText(chart, ["Sun", "Moon", "Mercury", "Venus"]),
+      `Moon ${chart.moonSign} ${chart.nakshatra} pada ${chart.nakshatraPada}`,
+    ].join(" | "),
+    query:
+      "BPHS lagna moon first house fourth house fifth house temperament mind personality habits likes emotions nature",
+    detectedCases: ["lagna", chart.ascendant, chart.moonSign, chart.nakshatra],
+    min: 3,
+    max: 5,
+  })
+
+  addPack({
+    caseName: "Career, money, status, and work pattern",
+    chartBasis: [
+      getImportantHouseBasis(chart, [2, 10, 11]),
+      planetPlacementText(chart, ["Sun", "Mercury", "Jupiter", "Saturn"]),
+    ].join(" | "),
+    query:
+      "BPHS career profession tenth house wealth second house income eleventh house status karma dhan labha",
+    detectedCases: ["career", "wealth", "profession"],
+    min: 2,
+    max: 4,
+  })
+
+  addPack({
+    caseName: "Relationship, marriage, and emotional compatibility pattern",
+    chartBasis: [
+      getImportantHouseBasis(chart, [7, 2, 4]),
+      planetPlacementText(chart, ["Venus", "Jupiter", "Mars", "Moon"]),
+    ].join(" | "),
+    query:
+      "BPHS marriage spouse seventh house venus jupiter mars relationship partner harmony conflict",
+    detectedCases: ["marriage", "relationship", "spouse"],
+    min: 2,
+    max: 4,
+  })
+
+  detectedYogas.slice(0, 7).forEach((yoga) => {
+    addPack({
+      caseName: `Special case: ${yoga}`,
+      chartBasis: [
+        yoga,
+        planetPlacementText(chart, [
+          "Sun",
+          "Moon",
+          "Mars",
+          "Mercury",
+          "Jupiter",
+          "Venus",
+          "Saturn",
+          "Rahu",
+          "Ketu",
+        ]),
+      ].join(" | "),
+      query:
+        "BPHS yoga special combination conjunction aspect cancellation strength result dasha gajakesari budhaditya rahu ketu manglik",
+      detectedCases: [yoga],
+      min: 2,
+      max: 4,
+    })
+  })
+
+  addPack({
+    caseName: "Health, disease tendency, accident watch, and prevention",
+    chartBasis: [
+      getImportantHouseBasis(chart, [6, 8, 12]),
+      healthIndicators.join(" | "),
+      planetPlacementText(chart, ["Mars", "Saturn", "Rahu", "Ketu", "Moon"]),
+      activeDashaText(chart),
+    ].join(" | "),
+    query:
+      "BPHS disease illness health sixth eighth twelfth ari randhra arishta accident injury mars saturn rahu ketu prevention",
+    detectedCases: healthIndicators,
+    min: 3,
+    max: 5,
+  })
+
+  addPack({
+    caseName: "Remedy, mantra, pooja, daan, and gemstone caution",
+    chartBasis: targetedRemedySeeds
+      .map(
+        (item) =>
+          `${item.pain_point}: ${item.chart_basis}; ${item.mantra_or_pooja}`
+      )
+      .join(" | "),
+    query:
+      "BPHS remedy upaya graha shanti mantra pooja daan gemstone worship deity vrata seva",
+    detectedCases: targetedRemedySeeds.map((item) => item.pain_point),
+    min: 2,
+    max: 4,
+  })
+
+  subQuestions.slice(0, 3).forEach((question, index) => {
+    addPack({
+      caseName: `User question ${index + 1}`,
+      chartBasis: `${question} | ${activeDashaText(chart)} | ${getImportantHouseBasis(
+        chart,
+        [1, 5, 7, 10]
+      )}`,
+      query: `BPHS specific question prediction ${question}`,
+      detectedCases: [question],
+      min: 1,
+      max: 3,
+    })
+  })
+
+  return packs
 }
 
 const buildKundliKnowledgePassages = ({
@@ -1058,6 +1334,7 @@ const buildKundliKnowledgePassages = ({
     )
 
   return mergeKnowledgePassages(
+    10,
     retrieveKnowledgeSafely({
       query: [
         "vimshottari dasha mahadasha antardasha pratyantar dasha lord effects दशा महादशा अन्तर्दशा",
@@ -1130,6 +1407,22 @@ const buildKundliKnowledgePassages = ({
   )
 }
 
+const formatCaseReferencePacksForPrompt = (
+  packs: KundliCaseReferencePack[]
+) =>
+  packs.length
+    ? packs
+        .map(
+          (pack, index) =>
+            `Case pack ${index + 1}: ${pack.case_name}\nChart basis: ${
+              pack.chart_basis
+            }\nRetrieved BPHS passages:\n${formatAstrologyKnowledgeForPrompt(
+              pack.passages
+            )}`
+        )
+        .join("\n\n")
+    : "No deep case packs requested."
+
 const buildPrompt = ({
   name,
   chart,
@@ -1140,6 +1433,8 @@ const buildPrompt = ({
   subQuestions,
   language,
   knowledgePassages,
+  caseReferencePacks,
+  deepMode,
 }: {
   name: string
   chart: PrashnaChart
@@ -1150,6 +1445,8 @@ const buildPrompt = ({
   subQuestions: string[]
   language: string
   knowledgePassages: RetrievedAstrologyPassage[]
+  caseReferencePacks: KundliCaseReferencePack[]
+  deepMode: boolean
 }) =>
   [
     "You are Shreem Astrology's Vedic Kundli analysis assistant.",
@@ -1162,6 +1459,12 @@ const buildPrompt = ({
     "Follow calculation-first discipline: if a combination is partial, call it partial and explain what supports or weakens it.",
     "Cover special astrological cases when indicated, including Kaal Sarp, Manglik/Mars sensitivity, debilitation, possible Neechabhanga, Gajakesari, Budhaditya, and Chandra-Mangal.",
     "When you use the reference pack, return book_citations with the exact Citation values and one-line relevance notes.",
+    deepMode
+      ? "DEEP MODE is active: do a case-by-case astrological audit internally before writing the final JSON. For each detected yoga, dasha signal, health/risk indication, relationship/career signal, and remedy need, use the matching BPHS case pack as the base text and then synthesize through the calculated chart."
+      : "STANDARD MODE is active: keep deep_case_analysis, life_event_windows, and personality_markers concise; use empty arrays if the evidence is not enough.",
+    deepMode
+      ? "In DEEP MODE, predict lived-experience markers that build user confidence: likely temperament, emotional patterns, likes/dislikes, repeated inner issues, confidence blocks, family/work tendencies, and event windows. Ground every strong claim in dasha, house, graha placement, and a BPHS citation. Phrase uncertain items as tendencies, not guarantees."
+      : "Avoid over-extending event predictions in standard mode.",
     "Also consider period timing from Vimshottari Mahadasha, Antardasha, and Pratyantar Dasha. Keep period analysis grounded in the dasha lords and their houses/signs.",
     "Give a detailed reading with these sections: who the person is, behavioral traits, strengths, life themes, likely challenges/issues, practical solutions, Vedic remedies, and cautious spiritual guidance.",
     "Health analysis must be deeper than generic caution: name likely vulnerability areas and possible disease tendencies from chart indicators, but use cautious language like tendency/watch/monitor. Do not diagnose. Tell the user to consult a qualified doctor for symptoms, emergencies, or persistent issues.",
@@ -1169,6 +1472,9 @@ const buildPrompt = ({
     "Return health_indicators with 4 to 7 specific watchlist items. Each item must include chart basis and a practical prevention note.",
     "Return dasha_predictions with one row each for Mahadasha, Antardasha, and Pratyantar. Each row must include chart_basis, classical_basis from the retrieved pack, prediction, and action.",
     "Return risk_watch with 2 to 5 practical watch areas only when supported by chart and dasha; include prevention, not fear.",
+    "Return personality_markers with 4 to 8 lived-experience markers. Each must connect trait -> chart_basis -> what the person may feel or repeatedly notice in life.",
+    "Return deep_case_analysis with one row per major detected case in deep mode, otherwise 0 to 4 rows. Each row must include chart_basis, book_basis using BPHS citation language, prediction, confidence, and caution.",
+    "Return life_event_windows with 3 to 6 dasha-based windows in deep mode, otherwise 0 to 3 rows. Each row must be cautious and explain likely_theme, chart_basis, book_basis, and guidance.",
     "Return prediction_table with rows for Personality, Career, Money, Marriage, Health, Current period, and Remedies. Each row must include chart_basis, prediction, and advice.",
     "Return planet_effects with one useful row for every graha: Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn, Rahu, and Ketu. Each row must explain placement, effect, and practical advice.",
     "Answer at most three sub-questions. If no sub-questions are provided, return an empty sub_question_answers array.",
@@ -1182,10 +1488,14 @@ const buildPrompt = ({
     "If strong dosha, gemstone, pooja, marriage, health, or career-defining guidance appears, set expert_call_recommended true and recommend Sanjay Kumar Pandey.",
     LANGUAGE_INSTRUCTIONS[language] || LANGUAGE_INSTRUCTIONS.english,
     "Return JSON only.",
+    `Analysis mode: ${deepMode ? "deep" : "standard"}`,
     `Native name: ${name || "Not provided"}`,
     `Sub-questions: ${JSON.stringify(subQuestions)}`,
     `Retrieved classical reference pack: ${formatAstrologyKnowledgeForPrompt(
       knowledgePassages
+    )}`,
+    `Deep case reference packs: ${formatCaseReferencePacksForPrompt(
+      caseReferencePacks
     )}`,
     `Active dasha discipline: ${activeDashaText(chart)}`,
     `Deterministic health watchlist: ${JSON.stringify(healthIndicators)}`,
@@ -1256,6 +1566,13 @@ export async function POST(request: NextRequest) {
     rawLanguage === "hindi" || rawLanguage === "hinglish"
       ? rawLanguage
       : "english"
+  const rawAnalysisMode = sanitizeString(payload.analysisMode, 20)
+  const rawDeepMode = sanitizeString(payload.deepMode, 12)
+  const deepMode =
+    payload.deepMode === true ||
+    rawAnalysisMode === "deep" ||
+    rawDeepMode === "true"
+  const usageUnits = deepMode ? 2 : 1
   const city = getCityById(sanitizeString(payload.cityId, 80))
   const subQuestions = sanitizeStringArray(payload.subQuestions, 3, 220)
   const panchangSystemId = sanitizeString(payload.panchangSystemId, 40)
@@ -1297,13 +1614,29 @@ export async function POST(request: NextRequest) {
     detectedYogas,
     healthIndicators
   )
-  const knowledgePassages = buildKundliKnowledgePassages({
+  const baseKnowledgePassages = buildKundliKnowledgePassages({
     chart,
     detectedYogas,
     healthIndicators,
     targetedRemedySeeds,
     subQuestions,
   })
+  const caseReferencePacks = deepMode
+    ? buildKundliCaseReferencePacks({
+        chart,
+        detectedYogas,
+        healthIndicators,
+        targetedRemedySeeds,
+        subQuestions,
+      })
+    : []
+  const knowledgePassages = deepMode
+    ? mergeKnowledgePassages(
+        18,
+        baseKnowledgePassages,
+        ...caseReferencePacks.map((pack) => pack.passages)
+      )
+    : baseKnowledgePassages
 
   if (!isGeminiEnabled()) {
     return NextResponse.json(
@@ -1319,13 +1652,15 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  const access = await checkAstrologyAccess()
+  const access = await checkAstrologyAccess({ requestedUnits: usageUnits })
 
   if (isAstrologyAccessBlocked(access)) {
     return NextResponse.json(
       {
         message:
-          `You have used your ${access.quota.limit} free astrology AI readings for today. Buy credits or upgrade to Premium to continue.`,
+          deepMode
+            ? `Deep Kundli uses ${usageUnits} AI turns. You need ${usageUnits} free turns or paid credits available. Buy credits or upgrade to Premium to continue.`
+            : `You have used your ${access.quota.limit} free astrology AI readings for today. Buy credits or upgrade to Premium to continue.`,
         chart,
         detected_yogas: detectedYogas,
         stones,
@@ -1349,12 +1684,17 @@ export async function POST(request: NextRequest) {
     subQuestions,
     language,
     knowledgePassages,
+    caseReferencePacks,
+    deepMode,
   })
   const gemini = await generateGeminiJson({
     prompt,
     responseSchema: KUNDLI_SCHEMA,
-    temperature: 0.22,
-    label: "Kundli API",
+    temperature: deepMode ? 0.2 : 0.22,
+    timeoutMs: deepMode ? 180_000 : undefined,
+    maxAttempts: deepMode ? 3 : undefined,
+    maxOutputTokens: deepMode ? 16384 : 8192,
+    label: deepMode ? "Deep Kundli API" : "Kundli API",
   })
 
   if (!gemini.ok) {
@@ -1534,6 +1874,76 @@ export async function POST(request: NextRequest) {
       parsed?.shreem_product_suggestions
     ),
     book_citations: sanitizeBookCitations(parsed?.book_citations),
+    personality_markers: Array.isArray(parsed?.personality_markers)
+      ? parsed.personality_markers
+          .map((item: any) => ({
+            trait: sanitizeString(item?.trait, 160),
+            chart_basis: sanitizeString(item?.chart_basis, 320),
+            lived_experience: sanitizeString(item?.lived_experience, 460),
+          }))
+          .filter(
+            (item: {
+              trait: string
+              chart_basis: string
+              lived_experience: string
+            }) => Boolean(item.trait && item.chart_basis && item.lived_experience)
+          )
+          .slice(0, deepMode ? 8 : 4)
+      : [],
+    deep_case_analysis: Array.isArray(parsed?.deep_case_analysis)
+      ? parsed.deep_case_analysis
+          .map((item: any) => ({
+            case: sanitizeString(item?.case, 180),
+            chart_basis: sanitizeString(item?.chart_basis, 420),
+            book_basis: sanitizeString(item?.book_basis, 420),
+            prediction: sanitizeString(item?.prediction, 700),
+            confidence: sanitizeString(item?.confidence, 180),
+            caution: sanitizeString(item?.caution, 320),
+          }))
+          .filter(
+            (item: {
+              case: string
+              chart_basis: string
+              book_basis: string
+              prediction: string
+              confidence: string
+              caution: string
+            }) =>
+              Boolean(
+                item.case &&
+                  item.chart_basis &&
+                  item.book_basis &&
+                  item.prediction
+              )
+          )
+          .slice(0, deepMode ? 10 : 4)
+      : [],
+    life_event_windows: Array.isArray(parsed?.life_event_windows)
+      ? parsed.life_event_windows
+          .map((item: any) => ({
+            period: sanitizeString(item?.period, 120),
+            likely_theme: sanitizeString(item?.likely_theme, 220),
+            chart_basis: sanitizeString(item?.chart_basis, 420),
+            book_basis: sanitizeString(item?.book_basis, 420),
+            guidance: sanitizeString(item?.guidance, 420),
+          }))
+          .filter(
+            (item: {
+              period: string
+              likely_theme: string
+              chart_basis: string
+              book_basis: string
+              guidance: string
+            }) =>
+              Boolean(
+                item.period &&
+                  item.likely_theme &&
+                  item.chart_basis &&
+                  item.guidance
+              )
+          )
+          .slice(0, deepMode ? 6 : 3)
+      : [],
     expert_call_recommended: Boolean(parsed?.expert_call_recommended),
     expert_call_reason: sanitizeString(parsed?.expert_call_reason, 600),
   }
@@ -1547,14 +1957,19 @@ export async function POST(request: NextRequest) {
       panchang_system_id: chart.panchangSystem?.id,
       language,
       sub_questions: subQuestions,
+      analysis_mode: deepMode ? "deep" : "standard",
+      usage_units: usageUnits,
     },
     chart,
     detected_yogas: detectedYogas,
     knowledge_references: getKnowledgeIds(knowledgePassages),
+    knowledge_case_packs: casePackTrace(caseReferencePacks),
     stones,
     health_indicators: healthIndicators,
     targeted_remedy_seeds: targetedRemedySeeds,
     analysis,
+    analysis_mode: deepMode ? "deep" : "standard",
+    usage_units: usageUnits,
     model: gemini.model,
   }
 
@@ -1564,11 +1979,14 @@ export async function POST(request: NextRequest) {
     response: result,
     metadata: {
       customer_email: customer.email,
+      analysis_mode: deepMode ? "deep" : "standard",
+      usage_units: usageUnits,
       chart,
       panchangSystem: chart.panchangSystem,
       dasha: chart.dasha,
       knowledge_references: getKnowledgeIds(knowledgePassages),
       knowledge_context: knowledgeTrace(knowledgePassages),
+      knowledge_case_packs: casePackTrace(caseReferencePacks),
       health_indicators: healthIndicators,
       targeted_remedy_seeds: targetedRemedySeeds,
     },

@@ -22,6 +22,9 @@ import { generateGeminiJson } from "@lib/util/gemini"
 import { buildDetailedPrashnaChart } from "@lib/util/vedic-astrology"
 import { isGeminiEnabled } from "@lib/util/prakriti-config"
 
+export const runtime = "nodejs"
+export const maxDuration = 180
+
 type MatchPersonPayload = {
   name?: unknown
   birthDate?: unknown
