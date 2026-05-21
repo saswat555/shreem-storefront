@@ -279,6 +279,8 @@ export const generateGeminiJson = async ({
   const model = getGeminiModel().replace(/^models\//, "")
   const apiKey = getGeminiApiKey()
   const attempts = getGeminiMaxAttempts(maxAttempts)
+  const limitTokens = getGeminiMaxOutputTokens(maxOutputTokens)
+  const finalPrompt = `${prompt}\n\nIMPORTANT: Please ensure your JSON response is complete and does not exceed ${limitTokens} tokens. Keep your response concise to avoid truncation.`
   const queuedAt = Date.now()
   const releaseSlot = await waitForGeminiSlot()
   const queuedMs = Date.now() - queuedAt
@@ -305,12 +307,11 @@ export const generateGeminiJson = async ({
             contents: [
               {
                 role: "user",
-                parts: [{ text: prompt }],
+                parts: [{ text: finalPrompt }],
               },
             ],
             generationConfig: {
               temperature,
-              maxOutputTokens: getGeminiMaxOutputTokens(maxOutputTokens),
               responseMimeType: "application/json",
               responseSchema,
             },
