@@ -207,7 +207,9 @@ const chartSearchText = (chart?: PrashnaChart) => {
     chart.planets
       .map(
         (planet) =>
-          `${planet.name} ${planet.sign} house ${planet.house} ${planet.nakshatra}`
+          `${planet.name} ${planet.sign} house ${planet.house} rashi house ${
+            planet.rashiHouse || planet.house
+          } bhava house ${planet.bhavaHouse || planet.house} ${planet.nakshatra}`
       )
       .join(" "),
     chart.houses
@@ -238,11 +240,16 @@ const specialCaseBoost = (normalizedQuery: string, chunk: BphsRagChunk) => {
       ["budh", "mercury", "surya", "sun", "बुध", "सूर्य"],
       0.18,
     ],
-    [
-      /sarpa|kaal|kalsarp|rahu|ketu|राहु|केतु|सर्प|काल/,
-      ["sarpa", "rahu", "ketu", "राहु", "केतु", "सर्प"],
-      0.2,
-    ],
+  [
+    /sarpa|kaal|kalsarp|rahu|ketu|राहु|केतु|सर्प|काल/,
+    ["sarpa", "rahu", "ketu", "राहु", "केतु", "सर्प"],
+    0.2,
+  ],
+  [
+    /neech|neechabhanga|debilitat|cancellation|नीच|भंग/,
+    ["debilitat", "cancellation", "exaltation", "kendra", "नीच", "भंग"],
+    0.22,
+  ],
     [
       /gajakesari|gaja|jupiter|guru|गज|गुरु|बृहस्पति/,
       ["gaja", "jupiter", "guru", "गुरु", "बृहस्पति"],

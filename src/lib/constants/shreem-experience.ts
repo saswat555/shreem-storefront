@@ -42,7 +42,7 @@ export const shreemJournalPosts: ShreemJournalPost[] = [
     slug: "bilona-a2-ghee-made-slowly",
     title: "Why bilona A2 ghee feels different when it is made slowly",
     description:
-      "A Shreem Journal note on cultured curd, hand-churned makkhan, and the warm smoky finish that gives bilona A2 ghee its signature character.",
+      "A Shreem Blog note on cultured curd, hand-churned makkhan, and the warm smoky finish that gives bilona A2 ghee its signature character.",
     excerpt:
       "Bilona ghee begins with curd, not with haste. That slower journey shapes the aroma, the feel of the kitchen, and the depth that people remember.",
     image: "/shreem-scenes/bilona-process.png",
@@ -78,7 +78,7 @@ export const shreemJournalPosts: ShreemJournalPost[] = [
     slug: "neem-dhoop-for-evening-rituals",
     title: "Why neem dhoop belongs in the soft light of evening rituals",
     description:
-      "A Shreem Journal piece on neem dhoop, devotional fragrance, and why calmer evening rituals matter in a family home.",
+      "A Shreem Blog piece on neem dhoop, devotional fragrance, and why calmer evening rituals matter in a family home.",
     excerpt:
       "Neem dhoop is not meant to overpower a room. It belongs to the prayer hour, when fragrance should support calm, devotion, and a gentler atmosphere.",
     image: "/shreem-scenes/neem-dhoop.png",
@@ -114,7 +114,7 @@ export const shreemJournalPosts: ShreemJournalPost[] = [
     slug: "living-soil-and-input-conscious-farm-rhythm",
     title: "Living soil, Jeevamrut, and an input-conscious farm rhythm",
     description:
-      "A Shreem Journal article on Jeevamrut, living-soil thinking, and why many farmers are drawn to more natural farming inputs.",
+      "A Shreem Blog article on Jeevamrut, living-soil thinking, and why many farmers are drawn to more natural farming inputs.",
     excerpt:
       "Jeevamrut belongs to a farming idea that respects soil as living. It shifts attention from force and dependency toward biological health and patience.",
     image: "/shreem-scenes/hero-scene.png",

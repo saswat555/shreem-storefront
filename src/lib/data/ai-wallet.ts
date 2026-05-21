@@ -12,6 +12,7 @@ export type AiCreditPack = {
   product_handle: string
   plan?: string
   duration_days?: number
+  pro_question_limit?: number
 }
 
 export type AiWallet = {

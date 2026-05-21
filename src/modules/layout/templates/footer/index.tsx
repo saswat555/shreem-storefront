@@ -11,7 +11,7 @@ export default function Footer() {
   const exploreLinks = [
     { href: "/", label: "Home" },
     { href: "/store", label: "Shop" },
-    { href: "/journal", label: "Journal" },
+    { href: "/blog", label: "Blog" },
     ...(prakritiGuideEnabled
       ? [{ href: "/prakriti-guide", label: "GrowBuddy AI" }]
       : []),
@@ -58,7 +58,7 @@ export default function Footer() {
                 Our herd includes {shreemCowBreeds.join(", ")} cows, while{" "}
                 {shreemMascots.map((mascot) => mascot.name).join(" and ")} give
                 the brand a warmer, more human presence across the store and the
-                Journal.
+                Blog.
               </p>
               <div className="mt-5 grid grid-cols-2 gap-2 small:mt-6 sm:flex sm:flex-wrap sm:gap-3">
                 <LocalizedClientLink
@@ -77,13 +77,13 @@ export default function Footer() {
                   </LocalizedClientLink>
                 )}
                 <LocalizedClientLink
-                  href="/journal"
+                  href="/blog"
                   className={clx(
                     "inline-flex min-h-11 w-full items-center justify-center rounded-full border border-[rgba(212,161,38,0.24)] bg-white/10 px-4 py-3 text-sm font-semibold text-white sm:w-auto",
                     prakritiGuideEnabled && "col-span-2"
                   )}
                 >
-                  Journal
+                  Blog
                 </LocalizedClientLink>
               </div>
             </div>

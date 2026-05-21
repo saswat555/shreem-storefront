@@ -4,8 +4,21 @@ import { sdk } from "@lib/config"
 import { sortProducts } from "@lib/util/sort-products"
 import { HttpTypes } from "@medusajs/types"
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
-import { getAuthHeaders, getCacheOptions } from "./cookies"
+import { getStorefrontCacheOptions } from "./cache"
+import { getAuthHeaders } from "./cookies"
 import { getRegion, retrieveRegion } from "./regions"
+
+const PRODUCT_CACHE_TAG = "products"
+
+const getProductCacheOptions = async (
+  queryParams?: HttpTypes.FindParams & HttpTypes.StoreProductListParams
+) => {
+  const handles = [queryParams?.handle].flat().filter(Boolean) as string[]
+  return getStorefrontCacheOptions(
+    PRODUCT_CACHE_TAG,
+    handles.map((handle) => `product:${handle}`)
+  )
+}
 
 export const listProducts = async ({
   pageParam = 1,
@@ -49,9 +62,7 @@ export const listProducts = async ({
     ...(await getAuthHeaders()),
   }
 
-  const next = {
-    ...(await getCacheOptions("products")),
-  }
+  const next = await getProductCacheOptions(queryParams)
 
   return sdk.client
     .fetch<{ products: HttpTypes.StoreProduct[]; count: number }>(

@@ -214,8 +214,8 @@ export default async function Home(props: {
                     Open GrowBuddy AI
                     <ArrowUpRightMini />
                   </LocalizedClientLink>
-                  <LocalizedClientLink href="/journal" className="brand-secondary-button">
-                    Read Journal first
+                  <LocalizedClientLink href="/blog" className="brand-secondary-button">
+                    Read the Blog first
                   </LocalizedClientLink>
                 </div>
               </div>
@@ -397,7 +397,7 @@ export default async function Home(props: {
         <div className="brand-surface px-5 py-6 small:px-8 small:py-8">
           <div className="grid gap-6 pb-6 xl:grid-cols-[0.92fr_1.08fr] xl:items-start">
             <div className="max-w-[36rem]">
-              <p className="brand-kicker">From the Journal</p>
+              <p className="brand-kicker">From the Blog</p>
               <h2 className="brand-section-title mt-3">
                 The story world behind the products.
               </h2>
@@ -407,8 +407,8 @@ export default async function Home(props: {
                 ingredients, use cases, pricing, checkout, and support.
               </p>
               <div className="mt-6">
-                <LocalizedClientLink href="/journal" className="brand-primary-button">
-                  Read the Journal
+                <LocalizedClientLink href="/blog" className="brand-primary-button">
+                  Read the Blog
                 </LocalizedClientLink>
               </div>
             </div>

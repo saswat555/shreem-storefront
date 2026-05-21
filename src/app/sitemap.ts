@@ -1,11 +1,15 @@
 import { MetadataRoute } from "next"
 
-import { listJournalPosts } from "@lib/data/journal"
+import { listBlogPosts } from "@lib/data/journal"
+import { listCategories } from "@lib/data/categories"
+import { listCollections } from "@lib/data/collections"
 import { listProducts } from "@lib/data/products"
 import { listRegions } from "@lib/data/regions"
 import { isSeoEnabled } from "@lib/seo/config"
 import { getBaseURL } from "@lib/util/env"
 import { isPrakritiGuideEnabled } from "@lib/util/prakriti-config"
+
+export const dynamic = "force-dynamic"
 
 const getCountryCodes = async () => {
   const regions = await listRegions().catch(() => [])
@@ -25,16 +29,25 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date()
   const countryCodes = await getCountryCodes()
   const prakritiEnabled = isPrakritiGuideEnabled()
-  const journalPosts = await listJournalPosts()
+  const blogPosts = await listBlogPosts()
+  const categories = await listCategories().catch(() => [])
+  const { collections } = await listCollections({
+    fields: "handle,updated_at,created_at",
+  }).catch(() => ({ collections: [], count: 0 }))
 
   const staticEntries: MetadataRoute.Sitemap = countryCodes.flatMap((countryCode) => {
     const routes = [
       "",
       "/store",
       "/shreem-astrology",
-      "/journal",
+      "/blog",
       "/customer-service",
       "/gaatha",
+      "/terms-and-conditions",
+      "/privacy-policy",
+      "/refund-policy",
+      "/return-policy",
+      "/shipping-policy",
       ...(prakritiEnabled ? ["/prakriti-guide"] : []),
     ]
 
@@ -46,13 +59,37 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }))
   })
 
-  const journalEntries: MetadataRoute.Sitemap = countryCodes.flatMap((countryCode) =>
-    journalPosts.map((post) => ({
-      url: `${baseUrl}/${countryCode}/journal/${post.slug}`,
+  const blogEntries: MetadataRoute.Sitemap = countryCodes.flatMap((countryCode) =>
+    blogPosts.map((post) => ({
+      url: `${baseUrl}/${countryCode}/blog/${post.slug}`,
       lastModified: new Date(post.publishedAt),
       changeFrequency: "monthly",
       priority: 0.74,
     }))
+  )
+
+  const categoryEntries: MetadataRoute.Sitemap = countryCodes.flatMap((countryCode) =>
+    categories
+      .filter((category) => category.handle)
+      .map((category) => ({
+        url: `${baseUrl}/${countryCode}/categories/${category.handle}`,
+        lastModified: now,
+        changeFrequency: "weekly" as const,
+        priority: 0.72,
+      }))
+  )
+
+  const collectionEntries: MetadataRoute.Sitemap = countryCodes.flatMap((countryCode) =>
+    collections
+      .filter((collection) => collection.handle)
+      .map((collection) => ({
+        url: `${baseUrl}/${countryCode}/collections/${collection.handle}`,
+        lastModified: new Date(
+          collection.updated_at || collection.created_at || now
+        ),
+        changeFrequency: "weekly" as const,
+        priority: 0.76,
+      }))
   )
 
   const productEntries = await Promise.all(
@@ -78,5 +115,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     })
   )
 
-  return [...staticEntries, ...journalEntries, ...productEntries.flat()]
+  return [
+    ...staticEntries,
+    ...blogEntries,
+    ...categoryEntries,
+    ...collectionEntries,
+    ...productEntries.flat(),
+  ]
 }

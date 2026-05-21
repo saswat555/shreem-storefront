@@ -75,6 +75,7 @@ export type PrashnaChart = {
   generatedAtLocal: string
   city: AstrologyCity
   panchangSystem?: PanchangSystem
+  houseSystem?: HouseSystem
   calculationSystem: string
   weekday: string
   ayanamsa: number
@@ -108,13 +109,40 @@ export type PanchangSystemId =
   | "raman"
   | "kp-lahiri"
 
+export type HouseSystemId = "whole-sign" | "sripati-bhava"
+
+export type HouseSystem = {
+  id: HouseSystemId
+  label: string
+  shortLabel: string
+  description: string
+}
+
 export type PanchangSystem = {
   id: PanchangSystemId
   label: string
   shortLabel: string
   description: string
   ayanamsaOffsetDegrees: number
+  houseSystemId: HouseSystemId
 }
+
+export const HOUSE_SYSTEMS: HouseSystem[] = [
+  {
+    id: "whole-sign",
+    label: "Whole-sign houses",
+    shortLabel: "Rashi",
+    description:
+      "Each sign from the Lagna becomes one house. This is stable for rashi-based yoga reading.",
+  },
+  {
+    id: "sripati-bhava",
+    label: "Sripati Bhava Chalit",
+    shortLabel: "Bhava",
+    description:
+      "Unequal bhava houses using Lagna and MC quadrants. This can move planets between houses near bhava boundaries.",
+  },
+]
 
 export const PANCHANG_SYSTEMS: PanchangSystem[] = [
   {
@@ -124,14 +152,16 @@ export const PANCHANG_SYSTEMS: PanchangSystem[] = [
     description:
       "Current engine: sidereal zodiac with mean Lahiri ayanamsa and astronomical ephemeris.",
     ayanamsaOffsetDegrees: 0,
+    houseSystemId: "whole-sign",
   },
   {
     id: "rishikesh-lahiri",
     label: "Rishikesh Panchang style",
     shortLabel: "Rishikesh",
     description:
-      "Lahiri/Chitra Paksha reference for users who follow Rishikesh Panchang tradition. Exact printed edition rules should be verified for borderline cases.",
+      "Lahiri/Chitra Paksha reference with Sripati Bhava Chalit houses for users comparing printed-panchang house placement. Exact edition rules should be verified for borderline cases.",
     ayanamsaOffsetDegrees: 0,
+    houseSystemId: "sripati-bhava",
   },
   {
     id: "raman",
@@ -140,6 +170,7 @@ export const PANCHANG_SYSTEMS: PanchangSystem[] = [
     description:
       "Alternative ayanamsa used by some astrologers. This can move sensitive lagna/nakshatra boundaries.",
     ayanamsaOffsetDegrees: -1.45,
+    houseSystemId: "whole-sign",
   },
   {
     id: "kp-lahiri",
@@ -148,11 +179,15 @@ export const PANCHANG_SYSTEMS: PanchangSystem[] = [
     description:
       "KP-style Lahiri offset for users comparing KP-oriented readings and house sensitivities.",
     ayanamsaOffsetDegrees: -0.1,
+    houseSystemId: "sripati-bhava",
   },
 ]
 
 export const getPanchangSystem = (id?: string | null) =>
   PANCHANG_SYSTEMS.find((system) => system.id === id) || PANCHANG_SYSTEMS[0]
+
+export const getHouseSystem = (id?: string | null) =>
+  HOUSE_SYSTEMS.find((system) => system.id === id) || HOUSE_SYSTEMS[0]
 
 export type PrashnaPlanet = {
   key: string
@@ -164,6 +199,10 @@ export type PrashnaPlanet = {
   nakshatra: string
   pada: number
   house: number
+  rashiHouse?: number
+  bhavaHouse?: number
+  houseSystem?: HouseSystemId
+  houseNote?: string
   retrograde?: boolean
 }
 
@@ -172,6 +211,9 @@ export type PrashnaHouse = {
   sign: string
   signLord: string
   theme: string
+  cuspLongitude?: number
+  cuspSign?: string
+  cuspDegree?: number
 }
 
 export type DashaPeriod = {

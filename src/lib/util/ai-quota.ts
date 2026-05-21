@@ -108,8 +108,14 @@ export const checkAstrologyAccess = async ({
   const hasPremium = Boolean(wallet?.pro_active)
   const credits = Math.max(0, Number(wallet?.credit_balance || 0))
   const freeAllowed = !quota.synced || quota.remaining >= units
+  const premiumDailyLimit = Math.max(0, Number(wallet?.pro_question_limit || 0))
+  const premiumAllowed =
+    hasPremium &&
+    (!quota.synced ||
+      !premiumDailyLimit ||
+      quota.used + units <= premiumDailyLimit)
 
-  if (hasPremium) {
+  if (premiumAllowed) {
     return {
       allowed: true,
       reason: "premium",

@@ -174,11 +174,11 @@ const AccountNav = ({
               </li>
               <li>
                 <AccountNavLink
-                  href="/journal"
+                  href="/blog"
                   route={route!}
-                  data-testid="journal-link"
+                  data-testid="blog-link"
                 >
-                  Journal
+                  Blog
                 </AccountNavLink>
               </li>
               <li className="text-grey-700">

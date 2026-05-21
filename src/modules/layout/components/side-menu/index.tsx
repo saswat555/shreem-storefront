@@ -54,8 +54,8 @@ const SideMenuItems: SideMenuItem[] = [
     icon: BuildingStorefront,
   },
   {
-    name: "Journal",
-    href: "/journal",
+    name: "Blog",
+    href: "/blog",
     description: "Read product stories and ritual notes",
     icon: BookOpen,
   },

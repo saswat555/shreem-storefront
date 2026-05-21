@@ -2,12 +2,12 @@
 
 import { sdk } from "@lib/config"
 import { HttpTypes } from "@medusajs/types"
-import { getCacheOptions } from "./cookies"
+import { getStorefrontCacheOptions } from "./cache"
+
+const COLLECTIONS_CACHE_TAG = "collections"
 
 export const retrieveCollection = async (id: string) => {
-  const next = {
-    ...(await getCacheOptions("collections")),
-  }
+  const next = await getStorefrontCacheOptions(COLLECTIONS_CACHE_TAG)
 
   return sdk.client
     .fetch<{ collection: HttpTypes.StoreCollection }>(
@@ -23,9 +23,7 @@ export const retrieveCollection = async (id: string) => {
 export const listCollections = async (
   queryParams: Record<string, string> = {}
 ): Promise<{ collections: HttpTypes.StoreCollection[]; count: number }> => {
-  const next = {
-    ...(await getCacheOptions("collections")),
-  }
+  const next = await getStorefrontCacheOptions(COLLECTIONS_CACHE_TAG)
 
   queryParams.limit = queryParams.limit || "100"
   queryParams.offset = queryParams.offset || "0"
@@ -45,9 +43,9 @@ export const listCollections = async (
 export const getCollectionByHandle = async (
   handle: string
 ): Promise<HttpTypes.StoreCollection> => {
-  const next = {
-    ...(await getCacheOptions("collections")),
-  }
+  const next = await getStorefrontCacheOptions(COLLECTIONS_CACHE_TAG, [
+    `collection:${handle}`,
+  ])
 
   return sdk.client
     .fetch<HttpTypes.StoreCollectionListResponse>(`/store/collections`, {

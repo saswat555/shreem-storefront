@@ -24,15 +24,15 @@ const normalizePost = (post: StoreJournalPost): ShreemJournalPost | null => {
     description:
       post.description ||
       post.excerpt ||
-      "A Shreem Journal note on desi-cow products, ritual living, and natural care.",
+      "A Shreem Blog note on desi-cow products, ritual living, and natural care.",
     excerpt:
       post.excerpt ||
       post.description ||
-      "A Shreem Journal note on desi-cow products, ritual living, and natural care.",
+      "A Shreem Blog note on desi-cow products, ritual living, and natural care.",
     image: post.image || "/shreem-scenes/hero-scene.png",
     imageAlt:
       post.imageAlt || post.image_alt || `${post.title} article image`,
-    category: post.category || "Shreem Journal",
+    category: post.category || "Shreem Blog",
     readTime: post.readTime || post.read_time || "4 min read",
     publishedAt:
       post.publishedAt || post.published_at || new Date().toISOString().slice(0, 10),
@@ -44,7 +44,7 @@ const normalizePost = (post: StoreJournalPost): ShreemJournalPost | null => {
             body: [
               post.description ||
                 post.excerpt ||
-                "This Shreem Journal note is being prepared by the team and will be expanded soon.",
+                "This Shreem Blog note is being prepared by the team and will be expanded soon.",
             ],
           },
         ],
@@ -53,13 +53,17 @@ const normalizePost = (post: StoreJournalPost): ShreemJournalPost | null => {
 
 export const listJournalPosts = async () => {
   try {
-    const response = await sdk.client.fetch<{ posts: StoreJournalPost[] }>(
-      "/store/journal",
-      {
+    const response = await sdk.client
+      .fetch<{ posts: StoreJournalPost[] }>("/store/blog", {
         method: "GET",
         cache: "no-store",
-      }
-    )
+      })
+      .catch(() =>
+        sdk.client.fetch<{ posts: StoreJournalPost[] }>("/store/journal", {
+          method: "GET",
+          cache: "no-store",
+        })
+      )
     const posts = (response.posts || [])
       .map(normalizePost)
       .filter(Boolean) as ShreemJournalPost[]
@@ -75,3 +79,6 @@ export const getJournalPost = async (slug: string) => {
 
   return posts.find((post) => post.slug === slug) || null
 }
+
+export const listBlogPosts = listJournalPosts
+export const getBlogPost = getJournalPost

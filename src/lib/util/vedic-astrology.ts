@@ -6,6 +6,7 @@ import {
   SIGN_LORDS,
   YOGAS,
   getHindiMonthInfoBySunSign,
+  getHouseSystem,
   getPanchangSystem,
   getDegreeInSign,
   getNakshatraFromDegree,
@@ -16,6 +17,8 @@ import {
   type PrashnaHouse,
   type PrashnaPlanet,
   type DashaPeriod,
+  type HouseSystem,
+  type HouseSystemId,
   type VimshottariDasha,
 } from "./astrology"
 
@@ -428,6 +431,119 @@ const getPlanetHouse = (longitude: number, ascendantLongitude: number) => {
   return ((planetSignIndex - ascendantSignIndex + 12) % 12) + 1
 }
 
+const getMidheavenLongitude = ({
+  jd,
+  city,
+  ayanamsa,
+}: {
+  jd: number
+  city: AstrologyCity
+  ayanamsa: number
+}) => {
+  const apparentSiderealSeconds = sidereal.apparent(jd)
+  const localSiderealDegree = normalizeDegrees(
+    apparentSiderealSeconds / 240 + city.longitude
+  )
+  const theta = toRadians(localSiderealDegree)
+  const obliquity = nutation.meanObliquity(jd)
+  const tropicalMidheaven = normalizeDegrees(
+    toDegrees(
+      Math.atan2(
+        Math.sin(theta),
+        Math.cos(theta) * Math.cos(obliquity)
+      )
+    )
+  )
+
+  return toSidereal(tropicalMidheaven, ayanamsa)
+}
+
+const zodiacArc = (from: number, to: number) =>
+  normalizeDegrees(to - from)
+
+const interpolateZodiac = (from: number, to: number, ratio: number) =>
+  normalizeDegrees(from + zodiacArc(from, to) * ratio)
+
+const midpointZodiac = (from: number, to: number) =>
+  interpolateZodiac(from, to, 0.5)
+
+const buildSripatiCusps = ({
+  ascendantLongitude,
+  midheavenLongitude,
+}: {
+  ascendantLongitude: number
+  midheavenLongitude: number
+}) => {
+  const cusps: Record<number, number> = {
+    1: normalizeDegrees(ascendantLongitude),
+    4: normalizeDegrees(midheavenLongitude + 180),
+    7: normalizeDegrees(ascendantLongitude + 180),
+    10: normalizeDegrees(midheavenLongitude),
+  }
+
+  cusps[11] = interpolateZodiac(cusps[10], cusps[1], 1 / 3)
+  cusps[12] = interpolateZodiac(cusps[10], cusps[1], 2 / 3)
+  cusps[2] = interpolateZodiac(cusps[1], cusps[4], 1 / 3)
+  cusps[3] = interpolateZodiac(cusps[1], cusps[4], 2 / 3)
+  cusps[5] = interpolateZodiac(cusps[4], cusps[7], 1 / 3)
+  cusps[6] = interpolateZodiac(cusps[4], cusps[7], 2 / 3)
+  cusps[8] = interpolateZodiac(cusps[7], cusps[10], 1 / 3)
+  cusps[9] = interpolateZodiac(cusps[7], cusps[10], 2 / 3)
+
+  return cusps
+}
+
+const longitudeInHouseBoundary = ({
+  value,
+  start,
+  end,
+}: {
+  value: number
+  start: number
+  end: number
+}) => zodiacArc(start, value) < zodiacArc(start, end)
+
+const getSripatiHouse = (
+  longitude: number,
+  cusps: Record<number, number>
+) => {
+  const normalizedLongitude = normalizeDegrees(longitude)
+
+  for (let house = 1; house <= 12; house += 1) {
+    const previousHouse = house === 1 ? 12 : house - 1
+    const nextHouse = house === 12 ? 1 : house + 1
+    const start = midpointZodiac(cusps[previousHouse], cusps[house])
+    const end = midpointZodiac(cusps[house], cusps[nextHouse])
+
+    if (
+      longitudeInHouseBoundary({
+        value: normalizedLongitude,
+        start,
+        end,
+      })
+    ) {
+      return house
+    }
+  }
+
+  return getPlanetHouse(longitude, cusps[1])
+}
+
+const getSelectedHouse = ({
+  longitude,
+  ascendantLongitude,
+  houseSystemId,
+  sripatiCusps,
+}: {
+  longitude: number
+  ascendantLongitude: number
+  houseSystemId: HouseSystemId
+  sripatiCusps?: Record<number, number>
+}) =>
+  houseSystemId === "sripati-bhava" && sripatiCusps
+    ? getSripatiHouse(longitude, sripatiCusps)
+    : getPlanetHouse(longitude, ascendantLongitude)
+
 const getSignedAngleDelta = (from: number, to: number) =>
   ((to - from + 540) % 360) - 180
 
@@ -456,6 +572,8 @@ const createPlanet = ({
   longitude,
   latitude,
   ascendantLongitude,
+  houseSystem,
+  sripatiCusps,
   retrograde = false,
 }: {
   key: string
@@ -463,9 +581,19 @@ const createPlanet = ({
   longitude: number
   latitude?: number
   ascendantLongitude: number
+  houseSystem: HouseSystem
+  sripatiCusps?: Record<number, number>
   retrograde?: boolean
 }): PrashnaPlanet => {
   const nakshatra = getNakshatraFromDegree(longitude)
+  const rashiHouse = getPlanetHouse(longitude, ascendantLongitude)
+  const bhavaHouse = sripatiCusps ? getSripatiHouse(longitude, sripatiCusps) : rashiHouse
+  const house = getSelectedHouse({
+    longitude,
+    ascendantLongitude,
+    houseSystemId: houseSystem.id,
+    sripatiCusps,
+  })
 
   return {
     key,
@@ -476,23 +604,51 @@ const createPlanet = ({
     signDegree: getDegreeInSign(longitude),
     nakshatra: nakshatra.name,
     pada: nakshatra.pada,
-    house: getPlanetHouse(longitude, ascendantLongitude),
+    house,
+    rashiHouse,
+    bhavaHouse,
+    houseSystem: houseSystem.id,
+    houseNote:
+      rashiHouse !== bhavaHouse
+        ? `Rashi house ${rashiHouse}; Bhava Chalit house ${bhavaHouse}.`
+        : undefined,
     retrograde,
   }
 }
 
-const buildHouses = (ascendantLongitude: number): PrashnaHouse[] => {
+const buildHouses = ({
+  ascendantLongitude,
+  houseSystem,
+  sripatiCusps,
+}: {
+  ascendantLongitude: number
+  houseSystem: HouseSystem
+  sripatiCusps?: Record<number, number>
+}): PrashnaHouse[] => {
   const ascendantSignIndex = Math.floor(normalizeDegrees(ascendantLongitude) / 30)
 
   return Array.from({ length: 12 }, (_, index) => {
+    const house = index + 1
     const signLongitude = normalizeDegrees((ascendantSignIndex + index) * 30)
+    const cuspLongitude =
+      houseSystem.id === "sripati-bhava" && sripatiCusps
+        ? roundDegree(sripatiCusps[house])
+        : undefined
     const sign = getSignFromDegree(signLongitude)
+    const cuspSign =
+      typeof cuspLongitude === "number" ? getSignFromDegree(cuspLongitude) : undefined
 
     return {
-      house: index + 1,
+      house,
       sign,
       signLord: SIGN_LORDS[sign],
       theme: HOUSE_THEMES[index],
+      cuspLongitude,
+      cuspSign,
+      cuspDegree:
+        typeof cuspLongitude === "number"
+          ? getDegreeInSign(cuspLongitude)
+          : undefined,
     }
   })
 }
@@ -513,10 +669,16 @@ export const buildDetailedPrashnaChart = ({
 }): PrashnaChart => {
   const jd = julianDay(date)
   const panchangSystem = getPanchangSystem(panchangSystemId)
+  const houseSystem = getHouseSystem(panchangSystem.houseSystemId)
   const ayanamsa = normalizeDegrees(
     getMeanLahiriAyanamsa(jd) + panchangSystem.ayanamsaOffsetDegrees
   )
   const ascendantLongitude = getAscendantLongitude({ jd, city, ayanamsa })
+  const midheavenLongitude = getMidheavenLongitude({ jd, city, ayanamsa })
+  const sripatiCusps = buildSripatiCusps({
+    ascendantLongitude,
+    midheavenLongitude,
+  })
   const ascendantNakshatra = getNakshatraFromDegree(ascendantLongitude)
   const sunLongitude = toSidereal(
     toDegrees(solar.apparentLongitude(base.J2000Century(jd))),
@@ -531,7 +693,11 @@ export const buildDetailedPrashnaChart = ({
     normalizeDegrees(sunLongitude + moonLongitude) / (360 / 27)
   )
   const paksha = tithiNumber <= 15 ? "Shukla" : "Krishna"
-  const houses = buildHouses(ascendantLongitude)
+  const houses = buildHouses({
+    ascendantLongitude,
+    houseSystem,
+    sripatiCusps,
+  })
   const dasha = buildVimshottariDasha({
     moonLongitude,
     birthDate: date,
@@ -545,6 +711,8 @@ export const buildDetailedPrashnaChart = ({
       name: "Sun",
       longitude: sunLongitude,
       ascendantLongitude,
+      houseSystem,
+      sripatiCusps,
     }),
     createPlanet({
       key: "moon",
@@ -552,6 +720,8 @@ export const buildDetailedPrashnaChart = ({
       longitude: moonLongitude,
       latitude: toDegrees(moonPosition.lat),
       ascendantLongitude,
+      houseSystem,
+      sripatiCusps,
     }),
     ...PLANET_SOURCES.map((source) => {
       const geocentric = getGeocentricPlanetLongitude(planetCache[source.key], jd)
@@ -563,6 +733,8 @@ export const buildDetailedPrashnaChart = ({
         longitude,
         latitude: geocentric.lat,
         ascendantLongitude,
+        houseSystem,
+        sripatiCusps,
         retrograde: getRetrograde({
           planet: planetCache[source.key],
           jd,
@@ -580,6 +752,8 @@ export const buildDetailedPrashnaChart = ({
       name: "Rahu",
       longitude: rahuLongitude,
       ascendantLongitude,
+      houseSystem,
+      sripatiCusps,
       retrograde: true,
     }),
     createPlanet({
@@ -587,6 +761,8 @@ export const buildDetailedPrashnaChart = ({
       name: "Ketu",
       longitude: rahuLongitude + 180,
       ascendantLongitude,
+      houseSystem,
+      sripatiCusps,
       retrograde: true,
     })
   )
@@ -601,8 +777,9 @@ export const buildDetailedPrashnaChart = ({
     generatedAtLocal: getLocalDateTime(date, city),
     city,
     panchangSystem,
+    houseSystem,
     calculationSystem:
-      `${panchangSystem.label}: Astronomia 4.2.0 Meeus/VSOP87 ephemeris, sidereal zodiac, whole-sign houses.`,
+      `${panchangSystem.label}: Astronomia 4.2.0 Meeus/VSOP87 ephemeris, sidereal zodiac, ${houseSystem.label}.`,
     weekday: getWeekday(date, city),
     ayanamsa: roundDegree(ayanamsa),
     ascendant,
@@ -631,7 +808,9 @@ export const buildDetailedPrashnaChart = ({
       }.`,
       `${ascendant} rises at ${getDegreeInSign(
         ascendantLongitude
-      )} degrees; lagna lord ${SIGN_LORDS[ascendant]} is in ${
+      )} degrees; house method ${houseSystem.label}; lagna lord ${
+        SIGN_LORDS[ascendant]
+      } is in ${
         lagnaLord ? `house ${lagnaLord.house}, ${lagnaLord.sign}` : "the chart"
       }.`,
       `Moon is in ${moon?.sign || getSignFromDegree(moonLongitude)}, ${
@@ -645,7 +824,7 @@ export const buildDetailedPrashnaChart = ({
       `Current period: ${dasha.mahadasha.lord} Mahadasha, ${dasha.antardasha.lord} Antardasha, ${dasha.pratyantar.lord} Pratyantar Dasha.`,
     ],
     accuracyNote:
-      `Chart is calculated with astronomical ephemeris and ${panchangSystem.label}. Printed panchang editions can differ around sunrise, ayanamsa, and boundary moments; final ritual, gemstone, medical, legal, or financial decisions should be confirmed with a qualified astrologer or professional.`,
+      `Chart is calculated with astronomical ephemeris, ${panchangSystem.label}, and ${houseSystem.label}. Printed panchang editions can differ around sunrise, ayanamsa, house division, and boundary moments; final ritual, gemstone, medical, legal, or financial decisions should be confirmed with a qualified astrologer or professional.`,
   }
 }
 

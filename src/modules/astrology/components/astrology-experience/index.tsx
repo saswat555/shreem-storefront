@@ -258,6 +258,7 @@ type AiWallet = {
   credit_balance?: number
   plan?: string
   plan_expires_at?: string | null
+  pro_question_limit?: number
   pro_active?: boolean
 }
 
@@ -268,6 +269,8 @@ type AiCreditPack = {
   price_inr: number
   product_handle: string
   plan?: string
+  duration_days?: number
+  pro_question_limit?: number
 }
 
 type AstrologyHistoryItem = {
@@ -551,6 +554,17 @@ const ChartMiniCard = ({
   </div>
 )
 
+const formatHousePosition = (planet: PrashnaPlanet) => {
+  const rashi = planet.rashiHouse || planet.house
+  const bhava = planet.bhavaHouse || planet.house
+
+  if (rashi !== bhava) {
+    return `House ${planet.house} (Rashi H${rashi}, Bhava H${bhava})`
+  }
+
+  return `House ${planet.house}`
+}
+
 const PlanetCard = ({ planet }: { planet: PrashnaPlanet }) => (
   <div className="min-w-0 rounded-[18px] border border-[var(--shreem-border)] bg-white/68 px-4 py-4">
     <div className="flex items-start justify-between gap-3">
@@ -559,7 +573,7 @@ const PlanetCard = ({ planet }: { planet: PrashnaPlanet }) => (
           {planet.name}
         </p>
         <p className="mt-1 text-xs leading-5 text-[var(--shreem-muted)]">
-          House {planet.house}
+          {formatHousePosition(planet)}
           {planet.retrograde ? " · retrograde" : ""}
         </p>
       </div>
@@ -573,6 +587,11 @@ const PlanetCard = ({ planet }: { planet: PrashnaPlanet }) => (
     <p className="text-xs leading-5 text-[var(--shreem-muted)]">
       {planet.nakshatra} pada {planet.pada}
     </p>
+    {planet.houseNote && (
+      <p className="mt-2 text-[0.68rem] leading-5 text-[var(--shreem-muted)]">
+        {planet.houseNote}
+      </p>
+    )}
   </div>
 )
 
@@ -676,7 +695,7 @@ const PlanetTable = ({ chart }: { chart: PrashnaChart }) => (
               </td>
               <td className="px-3 py-3">{planet.sign}</td>
               <td className="px-3 py-3">{formatDegree(planet.signDegree)}</td>
-              <td className="px-3 py-3">House {planet.house}</td>
+              <td className="px-3 py-3">{formatHousePosition(planet)}</td>
               <td className="px-3 py-3">
                 {planet.nakshatra} pada {planet.pada}
               </td>
@@ -916,7 +935,7 @@ const PrashnaChartView = ({ result }: { result: PrashnaResult }) => {
       {chart.houses.length > 0 && (
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
-            Whole-sign house chart
+            {chart.houseSystem?.label || "House chart"}
           </p>
           <div className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {chart.houses.map((house) => (
@@ -1146,7 +1165,7 @@ const buildPlanetEffectsFallback = (chart: PrashnaChart) =>
 
     return {
       planet: planet.name,
-      placement: `${planet.sign}, house ${planet.house}, ${planet.nakshatra} pada ${planet.pada}`,
+      placement: `${planet.sign}, ${formatHousePosition(planet)}, ${planet.nakshatra} pada ${planet.pada}`,
       effect: `${planet.name} activates ${theme.toLowerCase()} through the nature of ${planet.sign} and ${lord}.`,
       advice:
         planet.name === "Rahu" || planet.name === "Ketu"
@@ -2090,7 +2109,7 @@ const printKundliReport = (result: KundliResult) => {
   <h2>Vimshottari Dasha</h2>
   <div class="card"><p><strong>Mahadasha:</strong> ${escapeHtml(dasha?.mahadasha.lord)} (${escapeHtml(dasha?.mahadasha.startLabel)} - ${escapeHtml(dasha?.mahadasha.endLabel)})</p><p><strong>Antardasha:</strong> ${escapeHtml(dasha?.antardasha.lord)} (${escapeHtml(dasha?.antardasha.startLabel)} - ${escapeHtml(dasha?.antardasha.endLabel)})</p><p><strong>Pratyantar:</strong> ${escapeHtml(dasha?.pratyantar.lord)} (${escapeHtml(dasha?.pratyantar.startLabel)} - ${escapeHtml(dasha?.pratyantar.endLabel)})</p><p class="small">${escapeHtml(dasha?.note)}</p></div>
   <h2>Graha Positions</h2>
-  <table><thead><tr><th>Graha</th><th>Sign</th><th>Degree</th><th>House</th><th>Nakshatra</th></tr></thead><tbody>${chart.planets.map((planet) => `<tr><td>${escapeHtml(planet.name)}</td><td>${escapeHtml(planet.sign)}</td><td>${escapeHtml(planet.signDegree)} deg</td><td>${escapeHtml(planet.house)}</td><td>${escapeHtml(planet.nakshatra)} pada ${escapeHtml(planet.pada)}${planet.retrograde ? " (retrograde)" : ""}</td></tr>`).join("")}</tbody></table>
+  <table><thead><tr><th>Graha</th><th>Sign</th><th>Degree</th><th>House</th><th>Nakshatra</th></tr></thead><tbody>${chart.planets.map((planet) => `<tr><td>${escapeHtml(planet.name)}</td><td>${escapeHtml(planet.sign)}</td><td>${escapeHtml(planet.signDegree)} deg</td><td>${escapeHtml(formatHousePosition(planet))}</td><td>${escapeHtml(planet.nakshatra)} pada ${escapeHtml(planet.pada)}${planet.retrograde ? " (retrograde)" : ""}</td></tr>`).join("")}</tbody></table>
   <h2>House Information</h2>
   <table><thead><tr><th>House</th><th>Sign</th><th>Lord</th><th>Planets</th><th>Theme</th></tr></thead><tbody>${chart.houses.map((house) => `<tr><td>${escapeHtml(house.house)}</td><td>${escapeHtml(house.sign)}</td><td>${escapeHtml(house.signLord)}</td><td>${escapeHtml(getHousePlanets(chart, house.house).map((planet) => planet.name).join(", ") || "-")}</td><td>${escapeHtml(house.theme)}</td></tr>`).join("")}</tbody></table>
   <h2>Prediction Table</h2>
@@ -2590,20 +2609,20 @@ export default function AstrologyExperience({
       <span className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--shreem-gold-deep)]">
         Site and AI language
       </span>
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid gap-2 min-[420px]:grid-cols-3">
         {languageOptions.map((option) => (
           <button
             key={option.value}
             type="button"
             onClick={() => setLanguage(option.value)}
-            className={`rounded-[16px] border px-3 py-3 text-left transition ${
+            className={`min-w-0 rounded-[16px] border px-3 py-3 text-left transition ${
               language === option.value
                 ? "border-[rgba(212,161,38,0.45)] bg-[rgba(255,248,233,0.88)] text-[var(--shreem-ink)]"
                 : "border-[var(--shreem-border)] bg-white/62 text-[var(--shreem-muted)]"
             }`}
           >
             <span className="block text-sm font-semibold">{option.label}</span>
-            <span className="mt-1 block text-[0.68rem] leading-4">
+            <span className="mt-1 block text-[0.68rem] leading-4 min-[420px]:line-clamp-2">
               {option.detail}
             </span>
           </button>
@@ -2612,10 +2631,34 @@ export default function AstrologyExperience({
     </div>
   )
 
-  const PanchangControls = () => {
+  const PanchangControls = ({ compact = false }: { compact?: boolean } = {}) => {
     const selectedPanchang =
       PANCHANG_SYSTEMS.find((system) => system.id === panchangSystemId) ||
       PANCHANG_SYSTEMS[0]
+
+    if (compact) {
+      return (
+        <label className="grid gap-2">
+          <span className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--shreem-gold-deep)]">
+            Panchang system
+          </span>
+          <select
+            value={selectedPanchang.id}
+            onChange={(event) => setPanchangSystemId(event.target.value)}
+            className="h-12 w-full rounded-[16px] border border-[var(--shreem-border)] bg-white/82 px-3 text-sm font-semibold text-[var(--shreem-ink)] outline-none"
+          >
+            {PANCHANG_SYSTEMS.map((system) => (
+              <option key={system.id} value={system.id}>
+                {system.label}
+              </option>
+            ))}
+          </select>
+          <p className="text-xs leading-5 text-[var(--shreem-muted)]">
+            {selectedPanchang.description}
+          </p>
+        </label>
+      )
+    }
 
     return (
       <div className="grid gap-2">
@@ -2658,6 +2701,14 @@ export default function AstrologyExperience({
     const freeLimit = Math.max(0, Number(aiQuota?.limit ?? 3))
     const freeUsed = Math.max(0, Number(aiQuota?.used ?? 0))
     const freeRemaining = Math.max(0, Number(aiQuota?.remaining ?? freeLimit))
+    const premiumDailyLimit = Math.max(
+      0,
+      Number(aiWallet?.pro_question_limit || 0)
+    )
+    const premiumRemaining =
+      proActive && premiumDailyLimit
+        ? Math.max(0, premiumDailyLimit - freeUsed)
+        : null
     const resetLabel = aiQuota?.reset_at
       ? new Intl.DateTimeFormat("en-IN", {
           hour: "numeric",
@@ -2667,7 +2718,7 @@ export default function AstrologyExperience({
           timeZone: "Asia/Kolkata",
         }).format(new Date(aiQuota.reset_at))
       : "midnight IST"
-    const primaryPack = aiPacks[0]
+    const creditPacks = aiPacks.filter((pack) => pack.plan !== "premium")
     const premiumPack =
       aiPacks.find((pack) => pack.plan === "premium") || aiPacks[aiPacks.length - 1]
 
@@ -2688,16 +2739,23 @@ export default function AstrologyExperience({
               Extra readings use paid credits or Premium. Deep Kundli uses 2
               turns because it retrieves separate BPHS case packs.
             </p>
+            {proActive && premiumRemaining !== null && (
+              <p className="mt-1 text-xs leading-5 text-[var(--shreem-muted)]">
+                Premium allowance: {premiumRemaining} of {premiumDailyLimit} AI
+                turns left today.
+              </p>
+            )}
           </div>
-          <div className="flex flex-wrap gap-2">
-            {primaryPack && (
+          <div className="flex flex-wrap justify-start gap-2 small:justify-end">
+            {creditPacks.map((pack) => (
               <LocalizedClientLink
-                href={`/products/${primaryPack.product_handle}`}
+                key={pack.id}
+                href={`/products/${pack.product_handle}`}
                 className="rounded-full border border-[rgba(13,129,126,0.24)] bg-white/70 px-3 py-2 text-xs font-semibold text-[var(--shreem-ink)]"
               >
-                Buy {primaryPack.credits}
+                {pack.credits} credits
               </LocalizedClientLink>
-            )}
+            ))}
             {premiumPack && (
               <LocalizedClientLink
                 href={`/products/${premiumPack.product_handle}`}
@@ -2739,7 +2797,7 @@ export default function AstrologyExperience({
               <LanguageControls />
             </div>
             <div className="mt-4 border-t border-[var(--shreem-border)] pt-4">
-              <PanchangControls />
+              <PanchangControls compact />
             </div>
           </div>
         </div>
@@ -2748,7 +2806,7 @@ export default function AstrologyExperience({
           <AiWalletCard />
         </div>
 
-        <div className="mt-6 grid gap-2 min-[520px]:grid-cols-2 xl:grid-cols-4">
+        <div className="mt-6 grid gap-2 min-[520px]:grid-cols-2 xl:grid-cols-5">
           {astrologyTabs.map((tab) => {
             const active = tab.id === activeTab
 
@@ -3112,43 +3170,55 @@ export default function AstrologyExperience({
                   <LanguageControls />
                 </div>
                 <div className="rounded-[20px] border border-[var(--shreem-border)] bg-white/52 px-3 py-3">
-                  <PanchangControls />
+                  <PanchangControls compact />
                 </div>
                 <button
                   type="button"
+                  aria-pressed={kundliForm.deepMode}
                   onClick={() =>
                     setKundliForm((current) => ({
                       ...current,
                       deepMode: !current.deepMode,
                     }))
                   }
-                  className={`rounded-[20px] border px-3 py-3 text-left transition ${
+                  className={`group rounded-[22px] border px-4 py-4 text-left transition shadow-[0_14px_34px_rgba(18,63,99,0.06)] ${
                     kundliForm.deepMode
-                      ? "border-[rgba(212,161,38,0.42)] bg-[rgba(255,248,233,0.86)]"
-                      : "border-[var(--shreem-border)] bg-white/52"
+                      ? "border-[rgba(212,161,38,0.54)] bg-[linear-gradient(135deg,rgba(255,248,233,0.96),rgba(240,248,246,0.82))]"
+                      : "border-[var(--shreem-border)] bg-white/62 hover:border-[rgba(212,161,38,0.34)] hover:bg-white/78"
                   }`}
                 >
                   <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
-                        Deep AI mode
-                      </p>
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
+                          Deep AI mode
+                        </p>
+                        <span className="rounded-full border border-[rgba(212,161,38,0.3)] bg-white/72 px-2 py-0.5 text-[0.68rem] font-semibold text-[var(--shreem-ink)]">
+                          2 turns
+                        </span>
+                      </div>
                       <p className="mt-1 text-sm font-semibold text-[var(--shreem-ink)]">
-                        Case-by-case BPHS reading
+                        BPHS case audit with dasha synthesis
                       </p>
                       <p className="mt-1 text-xs leading-5 text-[var(--shreem-muted)]">
-                        Uses 2 free turns or 2 paid credits. Best for deeper
-                        dasha, yoga, health, remedy, and life-event analysis.
+                        Retrieves separate case packs for yogas, doshas,
+                        health, remedies, and life-event windows before writing.
                       </p>
                     </div>
                     <span
-                      className={`mt-1 h-5 w-5 rounded-full border ${
+                      className={`mt-1 flex h-7 w-12 shrink-0 items-center rounded-full border px-1 transition ${
                         kundliForm.deepMode
-                          ? "border-[var(--shreem-gold-deep)] bg-[var(--shreem-gold)]"
+                          ? "border-[rgba(13,129,126,0.28)] bg-[var(--shreem-accent-dark)]"
                           : "border-[var(--shreem-border)] bg-white"
                       }`}
                       aria-hidden="true"
-                    />
+                    >
+                      <span
+                        className={`h-5 w-5 rounded-full bg-white shadow-[0_3px_10px_rgba(18,63,99,0.18)] transition ${
+                          kundliForm.deepMode ? "translate-x-5" : "translate-x-0"
+                        }`}
+                      />
+                    </span>
                   </div>
                 </button>
                 <div className="rounded-[20px] border border-[rgba(13,129,126,0.14)] bg-[rgba(240,248,246,0.62)] px-3 py-3">
@@ -3299,7 +3369,7 @@ export default function AstrologyExperience({
                   <LanguageControls />
                 </div>
                 <div className="rounded-[20px] border border-[var(--shreem-border)] bg-white/52 px-3 py-3">
-                  <PanchangControls />
+                  <PanchangControls compact />
                 </div>
                 <button
                   type="button"

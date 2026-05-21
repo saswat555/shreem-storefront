@@ -515,7 +515,77 @@ const longitudeInArc = (start: number, end: number, value: number) => {
   return distance <= arc
 }
 
-const detectKaalSarp = (chart: PrashnaChart) => {
+type DetectedAstrologyCase = {
+  key: string
+  name: string
+  category:
+    | "yoga"
+    | "dosha"
+    | "dignity"
+    | "cancellation"
+    | "compound"
+    | "health"
+    | "dasha"
+  status: "complete" | "partial" | "supportive" | "watch" | "compound"
+  strength: "low" | "medium" | "high"
+  subtype?: string
+  planets: string[]
+  houses: number[]
+  chart_basis: string
+  combined_effect: string
+  retrieval_terms: string[]
+  caution?: string
+}
+
+const KAAL_SARP_TYPES: Record<number, { name: string; theme: string }> = {
+  1: { name: "Anant", theme: "identity, body, marriage and public dealings" },
+  2: { name: "Kulik", theme: "family speech, finance, food and longevity fears" },
+  3: { name: "Vasuki", theme: "courage, siblings, effort, dharma and fortune" },
+  4: { name: "Shankhpal", theme: "home, mother, property, status and career" },
+  5: { name: "Padma", theme: "education, children, creativity, gains and networks" },
+  6: { name: "Mahapadma", theme: "disease, debts, disputes, loss and isolation" },
+  7: { name: "Takshak", theme: "partnership, self-image and contractual pressure" },
+  8: { name: "Karkotak", theme: "sudden change, inheritance, speech and family karma" },
+  9: { name: "Shankhachur", theme: "fortune, father/guru, courage and belief" },
+  10: { name: "Ghatak", theme: "career, authority, home and emotional security" },
+  11: { name: "Vishdhar", theme: "income, friends, children and expectation pressure" },
+  12: { name: "Sheshnag", theme: "sleep, foreign lands, expenses, disease and service" },
+}
+
+const formatDetectedCase = (detectedCase: DetectedAstrologyCase) =>
+  [
+    `${detectedCase.name}${detectedCase.subtype ? ` (${detectedCase.subtype})` : ""}`,
+    `${detectedCase.status}, ${detectedCase.strength} strength`,
+    detectedCase.chart_basis,
+    detectedCase.combined_effect,
+    detectedCase.caution ? `Caution: ${detectedCase.caution}` : "",
+  ]
+    .filter(Boolean)
+    .join(". ")
+
+const addDetectedCase = (
+  cases: DetectedAstrologyCase[],
+  detectedCase: DetectedAstrologyCase
+) => {
+  if (!cases.some((item) => item.key === detectedCase.key)) {
+    cases.push(detectedCase)
+  }
+}
+
+const getPlanetNames = (planets: Array<PrashnaPlanet | undefined>) =>
+  planets.filter(Boolean).map((planet) => planet!.name)
+
+const getCaseSearchTerms = (cases: DetectedAstrologyCase[]) =>
+  cases.flatMap((detectedCase) => [
+    detectedCase.name,
+    detectedCase.subtype || "",
+    detectedCase.category,
+    detectedCase.chart_basis,
+    detectedCase.combined_effect,
+    ...detectedCase.retrieval_terms,
+  ])
+
+const detectKaalSarpCase = (chart: PrashnaChart) => {
   const rahu = getPlanet(chart, "Rahu")
   const ketu = getPlanet(chart, "Ketu")
   const classicalPlanets = chart.planets.filter(
@@ -532,16 +602,185 @@ const detectKaalSarp = (chart: PrashnaChart) => {
   const ketuToRahu = classicalPlanets.every((planet) =>
     longitudeInArc(ketu.longitude, rahu.longitude, planet.longitude)
   )
+  const rahuToKetuOutside = classicalPlanets.filter(
+    (planet) => !longitudeInArc(rahu.longitude, ketu.longitude, planet.longitude)
+  )
+  const ketuToRahuOutside = classicalPlanets.filter(
+    (planet) => !longitudeInArc(ketu.longitude, rahu.longitude, planet.longitude)
+  )
+  const bestOutside =
+    rahuToKetuOutside.length <= ketuToRahuOutside.length
+      ? rahuToKetuOutside
+      : ketuToRahuOutside
+  const status =
+    rahuToKetu || ketuToRahu
+      ? "complete"
+      : bestOutside.length <= 1
+        ? "partial"
+        : null
 
-  if (!rahuToKetu && !ketuToRahu) {
+  if (!status) {
     return null
   }
 
-  return "Kaal Sarp pattern indicated: all classical grahas fall within the Rahu-Ketu axis. Treat this as a sensitive indication and confirm with an astrologer."
+  const subtype = KAAL_SARP_TYPES[rahu.house]
+  const enclosedText =
+    status === "complete"
+      ? "all seven classical grahas are enclosed within the Rahu-Ketu axis"
+      : `the Rahu-Ketu axis is near-complete; outside planets: ${bestOutside
+          .map((planet) => planet.name)
+          .join(", ")}`
+
+  return {
+    key: `kaal-sarp-${status}-${rahu.house}-${ketu.house}`,
+    name: "Kaal Sarp pattern",
+    category: "dosha",
+    status,
+    strength: status === "complete" ? "high" : "low",
+    subtype: subtype
+      ? `${subtype.name} type, Rahu in house ${rahu.house} and Ketu in house ${ketu.house}`
+      : `Rahu house ${rahu.house} / Ketu house ${ketu.house}`,
+    planets: ["Rahu", "Ketu", ...classicalPlanets.map((planet) => planet.name)],
+    houses: [rahu.house, ketu.house],
+    chart_basis: `${enclosedText}; Rahu is in house ${rahu.house}, Ketu is in house ${ketu.house}.`,
+    combined_effect: subtype
+      ? `Read the nodal pressure through ${subtype.theme}, then modify it by dasha, benefic protection, and any cancellation/supportive yogas.`
+      : "Read the nodal pressure through the Rahu-Ketu house axis, then modify it by dasha and benefic protection.",
+    retrieval_terms: [
+      "kaal sarp",
+      "rahu ketu axis",
+      subtype?.name || "",
+      "nodal pressure",
+      "sudden reversals",
+    ].filter(Boolean),
+    caution:
+      "Kaal Sarp is a later convention, so the reading must still be anchored in Rahu, Ketu, houses, strength, and dasha instead of fear.",
+  } satisfies DetectedAstrologyCase
 }
 
-const detectYogas = (chart: PrashnaChart) => {
-  const yogas: string[] = []
+const getExaltationLordForSign = (sign: string) =>
+  Object.entries(EXALTATION_SIGNS).find(([, exaltationSign]) => exaltationSign === sign)?.[0]
+
+const isKendraFromMoon = (moon: PrashnaPlanet | undefined, planet: PrashnaPlanet) =>
+  moon ? isKendraDistance(getHouseDistance(moon, planet)) : false
+
+const getNeechabhangaCases = (chart: PrashnaChart) => {
+  const moon = getPlanet(chart, "Moon")
+  const cases: DetectedAstrologyCase[] = []
+
+  chart.planets
+    .filter((planet) => DEBILITATION_SIGNS[planet.name] === planet.sign)
+    .forEach((planet) => {
+      const signLordName = SIGN_LORDS[planet.sign]
+      const signLord = getPlanet(chart, signLordName)
+      const exaltationLordName = getExaltationLordForSign(planet.sign)
+      const exaltationLord = exaltationLordName
+        ? getPlanet(chart, exaltationLordName)
+        : undefined
+      const rules: string[] = []
+
+      if (KENDRA_HOUSES.includes(planet.house)) {
+        rules.push(`${planet.name} itself is in a kendra from Lagna`)
+      }
+
+      if (isKendraFromMoon(moon, planet)) {
+        rules.push(`${planet.name} is in a kendra from Moon`)
+      }
+
+      if (signLord && KENDRA_HOUSES.includes(signLord.house)) {
+        rules.push(`${signLord.name}, lord of ${planet.sign}, is in a kendra from Lagna`)
+      }
+
+      if (signLord && isKendraFromMoon(moon, signLord)) {
+        rules.push(`${signLord.name}, lord of ${planet.sign}, is in a kendra from Moon`)
+      }
+
+      if (exaltationLord && KENDRA_HOUSES.includes(exaltationLord.house)) {
+        rules.push(
+          `${exaltationLord.name}, exaltation lord of ${planet.sign}, is in a kendra from Lagna`
+        )
+      }
+
+      if (exaltationLord && isKendraFromMoon(moon, exaltationLord)) {
+        rules.push(
+          `${exaltationLord.name}, exaltation lord of ${planet.sign}, is in a kendra from Moon`
+        )
+      }
+
+      if (
+        signLord &&
+        (signLord.sign === planet.sign ||
+          Math.abs(getHouseDistance(planet, signLord) - 7) === 0)
+      ) {
+        rules.push(`${planet.name} is directly associated with ${signLord.name}, its dispositor`)
+      }
+
+      const strength =
+        rules.length >= 3 ? "high" : rules.length >= 1 ? "medium" : "low"
+      const status = rules.length ? "supportive" : "watch"
+
+      cases.push({
+        key: `neechabhanga-${planet.name.toLowerCase()}`,
+        name: rules.length ? "Neechabhanga support" : "Debilitation watch",
+        category: rules.length ? "cancellation" : "dignity",
+        status,
+        strength,
+        subtype: `${planet.name} debilitated in ${planet.sign}`,
+        planets: getPlanetNames([planet, signLord, exaltationLord]),
+        houses: [planet.house, signLord?.house, exaltationLord?.house].filter(
+          (house): house is number => typeof house === "number"
+        ),
+        chart_basis: `${planet.name} is debilitated in ${planet.sign}, house ${planet.house}.${
+          rules.length ? ` Cancellation factors: ${rules.join("; ")}.` : ""
+        }`,
+        combined_effect: rules.length
+          ? "The planet may begin with friction, insecurity, delay, or over-compensation, but can convert into maturity and visible rise when its dasha or supporting houses activate."
+          : "Read this as a raw weak spot unless dasha, aspect, divisional charts, or human expert review shows support.",
+        retrieval_terms: [
+          "neechabhanga",
+          "debilitation cancellation",
+          planet.name,
+          planet.sign,
+          signLordName,
+          exaltationLordName || "",
+        ].filter(Boolean),
+        caution:
+          "Cancellation improves expression; it does not erase all weakness automatically.",
+      })
+    })
+
+  if (cases.filter((item) => item.name === "Neechabhanga support").length >= 2) {
+    const supported = cases.filter((item) => item.name === "Neechabhanga support")
+
+    cases.push({
+      key: "multiple-neechabhanga-cluster",
+      name: "Multiple Neechabhanga cluster",
+      category: "compound",
+      status: "compound",
+      strength: supported.some((item) => item.strength === "high")
+        ? "high"
+        : "medium",
+      planets: supported.flatMap((item) => item.planets),
+      houses: Array.from(new Set(supported.flatMap((item) => item.houses))),
+      chart_basis: supported.map((item) => item.chart_basis).join(" | "),
+      combined_effect:
+        "Multiple cancellations should be read together: the native may feel repeated early pressure around the debilitated grahas, but the same areas can become engines of growth when dasha, work, discipline, and benefic support align.",
+      retrieval_terms: [
+        "multiple neechabhanga",
+        "debilitation cancellation",
+        "rise after struggle",
+        ...supported.flatMap((item) => item.planets),
+      ],
+      caution:
+        "Do not judge these as separate isolated placements; the shared houses, dasha lords, and yogas decide whether the cluster becomes rise, pressure, or both.",
+    })
+  }
+
+  return cases
+}
+
+const detectAstrologyCases = (chart: PrashnaChart) => {
+  const cases: DetectedAstrologyCase[] = []
   const moon = getPlanet(chart, "Moon")
   const jupiter = getPlanet(chart, "Jupiter")
   const sun = getPlanet(chart, "Sun")
@@ -559,33 +798,74 @@ const detectYogas = (chart: PrashnaChart) => {
     {}
   )
 
-  const kaalSarp = detectKaalSarp(chart)
+  const kaalSarp = detectKaalSarpCase(chart)
   if (kaalSarp) {
-    yogas.push(kaalSarp)
+    addDetectedCase(cases, kaalSarp)
   }
 
   if (moon && jupiter && isKendraDistance(getHouseDistance(moon, jupiter))) {
-    yogas.push(
-      "Gajakesari-style support: Jupiter is in a kendra from Moon, supporting guidance, learning, and protection when unafflicted."
-    )
+    addDetectedCase(cases, {
+      key: "gajakesari-style",
+      name: "Gajakesari-style support",
+      category: "yoga",
+      status: "supportive",
+      strength: "medium",
+      planets: ["Moon", "Jupiter"],
+      houses: [moon.house, jupiter.house],
+      chart_basis: `Jupiter is in house ${jupiter.house}, a kendra distance from Moon in house ${moon.house}.`,
+      combined_effect:
+        "Protective judgement, learning, guidance, and public goodwill improve when Moon and Jupiter dashas or their houses activate.",
+      retrieval_terms: ["gajakesari", "moon jupiter", "kendra from moon"],
+    })
   }
 
   if (sun && mercury && sun.sign === mercury.sign) {
-    yogas.push(
-      "Budhaditya-style combination: Sun and Mercury share a sign, supporting intellect, speech, and administrative ability."
-    )
+    addDetectedCase(cases, {
+      key: "budhaditya-style",
+      name: "Budhaditya-style combination",
+      category: "yoga",
+      status: "supportive",
+      strength: Math.abs(sun.longitude - mercury.longitude) < 8 ? "medium" : "low",
+      planets: ["Sun", "Mercury"],
+      houses: Array.from(new Set([sun.house, mercury.house])),
+      chart_basis: `Sun and Mercury share ${sun.sign}; Sun house ${sun.house}, Mercury house ${mercury.house}.`,
+      combined_effect:
+        "Intellect, speech, administration, commerce, and authority blend; combustion distance and dasha decide whether it becomes clarity or ego-pressure.",
+      retrieval_terms: ["budhaditya", "sun mercury", "intellect speech authority"],
+    })
   }
 
   if (moon && mars && (moon.sign === mars.sign || isKendraDistance(getHouseDistance(moon, mars)))) {
-    yogas.push(
-      "Chandra-Mangal influence: Moon and Mars are strongly linked, giving drive and financial initiative but emotional heat should be managed."
-    )
+    addDetectedCase(cases, {
+      key: "chandra-mangal",
+      name: "Chandra-Mangal influence",
+      category: "yoga",
+      status: "watch",
+      strength: moon.sign === mars.sign ? "high" : "medium",
+      planets: ["Moon", "Mars"],
+      houses: Array.from(new Set([moon.house, mars.house])),
+      chart_basis: `Moon and Mars are ${moon.sign === mars.sign ? `together in ${moon.sign}` : "in kendra relationship"}.`,
+      combined_effect:
+        "Drive, initiative, finance, courage, and emotional heat combine; strong dasha can bring action and earnings, but unmanaged anger or haste can create conflict.",
+      retrieval_terms: ["chandra mangal", "moon mars", "finance emotion heat"],
+    })
   }
 
   if (mars && [1, 4, 7, 8, 12].includes(mars.house)) {
-    yogas.push(
-      "Manglik/Mars sensitivity is present by house placement. Relationship and conflict matters should be reviewed carefully."
-    )
+    addDetectedCase(cases, {
+      key: `manglik-house-${mars.house}`,
+      name: "Manglik/Mars sensitivity",
+      category: "dosha",
+      status: "watch",
+      strength: [7, 8].includes(mars.house) ? "high" : "medium",
+      planets: ["Mars"],
+      houses: [mars.house],
+      chart_basis: `Mars occupies house ${mars.house}, one of the common Manglik-sensitive houses.`,
+      combined_effect:
+        "Relationship, heat, impatience, injury-risk, and conflict themes need review through 7th house, Venus/Jupiter, Moon, and current dasha.",
+      retrieval_terms: ["manglik", "mangal dosha", "mars relationship conflict"],
+      caution: "Final marriage judgement needs full matching, not this one factor alone.",
+    })
   }
 
   if (moon) {
@@ -596,9 +876,19 @@ const detectYogas = (chart: PrashnaChart) => {
     )
 
     if (!adjacentPlanets.length) {
-      yogas.push(
-        "Kemadruma-style Moon isolation is indicated by the automated first pass. This can show emotional self-reliance, periodic loneliness, or the need for stronger support routines."
-      )
+      addDetectedCase(cases, {
+        key: "kemadruma-style",
+        name: "Kemadruma-style Moon isolation",
+        category: "dosha",
+        status: "watch",
+        strength: "medium",
+        planets: ["Moon"],
+        houses: [moon.house],
+        chart_basis: `No non-nodal graha is found in the 2nd or 12th from Moon by the automated first pass.`,
+        combined_effect:
+          "The mind may feel self-reliant, unsupported, or cyclically lonely; benefic aspects, kendras, and Moon dasha decide severity.",
+        retrieval_terms: ["kemadruma", "moon isolation", "mind emotional support"],
+      })
     }
   }
 
@@ -606,9 +896,19 @@ const detectYogas = (chart: PrashnaChart) => {
     const distance = getHouseDistance(moon, jupiter)
 
     if ([6, 8, 12].includes(distance)) {
-      yogas.push(
-        "Shakata-style Moon-Jupiter distance is present. Guidance, confidence, and fortune can fluctuate, so consistency matters more than mood-based decisions."
-      )
+      addDetectedCase(cases, {
+        key: "shakata-style",
+        name: "Shakata-style Moon-Jupiter distance",
+        category: "dosha",
+        status: "watch",
+        strength: "medium",
+        planets: ["Moon", "Jupiter"],
+        houses: [moon.house, jupiter.house],
+        chart_basis: `Jupiter is ${distance} houses from Moon.`,
+        combined_effect:
+          "Confidence, fortune, and guidance can fluctuate; consistency and guru support matter most during Moon/Jupiter periods.",
+        retrieval_terms: ["shakata", "moon jupiter sixth eighth twelfth"],
+      })
     }
   }
 
@@ -618,21 +918,51 @@ const detectYogas = (chart: PrashnaChart) => {
     (venus.sign === saturn.sign ||
       isKendraDistance(getHouseDistance(venus, saturn)))
   ) {
-    yogas.push(
-      "Venus-Saturn influence is active, pointing to maturity, delay, responsibility, or realism in love, luxury, art, and comfort matters."
-    )
+    addDetectedCase(cases, {
+      key: "venus-saturn",
+      name: "Venus-Saturn influence",
+      category: "yoga",
+      status: "watch",
+      strength: venus.sign === saturn.sign ? "high" : "medium",
+      planets: ["Venus", "Saturn"],
+      houses: Array.from(new Set([venus.house, saturn.house])),
+      chart_basis: `Venus and Saturn are ${venus.sign === saturn.sign ? `together in ${venus.sign}` : "in kendra relationship"}.`,
+      combined_effect:
+        "Love, comfort, art, money, and responsibility mix; maturity can create durable results after delay.",
+      retrieval_terms: ["venus saturn", "relationship delay maturity"],
+    })
   }
 
   if (rahu && mars && rahu.sign === mars.sign) {
-    yogas.push(
-      "Angarak-style Rahu-Mars influence is present. Use discipline around anger, haste, risk-taking, inflammation, and conflict."
-    )
+    addDetectedCase(cases, {
+      key: "angarak-style",
+      name: "Angarak-style Rahu-Mars influence",
+      category: "dosha",
+      status: "watch",
+      strength: "high",
+      planets: ["Rahu", "Mars"],
+      houses: Array.from(new Set([rahu.house, mars.house])),
+      chart_basis: `Rahu and Mars share ${rahu.sign}.`,
+      combined_effect:
+        "Ambition, heat, conflict, cuts/burns/inflammation, and risky speed can intensify; disciplined action channels it better than suppression.",
+      retrieval_terms: ["angarak", "rahu mars", "injury anger inflammation"],
+    })
   }
 
   if (ketu && saturn && ketu.sign === saturn.sign) {
-    yogas.push(
-      "Saturn-Ketu influence is present, suggesting karmic pressure around duty, health routines, boundaries, detachment, or service."
-    )
+    addDetectedCase(cases, {
+      key: "saturn-ketu",
+      name: "Saturn-Ketu influence",
+      category: "dosha",
+      status: "watch",
+      strength: "high",
+      planets: ["Saturn", "Ketu"],
+      houses: Array.from(new Set([saturn.house, ketu.house])),
+      chart_basis: `Saturn and Ketu share ${saturn.sign}.`,
+      combined_effect:
+        "Duty, detachment, chronic pressure, boundaries, and health discipline become karmic themes, especially in Saturn/Ketu periods.",
+      retrieval_terms: ["saturn ketu", "chronic pressure", "detachment duty"],
+    })
   }
 
   Object.entries(planetsByHouse)
@@ -641,33 +971,42 @@ const detectYogas = (chart: PrashnaChart) => {
         names.filter((name) => !["Rahu", "Ketu"].includes(name)).length >= 3
     )
     .forEach(([house, names]) => {
-      yogas.push(
-        `Graha concentration is present in house ${house}: ${names.join(", ")}. This house becomes a major life theme and should be read carefully with dasha.`
-      )
+      addDetectedCase(cases, {
+        key: `graha-concentration-${house}`,
+        name: "Graha concentration",
+        category: "compound",
+        status: "compound",
+        strength: names.length >= 4 ? "high" : "medium",
+        planets: names,
+        houses: [Number(house)],
+        chart_basis: `House ${house} contains ${names.join(", ")}.`,
+        combined_effect:
+          "This house becomes a dominant life arena; read all planets together and then time the result through their dashas.",
+        retrieval_terms: ["graha concentration", `house ${house}`, ...names],
+      })
     })
 
   chart.planets
     .filter((planet) => EXALTATION_SIGNS[planet.name] === planet.sign)
     .forEach((planet) => {
-      yogas.push(
-        `${planet.name} is in exaltation sign ${planet.sign}, strengthening its significations when supported by house placement and dasha.`
-      )
+      addDetectedCase(cases, {
+        key: `exaltation-${planet.name.toLowerCase()}`,
+        name: "Exaltation strength",
+        category: "dignity",
+        status: "supportive",
+        strength: "high",
+        planets: [planet.name],
+        houses: [planet.house],
+        chart_basis: `${planet.name} is exalted in ${planet.sign}, house ${planet.house}.`,
+        combined_effect:
+          "Its natural significations become stronger, but final result depends on house ownership, affliction, and dasha.",
+        retrieval_terms: ["exaltation", planet.name, planet.sign],
+      })
     })
 
-  chart.planets
-    .filter((planet) => DEBILITATION_SIGNS[planet.name] === planet.sign)
-    .forEach((planet) => {
-      const signLord = SIGN_LORDS[planet.sign]
-      const lord = getPlanet(chart, signLord)
-      const cancellation =
-        lord && [1, 4, 7, 10].includes(lord.house)
-          ? " Possible Neechabhanga support exists because the sign lord is in a kendra."
-          : ""
-
-      yogas.push(
-        `${planet.name} is in debilitation sign ${planet.sign}.${cancellation}`
-      )
-    })
+  getNeechabhangaCases(chart).forEach((detectedCase) =>
+    addDetectedCase(cases, detectedCase)
+  )
 
   const ninthSign = chart.houses[8]?.sign
   const tenthSign = chart.houses[9]?.sign
@@ -681,9 +1020,19 @@ const detectYogas = (chart: PrashnaChart) => {
       TRINAL_HOUSES.includes(ninthLord.house) ||
       KENDRA_HOUSES.includes(tenthLord.house))
   ) {
-    yogas.push(
-      "Dharma-karma support is indicated by the 9th/10th lord pattern. Career growth improves when ethics, skill, and visible action align."
-    )
+    addDetectedCase(cases, {
+      key: "dharma-karma-support",
+      name: "Dharma-karma support",
+      category: "yoga",
+      status: "supportive",
+      strength: "medium",
+      planets: getPlanetNames([ninthLord, tenthLord]),
+      houses: Array.from(new Set([ninthLord.house, tenthLord.house])),
+      chart_basis: `9th lord ${ninthLord.name} and 10th lord ${tenthLord.name} show supportive linkage.`,
+      combined_effect:
+        "Career growth improves when ethics, skill, authority, and visible effort align, especially in 9th/10th lord periods.",
+      retrieval_terms: ["dharma karma", "ninth tenth lord", "career status"],
+    })
   }
 
   const dusthanaLordsInDusthana = [6, 8, 12].filter((houseNumber) => {
@@ -694,13 +1043,67 @@ const detectYogas = (chart: PrashnaChart) => {
   })
 
   if (dusthanaLordsInDusthana.length) {
-    yogas.push(
-      `Vipreet Raja Yoga-style support should be reviewed: lords of houses ${dusthanaLordsInDusthana.join(", ")} occupy dusthana houses. Obstacles may convert into growth through service, discipline, and crisis handling.`
-    )
+    addDetectedCase(cases, {
+      key: `vipreet-raja-yoga-${dusthanaLordsInDusthana.join("-")}`,
+      name: "Vipreet Raja Yoga-style support",
+      category: "yoga",
+      status: "supportive",
+      strength: dusthanaLordsInDusthana.length >= 2 ? "high" : "medium",
+      planets: dusthanaLordsInDusthana
+        .map((houseNumber) => {
+          const sign = chart.houses[houseNumber - 1]?.sign
+          return sign ? getPlanet(chart, SIGN_LORDS[sign])?.name : ""
+        })
+        .filter((name): name is string => Boolean(name)),
+      houses: dusthanaLordsInDusthana,
+      chart_basis: `Lords of houses ${dusthanaLordsInDusthana.join(", ")} occupy dusthana houses.`,
+      combined_effect:
+        "Obstacles, disease/debt/enemies, sudden change, or losses can convert into growth through discipline, service, crisis handling, and dasha activation.",
+      retrieval_terms: ["vipreet raja yoga", "dusthana lord", "sixth eighth twelfth"],
+    })
   }
 
-  return yogas.length
-    ? yogas
+  if (cases.length >= 2) {
+    const pressureCases = cases.filter((item) =>
+      ["dosha", "health"].includes(item.category)
+    )
+    const supportCases = cases.filter((item) =>
+      ["yoga", "cancellation", "dignity"].includes(item.category)
+    )
+
+    if (pressureCases.length && supportCases.length) {
+      addDetectedCase(cases, {
+        key: "mixed-support-pressure-synthesis",
+        name: "Mixed support-pressure synthesis",
+        category: "compound",
+        status: "compound",
+        strength: "medium",
+        planets: Array.from(
+          new Set([...pressureCases, ...supportCases].flatMap((item) => item.planets))
+        ),
+        houses: Array.from(
+          new Set([...pressureCases, ...supportCases].flatMap((item) => item.houses))
+        ),
+        chart_basis: `Support cases: ${supportCases
+          .map((item) => item.name)
+          .join(", ")}. Pressure cases: ${pressureCases
+          .map((item) => item.name)
+          .join(", ")}.`,
+        combined_effect:
+          "The reading must synthesize protection and pressure together. Benefic/supportive yogas do not cancel every dosha; pressure cases do not erase growth. Dasha decides which layer becomes visible.",
+        retrieval_terms: ["combined yoga dosha synthesis", "dasha strength", "mixed effects"],
+      })
+    }
+  }
+
+  return cases
+}
+
+const detectYogas = (chart: PrashnaChart) => {
+  const cases = detectAstrologyCases(chart)
+
+  return cases.length
+    ? cases.map(formatDetectedCase)
     : [
         "No major Kaal Sarp, Manglik, Budhaditya, Gajakesari, Angarak, Kemadruma, Shakata, Vipreet Raja Yoga, or clear debilitation pattern was detected by the automated first pass.",
       ]
@@ -1129,12 +1532,14 @@ const getImportantHouseBasis = (chart: PrashnaChart, houses: number[]) =>
 const buildKundliCaseReferencePacks = ({
   chart,
   detectedYogas,
+  detectedCases,
   healthIndicators,
   targetedRemedySeeds,
   subQuestions,
 }: {
   chart: PrashnaChart
   detectedYogas: string[]
+  detectedCases: DetectedAstrologyCase[]
   healthIndicators: string[]
   targetedRemedySeeds: TargetedRemedy[]
   subQuestions: string[]
@@ -1230,28 +1635,32 @@ const buildKundliCaseReferencePacks = ({
     max: 4,
   })
 
-  detectedYogas.slice(0, 7).forEach((yoga) => {
+  detectedCases.slice(0, 10).forEach((detectedCase) => {
     addPack({
-      caseName: `Special case: ${yoga}`,
+      caseName: `Special case: ${detectedCase.name}${
+        detectedCase.subtype ? ` - ${detectedCase.subtype}` : ""
+      }`,
       chartBasis: [
-        yoga,
-        planetPlacementText(chart, [
-          "Sun",
-          "Moon",
-          "Mars",
-          "Mercury",
-          "Jupiter",
-          "Venus",
-          "Saturn",
-          "Rahu",
-          "Ketu",
-        ]),
+        detectedCase.chart_basis,
+        detectedCase.combined_effect,
+        detectedCase.caution || "",
+        planetPlacementText(chart, detectedCase.planets),
       ].join(" | "),
       query:
-        "BPHS yoga special combination conjunction aspect cancellation strength result dasha gajakesari budhaditya rahu ketu manglik",
-      detectedCases: [yoga],
-      min: 2,
-      max: 4,
+        [
+          "BPHS yoga special combination conjunction aspect cancellation strength result dasha",
+          detectedCase.name,
+          detectedCase.subtype || "",
+          detectedCase.retrieval_terms.join(" "),
+        ].join(" "),
+      detectedCases: [
+        detectedCase.name,
+        detectedCase.subtype || "",
+        detectedCase.chart_basis,
+        ...detectedCase.retrieval_terms,
+      ],
+      min: detectedCase.category === "compound" ? 3 : 2,
+      max: detectedCase.category === "compound" ? 5 : 4,
     })
   })
 
@@ -1305,12 +1714,14 @@ const buildKundliCaseReferencePacks = ({
 const buildKundliKnowledgePassages = ({
   chart,
   detectedYogas,
+  detectedCases,
   healthIndicators,
   targetedRemedySeeds,
   subQuestions,
 }: {
   chart: PrashnaChart
   detectedYogas: string[]
+  detectedCases: DetectedAstrologyCase[]
   healthIndicators: string[]
   targetedRemedySeeds: TargetedRemedy[]
   subQuestions: string[]
@@ -1349,6 +1760,7 @@ const buildKundliKnowledgePassages = ({
       query: [
         "parashari yoga special combination gajakesari budhaditya kaal sarp rahu ketu conjunction aspect result",
         detectedYogas.join(" "),
+        getCaseSearchTerms(detectedCases).join(" "),
         planetPlacementText(chart, [
           "Moon",
           "Jupiter",
@@ -1360,7 +1772,7 @@ const buildKundliKnowledgePassages = ({
         ]),
       ].join(" "),
       chart,
-      detectedCases: detectedYogas,
+      detectedCases: [...detectedYogas, ...getCaseSearchTerms(detectedCases)],
       min: detectedYogas.length ? 3 : 2,
       max: 5,
     }),
@@ -1427,6 +1839,7 @@ const buildPrompt = ({
   name,
   chart,
   detectedYogas,
+  detectedCases,
   stones,
   healthIndicators,
   targetedRemedySeeds,
@@ -1439,6 +1852,7 @@ const buildPrompt = ({
   name: string
   chart: PrashnaChart
   detectedYogas: string[]
+  detectedCases: DetectedAstrologyCase[]
   stones: ReturnType<typeof getStoneRecommendations>
   healthIndicators: string[]
   targetedRemedySeeds: TargetedRemedy[]
@@ -1452,10 +1866,12 @@ const buildPrompt = ({
     "You are Shreem Astrology's Vedic Kundli analysis assistant.",
     "Use only the calculated chart data and deterministic yoga detections below. Do not invent yogas that are not present.",
     "The chart calculation layer is authoritative. Do not move planets into different houses, do not alter Lagna, and do not infer chart facts that are absent.",
+    "If rashi_house and bhava_house differ, explain the difference plainly and use the selected house as the main house for this panchang mode.",
     "Use the retrieved Brihat Parashara Hora Shastra reference pack as the interpretive base for dasha, yoga, health-risk, and remedy judgement. It is not decorative citation. Apply it only after checking the calculated chart facts.",
     "First read Vimshottari timing: Mahadasha, Antardasha, and Pratyantar lord placement by house, sign, dignity, association, and relevant houses. Then explain how the BPHS reference pack modifies timing and outcomes.",
     "When two strong combinations coexist, synthesize them rather than listing them separately. Example: if Gajakesari support and Kaal Sarp/Rahu-Ketu pressure both appear, judge which dominates by dasha, house relevance, and afflicted/protective grahas.",
     "When a retrieved note identifies a later convention such as Kaal Sarp, say so plainly and judge it through Rahu/Ketu, houses, dignity, and dasha.",
+    "Use detected_structured_cases as the main special-case audit. For Kaal Sarp include exact type/status; for Neechabhanga include whether it is raw debility, partial cancellation, or a multi-planet cluster. For all cases, judge the combined effect, not isolated planet snippets.",
     "Follow calculation-first discipline: if a combination is partial, call it partial and explain what supports or weakens it.",
     "Cover special astrological cases when indicated, including Kaal Sarp, Manglik/Mars sensitivity, debilitation, possible Neechabhanga, Gajakesari, Budhaditya, and Chandra-Mangal.",
     "When you use the reference pack, return book_citations with the exact Citation values and one-line relevance notes.",
@@ -1505,6 +1921,9 @@ const buildPrompt = ({
     `Chart: ${JSON.stringify({
       generated_at: chart.generatedAtLocal,
       city: `${chart.city.name}, ${chart.city.region}`,
+      panchang: chart.panchangSystem,
+      house_system: chart.houseSystem,
+      calculation_system: chart.calculationSystem,
       lagna: chart.ascendant,
       moon_sign: chart.moonSign,
       tithi: chart.tithi,
@@ -1515,6 +1934,9 @@ const buildPrompt = ({
         sign: planet.sign,
         degree: planet.signDegree,
         house: planet.house,
+        rashi_house: planet.rashiHouse,
+        bhava_house: planet.bhavaHouse,
+        house_note: planet.houseNote,
         nakshatra: planet.nakshatra,
         pada: planet.pada,
         retrograde: Boolean(planet.retrograde),
@@ -1527,6 +1949,7 @@ const buildPrompt = ({
       })),
     })}`,
     `Detected cases: ${JSON.stringify(detectedYogas)}`,
+    `Detected structured cases: ${JSON.stringify(detectedCases)}`,
     `Trinal stone indicators: ${JSON.stringify(stones)}`,
     `available_ritual_support: ${JSON.stringify(
       astrologyProductCatalog.map((item) => ({
@@ -1606,7 +2029,10 @@ export async function POST(request: NextRequest) {
     date: birthDateTime,
     panchangSystemId,
   })
-  const detectedYogas = detectYogas(chart)
+  const detectedCases = detectAstrologyCases(chart)
+  const detectedYogas = detectedCases.length
+    ? detectedCases.map(formatDetectedCase)
+    : detectYogas(chart)
   const stones = getStoneRecommendations(chart)
   const healthIndicators = buildHealthIndicators(chart, detectedYogas)
   const targetedRemedySeeds = buildTargetedRemedySeeds(
@@ -1617,6 +2043,7 @@ export async function POST(request: NextRequest) {
   const baseKnowledgePassages = buildKundliKnowledgePassages({
     chart,
     detectedYogas,
+    detectedCases,
     healthIndicators,
     targetedRemedySeeds,
     subQuestions,
@@ -1625,6 +2052,7 @@ export async function POST(request: NextRequest) {
     ? buildKundliCaseReferencePacks({
         chart,
         detectedYogas,
+        detectedCases,
         healthIndicators,
         targetedRemedySeeds,
         subQuestions,
@@ -1644,6 +2072,7 @@ export async function POST(request: NextRequest) {
         message: "Kundli AI is not enabled on this server yet.",
         chart,
         detected_yogas: detectedYogas,
+        detected_cases: detectedCases,
         stones,
         health_indicators: healthIndicators,
         targeted_remedies: targetedRemedySeeds,
@@ -1678,6 +2107,7 @@ export async function POST(request: NextRequest) {
     name,
     chart,
     detectedYogas,
+    detectedCases,
     stones,
     healthIndicators,
     targetedRemedySeeds,
@@ -1704,6 +2134,7 @@ export async function POST(request: NextRequest) {
           "Kundli AI could not generate the reading right now. Please try again.",
         chart,
         detected_yogas: detectedYogas,
+        detected_cases: detectedCases,
         stones,
         retryable: true,
       },
@@ -1962,6 +2393,7 @@ export async function POST(request: NextRequest) {
     },
     chart,
     detected_yogas: detectedYogas,
+    detected_cases: detectedCases,
     knowledge_references: getKnowledgeIds(knowledgePassages),
     knowledge_case_packs: casePackTrace(caseReferencePacks),
     stones,
@@ -1983,10 +2415,12 @@ export async function POST(request: NextRequest) {
       usage_units: usageUnits,
       chart,
       panchangSystem: chart.panchangSystem,
+      houseSystem: chart.houseSystem,
       dasha: chart.dasha,
       knowledge_references: getKnowledgeIds(knowledgePassages),
       knowledge_context: knowledgeTrace(knowledgePassages),
       knowledge_case_packs: casePackTrace(caseReferencePacks),
+      detected_cases: detectedCases,
       health_indicators: healthIndicators,
       targeted_remedy_seeds: targetedRemedySeeds,
     },

@@ -7,5 +7,5 @@ type Props = {
 export default async function GaathaPage(props: Props) {
   const { countryCode } = await props.params
 
-  redirect(`/${countryCode}/journal`)
+  redirect(`/${countryCode}/blog`)
 }
