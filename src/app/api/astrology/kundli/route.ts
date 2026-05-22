@@ -282,20 +282,55 @@ const KUNDLI_SCHEMA = {
   ],
 } as const
 
-const STANDARD_KUNDLI_SCHEMA = {
-  ...KUNDLI_SCHEMA,
-  required: KUNDLI_SCHEMA.required.filter(
-    (field) =>
-      ![
-        "risk_watch",
-        "issue_analysis",
-        "sub_question_answers",
-        "personality_markers",
-        "deep_case_analysis",
-        "life_event_windows",
-      ].includes(field)
-  ),
-} as const
+const pickKundliSchema = (fields: readonly string[]) => ({
+  type: "object",
+  properties: fields.reduce<Record<string, unknown>>((selected, field) => {
+    selected[field] =
+      KUNDLI_SCHEMA.properties[
+        field as keyof typeof KUNDLI_SCHEMA.properties
+      ]
+
+    return selected
+  }, {}),
+  required: fields,
+})
+
+const STANDARD_KUNDLI_FIELDS = [
+  "summary",
+  "person_information",
+  "temperament",
+  "behavioral_traits",
+  "strengths",
+  "life_themes",
+  "career_direction",
+  "relationship_pattern",
+  "health_caution",
+  "health_indicators",
+  "current_period_analysis",
+  "dasha_predictions",
+  "prediction_table",
+  "likely_challenges",
+  "practical_solutions",
+  "spiritual_guidance",
+  "sub_question_answers",
+  "targeted_remedies",
+  "book_citations",
+  "expert_call_recommended",
+  "expert_call_reason",
+] as const
+
+const DEEP_KUNDLI_FIELDS = [
+  ...STANDARD_KUNDLI_FIELDS,
+  "risk_watch",
+  "issue_analysis",
+  "special_cases",
+  "personality_markers",
+  "deep_case_analysis",
+  "life_event_windows",
+] as const
+
+const STANDARD_KUNDLI_SCHEMA = pickKundliSchema(STANDARD_KUNDLI_FIELDS)
+const DEEP_KUNDLI_SCHEMA = pickKundliSchema(DEEP_KUNDLI_FIELDS)
 
 type KundliPayload = {
   name?: unknown
@@ -1989,17 +2024,21 @@ const buildPrompt = ({
     deepMode
       ? "Return personality_markers with 4 to 8 lived-experience markers. Each must connect trait -> chart_basis -> what the person may feel or repeatedly notice in life."
       : "Return personality_markers as an empty array in standard mode.",
-    "Return deep_case_analysis with one row per major detected case in deep mode, otherwise 0 to 4 rows. Each row must include chart_basis, book_basis using BPHS citation language, prediction, confidence, and caution.",
-    "Return life_event_windows with 3 to 6 dasha-based windows in deep mode, otherwise 0 to 3 rows. Each row must be cautious and explain likely_theme, chart_basis, book_basis, and guidance.",
+    deepMode
+      ? "Return deep_case_analysis with 4 to 6 rows for the highest-priority detected cases. Each row must include chart_basis, book_basis using BPHS citation language, prediction, confidence, and caution."
+      : "Do not return deep_case_analysis in standard mode.",
+    deepMode
+      ? "Return life_event_windows with 3 to 5 dasha-based windows. Each row must be cautious and explain likely_theme, chart_basis, book_basis, and guidance."
+      : "Do not return life_event_windows in standard mode.",
     "Return prediction_table with rows for Personality, Career, Money, Marriage, Health, Current period, and Remedies. Each row must include chart_basis, prediction, and advice.",
-    "Return planet_effects with one useful row for every graha: Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn, Rahu, and Ketu. Each placement, effect, and advice must be one short complete sentence.",
+    "Do not return planet_effects; the server generates graha-by-graha rows from the calculated chart.",
     "Answer at most three sub-questions. If no sub-questions are provided, return an empty sub_question_answers array.",
     "Every sub-question answer must cite a chart reason using Lagna, Moon sign/nakshatra, houses, or graha placement. Do not answer from generic intuition.",
     "If a yoga is not detected, do not claim it exists. Mention uncertainty clearly.",
     "Give remedies as Vedic practices: mantra, daan, vrata, worship, discipline, and seva.",
     "Return targeted_remedies with 3 to 6 exact pain-point remedies. Each row must map pain_point -> chart_basis -> mantra_or_pooja -> daily_practice. Avoid generic advice like simply do pooja; name the graha, day, mantra or deity, and the pain point it addresses.",
     "Gemstone guidance must only use the provided 1st, 5th, and 9th house lord stone indicators. Do not recommend a separate rashi/Moon stone unless it is already one of those trinal house indicators.",
-    "For product suggestions, use only the provided available_ritual_support handles. Do not invent products, URLs, prices, or claims. Recommend at most three and only when naturally relevant to the remedy.",
+    "Do not return shreem_product_suggestions or extra product fields in this JSON.",
     "Keep every string complete and self-contained. Do not end mid-sentence, do not use trailing ellipses, and prefer fewer complete rows over many unfinished rows.",
     deepMode
       ? "Keep each row compact: chart basis in 1 sentence, book basis in 1 sentence, prediction in 2 to 3 complete sentences, and advice in 1 to 2 complete sentences."
@@ -2007,7 +2046,7 @@ const buildPrompt = ({
     "Never give medical, legal, or financial certainty. Gemstones must always redirect to expert review before wearing.",
     "If strong dosha, gemstone, pooja, marriage, health, or career-defining guidance appears, set expert_call_recommended true and recommend Sanjay Kumar Pandey.",
     LANGUAGE_INSTRUCTIONS[language] || LANGUAGE_INSTRUCTIONS.english,
-    "Return JSON only.",
+    "Return JSON only. Return only the fields allowed by the response schema.",
     `Analysis mode: ${deepMode ? "deep" : "standard"}`,
     `Native name: ${name || "Not provided"}`,
     `Sub-questions: ${JSON.stringify(subQuestions)}`,
@@ -2387,7 +2426,7 @@ export async function POST(request: NextRequest) {
   })
   const gemini = await generateGeminiJson({
     prompt,
-    responseSchema: deepMode ? KUNDLI_SCHEMA : STANDARD_KUNDLI_SCHEMA,
+    responseSchema: deepMode ? DEEP_KUNDLI_SCHEMA : STANDARD_KUNDLI_SCHEMA,
     temperature: deepMode ? 0.2 : 0.22,
     timeoutMs: deepMode ? 120_000 : undefined,
     maxAttempts: deepMode ? 3 : undefined,

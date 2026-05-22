@@ -271,6 +271,128 @@ export const emptyGeminiUsage = (): GeminiUsage => ({
   estimated_cost_inr: 0,
 })
 
+const mergeGeminiUsage = (
+  first: GeminiUsage,
+  second: GeminiUsage
+): GeminiUsage => ({
+  prompt_tokens: first.prompt_tokens + second.prompt_tokens,
+  completion_tokens: first.completion_tokens + second.completion_tokens,
+  total_tokens: first.total_tokens + second.total_tokens,
+  estimated_cost_usd: Number(
+    (first.estimated_cost_usd + second.estimated_cost_usd).toFixed(6)
+  ),
+  estimated_cost_inr: Number(
+    (first.estimated_cost_inr + second.estimated_cost_inr).toFixed(4)
+  ),
+})
+
+const attemptJsonRepair = async ({
+  apiKey,
+  model,
+  text,
+  responseSchema,
+  timeoutMs,
+  queuedMs,
+  label,
+  usage,
+}: {
+  apiKey: string
+  model: string
+  text: string
+  responseSchema: unknown
+  timeoutMs: number
+  queuedMs: number
+  label: string
+  usage: GeminiUsage
+}): Promise<GeminiGenerateResult | null> => {
+  if (!text.trim()) {
+    return null
+  }
+
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), timeoutMs)
+  const repairPrompt = [
+    "The following response is an invalid or truncated JSON object.",
+    "Repair it into one valid compact JSON object matching the response schema.",
+    "If a value is cut off, finish it briefly. If a schema field is missing, fill strings with a short useful sentence, arrays with [] when evidence is unavailable, and booleans with false.",
+    "Do not add markdown. Do not explain. Return JSON only.",
+    "Invalid JSON response:",
+    text.slice(0, 14000),
+  ].join("\n")
+
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(
+      model
+    )}:generateContent`,
+    {
+      method: "POST",
+      headers: {
+        "x-goog-api-key": apiKey,
+        "Content-Type": "application/json",
+      },
+      signal: controller.signal,
+      body: JSON.stringify({
+        contents: [
+          {
+            role: "user",
+            parts: [{ text: repairPrompt }],
+          },
+        ],
+        generationConfig: {
+          temperature: 0,
+          maxOutputTokens: 4096,
+          responseMimeType: "application/json",
+          responseSchema,
+        },
+      }),
+    }
+  ).catch((error) => {
+    console.error(`[${label}] Gemini JSON repair request failed`, {
+      error: error instanceof Error ? error.message : String(error),
+    })
+    return null
+  })
+
+  clearTimeout(timeout)
+
+  if (!response?.ok) {
+    console.error(`[${label}] Gemini JSON repair failed`, {
+      status: response?.status,
+      statusText: response?.statusText,
+    })
+    return null
+  }
+
+  const data = await response.json()
+  const repairedText = data.candidates?.[0]?.content?.parts
+    ?.map((part: { text?: string }) => part.text || "")
+    .join("")
+    .trim()
+  const parsed = safeParseJson(repairedText || "")
+
+  if (!parsed) {
+    console.error(`[${label}] Gemini JSON repair returned invalid JSON`, {
+      textPreview: (repairedText || "").slice(0, 500),
+    })
+    return null
+  }
+
+  return {
+    ok: true,
+    parsed,
+    text: repairedText || "",
+    model,
+    usage: mergeGeminiUsage(
+      usage,
+      normalizeGeminiUsage(data.usageMetadata, model)
+    ),
+    status: response.status,
+    statusText: response.statusText,
+    attempts: 1,
+    queuedMs,
+  }
+}
+
 export const generateGeminiJson = async ({
   prompt,
   responseSchema,
@@ -395,12 +517,36 @@ export const generateGeminiJson = async ({
       const parsed = safeParseJson(text || "")
 
       if (!parsed) {
+        const usage = normalizeGeminiUsage(data.usageMetadata, model)
+        const repaired = await attemptJsonRepair({
+          apiKey,
+          model,
+          text: text || "",
+          responseSchema,
+          timeoutMs: Math.min(timeoutMs, 45_000),
+          queuedMs,
+          label,
+          usage,
+        })
+
+        if (repaired) {
+          console.warn(`[${label}] Gemini JSON was repaired after truncation`, {
+            attempt,
+            model,
+            queuedMs,
+          })
+          return {
+            ...repaired,
+            attempts: attempt,
+          }
+        }
+
         lastResult = {
           ok: false,
           parsed: null,
           text: text || "",
           model,
-          usage: normalizeGeminiUsage(data.usageMetadata, model),
+          usage,
           status: response.status,
           statusText: response.statusText,
           error: "invalid_json",
