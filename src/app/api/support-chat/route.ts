@@ -202,6 +202,9 @@ export async function POST(request: NextRequest) {
         response: result,
         metadata: {
           customer_email: customer.email,
+          billing_mode: "free",
+          usage_units: 1,
+          charge_required: false,
         },
         model: gemini.model,
         ...gemini.usage,

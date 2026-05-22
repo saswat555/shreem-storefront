@@ -39,9 +39,9 @@ export default function Footer() {
   ]
 
   return (
-    <footer className="w-full pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-8 small:pb-8 small:pt-16">
+    <footer className="site-footer-shell w-full pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-8 small:pb-8 small:pt-16">
       <div className="content-container">
-        <div className="brand-royal-surface flex w-full flex-col gap-4 overflow-hidden px-4 py-5 text-white small:gap-8 small:px-10 small:py-10">
+        <div className="site-footer-panel brand-royal-surface flex w-full flex-col gap-4 overflow-hidden px-4 py-5 text-white small:gap-8 small:px-10 small:py-10">
           <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
             <div className="max-w-[34rem]">
               <BrandLogo

@@ -53,6 +53,10 @@ const getAiUsageUnits = (item: Awaited<ReturnType<typeof listAiUsage>>["items"][
   const metadata = (item.metadata || {}) as Record<string, unknown>
   const response = (item.response || {}) as Record<string, unknown>
 
+  if (metadata.billable === false) {
+    return 0
+  }
+
   return normalizeUsageUnits(
     metadata.usage_units ?? metadata.billing_units ?? response.usage_units,
     1
@@ -119,8 +123,8 @@ export const checkAstrologyAccess = async ({
     return {
       allowed: true,
       reason: "premium",
-      charge_required: false,
-      charge_units: 0,
+      charge_required: true,
+      charge_units: units,
       requested_units: units,
       quota,
       wallet,
@@ -173,6 +177,22 @@ export const checkAstrologyAccess = async ({
 export const isAstrologyAccessBlocked = (access: AstrologyAccess) =>
   !access.allowed
 
+export const getAstrologyBillingMetadata = (access: AstrologyAccess) => ({
+  billing_mode: access.reason,
+  requested_units: access.requested_units,
+  charge_required: access.charge_required,
+  charge_units: access.charge_units,
+  free_daily_limit: access.quota.limit,
+  free_used_today: access.quota.used,
+  free_remaining_today: access.quota.remaining,
+  free_reset_at: access.quota.reset_at,
+  wallet_synced: access.wallet_synced,
+  wallet_plan: access.wallet?.plan || "free",
+  wallet_credit_balance: access.wallet?.credit_balance || 0,
+  premium_active: Boolean(access.wallet?.pro_active),
+  premium_daily_limit: access.wallet?.pro_question_limit || 0,
+})
+
 export const consumeChargeableAstrologyCredit = async ({
   access,
   tool,
@@ -187,41 +207,28 @@ export const consumeChargeableAstrologyCredit = async ({
   }
 
   const units = normalizeUsageUnits(access.charge_units || 1)
-  let lastResult: Awaited<ReturnType<typeof consumeAiCredit>> | null = null
-  let chargedUnits = 0
-
-  for (let index = 0; index < units; index += 1) {
-    const result = await consumeAiCredit({
-      tool,
-      usageId:
-        usageId && units > 1 ? `${usageId}:${index + 1}/${units}` : usageId,
-      note:
-        units > 1
-          ? `Deep astrology reading charged ${units} credits`
-          : "Daily astrology free quota exceeded",
-    })
-
-    lastResult = result
-
-    if ("charged" in result && result.charged) {
-      chargedUnits += 1
-    }
-
-    if (result.allowed === false) {
-      return {
-        ...result,
-        charged: chargedUnits > 0,
-        charged_units: chargedUnits,
-        charge_units: units,
-      }
-    }
-  }
+  const result = await consumeAiCredit({
+    tool,
+    usageId,
+    units,
+    note:
+      access.reason === "premium"
+        ? `Premium astrology reading used ${units} daily AI turn${units > 1 ? "s" : ""}`
+        : units > 1
+        ? `Deep astrology reading charged ${units} credits`
+        : "Daily astrology free quota exceeded",
+  })
 
   return {
-    ...(lastResult || {}),
-    charged: chargedUnits > 0,
-    charged_units: chargedUnits,
+    ...result,
+    charged: Boolean("charged" in result && result.charged),
+    charged_units:
+      "charged_units" in result && typeof result.charged_units === "number"
+        ? result.charged_units
+        : "charged" in result && result.charged
+          ? units
+          : 0,
     charge_units: units,
-    synced: lastResult?.synced !== false,
+    synced: result?.synced !== false,
   }
 }

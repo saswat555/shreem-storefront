@@ -291,6 +291,9 @@ export async function POST(request: NextRequest) {
     response,
     metadata: {
       customer_email: customer.email,
+      billing_mode: "free",
+      usage_units: 1,
+      charge_required: false,
       image_mime_types: images.map((image) => image.mimeType),
     },
     model: gemini.model,

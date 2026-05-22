@@ -16,6 +16,7 @@ import {
 import {
   checkAstrologyAccess,
   consumeChargeableAstrologyCredit,
+  getAstrologyBillingMetadata,
   isAstrologyAccessBlocked,
 } from "@lib/util/ai-quota"
 import { generateGeminiJson } from "@lib/util/gemini"
@@ -287,6 +288,33 @@ export async function POST(request: NextRequest) {
   })
 
   if (!gemini.ok) {
+    await recordAiUsage({
+      tool: "astrology_prashna",
+      input: {
+        question,
+        city_id: city.id,
+        city: `${city.name}, ${city.region}`,
+        panchang_system_id: chart.panchangSystem?.id,
+        language,
+      },
+      response: {
+        message: "Prashna AI generation failed.",
+        error: gemini.error || "generation_failed",
+        retryable: true,
+      },
+      metadata: {
+        customer_email: customer.email,
+        usage_units: 0,
+        billable: false,
+        failed_ai_generation: true,
+        ...getAstrologyBillingMetadata(access),
+      },
+      model: gemini.model,
+      ...gemini.usage,
+      expert_recommended: true,
+      tags: ["failed_ai_generation", "retryable"],
+    })
+
     return NextResponse.json(
       {
         message:
@@ -352,6 +380,8 @@ export async function POST(request: NextRequest) {
     metadata: {
       chart,
       customer_email: customer.email,
+      usage_units: 1,
+      ...getAstrologyBillingMetadata(access),
       panchangSystem: chart.panchangSystem,
       knowledge_references: getKnowledgeIds(knowledgePassages),
       knowledge_context: knowledgeTrace(knowledgePassages),

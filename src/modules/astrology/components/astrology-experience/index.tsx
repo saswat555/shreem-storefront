@@ -17,7 +17,7 @@ import {
 } from "@lib/util/astrology"
 import LogoLoader from "@modules/common/components/logo-loader"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
-import { useEffect, useMemo, useState } from "react"
+import { type CSSProperties, useEffect, useMemo, useState } from "react"
 
 type PrashnaResult = {
   chart?: PrashnaChart
@@ -101,26 +101,6 @@ type KundliAnalysis = {
     reason: string
   }[]
   book_citations?: BookCitation[]
-  personality_markers?: {
-    trait: string
-    chart_basis: string
-    lived_experience: string
-  }[]
-  deep_case_analysis?: {
-    case: string
-    chart_basis: string
-    book_basis: string
-    prediction: string
-    confidence: string
-    caution: string
-  }[]
-  life_event_windows?: {
-    period: string
-    likely_theme: string
-    chart_basis: string
-    book_basis: string
-    guidance: string
-  }[]
   planet_effects?: {
     planet: string
     placement: string
@@ -141,7 +121,7 @@ type KundliResult = {
     language?: string
     panchang_system_id?: string
     sub_questions?: string[]
-    analysis_mode?: "standard" | "deep"
+    analysis_mode?: "standard"
     usage_units?: number
   }
   chart?: PrashnaChart
@@ -187,7 +167,7 @@ type KundliResult = {
   wallet?: AiWallet
   quota?: AiQuota
   packs?: AiCreditPack[]
-  analysis_mode?: "standard" | "deep"
+  analysis_mode?: "standard"
   usage_units?: number
 }
 
@@ -301,20 +281,79 @@ const qualityClasses: Record<MuhurtaSlot["quality"], string> = {
 
 const serviceCards = [
   {
-    title: "15 min call",
+    title: "Focused Jyotish call",
     amount: "Rs. 499",
     href: "/products/shreem-astrology-15-minute-call",
     description:
-      "Focused answer for one topic with Sanjay Kumar Pandey ji.",
+      "15 minutes for one clear question, timing concern, or remedy review with Sanjay Kumar Pandey ji.",
   },
   {
-    title: "30 min call",
+    title: "Detailed Kundli call",
     amount: "Rs. 999",
     href: "/products/shreem-astrology-30-minute-call",
     description:
-      "Detailed guidance with stone recommendation and pooja direction.",
+      "30 minutes for chart context, gemstone caution, pooja direction, and practical next steps.",
   },
 ]
+
+const grahaMedallions = [
+  {
+    key: "surya",
+    label: "Surya",
+    body: "Soul, authority, vitality",
+    mark: "Su",
+  },
+  {
+    key: "chandra",
+    label: "Chandra",
+    body: "Mind, comfort, emotion",
+    mark: "Mo",
+  },
+  {
+    key: "mangal",
+    label: "Mangal",
+    body: "Courage, land, action",
+    mark: "Ma",
+  },
+  {
+    key: "budh",
+    label: "Budh",
+    body: "Speech, trade, intellect",
+    mark: "Me",
+  },
+  {
+    key: "guru",
+    label: "Guru",
+    body: "Wisdom, dharma, counsel",
+    mark: "Ju",
+  },
+  {
+    key: "shukra",
+    label: "Shukra",
+    body: "Love, comfort, beauty",
+    mark: "Ve",
+  },
+  {
+    key: "shani",
+    label: "Shani",
+    body: "Karma, discipline, delays",
+    mark: "Sa",
+  },
+  {
+    key: "rahu",
+    label: "Rahu",
+    body: "Desire, rise, disruption",
+    mark: "Ra",
+  },
+  {
+    key: "ketu",
+    label: "Ketu",
+    body: "Moksha, cuts, insight",
+    mark: "Ke",
+  },
+]
+
+const zodiacGlyphs = ["♈", "♉", "♊", "♋", "♌", "♍", "♎", "♏", "♐", "♑", "♒", "♓"]
 
 const astrologyTabs: { id: AstrologyTab; label: string; description: string }[] = [
   {
@@ -1307,133 +1346,6 @@ const RiskWatchList = ({
   )
 }
 
-const PersonalityMarkerList = ({
-  rows,
-}: {
-  rows?: KundliAnalysis["personality_markers"]
-}) => {
-  if (!rows?.length) {
-    return null
-  }
-
-  return (
-    <div className="rounded-[20px] border border-[rgba(13,129,126,0.18)] bg-white/64 px-4 py-4">
-      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
-        Lived personality markers
-      </p>
-      <div className="mt-3 grid gap-3 md:grid-cols-2">
-        {rows.map((item, index) => (
-          <div
-            key={`${item.trait}-${index}`}
-            className="rounded-[16px] border border-[var(--shreem-border)] bg-white/72 px-3 py-3"
-          >
-            <p className="text-sm font-semibold text-[var(--shreem-ink)]">
-              {item.trait}
-            </p>
-            <p className="mt-2 text-xs leading-5 text-[var(--shreem-muted)]">
-              {item.chart_basis}
-            </p>
-            <p className="mt-2 rounded-[14px] bg-[rgba(240,248,246,0.72)] px-3 py-2 text-xs leading-5 text-[var(--shreem-muted)]">
-              {item.lived_experience}
-            </p>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-const DeepCaseAnalysisList = ({
-  rows,
-}: {
-  rows?: KundliAnalysis["deep_case_analysis"]
-}) => {
-  if (!rows?.length) {
-    return null
-  }
-
-  return (
-    <div className="rounded-[20px] border border-[rgba(212,161,38,0.24)] bg-[rgba(255,248,233,0.7)] px-4 py-4">
-      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
-        Deep case analysis
-      </p>
-      <div className="mt-3 grid gap-3">
-        {rows.map((item, index) => (
-          <div
-            key={`${item.case}-${index}`}
-            className="rounded-[16px] border border-[var(--shreem-border)] bg-white/74 px-3 py-3"
-          >
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <p className="text-sm font-semibold text-[var(--shreem-ink)]">
-                {item.case}
-              </p>
-              <span className="rounded-full bg-[rgba(13,129,126,0.08)] px-2 py-0.5 text-[0.66rem] font-semibold text-[var(--shreem-muted)]">
-                {item.confidence}
-              </span>
-            </div>
-            <p className="mt-2 text-xs leading-5 text-[var(--shreem-muted)]">
-              Chart: {item.chart_basis}
-            </p>
-            <p className="mt-2 text-xs leading-5 text-[var(--shreem-muted)]">
-              BPHS: {item.book_basis}
-            </p>
-            <p className="mt-2 text-sm leading-6 text-[var(--shreem-ink)]">
-              {item.prediction}
-            </p>
-            {item.caution && (
-              <p className="mt-2 rounded-[14px] bg-white/78 px-3 py-2 text-xs leading-5 text-[var(--shreem-muted)]">
-                {item.caution}
-              </p>
-            )}
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-const LifeEventWindowList = ({
-  rows,
-}: {
-  rows?: KundliAnalysis["life_event_windows"]
-}) => {
-  if (!rows?.length) {
-    return null
-  }
-
-  return (
-    <div className="rounded-[20px] border border-[rgba(111,33,31,0.14)] bg-white/64 px-4 py-4">
-      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
-        Dasha event windows
-      </p>
-      <div className="mt-3 grid gap-3 md:grid-cols-2">
-        {rows.map((item, index) => (
-          <div
-            key={`${item.period}-${index}`}
-            className="rounded-[16px] border border-[var(--shreem-border)] bg-white/72 px-3 py-3"
-          >
-            <p className="text-sm font-semibold text-[var(--shreem-ink)]">
-              {item.period}
-            </p>
-            <p className="mt-2 text-sm leading-6 text-[var(--shreem-ink)]">
-              {item.likely_theme}
-            </p>
-            <p className="mt-2 text-xs leading-5 text-[var(--shreem-muted)]">
-              Chart: {item.chart_basis}
-            </p>
-            <p className="mt-2 text-xs leading-5 text-[var(--shreem-muted)]">
-              BPHS: {item.book_basis}
-            </p>
-            <p className="mt-2 rounded-[14px] bg-[rgba(255,248,233,0.78)] px-3 py-2 text-xs leading-5 text-[var(--shreem-muted)]">
-              {item.guidance}
-            </p>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
-
 const HistoryPanel = ({
   items,
   onSelect,
@@ -1470,6 +1382,69 @@ const HistoryPanel = ({
           </p>
         </button>
       ))}
+    </div>
+  </div>
+)
+
+const AstralGrahaPanel = () => (
+  <div className="astrology-star-map relative overflow-hidden rounded-[28px] border border-[rgba(245,199,96,0.28)] px-4 py-4 text-white shadow-[0_28px_70px_rgba(10,30,48,0.24)] small:px-5 small:py-5">
+    <div className="astrology-zodiac-wheel" aria-hidden="true">
+      {zodiacGlyphs.map((glyph, index) => (
+        <span
+          key={`${glyph}-${index}`}
+          style={
+            {
+              "--zodiac-index": index,
+            } as CSSProperties
+          }
+        >
+          {glyph}
+        </span>
+      ))}
+    </div>
+    <div className="relative z-10 flex items-start justify-between gap-4">
+      <div>
+        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-[#f5d98b]">
+          Navagraha map
+        </p>
+        <h3 className="mt-2 text-2xl leading-tight text-white">
+          Charts, dasha, and remedies in one sky.
+        </h3>
+      </div>
+      <div className="hidden rounded-full border border-white/18 bg-white/10 px-3 py-2 text-xs font-semibold text-[#fff7d8] small:block">
+        Vedic Jyotish
+      </div>
+    </div>
+
+    <div className="relative z-10 mt-5 grid grid-cols-2 gap-2 min-[480px]:grid-cols-3">
+      {grahaMedallions.map((graha, index) => (
+        <div
+          key={graha.key}
+          className={`astrology-graha-card ${
+            index === 4 ? "astrology-graha-card-center" : ""
+          }`}
+        >
+          <span className="grid size-10 place-items-center rounded-full border border-[rgba(245,217,139,0.34)] bg-[rgba(255,255,255,0.1)] text-sm font-bold text-[#ffe7a1]">
+            {graha.mark}
+          </span>
+          <p className="mt-2 text-sm font-semibold text-white">{graha.label}</p>
+          <p className="mt-1 text-[0.7rem] leading-4 text-[#d8e8ea]">
+            {graha.body}
+          </p>
+        </div>
+      ))}
+    </div>
+
+    <div className="relative z-10 mt-4 grid gap-2 text-xs leading-5 text-[#d8e8ea] min-[540px]:grid-cols-3">
+      <p className="rounded-[16px] border border-white/10 bg-white/8 px-3 py-2">
+        North Indian chart view
+      </p>
+      <p className="rounded-[16px] border border-white/10 bg-white/8 px-3 py-2">
+        Panchang comparison
+      </p>
+      <p className="rounded-[16px] border border-white/10 bg-white/8 px-3 py-2">
+        BPHS-backed prompts
+      </p>
     </div>
   </div>
 )
@@ -1571,8 +1546,6 @@ const KundliResultView = ({
 }) => {
   const chart = result.chart
   const stoneCards = getStoneCards(result.stones)
-  const isDeepReading =
-    result.analysis_mode === "deep" || result.profile?.analysis_mode === "deep"
   const requestedUnits = result.usage_units || result.profile?.usage_units || 1
   const isInterruptedReading = Boolean(result.message)
 
@@ -1584,24 +1557,14 @@ const KundliResultView = ({
     <div className="grid gap-4">
       <div className="rounded-[20px] border border-[var(--shreem-border)] bg-white/62 px-4 py-3">
         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
-          {isInterruptedReading
-            ? isDeepReading
-              ? "Deep Kundli not completed"
-              : "Kundli not completed"
-            : isDeepReading
-            ? "Deep Kundli reading"
-            : "Standard Kundli reading"}
+          {isInterruptedReading ? "Kundli not completed" : "Kundli reading"}
         </p>
         <p className="mt-1 text-xs leading-5 text-[var(--shreem-muted)]">
           {isInterruptedReading
-            ? `No AI turn was consumed for this interrupted reading. ${
-                isDeepReading
-                  ? `Deep mode needs ${requestedUnits} available turns.`
-                  : "Retry when you are ready."
-              }`
+            ? "No AI turn was consumed for this interrupted reading. Retry when you are ready."
             : `Used ${requestedUnits} AI ${
                 Number(requestedUnits) > 1 ? "turns" : "turn"
-              }${isDeepReading ? " with separate BPHS case retrieval." : "."}`}
+              }.`}
         </p>
       </div>
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(280px,0.65fr)]">
@@ -1685,9 +1648,6 @@ const KundliResultView = ({
       <PredictionTable rows={result.analysis?.prediction_table} />
       <DashaPredictionList rows={result.analysis?.dasha_predictions} />
       <RiskWatchList rows={result.analysis?.risk_watch} />
-      <PersonalityMarkerList rows={result.analysis?.personality_markers} />
-      <DeepCaseAnalysisList rows={result.analysis?.deep_case_analysis} />
-      <LifeEventWindowList rows={result.analysis?.life_event_windows} />
       <PlanetEffectList chart={chart} effects={result.analysis?.planet_effects} />
       <BookCitationList items={result.analysis?.book_citations} />
 
@@ -2253,7 +2213,6 @@ export default function AstrologyExperience({
     birthDate: "",
     birthTime: "",
     cityId: "rewa",
-    deepMode: false,
     subQuestions: ["", "", ""],
   })
   const [kundliResult, setKundliResult] = useState<KundliResult | null>(null)
@@ -2578,10 +2537,6 @@ export default function AstrologyExperience({
           birthDate: profile.birth_date || current.birthDate,
           birthTime: profile.birth_time || current.birthTime,
           cityId: restoredCityId || current.cityId,
-          deepMode:
-            profile.analysis_mode === "deep" ||
-            result.analysis_mode === "deep" ||
-            current.deepMode,
           subQuestions:
             Array.isArray(profile.sub_questions) &&
             profile.sub_questions.some(Boolean)
@@ -2755,8 +2710,8 @@ export default function AstrologyExperience({
               {" "}{resetLabel}.
             </p>
             <p className="mt-1 text-xs leading-5 text-[var(--shreem-muted)]">
-              Extra readings use paid credits or Premium. Deep Kundli uses 2
-              turns because it retrieves separate BPHS case packs.
+              Extra readings use paid credits or Premium. Each Kundli,
+              Matchmaking, or Prashna request uses 1 AI turn.
             </p>
             {proActive && premiumRemaining !== null && (
               <p className="mt-1 text-xs leading-5 text-[var(--shreem-muted)]">
@@ -2780,7 +2735,7 @@ export default function AstrologyExperience({
                 href={`/products/${premiumPack.product_handle}`}
                 className="rounded-full bg-[linear-gradient(135deg,#0d817e_0%,#123f63_58%,#6f211f_100%)] px-3 py-2 text-xs font-semibold text-white"
               >
-                Premium
+                Premium ₹{premiumPack.price_inr}/30 days
               </LocalizedClientLink>
             )}
           </div>
@@ -2790,33 +2745,59 @@ export default function AstrologyExperience({
   }
 
   return (
-    <div className="grid gap-6 small:gap-8">
-      <section className="brand-surface overflow-hidden px-5 py-7 small:px-8 small:py-9">
-        <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px] xl:items-end">
+    <div className="astrology-dashboard grid gap-6 small:gap-8">
+      <section className="brand-surface relative overflow-hidden px-5 py-7 small:px-8 small:py-9">
+        <div className="pointer-events-none absolute inset-x-5 top-5 h-px bg-[linear-gradient(90deg,transparent,rgba(212,161,38,0.38),transparent)]" />
+        <div className="grid gap-6 xl:grid-cols-[minmax(0,0.92fr)_minmax(360px,0.78fr)] xl:items-center">
           <div>
-            <p className="brand-kicker">Astrology desk</p>
-            <h2 className="brand-section-title mt-3 max-w-[16ch]">
-              A focused workspace for muhurth, charts, and questions.
+            <p className="brand-kicker">Jyotish observatory</p>
+            <h2 className="brand-section-title mt-3 max-w-[17ch]">
+              Ancient sky reading, made calm and practical.
             </h2>
             <p className="mt-4 max-w-[52rem] text-sm leading-7 text-[var(--shreem-muted)] small:text-base">
-              Explore Muhurth, Hindu Calendar, Prashna Kundli, and full Kundli
-              generation in one focused workspace.
+              Work with daily Muhurth, Hindu Calendar, Prashna, Kundli, and
+              matchmaking through one clear Jyotish desk. The interface keeps
+              the grahas visible without hiding the practical answer you came for.
             </p>
+            <div className="mt-5 grid gap-2 text-xs leading-5 text-[var(--shreem-muted)] min-[520px]:grid-cols-3">
+              <div className="rounded-[18px] border border-[rgba(212,161,38,0.22)] bg-white/58 px-3 py-3">
+                <p className="font-semibold text-[var(--shreem-ink)]">
+                  Muhurth
+                </p>
+                <p className="mt-1">City-based sunrise and Choghadiya windows.</p>
+              </div>
+              <div className="rounded-[18px] border border-[rgba(13,129,126,0.18)] bg-white/58 px-3 py-3">
+                <p className="font-semibold text-[var(--shreem-ink)]">
+                  Kundli
+                </p>
+                <p className="mt-1">North Indian chart, dasha, yoga, and remedies.</p>
+              </div>
+              <div className="rounded-[18px] border border-[rgba(111,33,31,0.14)] bg-white/58 px-3 py-3">
+                <p className="font-semibold text-[var(--shreem-ink)]">
+                  Guidance
+                </p>
+                <p className="mt-1">AI-first reading with expert review when needed.</p>
+              </div>
+            </div>
           </div>
 
-          <div className="brand-card px-4 py-4">
-            <p className="brand-kicker">Account</p>
-            <p className="mt-2 break-words text-sm font-semibold text-[var(--shreem-ink)]">
-              {customerEmail}
-            </p>
-            <p className="mt-2 text-xs leading-5 text-[var(--shreem-muted)]">
-              Your recent Prashna and Kundli sessions appear in history.
-            </p>
-            <div className="mt-4">
-              <LanguageControls />
-            </div>
-            <div className="mt-4 border-t border-[var(--shreem-border)] pt-4">
-              <PanchangControls compact />
+          <div className="grid gap-4">
+            <AstralGrahaPanel />
+            <div className="brand-card px-4 py-4">
+              <p className="brand-kicker">Account</p>
+              <p className="mt-2 break-words text-sm font-semibold text-[var(--shreem-ink)]">
+                {customerEmail}
+              </p>
+              <p className="mt-2 text-xs leading-5 text-[var(--shreem-muted)]">
+                Your recent Prashna, Kundli, and matchmaking sessions appear in
+                history.
+              </p>
+              <div className="mt-4">
+                <LanguageControls />
+              </div>
+              <div className="mt-4 border-t border-[var(--shreem-border)] pt-4">
+                <PanchangControls compact />
+              </div>
             </div>
           </div>
         </div>
@@ -2836,14 +2817,17 @@ export default function AstrologyExperience({
                 onClick={() => setActiveTab(tab.id)}
                 className={`rounded-[18px] border px-4 py-4 text-left transition ${
                   active
-                    ? "border-[rgba(212,161,38,0.45)] bg-[rgba(255,248,233,0.88)] shadow-[0_16px_34px_rgba(18,63,99,0.12)]"
-                    : "border-[var(--shreem-border)] bg-white/56 hover:border-[rgba(13,129,126,0.28)]"
+                    ? "border-[rgba(255,217,121,0.54)] bg-[linear-gradient(135deg,rgba(255,217,121,0.16),rgba(50,84,168,0.24),rgba(255,91,144,0.12))] shadow-[0_16px_34px_rgba(2,8,19,0.26)]"
+                    : "border-[var(--shreem-border)] bg-[rgba(13,28,61,0.54)] hover:border-[rgba(255,217,121,0.34)] hover:bg-[rgba(22,42,86,0.72)]"
                 }`}
               >
-                <p className="text-sm font-semibold text-[var(--shreem-ink)]">
-                  {tab.label}
-                </p>
-                <p className="mt-1 text-xs leading-5 text-[var(--shreem-muted)]">
+                <div className="flex items-center gap-2">
+                  <span className="size-2 rounded-full bg-[var(--shreem-gold-deep)] opacity-70" />
+                  <p className="text-sm font-semibold text-[var(--shreem-ink)]">
+                    {tab.label}
+                  </p>
+                </div>
+                <p className="mt-2 text-xs leading-5 text-[var(--shreem-muted)]">
                   {tab.description}
                 </p>
               </button>
@@ -3191,55 +3175,6 @@ export default function AstrologyExperience({
                 <div className="rounded-[20px] border border-[var(--shreem-border)] bg-white/52 px-3 py-3">
                   <PanchangControls compact />
                 </div>
-                <button
-                  type="button"
-                  aria-pressed={kundliForm.deepMode}
-                  onClick={() =>
-                    setKundliForm((current) => ({
-                      ...current,
-                      deepMode: !current.deepMode,
-                    }))
-                  }
-                  className={`group rounded-[22px] border px-4 py-4 text-left transition shadow-[0_14px_34px_rgba(18,63,99,0.06)] ${
-                    kundliForm.deepMode
-                      ? "border-[rgba(212,161,38,0.54)] bg-[linear-gradient(135deg,rgba(255,248,233,0.96),rgba(240,248,246,0.82))]"
-                      : "border-[var(--shreem-border)] bg-white/62 hover:border-[rgba(212,161,38,0.34)] hover:bg-white/78"
-                  }`}
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
-                          Deep AI mode
-                        </p>
-                        <span className="rounded-full border border-[rgba(212,161,38,0.3)] bg-white/72 px-2 py-0.5 text-[0.68rem] font-semibold text-[var(--shreem-ink)]">
-                          2 turns
-                        </span>
-                      </div>
-                      <p className="mt-1 text-sm font-semibold text-[var(--shreem-ink)]">
-                        BPHS case audit with dasha synthesis
-                      </p>
-                      <p className="mt-1 text-xs leading-5 text-[var(--shreem-muted)]">
-                        Retrieves separate case packs for yogas, doshas,
-                        health, remedies, and life-event windows before writing.
-                      </p>
-                    </div>
-                    <span
-                      className={`mt-1 flex h-7 w-12 shrink-0 items-center rounded-full border px-1 transition ${
-                        kundliForm.deepMode
-                          ? "border-[rgba(13,129,126,0.28)] bg-[var(--shreem-accent-dark)]"
-                          : "border-[var(--shreem-border)] bg-white"
-                      }`}
-                      aria-hidden="true"
-                    >
-                      <span
-                        className={`h-5 w-5 rounded-full bg-white shadow-[0_3px_10px_rgba(18,63,99,0.18)] transition ${
-                          kundliForm.deepMode ? "translate-x-5" : "translate-x-0"
-                        }`}
-                      />
-                    </span>
-                  </div>
-                </button>
                 <div className="rounded-[20px] border border-[rgba(13,129,126,0.14)] bg-[rgba(240,248,246,0.62)] px-3 py-3">
                   <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
                     Ask up to 3 chart questions
@@ -3281,13 +3216,7 @@ export default function AstrologyExperience({
                   onClick={generateKundli}
                   className="mt-2 w-full rounded-full border-0 bg-[linear-gradient(135deg,#0d817e_0%,#123f63_52%,#6f211f_100%)] px-5 py-3 text-sm font-semibold text-white shadow-[0_18px_34px_rgba(18,63,99,0.26)] disabled:cursor-not-allowed disabled:opacity-45"
                 >
-                  {loadingKundli
-                    ? kundliForm.deepMode
-                      ? "Running deep Kundli..."
-                      : "Generating Kundli..."
-                    : kundliForm.deepMode
-                    ? "Generate deep Kundli"
-                    : "Generate Kundli"}
+                  {loadingKundli ? "Generating Kundli..." : "Generate Kundli"}
                 </button>
                 <p className="text-xs leading-5 text-[var(--shreem-muted)]">
                   The generated stone indicators are general. Wear gemstones or
@@ -3301,16 +3230,8 @@ export default function AstrologyExperience({
                 <p className="brand-kicker">Generated chart</p>
                 {loadingKundli && (
                   <LogoLoader
-                    label={
-                      kundliForm.deepMode
-                        ? "Running deep Kundli..."
-                        : "Generating your Kundli..."
-                    }
-                    detail={
-                      kundliForm.deepMode
-                        ? "Building BPHS case packs for dasha, yogas, health, remedies, and life-event windows before the AI reading."
-                        : "Preparing the North Indian chart, dasha context, yogas, house table, and AI reading."
-                    }
+                    label="Generating your Kundli..."
+                    detail="Preparing the North Indian chart, dasha context, yogas, house table, and AI reading."
                   />
                 )}
                 {!loadingKundli && !kundliResult && (
@@ -3461,24 +3382,43 @@ export default function AstrologyExperience({
         </section>
       )}
 
-      <section className="brand-surface px-5 py-7 small:px-8 small:py-9">
-        <p className="brand-kicker">Astrologer booking</p>
-        <h2 className="brand-section-title mt-2 max-w-[16ch]">
-          Speak with Sanjay Kumar Pandey
-        </h2>
-        <p className="mt-4 max-w-[48rem] text-sm leading-7 text-[var(--shreem-muted)] small:text-base">
-          AI can surface timing, chart factors, and general upaay. Gemstones,
-          pooja decisions, major life calls, and strong dosha combinations
-          should be reviewed directly with Sanjay Kumar Pandey ji.
-        </p>
+      <section className="brand-surface relative overflow-hidden px-5 py-7 small:px-8 small:py-9">
+        <div className="pointer-events-none absolute inset-x-6 top-6 h-px bg-[linear-gradient(90deg,transparent,rgba(212,161,38,0.4),transparent)]" />
+        <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px] xl:items-end">
+          <div>
+            <p className="brand-kicker">Astrologer booking</p>
+            <h2 className="brand-section-title mt-2 max-w-[17ch]">
+              When the chart needs human judgement.
+            </h2>
+            <p className="mt-4 max-w-[48rem] text-sm leading-7 text-[var(--shreem-muted)] small:text-base">
+              AI can surface timing, chart factors, and general upaay. Gemstones,
+              pooja decisions, major life calls, and strong dosha combinations
+              should be reviewed directly with Sanjay Kumar Pandey ji.
+            </p>
+          </div>
+          <div className="rounded-[24px] border border-[rgba(212,161,38,0.24)] bg-[rgba(255,248,233,0.72)] px-4 py-4">
+            <p className="text-sm font-semibold text-[var(--shreem-ink)]">
+              Best used after a Kundli or Prashna result
+            </p>
+            <p className="mt-2 text-xs leading-5 text-[var(--shreem-muted)]">
+              Bring your question, birth details, and any current concern so the
+              call can focus on decisions rather than re-entering basics.
+            </p>
+          </div>
+        </div>
         <div className="mt-6 grid gap-4 small:grid-cols-2">
           {serviceCards.map((service) => (
             <div
               key={service.title}
-              className="brand-card flex flex-col justify-between px-5 py-5"
+              className="brand-card flex flex-col justify-between overflow-hidden px-5 py-5"
             >
               <div>
-                <p className="brand-kicker">{service.amount}</p>
+                <div className="flex items-center justify-between gap-3">
+                  <p className="brand-kicker">{service.amount}</p>
+                  <span className="grid size-10 place-items-center rounded-full border border-[rgba(212,161,38,0.24)] bg-[rgba(255,248,233,0.78)] text-sm font-bold text-[var(--shreem-gold-deep)]">
+                    Om
+                  </span>
+                </div>
                 <h3 className="brand-card-title mt-2">
                   {service.title}
                 </h3>

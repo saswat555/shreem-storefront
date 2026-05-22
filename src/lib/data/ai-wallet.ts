@@ -7,12 +7,14 @@ import { getAuthHeaders } from "./cookies"
 export type AiCreditPack = {
   id: string
   label: string
+  description?: string
   credits: number
   price_inr: number
   product_handle: string
   plan?: string
   duration_days?: number
   pro_question_limit?: number
+  digital?: boolean
 }
 
 export type AiWallet = {
@@ -65,10 +67,12 @@ export const consumeAiCredit = async ({
   tool,
   usageId,
   note,
+  units = 1,
 }: {
   tool: string
   usageId?: string
   note?: string
+  units?: number
 }) => {
   const headers = await getAuthHeaders()
 
@@ -83,6 +87,9 @@ export const consumeAiCredit = async ({
       synced?: boolean
       wallet?: AiWallet
       message?: string
+      charged_units?: number
+      premium_units?: number
+      idempotent?: boolean
     }>("/store/ai-wallet/consume", {
       method: "POST",
       headers,
@@ -90,6 +97,7 @@ export const consumeAiCredit = async ({
         tool,
         usage_id: usageId,
         note,
+        units,
       },
       cache: "no-store",
     })

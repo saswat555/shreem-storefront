@@ -1,10 +1,39 @@
 import { Metadata } from "next"
+import Image from "next/image"
 
 import { retrieveCustomer } from "@lib/data/customer"
 import { getBaseURL } from "@lib/util/env"
 import LoginTemplate from "@modules/account/templates/login-template"
 import AstrologyExperience from "@modules/astrology/components/astrology-experience"
 import MotionReveal from "@modules/common/components/motion-reveal"
+
+const zodiacSymbols = [
+  { sign: "Aries", symbol: "♈" },
+  { sign: "Taurus", symbol: "♉" },
+  { sign: "Gemini", symbol: "♊" },
+  { sign: "Cancer", symbol: "♋" },
+  { sign: "Leo", symbol: "♌" },
+  { sign: "Virgo", symbol: "♍" },
+  { sign: "Libra", symbol: "♎" },
+  { sign: "Scorpio", symbol: "♏" },
+  { sign: "Sagittarius", symbol: "♐" },
+  { sign: "Capricorn", symbol: "♑" },
+  { sign: "Aquarius", symbol: "♒" },
+  { sign: "Pisces", symbol: "♓" },
+]
+
+const ZodiacBackdrop = () => (
+  <>
+    <div className="astrology-zodiac-field" aria-hidden="true">
+      {zodiacSymbols.map((item) => (
+        <span key={item.sign} className="astrology-zodiac-symbol">
+          {item.symbol}
+        </span>
+      ))}
+    </div>
+    <div className="astrology-yantra-gate" aria-hidden="true" />
+  </>
+)
 
 export async function generateMetadata(props: {
   params: Promise<{ countryCode: string }>
@@ -112,63 +141,122 @@ export default async function ShreemAstrologyPage(props: {
 
   if (!customer) {
     return (
-      <div className="content-container py-5 pb-14 small:py-10 small:pb-24">
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
-        />
-        <MotionReveal>
-          <section className="brand-surface mb-6 px-5 py-8 small:px-10 small:py-11">
-            <p className="brand-pill mb-5 w-fit">Jyotish desk</p>
-            <h1 className="brand-page-title max-w-[16ch]">
-              Sign in for muhurth, kundli, and chart notes.
-            </h1>
-            <p className="brand-page-copy mt-5 max-w-[52rem]">
-              Muhurth, Hindu calendar, Prashna Kundli, birth Kundli generation,
-              chart history, and PDF-ready reports are available after sign in.
-            </p>
-          </section>
-        </MotionReveal>
+      <div className="astrology-realm relative isolate overflow-hidden">
+        <ZodiacBackdrop />
+        <div className="content-container relative z-10 py-5 pb-14 small:py-10 small:pb-24">
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+          />
+          <MotionReveal>
+            <section className="astrology-page-hero brand-surface relative mb-6 overflow-hidden px-5 py-8 small:px-10 small:py-11">
+              <div className="relative z-10 flex flex-col gap-6 small:flex-row small:items-end small:justify-between">
+                <div>
+                  <p className="brand-pill mb-5 w-fit">Jyotish desk</p>
+                  <h1 className="brand-page-title max-w-[16ch]">
+                    Sign in to open your Jyotish desk.
+                  </h1>
+                  <p className="brand-page-copy mt-5 max-w-[52rem]">
+                    Muhurth, Hindu calendar, Prashna Kundli, birth Kundli
+                    generation, chart history, and PDF-ready reports are
+                    available after sign in.
+                  </p>
+                </div>
+                <div className="astrology-logo-seal">
+                  <Image
+                    src="/logo.jpeg"
+                    alt="Shreem logo"
+                    width={72}
+                    height={72}
+                    className="rounded-full object-cover"
+                    priority
+                  />
+                  <span>Shreem Jyotish</span>
+                </div>
+              </div>
+            </section>
+          </MotionReveal>
 
-        <MotionReveal delayMs={70}>
-          <section className="brand-card px-4 py-4 small:px-8 small:py-8">
-            <LoginTemplate />
-          </section>
-        </MotionReveal>
+          <MotionReveal delayMs={70}>
+            <section className="brand-card px-4 py-4 small:px-8 small:py-8">
+              <LoginTemplate />
+            </section>
+          </MotionReveal>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="content-container py-5 pb-14 small:py-10 small:pb-24">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
-      />
+    <div className="astrology-realm relative isolate overflow-hidden">
+      <ZodiacBackdrop />
+      <div className="content-container relative z-10 py-5 pb-14 small:py-10 small:pb-24">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+        />
 
-      <section className="brand-surface mb-6 px-5 py-8 small:px-10 small:py-11">
-        <p className="brand-pill mb-5 w-fit">Jyotish desk</p>
-        <h1 className="brand-page-title max-w-[17ch]">
-          Muhurth windows, Prashna charts, and guided calls.
-        </h1>
-        <p className="brand-page-copy mt-5 max-w-[52rem]">
-          A clean astrology desk for daily Choghadiya windows, Hindi calendar
-          tithi and masa context, Vedic Prashna Kundli chart details, and paid consultation
-          booking with Sanjay Kumar Pandey.
-        </p>
-        <div className="mt-5 flex flex-wrap gap-2">
-          <span className="brand-pill px-3 py-1.5">City-based sunrise</span>
-          <span className="brand-pill px-3 py-1.5">Vedic Prashna chart</span>
-          <span className="brand-pill px-3 py-1.5">PhonePe checkout ready</span>
-        </div>
-      </section>
+        <section className="astrology-page-hero brand-surface relative mb-6 overflow-hidden px-5 py-8 small:px-10 small:py-11">
+          <div className="relative z-10 grid gap-6 xl:grid-cols-[minmax(0,1fr)_390px] xl:items-end">
+            <div>
+              <div className="mb-5 flex flex-wrap items-center gap-3">
+                <p className="brand-pill w-fit">Jyotish desk</p>
+                <div className="astrology-logo-seal astrology-logo-seal-compact">
+                  <Image
+                    src="/logo.jpeg"
+                    alt="Shreem logo"
+                    width={44}
+                    height={44}
+                    className="rounded-full object-cover"
+                    priority
+                  />
+                  <span>Shreem</span>
+                </div>
+              </div>
+              <h1 className="brand-page-title max-w-[17ch]">
+                Read the sky without losing the ground.
+              </h1>
+              <p className="brand-page-copy mt-5 max-w-[52rem]">
+                Daily Muhurth, Hindu calendar, Prashna Kundli, birth chart
+                generation, and guided consultation with Sanjay Kumar Pandey in a
+                clearer Vedic astrology workspace.
+              </p>
+              <div className="mt-5 flex flex-wrap gap-2">
+                <span className="brand-pill px-3 py-1.5">Navagraha view</span>
+                <span className="brand-pill px-3 py-1.5">North Indian chart</span>
+                <span className="brand-pill px-3 py-1.5">BPHS-informed reading</span>
+              </div>
+            </div>
+            <div className="astrology-hero-orbit rounded-[28px] border border-[rgba(245,199,96,0.3)] bg-[rgba(10,30,48,0.74)] px-5 py-5 text-white shadow-[0_28px_70px_rgba(10,30,48,0.22)]">
+              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-[#f5d98b]">
+                Ancient computation
+              </p>
+              <p className="mt-3 text-sm leading-7 text-[#e8f4f3]">
+                Graha movement, tithi, nakshatra, dasha, and house context are
+                arranged for practical decisions, not vague fortune-telling.
+              </p>
+              <div className="mt-5 grid grid-cols-3 gap-2 text-center text-xs font-semibold text-[#ffe7a1]">
+                <span className="rounded-full border border-white/12 bg-white/10 px-2 py-2">
+                  Tithi
+                </span>
+                <span className="rounded-full border border-white/12 bg-white/10 px-2 py-2">
+                  Dasha
+                </span>
+                <span className="rounded-full border border-white/12 bg-white/10 px-2 py-2">
+                  Yoga
+                </span>
+              </div>
+            </div>
+          </div>
+        </section>
 
-      <AstrologyExperience
-        customerEmail={customer.email}
-        customerName={`${customer.first_name || ""} ${
-          customer.last_name || ""
-        }`.trim()}
-      />
+        <AstrologyExperience
+          customerEmail={customer.email}
+          customerName={`${customer.first_name || ""} ${
+            customer.last_name || ""
+          }`.trim()}
+        />
+      </div>
     </div>
   )
 }

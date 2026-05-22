@@ -16,6 +16,7 @@ import {
 import {
   checkAstrologyAccess,
   consumeChargeableAstrologyCredit,
+  getAstrologyBillingMetadata,
   isAstrologyAccessBlocked,
 } from "@lib/util/ai-quota"
 import { generateGeminiJson } from "@lib/util/gemini"
@@ -717,6 +718,31 @@ export async function POST(request: NextRequest) {
   })
 
   if (!gemini.ok) {
+    await recordAiUsage({
+      tool: "astrology_matchmaking",
+      input: {
+        girl: girl.profile,
+        boy: boy.profile,
+        language,
+      },
+      response: {
+        message: "Matchmaking AI generation failed.",
+        error: gemini.error || "generation_failed",
+        retryable: true,
+      },
+      metadata: {
+        customer_email: customer.email,
+        usage_units: 0,
+        billable: false,
+        failed_ai_generation: true,
+        ...getAstrologyBillingMetadata(access),
+      },
+      model: gemini.model,
+      ...gemini.usage,
+      expert_recommended: true,
+      tags: ["failed_ai_generation", "retryable"],
+    })
+
     return NextResponse.json(
       {
         ...baseResult,
@@ -763,6 +789,8 @@ export async function POST(request: NextRequest) {
     response: result,
     metadata: {
       customer_email: customer.email,
+      usage_units: 1,
+      ...getAstrologyBillingMetadata(access),
       compatibility,
       panchangSystems: {
         girl: girl.chart.panchangSystem,
