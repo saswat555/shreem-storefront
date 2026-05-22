@@ -999,24 +999,30 @@ const PLANET_SHORT: Record<string, string> = {
 
 const northIndianHouseSlots: Record<
   number,
-  { x: number; y: number; signX: number; signY: number; anchor?: "start" | "middle" | "end" }
+  {
+    x: number
+    y: number
+    signX: number
+    signY: number
+    anchor?: "start" | "middle" | "end"
+  }
 > = {
-  1: { x: 70, y: 22, signX: 70, signY: 36 },
-  2: { x: 42, y: 16, signX: 45, signY: 27 },
-  3: { x: 28, y: 34, signX: 37, signY: 43 },
-  4: { x: 22, y: 50, signX: 30, signY: 58 },
-  5: { x: 28, y: 68, signX: 37, signY: 66 },
-  6: { x: 42, y: 84, signX: 45, signY: 76 },
-  7: { x: 70, y: 80, signX: 70, signY: 67 },
-  8: { x: 98, y: 84, signX: 95, signY: 76 },
-  9: { x: 112, y: 68, signX: 103, signY: 66 },
-  10: { x: 118, y: 50, signX: 110, signY: 58 },
-  11: { x: 112, y: 34, signX: 103, signY: 43 },
-  12: { x: 98, y: 16, signX: 95, signY: 27 },
+  1: { x: 70, y: 22, signX: 70, signY: 37 },
+  2: { x: 40, y: 14, signX: 47, signY: 29 },
+  3: { x: 24, y: 35, signX: 38, signY: 44 },
+  4: { x: 19, y: 50, signX: 31, signY: 60 },
+  5: { x: 25, y: 72, signX: 38, signY: 65 },
+  6: { x: 40, y: 87, signX: 47, signY: 77 },
+  7: { x: 70, y: 82, signX: 70, signY: 67 },
+  8: { x: 100, y: 87, signX: 93, signY: 77 },
+  9: { x: 115, y: 72, signX: 102, signY: 65 },
+  10: { x: 121, y: 50, signX: 109, signY: 60 },
+  11: { x: 116, y: 35, signX: 102, signY: 44 },
+  12: { x: 100, y: 14, signX: 93, signY: 29 },
 }
 
 const splitPlanetLabels = (labels: string[]) => {
-  if (labels.length <= 2) {
+  if (labels.length <= 3) {
     return [labels.join(" ")]
   }
 
@@ -1089,25 +1095,25 @@ const NorthIndianChart = ({
           aria-label={`${title} in North Indian style`}
         >
           <rect
-            x="2"
-            y="2"
-            width="136"
-            height="96"
+            x="3"
+            y="3"
+            width="134"
+            height="94"
             fill="white"
             stroke="#111827"
-            strokeWidth="1.8"
+            strokeWidth="1.25"
           />
           <path
-            d="M2 2 L138 98 M138 2 L2 98"
+            d="M3 3 L137 97 M137 3 L3 97"
             fill="none"
             stroke="#111827"
-            strokeWidth="1.55"
+            strokeWidth="1.15"
           />
           <path
-            d="M70 2 L138 50 L70 98 L2 50 Z"
+            d="M70 3 L137 50 L70 97 L3 50 Z"
             fill="none"
             stroke="#111827"
-            strokeWidth="1.55"
+            strokeWidth="1.15"
           />
 
           {cells.map((cell) => {
@@ -1129,23 +1135,28 @@ const NorthIndianChart = ({
                     x={slot.x}
                     y={slot.y + index * 5.4}
                     textAnchor={slot.anchor || "middle"}
-                    className="fill-[var(--shreem-accent-dark)] text-[4.7px] font-semibold"
+                    dominantBaseline="middle"
+                    fill="#123f63"
+                    stroke="white"
+                    strokeWidth="0.55"
+                    paintOrder="stroke"
+                    fontSize="4.2"
+                    fontWeight="700"
                   >
                     {line}
                   </text>
                 ))}
-                <circle
-                  cx={slot.signX}
-                  cy={slot.signY - 1.8}
-                  r="4.2"
-                  className="fill-[rgba(255,248,233,0.94)] stroke-[rgba(212,161,38,0.3)]"
-                  strokeWidth="0.45"
-                />
                 <text
                   x={slot.signX}
                   y={slot.signY}
                   textAnchor="middle"
-                  className="fill-[var(--shreem-ink)] text-[4.8px] font-semibold"
+                  dominantBaseline="middle"
+                  fill="#9c6912"
+                  stroke="white"
+                  strokeWidth="0.7"
+                  paintOrder="stroke"
+                  fontSize="4.4"
+                  fontWeight="800"
                 >
                   {SIGN_NUMBERS[cell.sign]}
                 </text>
@@ -1560,6 +1571,10 @@ const KundliResultView = ({
 }) => {
   const chart = result.chart
   const stoneCards = getStoneCards(result.stones)
+  const isDeepReading =
+    result.analysis_mode === "deep" || result.profile?.analysis_mode === "deep"
+  const requestedUnits = result.usage_units || result.profile?.usage_units || 1
+  const isInterruptedReading = Boolean(result.message)
 
   if (!chart) {
     return null
@@ -1569,20 +1584,24 @@ const KundliResultView = ({
     <div className="grid gap-4">
       <div className="rounded-[20px] border border-[var(--shreem-border)] bg-white/62 px-4 py-3">
         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
-          {result.analysis_mode === "deep" ||
-          result.profile?.analysis_mode === "deep"
+          {isInterruptedReading
+            ? isDeepReading
+              ? "Deep Kundli not completed"
+              : "Kundli not completed"
+            : isDeepReading
             ? "Deep Kundli reading"
             : "Standard Kundli reading"}
         </p>
         <p className="mt-1 text-xs leading-5 text-[var(--shreem-muted)]">
-          Used {result.usage_units || result.profile?.usage_units || 1} AI{" "}
-          {Number(result.usage_units || result.profile?.usage_units || 1) > 1
-            ? "turns"
-            : "turn"}
-          {result.analysis_mode === "deep" ||
-          result.profile?.analysis_mode === "deep"
-            ? " with separate BPHS case retrieval."
-            : "."}
+          {isInterruptedReading
+            ? `No AI turn was consumed for this interrupted reading. ${
+                isDeepReading
+                  ? `Deep mode needs ${requestedUnits} available turns.`
+                  : "Retry when you are ready."
+              }`
+            : `Used ${requestedUnits} AI ${
+                Number(requestedUnits) > 1 ? "turns" : "turn"
+              }${isDeepReading ? " with separate BPHS case retrieval." : "."}`}
         </p>
       </div>
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(280px,0.65fr)]">

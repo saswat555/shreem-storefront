@@ -14,7 +14,6 @@ import {
   type PrashnaPlanet,
 } from "@lib/util/astrology"
 import {
-  formatAstrologyKnowledgeForPrompt,
   getKnowledgeIds,
   retrieveAstrologyKnowledge,
   type RetrievedAstrologyPassage,
@@ -283,6 +282,21 @@ const KUNDLI_SCHEMA = {
   ],
 } as const
 
+const STANDARD_KUNDLI_SCHEMA = {
+  ...KUNDLI_SCHEMA,
+  required: KUNDLI_SCHEMA.required.filter(
+    (field) =>
+      ![
+        "risk_watch",
+        "issue_analysis",
+        "sub_question_answers",
+        "personality_markers",
+        "deep_case_analysis",
+        "life_event_windows",
+      ].includes(field)
+  ),
+} as const
+
 type KundliPayload = {
   name?: unknown
   birthDate?: unknown
@@ -433,8 +447,36 @@ const LANGUAGE_INSTRUCTIONS: Record<string, string> = {
     "Write the complete reading in friendly Hinglish with common astrology words like lagna, rashi, dasha, upaay, and bhav.",
 }
 
-const sanitizeString = (value: unknown, maxLength: number) =>
-  typeof value === "string" ? value.trim().slice(0, maxLength) : ""
+const clipCompleteText = (value: string, maxLength: number) => {
+  const normalized = value.replace(/\s+/g, " ").trim()
+
+  if (normalized.length <= maxLength) {
+    return normalized
+  }
+
+  const clipped = normalized.slice(0, maxLength)
+  const sentenceEnd = Math.max(
+    clipped.lastIndexOf("."),
+    clipped.lastIndexOf("!"),
+    clipped.lastIndexOf("?"),
+    clipped.lastIndexOf("।")
+  )
+
+  if (sentenceEnd > maxLength * 0.62) {
+    return clipped.slice(0, sentenceEnd + 1).trim()
+  }
+
+  const lastSpace = clipped.lastIndexOf(" ")
+
+  return (lastSpace > maxLength * 0.75 ? clipped.slice(0, lastSpace) : clipped)
+    .trim()
+}
+
+const sanitizeString = (value: unknown, maxLength = 2400) =>
+  typeof value === "string" ? clipCompleteText(value, maxLength) : ""
+
+const compactPromptText = (value: unknown, maxLength = 680) =>
+  sanitizeString(value, maxLength)
 
 const sanitizeStringArray = (
   value: unknown,
@@ -453,7 +495,7 @@ const sanitizeBookCitations = (value: unknown) =>
     ? value
         .map((item: any) => ({
           citation: sanitizeString(item?.citation, 240),
-          relevance: sanitizeString(item?.relevance, 320),
+          relevance: sanitizeString(item?.relevance, 700),
         }))
         .filter((item) => item.citation && item.relevance)
         .slice(0, 8)
@@ -1507,6 +1549,34 @@ const retrieveKnowledgeSafely = (
   }
 }
 
+const deepCasePriority = (detectedCase: DetectedAstrologyCase) => {
+  const categoryScore =
+    detectedCase.category === "compound"
+      ? 50
+      : detectedCase.category === "dosha"
+        ? 42
+        : detectedCase.category === "cancellation"
+          ? 38
+          : detectedCase.category === "dasha"
+            ? 34
+            : detectedCase.category === "health"
+              ? 30
+              : 20
+  const strengthScore =
+    detectedCase.strength === "high"
+      ? 15
+      : detectedCase.strength === "medium"
+        ? 8
+        : 2
+
+  return categoryScore + strengthScore
+}
+
+const selectDeepReferenceCases = (detectedCases: DetectedAstrologyCase[]) =>
+  [...detectedCases]
+    .sort((left, right) => deepCasePriority(right) - deepCasePriority(left))
+    .slice(0, 6)
+
 const getImportantHouseBasis = (chart: PrashnaChart, houses: number[]) =>
   houses
     .map((houseNumber) => {
@@ -1591,8 +1661,8 @@ const buildKundliCaseReferencePacks = ({
           chart.dasha.pratyantar.lord,
         ]
       : [],
-    min: 3,
-    max: 5,
+    min: 2,
+    max: 3,
   })
 
   addPack({
@@ -1605,8 +1675,8 @@ const buildKundliCaseReferencePacks = ({
     query:
       "BPHS lagna moon first house fourth house fifth house temperament mind personality habits likes emotions nature",
     detectedCases: ["lagna", chart.ascendant, chart.moonSign, chart.nakshatra],
-    min: 3,
-    max: 5,
+    min: 2,
+    max: 3,
   })
 
   addPack({
@@ -1618,8 +1688,8 @@ const buildKundliCaseReferencePacks = ({
     query:
       "BPHS career profession tenth house wealth second house income eleventh house status karma dhan labha",
     detectedCases: ["career", "wealth", "profession"],
-    min: 2,
-    max: 4,
+    min: 1,
+    max: 2,
   })
 
   addPack({
@@ -1631,11 +1701,11 @@ const buildKundliCaseReferencePacks = ({
     query:
       "BPHS marriage spouse seventh house venus jupiter mars relationship partner harmony conflict",
     detectedCases: ["marriage", "relationship", "spouse"],
-    min: 2,
-    max: 4,
+    min: 1,
+    max: 2,
   })
 
-  detectedCases.slice(0, 10).forEach((detectedCase) => {
+  selectDeepReferenceCases(detectedCases).forEach((detectedCase) => {
     addPack({
       caseName: `Special case: ${detectedCase.name}${
         detectedCase.subtype ? ` - ${detectedCase.subtype}` : ""
@@ -1659,8 +1729,8 @@ const buildKundliCaseReferencePacks = ({
         detectedCase.chart_basis,
         ...detectedCase.retrieval_terms,
       ],
-      min: detectedCase.category === "compound" ? 3 : 2,
-      max: detectedCase.category === "compound" ? 5 : 4,
+      min: detectedCase.category === "compound" ? 2 : 1,
+      max: detectedCase.category === "compound" ? 3 : 2,
     })
   })
 
@@ -1675,8 +1745,8 @@ const buildKundliCaseReferencePacks = ({
     query:
       "BPHS disease illness health sixth eighth twelfth ari randhra arishta accident injury mars saturn rahu ketu prevention",
     detectedCases: healthIndicators,
-    min: 3,
-    max: 5,
+    min: 2,
+    max: 3,
   })
 
   addPack({
@@ -1690,11 +1760,11 @@ const buildKundliCaseReferencePacks = ({
     query:
       "BPHS remedy upaya graha shanti mantra pooja daan gemstone worship deity vrata seva",
     detectedCases: targetedRemedySeeds.map((item) => item.pain_point),
-    min: 2,
-    max: 4,
+    min: 1,
+    max: 2,
   })
 
-  subQuestions.slice(0, 3).forEach((question, index) => {
+  subQuestions.slice(0, 2).forEach((question, index) => {
     addPack({
       caseName: `User question ${index + 1}`,
       chartBasis: `${question} | ${activeDashaText(chart)} | ${getImportantHouseBasis(
@@ -1704,7 +1774,7 @@ const buildKundliCaseReferencePacks = ({
       query: `BPHS specific question prediction ${question}`,
       detectedCases: [question],
       min: 1,
-      max: 3,
+      max: 2,
     })
   })
 
@@ -1819,21 +1889,45 @@ const buildKundliKnowledgePassages = ({
   )
 }
 
-const formatCaseReferencePacksForPrompt = (
-  packs: KundliCaseReferencePack[]
+const formatCompactPassagesForPrompt = (
+  passages: RetrievedAstrologyPassage[],
+  limit = 8,
+  excerptLength = 650
 ) =>
-  packs.length
-    ? packs
+  passages.length
+    ? passages
+        .slice(0, limit)
+        .map(
+          (passage, index) =>
+            `${index + 1}. [${passage.id}] Citation: ${
+              passage.citation
+            }\nExcerpt: ${compactPromptText(passage.text, excerptLength)}`
+        )
+        .join("\n\n")
+    : "No BPHS passages retrieved."
+
+const formatCaseReferencePacksForPrompt = (
+  packs: KundliCaseReferencePack[],
+  packLimit = 6,
+  passageLimit = 2
+) => {
+  const selectedPacks = packs.slice(0, packLimit)
+
+  return selectedPacks.length
+    ? selectedPacks
         .map(
           (pack, index) =>
             `Case pack ${index + 1}: ${pack.case_name}\nChart basis: ${
-              pack.chart_basis
-            }\nRetrieved BPHS passages:\n${formatAstrologyKnowledgeForPrompt(
-              pack.passages
+              compactPromptText(pack.chart_basis, 520)
+            }\nRetrieved BPHS passages:\n${formatCompactPassagesForPrompt(
+              pack.passages,
+              passageLimit,
+              520
             )}`
         )
         .join("\n\n")
     : "No deep case packs requested."
+}
 
 const buildPrompt = ({
   name,
@@ -1877,7 +1971,7 @@ const buildPrompt = ({
     "When you use the reference pack, return book_citations with the exact Citation values and one-line relevance notes.",
     deepMode
       ? "DEEP MODE is active: do a case-by-case astrological audit internally before writing the final JSON. For each detected yoga, dasha signal, health/risk indication, relationship/career signal, and remedy need, use the matching BPHS case pack as the base text and then synthesize through the calculated chart."
-      : "STANDARD MODE is active: keep deep_case_analysis, life_event_windows, and personality_markers concise; use empty arrays if the evidence is not enough.",
+      : "STANDARD MODE is active: do not write a long report. Keep risk_watch, sub_question_answers, personality_markers, deep_case_analysis, and life_event_windows empty unless absolutely needed.",
     deepMode
       ? "In DEEP MODE, predict lived-experience markers that build user confidence: likely temperament, emotional patterns, likes/dislikes, repeated inner issues, confidence blocks, family/work tendencies, and event windows. Ground every strong claim in dasha, house, graha placement, and a BPHS citation. Phrase uncertain items as tendencies, not guarantees."
       : "Avoid over-extending event predictions in standard mode.",
@@ -1885,14 +1979,20 @@ const buildPrompt = ({
     "Give a detailed reading with these sections: who the person is, behavioral traits, strengths, life themes, likely challenges/issues, practical solutions, Vedic remedies, and cautious spiritual guidance.",
     "Health analysis must be deeper than generic caution: name likely vulnerability areas and possible disease tendencies from chart indicators, but use cautious language like tendency/watch/monitor. Do not diagnose. Tell the user to consult a qualified doctor for symptoms, emergencies, or persistent issues.",
     "Accident or major-incident analysis must be framed only as watch periods and preventive care. Mention it only when 6th/8th/12th houses, Mars/Saturn/Rahu/Ketu, and active dasha signals support it. Never guarantee harm or use frightening certainty.",
-    "Return health_indicators with 4 to 7 specific watchlist items. Each item must include chart basis and a practical prevention note.",
+    deepMode
+      ? "Return health_indicators with 4 to 7 specific watchlist items. Each item must include chart basis and a practical prevention note."
+      : "Return health_indicators with 3 to 5 specific watchlist items. Each item must be one complete sentence.",
     "Return dasha_predictions with one row each for Mahadasha, Antardasha, and Pratyantar. Each row must include chart_basis, classical_basis from the retrieved pack, prediction, and action.",
-    "Return risk_watch with 2 to 5 practical watch areas only when supported by chart and dasha; include prevention, not fear.",
-    "Return personality_markers with 4 to 8 lived-experience markers. Each must connect trait -> chart_basis -> what the person may feel or repeatedly notice in life.",
+    deepMode
+      ? "Return risk_watch with 2 to 5 practical watch areas only when supported by chart and dasha; include prevention, not fear."
+      : "Return risk_watch as an empty array unless there is a clear 6th/8th/12th plus dasha trigger.",
+    deepMode
+      ? "Return personality_markers with 4 to 8 lived-experience markers. Each must connect trait -> chart_basis -> what the person may feel or repeatedly notice in life."
+      : "Return personality_markers as an empty array in standard mode.",
     "Return deep_case_analysis with one row per major detected case in deep mode, otherwise 0 to 4 rows. Each row must include chart_basis, book_basis using BPHS citation language, prediction, confidence, and caution.",
     "Return life_event_windows with 3 to 6 dasha-based windows in deep mode, otherwise 0 to 3 rows. Each row must be cautious and explain likely_theme, chart_basis, book_basis, and guidance.",
     "Return prediction_table with rows for Personality, Career, Money, Marriage, Health, Current period, and Remedies. Each row must include chart_basis, prediction, and advice.",
-    "Return planet_effects with one useful row for every graha: Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn, Rahu, and Ketu. Each row must explain placement, effect, and practical advice.",
+    "Return planet_effects with one useful row for every graha: Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn, Rahu, and Ketu. Each placement, effect, and advice must be one short complete sentence.",
     "Answer at most three sub-questions. If no sub-questions are provided, return an empty sub_question_answers array.",
     "Every sub-question answer must cite a chart reason using Lagna, Moon sign/nakshatra, houses, or graha placement. Do not answer from generic intuition.",
     "If a yoga is not detected, do not claim it exists. Mention uncertainty clearly.",
@@ -1900,6 +2000,10 @@ const buildPrompt = ({
     "Return targeted_remedies with 3 to 6 exact pain-point remedies. Each row must map pain_point -> chart_basis -> mantra_or_pooja -> daily_practice. Avoid generic advice like simply do pooja; name the graha, day, mantra or deity, and the pain point it addresses.",
     "Gemstone guidance must only use the provided 1st, 5th, and 9th house lord stone indicators. Do not recommend a separate rashi/Moon stone unless it is already one of those trinal house indicators.",
     "For product suggestions, use only the provided available_ritual_support handles. Do not invent products, URLs, prices, or claims. Recommend at most three and only when naturally relevant to the remedy.",
+    "Keep every string complete and self-contained. Do not end mid-sentence, do not use trailing ellipses, and prefer fewer complete rows over many unfinished rows.",
+    deepMode
+      ? "Keep each row compact: chart basis in 1 sentence, book basis in 1 sentence, prediction in 2 to 3 complete sentences, and advice in 1 to 2 complete sentences."
+      : "Hard cap for standard mode: summary/person_information/temperament/current_period_analysis max 70 words each; every array item max 28 words; every table field max 35 words.",
     "Never give medical, legal, or financial certainty. Gemstones must always redirect to expert review before wearing.",
     "If strong dosha, gemstone, pooja, marriage, health, or career-defining guidance appears, set expert_call_recommended true and recommend Sanjay Kumar Pandey.",
     LANGUAGE_INSTRUCTIONS[language] || LANGUAGE_INSTRUCTIONS.english,
@@ -1907,11 +2011,15 @@ const buildPrompt = ({
     `Analysis mode: ${deepMode ? "deep" : "standard"}`,
     `Native name: ${name || "Not provided"}`,
     `Sub-questions: ${JSON.stringify(subQuestions)}`,
-    `Retrieved classical reference pack: ${formatAstrologyKnowledgeForPrompt(
-      knowledgePassages
+    `Retrieved classical reference pack: ${formatCompactPassagesForPrompt(
+      knowledgePassages,
+      deepMode ? 10 : 8,
+      deepMode ? 720 : 620
     )}`,
     `Deep case reference packs: ${formatCaseReferencePacksForPrompt(
-      caseReferencePacks
+      caseReferencePacks,
+      deepMode ? 6 : 0,
+      2
     )}`,
     `Active dasha discipline: ${activeDashaText(chart)}`,
     `Deterministic health watchlist: ${JSON.stringify(healthIndicators)}`,
@@ -1960,6 +2068,135 @@ const buildPrompt = ({
       }))
     )}`,
   ].join("\n")
+
+const buildFallbackKundliAnalysis = ({
+  chart,
+  detectedYogas,
+  detectedCases,
+  healthIndicators,
+  targetedRemedySeeds,
+  knowledgePassages,
+  deepMode,
+}: {
+  chart: PrashnaChart
+  detectedYogas: string[]
+  detectedCases: DetectedAstrologyCase[]
+  healthIndicators: string[]
+  targetedRemedySeeds: TargetedRemedy[]
+  knowledgePassages: RetrievedAstrologyPassage[]
+  deepMode: boolean
+}) => {
+  const dashaRows = chart.dasha
+    ? [
+        chart.dasha.mahadasha,
+        chart.dasha.antardasha,
+        chart.dasha.pratyantar,
+      ].map((period) => ({
+        period: `${period.lord}: ${period.startLabel} to ${period.endLabel}`,
+        chart_basis:
+          planetPlacementText(chart, [period.lord]) ||
+          `${period.lord} is active in the Vimshottari sequence.`,
+        classical_basis:
+          knowledgePassages[0]?.citation ||
+          "BPHS reference retrieval was prepared for dasha interpretation.",
+        prediction:
+          "The period should be judged from the active lord's house, sign, dignity, association, and the houses it owns. Retry the AI interpretation to expand this into a full BPHS synthesis.",
+        action:
+          "Use this as a watch window, keep practical discipline, and avoid fear-based conclusions without a full expert reading.",
+      }))
+    : []
+  const mainCases = selectDeepReferenceCases(detectedCases).slice(
+    0,
+    deepMode ? 6 : 4
+  )
+
+  return {
+    summary:
+      "The chart calculation completed, but the AI interpretation did not finish cleanly. This fallback keeps the calculated Kundli, dasha, yogas, health watchlist, and remedies visible so the session is not lost; use Retry same Kundli for the full BPHS narrative.",
+    person_information: `${chart.ascendant} Lagna, Moon in ${chart.moonSign}, ${chart.nakshatra} pada ${chart.nakshatraPada}. ${activeDashaText(
+      chart
+    )}`,
+    temperament:
+      "Temperament should be read through Lagna, Moon, Sun, and Mercury placements. The chart facts are preserved below for retry and expert review.",
+    behavioral_traits: [
+      `Lagna: ${chart.ascendant}`,
+      `Moon: ${chart.moonSign}, ${chart.nakshatra} pada ${chart.nakshatraPada}`,
+      `Current dasha: ${
+        chart.dasha
+          ? `${chart.dasha.mahadasha.lord}-${chart.dasha.antardasha.lord}-${chart.dasha.pratyantar.lord}`
+          : "unavailable"
+      }`,
+    ],
+    strengths: detectedYogas.slice(0, 4),
+    life_themes: chart.houses
+      .slice(0, 4)
+      .map((house) => `House ${house.house}: ${house.sign} for ${house.theme}`),
+    career_direction:
+      getImportantHouseBasis(chart, [10, 11, 2]) ||
+      "Career needs the 10th, 11th, and 2nd house synthesis.",
+    relationship_pattern:
+      getImportantHouseBasis(chart, [7, 2, 4]) ||
+      "Relationship needs the 7th house, Venus/Jupiter, and Moon synthesis.",
+    health_caution:
+      healthIndicators[0] ||
+      "No deterministic health watchlist was produced; medical concerns still need qualified care.",
+    health_indicators: healthIndicators,
+    current_period_analysis: activeDashaText(chart),
+    dasha_predictions: dashaRows,
+    risk_watch: healthIndicators.slice(0, 4).map((indicator) => ({
+      theme: "Preventive health watch",
+      chart_basis: indicator,
+      dasha_trigger: activeDashaText(chart),
+      prevention:
+        "Use medical checkups, sleep discipline, hydration, and moderation; retry for the detailed BPHS reading.",
+    })),
+    prediction_table: [
+      {
+        area: "Current period",
+        chart_basis: activeDashaText(chart),
+        prediction:
+          "The dasha sequence is calculated and ready for interpretation.",
+        advice: "Retry the AI explanation to continue from this same chart.",
+      },
+    ],
+    planet_effects: buildPlanetEffects(chart),
+    likely_challenges: detectedYogas.slice(0, 5),
+    issue_analysis: mainCases.map((item) => item.combined_effect),
+    practical_solutions: targetedRemedySeeds.map((item) => item.daily_practice),
+    spiritual_guidance:
+      "Use simple mantra, daan, discipline, and expert review for strong dosha, gemstone, health, or marriage decisions.",
+    sub_question_answers: [],
+    special_cases: detectedYogas,
+    upaay: targetedRemedySeeds.map((item) => item.mantra_or_pooja),
+    targeted_remedies: targetedRemedySeeds,
+    shreem_product_suggestions: [],
+    book_citations: knowledgePassages.slice(0, 6).map((passage) => ({
+      citation: passage.citation,
+      relevance: "Retrieved for the failed AI interpretation retry context.",
+    })),
+    personality_markers: [],
+    deep_case_analysis: mainCases.map((item) => ({
+      case: `${item.name}${item.subtype ? ` (${item.subtype})` : ""}`,
+      chart_basis: item.chart_basis,
+      book_basis:
+        knowledgePassages[0]?.citation ||
+        "BPHS reference retrieval was prepared for this chart.",
+      prediction: item.combined_effect,
+      confidence: `${item.status}, ${item.strength} strength`,
+      caution: item.caution || "Use retry or expert review before conclusions.",
+    })),
+    life_event_windows: dashaRows.map((row) => ({
+      period: row.period,
+      likely_theme: "Dasha-based watch window",
+      chart_basis: row.chart_basis,
+      book_basis: row.classical_basis,
+      guidance: row.action,
+    })),
+    expert_call_recommended: true,
+    expert_call_reason:
+      "The AI interpretation failed after retries, so strong guidance should be reviewed by Sanjay Kumar Pandey rather than inferred from a partial answer.",
+  }
+}
 
 export async function POST(request: NextRequest) {
   const customer = await retrieveCustomer().catch(() => null)
@@ -2060,7 +2297,7 @@ export async function POST(request: NextRequest) {
     : []
   const knowledgePassages = deepMode
     ? mergeKnowledgePassages(
-        18,
+        12,
         baseKnowledgePassages,
         ...caseReferencePacks.map((pack) => pack.passages)
       )
@@ -2070,12 +2307,27 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         message: "Kundli AI is not enabled on this server yet.",
+        profile: {
+          name,
+          gender,
+          birth_date: birthDate,
+          birth_time: birthTime,
+          city: `${city.name}, ${city.region}`,
+          panchang_system_id: chart.panchangSystem?.id,
+          language,
+          sub_questions: subQuestions,
+          analysis_mode: deepMode ? "deep" : "standard",
+          usage_units: usageUnits,
+        },
         chart,
         detected_yogas: detectedYogas,
         detected_cases: detectedCases,
         stones,
         health_indicators: healthIndicators,
         targeted_remedies: targetedRemedySeeds,
+        analysis_mode: deepMode ? "deep" : "standard",
+        usage_units: usageUnits,
+        retryable: true,
       },
       { status: 503 }
     )
@@ -2090,11 +2342,27 @@ export async function POST(request: NextRequest) {
           deepMode
             ? `Deep Kundli uses ${usageUnits} AI turns. You need ${usageUnits} free turns or paid credits available. Buy credits or upgrade to Premium to continue.`
             : `You have used your ${access.quota.limit} free astrology AI readings for today. Buy credits or upgrade to Premium to continue.`,
+        profile: {
+          name,
+          gender,
+          birth_date: birthDate,
+          birth_time: birthTime,
+          city: `${city.name}, ${city.region}`,
+          panchang_system_id: chart.panchangSystem?.id,
+          language,
+          sub_questions: subQuestions,
+          analysis_mode: deepMode ? "deep" : "standard",
+          usage_units: usageUnits,
+        },
         chart,
         detected_yogas: detectedYogas,
+        detected_cases: detectedCases,
         stones,
         health_indicators: healthIndicators,
         targeted_remedies: targetedRemedySeeds,
+        targeted_remedy_seeds: targetedRemedySeeds,
+        analysis_mode: deepMode ? "deep" : "standard",
+        usage_units: usageUnits,
         quota: access.quota,
         wallet: access.wallet,
         packs: access.packs,
@@ -2119,56 +2387,88 @@ export async function POST(request: NextRequest) {
   })
   const gemini = await generateGeminiJson({
     prompt,
-    responseSchema: KUNDLI_SCHEMA,
+    responseSchema: deepMode ? KUNDLI_SCHEMA : STANDARD_KUNDLI_SCHEMA,
     temperature: deepMode ? 0.2 : 0.22,
-    timeoutMs: deepMode ? 180_000 : undefined,
+    timeoutMs: deepMode ? 120_000 : undefined,
     maxAttempts: deepMode ? 3 : undefined,
-    maxOutputTokens: deepMode ? 16384 : 8192,
+    maxOutputTokens: 12288,
     label: deepMode ? "Deep Kundli API" : "Kundli API",
   })
 
   if (!gemini.ok) {
+    const fallbackAnalysis = buildFallbackKundliAnalysis({
+      chart,
+      detectedYogas,
+      detectedCases,
+      healthIndicators,
+      targetedRemedySeeds,
+      knowledgePassages,
+      deepMode,
+    })
+
     return NextResponse.json(
       {
         message:
-          "Kundli AI could not generate the reading right now. Please try again.",
+          "Kundli AI could not finish the full reading right now. The calculated chart and deterministic fallback are preserved below; retry will reuse the same birth details without consuming a successful-reading credit.",
+        profile: {
+          name,
+          gender,
+          birth_date: birthDate,
+          birth_time: birthTime,
+          city: `${city.name}, ${city.region}`,
+          panchang_system_id: chart.panchangSystem?.id,
+          language,
+          sub_questions: subQuestions,
+          analysis_mode: deepMode ? "deep" : "standard",
+          usage_units: usageUnits,
+        },
         chart,
         detected_yogas: detectedYogas,
         detected_cases: detectedCases,
         stones,
+        health_indicators: healthIndicators,
+        targeted_remedy_seeds: targetedRemedySeeds,
+        knowledge_references: getKnowledgeIds(knowledgePassages),
+        knowledge_case_packs: casePackTrace(caseReferencePacks),
+        analysis: fallbackAnalysis,
+        analysis_mode: deepMode ? "deep" : "standard",
+        usage_units: usageUnits,
+        quota: access.quota,
+        wallet: access.wallet,
+        packs: access.packs,
         retryable: true,
       },
-      { status: 502 }
+      { status: 200 }
     )
   }
 
   const parsed = gemini.parsed
   const analysis = {
-    summary: sanitizeString(parsed?.summary, 900),
-    person_information: sanitizeString(parsed?.person_information, 900),
-    temperament: sanitizeString(parsed?.temperament, 700),
-    behavioral_traits: sanitizeStringArray(parsed?.behavioral_traits, 8, 220),
-    strengths: sanitizeStringArray(parsed?.strengths, 8, 220),
-    life_themes: sanitizeStringArray(parsed?.life_themes, 8, 220),
-    career_direction: sanitizeString(parsed?.career_direction, 700),
-    relationship_pattern: sanitizeString(parsed?.relationship_pattern, 700),
-    health_caution: sanitizeString(parsed?.health_caution, 1000),
+    summary: sanitizeString(parsed?.summary, 1800),
+    person_information: sanitizeString(parsed?.person_information, 1800),
+    temperament: sanitizeString(parsed?.temperament, 1400),
+    behavioral_traits: sanitizeStringArray(parsed?.behavioral_traits, 8, 520),
+    strengths: sanitizeStringArray(parsed?.strengths, 8, 520),
+    life_themes: sanitizeStringArray(parsed?.life_themes, 8, 520),
+    career_direction: sanitizeString(parsed?.career_direction, 1600),
+    relationship_pattern: sanitizeString(parsed?.relationship_pattern, 1600),
+    health_caution: sanitizeString(parsed?.health_caution, 1800),
     health_indicators:
-      sanitizeStringArray(parsed?.health_indicators, 7, 320).length > 0
-        ? sanitizeStringArray(parsed?.health_indicators, 7, 320)
+      sanitizeStringArray(parsed?.health_indicators, 7, 700).length > 0
+        ? sanitizeStringArray(parsed?.health_indicators, 7, 700)
         : healthIndicators,
     current_period_analysis: sanitizeString(
       parsed?.current_period_analysis,
-      800
+      1800
     ),
     dasha_predictions: Array.isArray(parsed?.dasha_predictions)
       ? parsed.dasha_predictions
           .map((item: any) => ({
             period: sanitizeString(item?.period, 80),
-            chart_basis: sanitizeString(item?.chart_basis, 320),
-            classical_basis: sanitizeString(item?.classical_basis, 360),
-            prediction: sanitizeString(item?.prediction, 560),
-            action: sanitizeString(item?.action, 320),
+            chart_basis: sanitizeString(item?.chart_basis, 900),
+            classical_basis: sanitizeString(item?.classical_basis, 900),
+            prediction: sanitizeString(item?.prediction, 1400),
+            action: sanitizeString(item?.action, 700),
           }))
           .filter(
             (item: {
@@ -2192,9 +2492,9 @@ export async function POST(request: NextRequest) {
       ? parsed.risk_watch
           .map((item: any) => ({
             theme: sanitizeString(item?.theme, 120),
-            chart_basis: sanitizeString(item?.chart_basis, 320),
-            dasha_trigger: sanitizeString(item?.dasha_trigger, 260),
-            prevention: sanitizeString(item?.prevention, 320),
+            chart_basis: sanitizeString(item?.chart_basis, 800),
+            dasha_trigger: sanitizeString(item?.dasha_trigger, 700),
+            prevention: sanitizeString(item?.prevention, 700),
           }))
           .filter(
             (item: {
@@ -2216,9 +2516,9 @@ export async function POST(request: NextRequest) {
       ? parsed.prediction_table
           .map((item: any) => ({
             area: sanitizeString(item?.area, 80),
-            chart_basis: sanitizeString(item?.chart_basis, 280),
-            prediction: sanitizeString(item?.prediction, 500),
-            advice: sanitizeString(item?.advice, 320),
+            chart_basis: sanitizeString(item?.chart_basis, 800),
+            prediction: sanitizeString(item?.prediction, 1200),
+            advice: sanitizeString(item?.advice, 700),
           }))
           .filter(
             (item: {
@@ -2240,9 +2540,9 @@ export async function POST(request: NextRequest) {
       ? parsed.planet_effects
           .map((item: any) => ({
             planet: sanitizeString(item?.planet, 40),
-            placement: sanitizeString(item?.placement, 220),
-            effect: sanitizeString(item?.effect, 520),
-            advice: sanitizeString(item?.advice, 320),
+            placement: sanitizeString(item?.placement, 520),
+            effect: sanitizeString(item?.effect, 1000),
+            advice: sanitizeString(item?.advice, 700),
           }))
           .filter(
             (item: {
@@ -2254,16 +2554,16 @@ export async function POST(request: NextRequest) {
           )
           .slice(0, 9)
       : buildPlanetEffects(chart),
-    likely_challenges: sanitizeStringArray(parsed?.likely_challenges, 8, 220),
-    issue_analysis: sanitizeStringArray(parsed?.issue_analysis, 8, 260),
-    practical_solutions: sanitizeStringArray(parsed?.practical_solutions, 8, 260),
-    spiritual_guidance: sanitizeString(parsed?.spiritual_guidance, 700),
+    likely_challenges: sanitizeStringArray(parsed?.likely_challenges, 8, 520),
+    issue_analysis: sanitizeStringArray(parsed?.issue_analysis, 8, 700),
+    practical_solutions: sanitizeStringArray(parsed?.practical_solutions, 8, 700),
+    spiritual_guidance: sanitizeString(parsed?.spiritual_guidance, 1400),
     sub_question_answers: Array.isArray(parsed?.sub_question_answers)
       ? parsed.sub_question_answers
           .map((item: any) => ({
             question: sanitizeString(item?.question, 220),
-            answer: sanitizeString(item?.answer, 600),
-            chart_reason: sanitizeString(item?.chart_reason, 360),
+            answer: sanitizeString(item?.answer, 1400),
+            chart_reason: sanitizeString(item?.chart_reason, 900),
           }))
           .filter(
             (item: { question: string; answer: string; chart_reason: string }) =>
@@ -2273,13 +2573,13 @@ export async function POST(request: NextRequest) {
       : [],
     special_cases: Array.isArray(parsed?.special_cases)
       ? parsed.special_cases
-          .map((item: unknown) => sanitizeString(item, 220))
+          .map((item: unknown) => sanitizeString(item, 520))
           .filter(Boolean)
           .slice(0, 8)
       : detectedYogas,
     upaay: Array.isArray(parsed?.upaay)
       ? parsed.upaay
-          .map((item: unknown) => sanitizeString(item, 220))
+          .map((item: unknown) => sanitizeString(item, 520))
           .filter(Boolean)
           .slice(0, 8)
       : [],
@@ -2287,9 +2587,9 @@ export async function POST(request: NextRequest) {
       ? parsed.targeted_remedies
           .map((item: any) => ({
             pain_point: sanitizeString(item?.pain_point, 180),
-            chart_basis: sanitizeString(item?.chart_basis, 260),
-            mantra_or_pooja: sanitizeString(item?.mantra_or_pooja, 360),
-            daily_practice: sanitizeString(item?.daily_practice, 320),
+            chart_basis: sanitizeString(item?.chart_basis, 700),
+            mantra_or_pooja: sanitizeString(item?.mantra_or_pooja, 900),
+            daily_practice: sanitizeString(item?.daily_practice, 700),
           }))
           .filter((item: TargetedRemedy) =>
             Boolean(
@@ -2309,8 +2609,8 @@ export async function POST(request: NextRequest) {
       ? parsed.personality_markers
           .map((item: any) => ({
             trait: sanitizeString(item?.trait, 160),
-            chart_basis: sanitizeString(item?.chart_basis, 320),
-            lived_experience: sanitizeString(item?.lived_experience, 460),
+            chart_basis: sanitizeString(item?.chart_basis, 800),
+            lived_experience: sanitizeString(item?.lived_experience, 1000),
           }))
           .filter(
             (item: {
@@ -2325,11 +2625,11 @@ export async function POST(request: NextRequest) {
       ? parsed.deep_case_analysis
           .map((item: any) => ({
             case: sanitizeString(item?.case, 180),
-            chart_basis: sanitizeString(item?.chart_basis, 420),
-            book_basis: sanitizeString(item?.book_basis, 420),
-            prediction: sanitizeString(item?.prediction, 700),
-            confidence: sanitizeString(item?.confidence, 180),
-            caution: sanitizeString(item?.caution, 320),
+            chart_basis: sanitizeString(item?.chart_basis, 1000),
+            book_basis: sanitizeString(item?.book_basis, 1000),
+            prediction: sanitizeString(item?.prediction, 1600),
+            confidence: sanitizeString(item?.confidence, 360),
+            caution: sanitizeString(item?.caution, 800),
           }))
           .filter(
             (item: {
@@ -2353,10 +2653,10 @@ export async function POST(request: NextRequest) {
       ? parsed.life_event_windows
           .map((item: any) => ({
             period: sanitizeString(item?.period, 120),
-            likely_theme: sanitizeString(item?.likely_theme, 220),
-            chart_basis: sanitizeString(item?.chart_basis, 420),
-            book_basis: sanitizeString(item?.book_basis, 420),
-            guidance: sanitizeString(item?.guidance, 420),
+            likely_theme: sanitizeString(item?.likely_theme, 500),
+            chart_basis: sanitizeString(item?.chart_basis, 1000),
+            book_basis: sanitizeString(item?.book_basis, 1000),
+            guidance: sanitizeString(item?.guidance, 1000),
           }))
           .filter(
             (item: {
@@ -2376,7 +2676,7 @@ export async function POST(request: NextRequest) {
           .slice(0, deepMode ? 6 : 3)
       : [],
     expert_call_recommended: Boolean(parsed?.expert_call_recommended),
-    expert_call_reason: sanitizeString(parsed?.expert_call_reason, 600),
+    expert_call_reason: sanitizeString(parsed?.expert_call_reason, 1200),
   }
   const result = {
     profile: {
