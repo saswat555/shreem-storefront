@@ -33,6 +33,18 @@ const PRASHNA_SCHEMA = {
     chart_summary: { type: "string" },
     direct_indication: { type: "string" },
     house_focus: { type: "string" },
+    sub_question_answers: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          question: { type: "string" },
+          answer: { type: "string" },
+          chart_reason: { type: "string" },
+        },
+        required: ["question", "answer", "chart_reason"],
+      },
+    },
     expert_call_recommended: { type: "boolean" },
     expert_call_reason: { type: "string" },
     recommended_service: { type: "string" },
@@ -60,6 +72,7 @@ const PRASHNA_SCHEMA = {
     "chart_summary",
     "direct_indication",
     "house_focus",
+    "sub_question_answers",
     "expert_call_recommended",
     "expert_call_reason",
     "recommended_service",
@@ -83,6 +96,31 @@ const sanitizeBookCitations = (value: unknown) =>
         }))
         .filter((item) => item.citation && item.relevance)
         .slice(0, 8)
+    : []
+
+const splitQuestionParts = (question: string) => {
+  const normalized = question
+    .replace(/\b(first|second|third|fourth)\b/gi, "|$1")
+    .replace(/\b(1st|2nd|3rd|4th)\b/gi, "|$1")
+    .replace(/[?।]\s+/g, "?|")
+  const parts = normalized
+    .split("|")
+    .map((part) => part.trim())
+    .filter((part) => part.length >= 8)
+
+  return (parts.length > 1 ? parts : [question]).slice(0, 3)
+}
+
+const sanitizeSubQuestionAnswers = (value: unknown) =>
+  Array.isArray(value)
+    ? value
+        .map((item: any) => ({
+          question: sanitizeString(item?.question, 240),
+          answer: sanitizeString(item?.answer, 700),
+          chart_reason: sanitizeString(item?.chart_reason, 500),
+        }))
+        .filter((item) => item.question && item.answer && item.chart_reason)
+        .slice(0, 3)
     : []
 
 const LANGUAGE_INSTRUCTIONS: Record<string, string> = {
@@ -114,11 +152,13 @@ const retrievePrashnaKnowledgeSafely = (
 
 const buildPrompt = ({
   question,
+  questionParts,
   chart,
   language,
   knowledgePassages,
 }: {
   question: string
+  questionParts: string[]
   chart: PrashnaChart
   language: string
   knowledgePassages: RetrievedAstrologyPassage[]
@@ -129,7 +169,11 @@ const buildPrompt = ({
     "Use the retrieved classical reference pack below to strengthen the answer, but keep Prashna tied to the exact question and do not quote the pack verbatim.",
     "When you use the reference pack, return book_citations with the exact Citation values and one-line relevance notes.",
     "Follow calculation-first discipline: Prashna Lagna, Moon, significator house, relevant lord, and timing signals must lead the answer.",
-    "Interpret through traditional Vedic Prashna factors: lagna, lagna lord, Moon, relevant houses, tithi, nakshatra, yoga, karana, Rahu/Ketu, and retrograde grahas when relevant.",
+    "Use Rashi chart for sign dignity, graha ownership, and yogic condition. Use Bhava Chalit houses for practical house impact and likely real-world delivery. If rashi_house and bhava_house differ, say how the practical result changes.",
+    "Bhava Chalit is calculated from Sripati bhava madhya and sandhi boundaries. For Prashna, bhava_impact_percent is critical: strong near-cusp planets give clearer delivery; sandhi/weak planets show uncertainty, delay, mixed answer, or changing circumstances.",
+    "Interpret through traditional Vedic Prashna factors: lagna, lagna lord, Moon, relevant houses and house lords, tithi, nakshatra, yoga, karana, Rahu/Ketu, retrograde grahas, and Bhava Chalit shifts when relevant.",
+    "If the user asks multiple parts, answer each part separately in sub_question_answers as first, second, and third. Do not merge them into one vague answer.",
+    "Be critical: state yes/no/unclear when the chart supports it, then explain the conditions and timing. If the Prashna is weak or mixed, say mixed rather than forcing a positive answer.",
     "Keep the answer concise, realistic, and practical. Separate calculated chart facts from interpretation.",
     "Do not mix personal opinion, do not invent missing aspects, do not claim certainty, and do not prescribe gemstones without recommending a paid human consultation.",
     "If the question involves gemstones, pooja, marriage, medical matters, legal/financial risk, repeated blocks, strong dosha indications, or anything requiring detailed personal judgement, set expert_call_recommended true and recommend a call with Sanjay Kumar Pandey.",
@@ -138,6 +182,7 @@ const buildPrompt = ({
     LANGUAGE_INSTRUCTIONS[language] || LANGUAGE_INSTRUCTIONS.english,
     "Return JSON only with the exact requested fields.",
     `Question: ${question}`,
+    `Question parts to answer separately: ${JSON.stringify(questionParts)}`,
     `Retrieved classical reference pack: ${formatAstrologyKnowledgeForPrompt(
       knowledgePassages
     )}`,
@@ -176,11 +221,29 @@ const buildPrompt = ({
         sign: planet.sign,
         degree: planet.signDegree,
         house: planet.house,
+        rashi_house: planet.rashiHouse,
+        bhava_house: planet.bhavaHouse,
+        bhava_cusp_degree: planet.bhavaCuspDegree,
+        bhava_distance_from_cusp: planet.bhavaDistanceFromCusp,
+        bhava_impact_percent: planet.bhavaImpactPercent,
+        bhava_impact_state: planet.bhavaImpactState,
+        house_note: planet.houseNote,
         nakshatra: planet.nakshatra,
         pada: planet.pada,
         retrograde: Boolean(planet.retrograde),
       })),
-      houses: chart.houses,
+      houses: chart.houses.map((house) => ({
+        ...house,
+        selected_planets: chart.planets
+          .filter((planet) => planet.house === house.house)
+          .map((planet) => planet.name),
+        rashi_planets: chart.planets
+          .filter((planet) => (planet.rashiHouse || planet.house) === house.house)
+          .map((planet) => planet.name),
+        bhava_chalit_planets: chart.planets
+          .filter((planet) => (planet.bhavaHouse || planet.house) === house.house)
+          .map((planet) => planet.name),
+      })),
       prashna_factors: chart.prashnaFactors,
     })}`,
   ].join("\n")
@@ -223,6 +286,7 @@ export async function POST(request: NextRequest) {
     )
   }
 
+  const questionParts = splitQuestionParts(question)
   const chart = (() => {
     try {
       return buildDetailedPrashnaChart({ city, panchangSystemId })
@@ -281,7 +345,13 @@ export async function POST(request: NextRequest) {
   }
 
   const gemini = await generateGeminiJson({
-    prompt: buildPrompt({ question, chart, language, knowledgePassages }),
+    prompt: buildPrompt({
+      question,
+      questionParts,
+      chart,
+      language,
+      knowledgePassages,
+    }),
     responseSchema: PRASHNA_SCHEMA,
     temperature: 0.25,
     label: "Prashna API",
@@ -292,6 +362,7 @@ export async function POST(request: NextRequest) {
       tool: "astrology_prashna",
       input: {
         question,
+        question_parts: questionParts,
         city_id: city.id,
         city: `${city.name}, ${city.region}`,
         panchang_system_id: chart.panchangSystem?.id,
@@ -349,6 +420,9 @@ export async function POST(request: NextRequest) {
     chart_summary: sanitizeString(parsed?.chart_summary, 700),
     direct_indication: sanitizeString(parsed?.direct_indication, 700),
     house_focus: sanitizeString(parsed?.house_focus, 500),
+    sub_question_answers: sanitizeSubQuestionAnswers(
+      parsed?.sub_question_answers
+    ),
     expert_call_recommended: Boolean(parsed?.expert_call_recommended),
     expert_call_reason: sanitizeString(parsed?.expert_call_reason, 500),
     recommended_service:
@@ -371,6 +445,7 @@ export async function POST(request: NextRequest) {
     tool: "astrology_prashna",
     input: {
       question,
+      question_parts: questionParts,
       city_id: city.id,
       city: `${city.name}, ${city.region}`,
       panchang_system_id: chart.panchangSystem?.id,

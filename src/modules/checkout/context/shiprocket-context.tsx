@@ -3,7 +3,7 @@
 import type { HttpTypes } from "@medusajs/types"
 import {
   getCartShiprocketSignature,
-  getCartWeightKg,
+  getCartPackageDetails,
   getShiprocketSessionKey,
   isCompleteIndianPincode,
   isIndianAddress,
@@ -43,6 +43,7 @@ type ShiprocketContextValue = ShiprocketSnapshot & {
   isReady: boolean
   isBlocking: boolean
   cartWeightKg: number
+  cartPackageDetails: ReturnType<typeof getCartPackageDetails>
   calculate: (args: CalculateArgs) => Promise<ShiprocketRate | null>
   reset: () => void
 }
@@ -66,7 +67,8 @@ export function ShiprocketCheckoutProvider({
   children: ReactNode
 }) {
   const cartSignature = useMemo(() => getCartShiprocketSignature(cart), [cart])
-  const cartWeightKg = useMemo(() => getCartWeightKg(cart), [cart])
+  const cartPackageDetails = useMemo(() => getCartPackageDetails(cart), [cart])
+  const cartWeightKg = cartPackageDetails.weightKg
   const storageKey = useMemo(() => getShiprocketSessionKey(cart.id), [cart.id])
   const requestIdRef = useRef(0)
   const [snapshot, setSnapshot] = useState<ShiprocketSnapshot>(() => ({
@@ -151,6 +153,7 @@ export function ShiprocketCheckoutProvider({
       cod = false,
     }: CalculateArgs) => {
       const targetCart = nextCart || cart
+      const targetPackageDetails = getCartPackageDetails(targetCart)
       const normalizedPostalCode = normalizePincode(postalCode)
       const normalizedCountryCode = (countryCode || "").toLowerCase()
       const targetSignature = getCartShiprocketSignature(targetCart)
@@ -197,7 +200,11 @@ export function ShiprocketCheckoutProvider({
           },
           body: JSON.stringify({
             postal_code: normalizedPostalCode,
-            weight: getCartWeightKg(targetCart),
+            weight: targetPackageDetails.weightKg,
+            length: targetPackageDetails.lengthCm,
+            breadth: targetPackageDetails.breadthCm,
+            height: targetPackageDetails.heightCm,
+            cart: targetCart,
             cod,
           }),
           cache: "no-store",
@@ -314,10 +321,20 @@ export function ShiprocketCheckoutProvider({
       isReady,
       isBlocking,
       cartWeightKg,
+      cartPackageDetails,
       calculate,
       reset,
     }),
-    [calculate, cartWeightKg, isBlocking, isReady, isRequired, reset, snapshot]
+    [
+      calculate,
+      cartPackageDetails,
+      cartWeightKg,
+      isBlocking,
+      isReady,
+      isRequired,
+      reset,
+      snapshot,
+    ]
   )
 
   return (

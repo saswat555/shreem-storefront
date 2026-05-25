@@ -6,6 +6,7 @@ import {
   HOUSE_THEMES,
   SIGN_LORDS,
   getCityById,
+  type DashaPeriod,
   type PrashnaChart,
   type PrashnaPlanet,
 } from "@lib/util/astrology"
@@ -53,6 +54,32 @@ const KUNDLI_SCHEMA = {
       items: { type: "string" },
     },
     current_period_analysis: { type: "string" },
+    major_life_events: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          window: { type: "string" },
+          age_range: { type: "string" },
+          life_area: { type: "string" },
+          chart_basis: { type: "string" },
+          classical_basis: { type: "string" },
+          likely_event: { type: "string" },
+          confidence: { type: "string" },
+          guidance: { type: "string" },
+        },
+        required: [
+          "window",
+          "age_range",
+          "life_area",
+          "chart_basis",
+          "classical_basis",
+          "likely_event",
+          "confidence",
+          "guidance",
+        ],
+      },
+    },
     dasha_predictions: {
       type: "array",
       items: {
@@ -99,6 +126,28 @@ const KUNDLI_SCHEMA = {
         required: ["area", "chart_basis", "prediction", "advice"],
       },
     },
+    special_case_readings: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          case_name: { type: "string" },
+          chart_basis: { type: "string" },
+          classical_basis: { type: "string" },
+          combined_effect: { type: "string" },
+          timing: { type: "string" },
+          solution: { type: "string" },
+        },
+        required: [
+          "case_name",
+          "chart_basis",
+          "classical_basis",
+          "combined_effect",
+          "timing",
+          "solution",
+        ],
+      },
+    },
     planet_effects: {
       type: "array",
       items: {
@@ -106,10 +155,21 @@ const KUNDLI_SCHEMA = {
         properties: {
           planet: { type: "string" },
           placement: { type: "string" },
+          life_area: { type: "string" },
+          activation_period: { type: "string" },
           effect: { type: "string" },
+          likely_effect: { type: "string" },
           advice: { type: "string" },
         },
-        required: ["planet", "placement", "effect", "advice"],
+        required: [
+          "planet",
+          "placement",
+          "life_area",
+          "activation_period",
+          "effect",
+          "likely_effect",
+          "advice",
+        ],
       },
     },
     likely_challenges: {
@@ -189,10 +249,12 @@ const KUNDLI_SCHEMA = {
     "health_caution",
     "health_indicators",
     "current_period_analysis",
+    "major_life_events",
     "dasha_predictions",
     "risk_watch",
     "prediction_table",
     "planet_effects",
+    "special_case_readings",
     "likely_challenges",
     "issue_analysis",
     "practical_solutions",
@@ -232,8 +294,10 @@ const STANDARD_KUNDLI_FIELDS = [
   "health_caution",
   "health_indicators",
   "current_period_analysis",
+  "major_life_events",
   "dasha_predictions",
   "prediction_table",
+  "special_case_readings",
   "likely_challenges",
   "practical_solutions",
   "spiritual_guidance",
@@ -1367,6 +1431,255 @@ const PLANET_MEANINGS: Record<string, string> = {
   Ketu: "detachment, spirituality, past karma, precision",
 }
 
+const VIMSHOTTARI_YEARS_BY_LORD: Record<string, number> = {
+  Ketu: 7,
+  Venus: 20,
+  Sun: 6,
+  Moon: 10,
+  Mars: 7,
+  Rahu: 18,
+  Jupiter: 16,
+  Saturn: 19,
+  Mercury: 17,
+}
+
+const TROPICAL_YEAR_MS = 365.2425 * 24 * 60 * 60 * 1000
+
+const addDashaYears = (date: Date, years: number) =>
+  new Date(date.getTime() + years * TROPICAL_YEAR_MS)
+
+const getPeriodWindow = (period: Pick<DashaPeriod, "startIso" | "endIso">) => {
+  const start = new Date(period.startIso)
+  const end = new Date(period.endIso)
+
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+    return "Timing unavailable"
+  }
+
+  return `${start.getFullYear()}-${end.getFullYear()}`
+}
+
+const getAgeRange = (
+  period: Pick<DashaPeriod, "startIso" | "endIso">,
+  birthDate: Date
+) => {
+  const start = new Date(period.startIso)
+  const end = new Date(period.endIso)
+
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+    return "Age unavailable"
+  }
+
+  const startAge = Math.max(
+    0,
+    Math.floor((start.getTime() - birthDate.getTime()) / TROPICAL_YEAR_MS)
+  )
+  const endAge = Math.max(
+    startAge,
+    Math.ceil((end.getTime() - birthDate.getTime()) / TROPICAL_YEAR_MS)
+  )
+
+  return `${startAge}-${endAge}`
+}
+
+const uniqueNumbers = (values: Array<number | undefined>) =>
+  Array.from(
+    new Set(values.filter((value): value is number => typeof value === "number"))
+  )
+
+const getPlanetOwnedHouses = (chart: PrashnaChart, planetName: string) =>
+  chart.houses
+    .filter((house) => house.signLord === planetName)
+    .map((house) => house.house)
+
+const getHouseTheme = (houseNumber: number) =>
+  HOUSE_THEMES[houseNumber - 1] || "life direction"
+
+const getPeriodStatus = (period: Pick<DashaPeriod, "startIso" | "endIso">, now: Date) => {
+  const start = new Date(period.startIso)
+  const end = new Date(period.endIso)
+
+  if (now >= start && now < end) {
+    return "current"
+  }
+
+  return end < now ? "past" : "future"
+}
+
+const getHouseEventSignal = (houses: number[]) => {
+  const ordered = houses.filter(Boolean)
+  const has = (house: number) => ordered.includes(house)
+  const signals: string[] = []
+
+  if (has(1)) signals.push("identity, body, confidence, and personal direction")
+  if (has(2)) signals.push("family, speech, food habits, savings, and value system")
+  if (has(3)) signals.push("skills, communication, siblings, courage, and short travel")
+  if (has(4)) signals.push("home, education base, property, vehicles, and emotional security")
+  if (has(5)) signals.push("study, creativity, romance, children, mantra, and past merit")
+  if (has(6)) signals.push("competition, debt, disease prevention, service, and disputes")
+  if (has(7)) signals.push("marriage, partnership, contracts, and public dealings")
+  if (has(8)) signals.push("sudden change, research, inheritance, hidden matters, and risk")
+  if (has(9)) signals.push("higher learning, father/guru, dharma, fortune, and long travel")
+  if (has(10)) signals.push("career, status, authority, responsibility, and public work")
+  if (has(11)) signals.push("income, networks, elder siblings, visibility, and gains")
+  if (has(12)) signals.push("foreign links, expenses, sleep, retreat, hospitals, and moksha themes")
+
+  return signals.slice(0, 3).join("; ") || "general life movement"
+}
+
+const getPlanetLifeArea = (chart: PrashnaChart, planet: PrashnaPlanet) => {
+  const bhavaHouse = planet.bhavaHouse || planet.house
+  const ownedHouses = getPlanetOwnedHouses(chart, planet.name)
+  const houses = uniqueNumbers([bhavaHouse, planet.rashiHouse, ...ownedHouses])
+
+  return houses
+    .slice(0, 4)
+    .map((house) => `${house}H ${getHouseTheme(house).toLowerCase()}`)
+    .join("; ")
+}
+
+const buildMahadashaTimeline = (chart: PrashnaChart) => {
+  if (!chart.dasha) {
+    return []
+  }
+
+  const sequence = chart.dasha.sequence.length
+    ? chart.dasha.sequence
+    : ["Ketu", "Venus", "Sun", "Moon", "Mars", "Rahu", "Jupiter", "Saturn", "Mercury"]
+  const startLord = chart.dasha.balanceAtBirth.lord
+  const startIndex = Math.max(sequence.indexOf(startLord), 0)
+  const periods: DashaPeriod[] = [chart.dasha.balanceAtBirth]
+  let cursor = new Date(chart.dasha.balanceAtBirth.endIso)
+
+  for (let index = 1; index < 18; index += 1) {
+    const lord = sequence[(startIndex + index) % sequence.length]
+    const durationYears = VIMSHOTTARI_YEARS_BY_LORD[lord] || 0
+    const end = addDashaYears(cursor, durationYears)
+
+    periods.push({
+      lord,
+      level: "mahadasha",
+      startIso: cursor.toISOString(),
+      endIso: end.toISOString(),
+      startLabel: String(cursor.getFullYear()),
+      endLabel: String(end.getFullYear()),
+      durationYears,
+    })
+    cursor = end
+  }
+
+  return periods
+}
+
+const buildLifeEventSeeds = (chart: PrashnaChart) => {
+  if (!chart.dasha) {
+    return []
+  }
+
+  const birthDate = new Date(chart.dasha.balanceAtBirth.startIso)
+  const now = new Date(chart.dasha.currentDateIso)
+  const timeline = buildMahadashaTimeline(chart)
+  const currentIndex = timeline.findIndex(
+    (period) => getPeriodStatus(period, now) === "current"
+  )
+  const anchorIndex = currentIndex >= 0 ? currentIndex : 0
+  const selectedPeriods = timeline
+    .slice(Math.max(0, anchorIndex - 2), Math.min(timeline.length, anchorIndex + 4))
+    .filter((period) => {
+      const endAge = Number(getAgeRange(period, birthDate).split("-")[1])
+      return Number.isNaN(endAge) || endAge <= 92
+    })
+
+  const seeds = selectedPeriods.map((period) => {
+    const planet = getPlanet(chart, period.lord)
+    const ownedHouses = getPlanetOwnedHouses(chart, period.lord)
+    const activeHouses = planet
+      ? uniqueNumbers([planet.bhavaHouse || planet.house, planet.rashiHouse, ...ownedHouses])
+      : ownedHouses
+    const status = getPeriodStatus(period, now)
+    const dignity = planet ? getPlanetDignity(planet) : "not placed in visible graha set"
+    const impact = planet?.bhavaImpactPercent
+      ? `${planet.bhavaImpactPercent}% ${planet.bhavaImpactState || "bhava"} impact`
+      : "bhava impact not measured"
+
+    return {
+      window: getPeriodWindow(period),
+      age_range: getAgeRange(period, birthDate),
+      period: `${period.lord} Mahadasha`,
+      status,
+      life_area: getHouseEventSignal(activeHouses),
+      chart_basis: planet
+        ? `${period.lord} is in ${planet.sign}, Rashi house ${planet.rashiHouse || planet.house}, Bhava house ${planet.bhavaHouse || planet.house}, ${dignity}, ${impact}; owns houses ${ownedHouses.join(", ") || "none by sign lordship"}.`
+        : `${period.lord} period; owns houses ${ownedHouses.join(", ") || "not mapped"}.`,
+      likely_event_seed:
+        status === "past"
+          ? "Use as a validation window: describe likely visible life shifts without claiming certainty."
+          : status === "current"
+            ? "Current activation window: connect present pressure/opportunity to houses and remedies."
+            : "Upcoming activation window: frame as preparation, opportunity, and watch areas.",
+      confidence:
+        planet?.bhavaImpactState === "strong" || activeHouses.some((house) => [1, 4, 7, 10].includes(house))
+          ? "medium-high if birth time is accurate"
+          : "medium; confirm with divisional charts and lived history",
+    }
+  })
+
+  const currentSubPeriods = [chart.dasha.antardasha, chart.dasha.pratyantar]
+    .filter((period): period is DashaPeriod => Boolean(period))
+    .map((period) => {
+      const planet = getPlanet(chart, period.lord)
+      const ownedHouses = getPlanetOwnedHouses(chart, period.lord)
+      const activeHouses = planet
+        ? uniqueNumbers([planet.bhavaHouse || planet.house, planet.rashiHouse, ...ownedHouses])
+        : ownedHouses
+
+      return {
+        window: getPeriodWindow(period),
+        age_range: getAgeRange(period, birthDate),
+        period: `${period.lord} ${period.level}`,
+        status: "current-detail",
+        life_area: getHouseEventSignal(activeHouses),
+        chart_basis: planet
+          ? `${period.lord} is currently active through ${period.level}; placement ${planet.sign}, Bhava house ${planet.bhavaHouse || planet.house}, nakshatra ${planet.nakshatra} pada ${planet.pada}.`
+          : `${period.lord} is active through ${period.level}.`,
+        likely_event_seed:
+          "Use this to sharpen the current year/month focus; do not turn it into deterministic fate.",
+        confidence: "short-term supportive signal; birth-time sensitivity applies",
+      }
+    })
+
+  return [...seeds, ...currentSubPeriods].slice(0, 8)
+}
+
+const findPlanetActivationWindow = (chart: PrashnaChart, planetName: string) => {
+  const now = chart.dasha?.currentDateIso ? new Date(chart.dasha.currentDateIso) : new Date()
+  const timeline = buildMahadashaTimeline(chart)
+  const current = [
+    chart.dasha?.mahadasha,
+    chart.dasha?.antardasha,
+    chart.dasha?.pratyantar,
+  ].find((period) => period?.lord === planetName)
+
+  if (current) {
+    return `${current.lord} ${current.level} active now (${getPeriodWindow(current)})`
+  }
+
+  const next = timeline.find(
+    (period) => period.lord === planetName && new Date(period.startIso) > now
+  )
+  if (next) {
+    return `${planetName} Mahadasha ${getPeriodWindow(next)}`
+  }
+
+  const previous = [...timeline]
+    .reverse()
+    .find((period) => period.lord === planetName && new Date(period.endIso) <= now)
+
+  return previous
+    ? `${planetName} Mahadasha previously ${getPeriodWindow(previous)}; repeats through sub-periods and transits`
+    : `${planetName} activates through its antardasha/pratyantar, transits, and house triggers`
+}
+
 const getPlanetDignity = (planet: PrashnaPlanet) => {
   if (EXALTATION_SIGNS[planet.name] === planet.sign) {
     return "exalted"
@@ -1399,16 +1712,36 @@ const buildPlanetEffects = (chart: PrashnaChart) =>
       ].includes(planet.name)
     )
     .map((planet) => {
-      const houseTheme = HOUSE_THEMES[planet.house - 1] || "life matters"
+      const rashiHouse = planet.rashiHouse || planet.house
+      const bhavaHouse = planet.bhavaHouse || planet.house
+      const houseTheme = HOUSE_THEMES[bhavaHouse - 1] || "life matters"
+      const ownedHouses = getPlanetOwnedHouses(chart, planet.name)
       const dignity = getPlanetDignity(planet)
+      const impact =
+        typeof planet.bhavaImpactPercent === "number"
+          ? `${planet.bhavaImpactPercent}% ${planet.bhavaImpactState || "bhava"} bhava impact`
+          : "bhava impact not measured"
+      const placement =
+        rashiHouse === bhavaHouse
+          ? `${planet.name} in ${planet.sign}, Rashi/Bhava house ${bhavaHouse}, ${planet.nakshatra} pada ${planet.pada}, ${dignity}, ${impact}`
+          : `${planet.name} in ${planet.sign}, Rashi house ${rashiHouse} but Bhava Chalit house ${bhavaHouse}, ${planet.nakshatra} pada ${planet.pada}, ${dignity}, ${impact}`
 
       return {
         planet: planet.name,
-        placement: `${planet.name} in ${planet.sign}, house ${planet.house}, ${planet.nakshatra} pada ${planet.pada}, ${dignity}`,
-        effect: `${planet.name} influences ${houseTheme.toLowerCase()} through ${PLANET_MEANINGS[planet.name] || "its natural significations"}.`,
+        placement,
+        life_area: getPlanetLifeArea(chart, planet),
+        activation_period: findPlanetActivationWindow(chart, planet.name),
+        effect: `${planet.name} personally influences ${houseTheme.toLowerCase()} through ${PLANET_MEANINGS[planet.name] || "its natural significations"}; owned houses ${ownedHouses.join(", ") || "none"} add their agenda.`,
+        likely_effect: `${getHouseEventSignal(
+          uniqueNumbers([bhavaHouse, rashiHouse, ...ownedHouses])
+        )} becomes more visible during ${findPlanetActivationWindow(
+          chart,
+          planet.name
+        )}.`,
         advice:
-          DUSTHANA_HOUSES.includes(planet.house) ||
+          DUSTHANA_HOUSES.includes(bhavaHouse) ||
           dignity === "debilitated" ||
+          planet.bhavaImpactState === "sandhi" ||
           planet.name === "Rahu" ||
           planet.name === "Ketu"
             ? "Use discipline, prayer, service, and expert review before strong remedies."
@@ -1538,6 +1871,7 @@ const buildKundliKnowledgePassages = ({
   detectedCases,
   healthIndicators,
   targetedRemedySeeds,
+  lifeEventSeeds,
   subQuestions,
 }: {
   chart: PrashnaChart
@@ -1545,6 +1879,7 @@ const buildKundliKnowledgePassages = ({
   detectedCases: DetectedAstrologyCase[]
   healthIndicators: string[]
   targetedRemedySeeds: TargetedRemedy[]
+  lifeEventSeeds: ReturnType<typeof buildLifeEventSeeds>
   subQuestions: string[]
 }) => {
   const dashaLords = chart.dasha
@@ -1566,7 +1901,7 @@ const buildKundliKnowledgePassages = ({
     )
 
   return mergeKnowledgePassages(
-    7,
+    8,
     retrieveKnowledgeSafely({
       query: [
         "vimshottari dasha mahadasha antardasha pratyantar dasha lord effects दशा महादशा अन्तर्दशा",
@@ -1624,6 +1959,21 @@ const buildKundliKnowledgePassages = ({
       min: 1,
       max: 2,
     }),
+    retrieveKnowledgeSafely({
+      query: [
+        "life events dasha period result timing education marriage career health incident parashari दशा फल घटना जीवन",
+        lifeEventSeeds
+          .map(
+            (item) =>
+              `${item.period} ${item.window} ${item.life_area} ${item.chart_basis}`
+          )
+          .join(" "),
+      ].join(" "),
+      chart,
+      detectedCases: lifeEventSeeds.map((item) => item.period),
+      min: 1,
+      max: 2,
+    }),
     subQuestions.length
       ? retrieveKnowledgeSafely({
           query: [
@@ -1665,6 +2015,7 @@ const buildPrompt = ({
   stones,
   healthIndicators,
   targetedRemedySeeds,
+  lifeEventSeeds,
   subQuestions,
   language,
   knowledgePassages,
@@ -1676,6 +2027,7 @@ const buildPrompt = ({
   stones: ReturnType<typeof getStoneRecommendations>
   healthIndicators: string[]
   targetedRemedySeeds: TargetedRemedy[]
+  lifeEventSeeds: ReturnType<typeof buildLifeEventSeeds>
   subQuestions: string[]
   language: string
   knowledgePassages: RetrievedAstrologyPassage[]
@@ -1684,12 +2036,17 @@ const buildPrompt = ({
     "You are Shreem Astrology's Vedic Kundli analysis assistant.",
     "Use only the calculated chart data and deterministic yoga detections below. Do not invent yogas that are not present.",
     "The chart calculation layer is authoritative. Do not move planets into different houses, do not alter Lagna, and do not infer chart facts that are absent.",
-    "If rashi_house and bhava_house differ, explain the difference plainly and use the selected house as the main house for this panchang mode.",
+    "Use the Rashi/Lagna chart for sign dignity, graha ownership, yogas, debility/exaltation, conjunctions, and classical combinations. Use Bhava Chalit for practical house impact, lived results, timing delivery, health-risk house activation, and real-world manifestation.",
+    "Bhava Chalit is calculated from Sripati bhava madhya and sandhi boundaries. Use bhava_impact_percent to judge delivery strength: strong planets near bhava madhya deliver clearly; sandhi/weak planets deliver mixed, delayed, or transitional effects.",
+    "If rashi_house and bhava_house differ, explain the difference plainly: Rashi shows the graha's sign/yoga condition, while Bhava Chalit shows where its result is likely delivered. Do not ignore Bhava Chalit even when the selected panchang mode is whole-sign.",
     "Use the retrieved Brihat Parashara Hora Shastra reference pack as the interpretive base for dasha, yoga, health-risk, and remedy judgement. It is not decorative citation. Apply it only after checking the calculated chart facts.",
     "First read Vimshottari timing: Mahadasha, Antardasha, and Pratyantar lord placement by house, sign, dignity, association, and relevant houses. Then explain how the BPHS reference pack modifies timing and outcomes.",
+    "Return major_life_events as attention-building but responsible validation windows. Use the deterministic life_event_seeds only; describe likely life shifts by year range and age range, never exact guaranteed events.",
+    "For past windows, phrase as 'you may have seen' or 'often shows' so the person can validate. For current/future windows, phrase as preparation and watch periods.",
     "When two strong combinations coexist, synthesize them rather than listing them separately. Example: if Gajakesari support and Kaal Sarp/Rahu-Ketu pressure both appear, judge which dominates by dasha, house relevance, and afflicted/protective grahas.",
     "When a retrieved note identifies a later convention such as Kaal Sarp, say so plainly and judge it through Rahu/Ketu, houses, dignity, and dasha.",
     "Use detected_structured_cases as the main special-case audit. For Kaal Sarp include exact type/status; for Neechabhanga include whether it is raw debility, partial cancellation, or a multi-planet cluster. For all cases, judge the combined effect, not isolated planet snippets.",
+    "Return special_case_readings from detected_structured_cases. Each solution must connect the user's pain point to the detected case, active dasha, and BPHS reference pack; do not give generic pooja advice.",
     "Follow calculation-first discipline: if a combination is partial, call it partial and explain what supports or weakens it.",
     "Cover special astrological cases when indicated, including Kaal Sarp, Manglik/Mars sensitivity, debilitation, possible Neechabhanga, Gajakesari, Budhaditya, and Chandra-Mangal.",
     "When you use the reference pack, return book_citations with the exact Citation values and one-line relevance notes.",
@@ -1700,6 +2057,8 @@ const buildPrompt = ({
     "Accident or major-incident analysis must be framed only as watch periods and preventive care. Mention it only when 6th/8th/12th houses, Mars/Saturn/Rahu/Ketu, and active dasha signals support it. Never guarantee harm or use frightening certainty.",
     "Return health_indicators with 3 to 5 specific watchlist items. Each item must include chart basis and a practical prevention note in one complete sentence.",
     "Return dasha_predictions with one row each for Mahadasha, Antardasha, and Pratyantar. Each row must include chart_basis, classical_basis from the retrieved pack, prediction, and action.",
+    "Return major_life_events with 5 to 7 rows only. Each row must include window, age_range, life_area, chart_basis, classical_basis, likely_event, confidence, and guidance.",
+    "Return special_case_readings with the 3 to 5 most important detected cases. If BPHS does not directly name a modern case such as Kaal Sarp, say the classical basis is Rahu-Ketu, house, dasha, and affliction logic from the retrieved pack.",
     "Do not return risk_watch unless there is a clear 6th/8th/12th plus active dasha trigger.",
     "Return prediction_table with rows for Personality, Career, Money, Marriage, Health, Current period, and Remedies. Each row must include chart_basis, prediction, and advice.",
     "Do not return planet_effects; the server generates graha-by-graha rows from the calculated chart.",
@@ -1728,6 +2087,7 @@ const buildPrompt = ({
     `Deterministic targeted remedy seeds: ${JSON.stringify(
       targetedRemedySeeds
     )}`,
+    `Deterministic life event seeds: ${JSON.stringify(lifeEventSeeds)}`,
     `Chart: ${JSON.stringify({
       generated_at: chart.generatedAtLocal,
       city: `${chart.city.name}, ${chart.city.region}`,
@@ -1746,6 +2106,10 @@ const buildPrompt = ({
         house: planet.house,
         rashi_house: planet.rashiHouse,
         bhava_house: planet.bhavaHouse,
+        bhava_cusp_degree: planet.bhavaCuspDegree,
+        bhava_distance_from_cusp: planet.bhavaDistanceFromCusp,
+        bhava_impact_percent: planet.bhavaImpactPercent,
+        bhava_impact_state: planet.bhavaImpactState,
         house_note: planet.houseNote,
         nakshatra: planet.nakshatra,
         pada: planet.pada,
@@ -1753,15 +2117,89 @@ const buildPrompt = ({
       })),
       houses: chart.houses.map((house) => ({
         ...house,
-        planets: chart.planets
+        selected_planets: chart.planets
           .filter((planet) => planet.house === house.house)
           .map((planet) => planet.name),
+        rashi_planets: chart.planets
+          .filter((planet) => (planet.rashiHouse || planet.house) === house.house)
+          .map((planet) => planet.name),
+        bhava_chalit_planets: chart.planets
+          .filter((planet) => (planet.bhavaHouse || planet.house) === house.house)
+          .map((planet) => planet.name),
       })),
+      bhava_chalit_shift_summary: chart.planets
+        .filter(
+          (planet) =>
+            typeof planet.rashiHouse === "number" &&
+            typeof planet.bhavaHouse === "number" &&
+            planet.rashiHouse !== planet.bhavaHouse
+        )
+        .map((planet) => ({
+          graha: planet.name,
+          rashi_house: planet.rashiHouse,
+          bhava_house: planet.bhavaHouse,
+          bhava_impact_percent: planet.bhavaImpactPercent,
+          bhava_impact_state: planet.bhavaImpactState,
+          bhava_distance_from_cusp: planet.bhavaDistanceFromCusp,
+          reading_rule:
+            "Judge dignity/yoga by sign and Rashi house; judge lived house result through Bhava Chalit house and its impact percent from bhava madhya.",
+        })),
     })}`,
     `Detected cases: ${JSON.stringify(detectedYogas)}`,
     `Detected structured cases: ${JSON.stringify(detectedCases)}`,
     `Trinal stone indicators: ${JSON.stringify(stones)}`,
   ].join("\n")
+
+const buildSpecialCaseReadings = ({
+  chart,
+  detectedCases,
+  targetedRemedySeeds,
+  knowledgePassages,
+}: {
+  chart: PrashnaChart
+  detectedCases: DetectedAstrologyCase[]
+  targetedRemedySeeds: TargetedRemedy[]
+  knowledgePassages: RetrievedAstrologyPassage[]
+}) =>
+  selectPriorityCases(detectedCases)
+    .slice(0, 5)
+    .map((detectedCase, index) => {
+      const activePeriod = chart.dasha
+        ? [
+            chart.dasha.mahadasha,
+            chart.dasha.antardasha,
+            chart.dasha.pratyantar,
+          ]
+            .filter((period): period is DashaPeriod => Boolean(period))
+            .find((period) => detectedCase.planets.includes(period.lord))
+        : undefined
+      const remedy = targetedRemedySeeds.find((item) =>
+        detectedCase.planets.some((planet) =>
+          item.chart_basis.toLowerCase().includes(planet.toLowerCase())
+        )
+      )
+      const passage = knowledgePassages[index] || knowledgePassages[0]
+
+      return {
+        case_name: detectedCase.subtype
+          ? `${detectedCase.name}: ${detectedCase.subtype}`
+          : detectedCase.name,
+        chart_basis: detectedCase.chart_basis,
+        classical_basis: passage?.citation
+          ? `${passage.citation}. Applied through chart facts, dasha lordship, and house impact.`
+          : "BPHS retrieval was prepared; apply the case through graha, house, dignity, and dasha logic.",
+        combined_effect: detectedCase.combined_effect,
+        timing: activePeriod
+          ? `${activePeriod.lord} ${activePeriod.level} is active (${getPeriodWindow(activePeriod)}), so this case is more visible now.`
+          : `More visible during ${detectedCase.planets
+              .map((planet) => findPlanetActivationWindow(chart, planet))
+              .slice(0, 2)
+              .join("; ")}.`,
+        solution: remedy
+          ? `${remedy.mantra_or_pooja} ${remedy.daily_practice}`
+          : "Use steady discipline, daan, mantra, and expert review before strong gemstone or pooja decisions.",
+      }
+    })
 
 const buildFallbackKundliAnalysis = ({
   chart,
@@ -1769,6 +2207,7 @@ const buildFallbackKundliAnalysis = ({
   detectedCases,
   healthIndicators,
   targetedRemedySeeds,
+  lifeEventSeeds,
   knowledgePassages,
 }: {
   chart: PrashnaChart
@@ -1776,6 +2215,7 @@ const buildFallbackKundliAnalysis = ({
   detectedCases: DetectedAstrologyCase[]
   healthIndicators: string[]
   targetedRemedySeeds: TargetedRemedy[]
+  lifeEventSeeds: ReturnType<typeof buildLifeEventSeeds>
   knowledgePassages: RetrievedAstrologyPassage[]
 }) => {
   const dashaRows = chart.dasha
@@ -1831,6 +2271,24 @@ const buildFallbackKundliAnalysis = ({
       "No deterministic health watchlist was produced; medical concerns still need qualified care.",
     health_indicators: healthIndicators,
     current_period_analysis: activeDashaText(chart),
+    major_life_events: lifeEventSeeds.slice(0, 7).map((seed, index) => ({
+      window: seed.window,
+      age_range: seed.age_range,
+      life_area: seed.life_area,
+      chart_basis: seed.chart_basis,
+      classical_basis:
+        knowledgePassages[index]?.citation ||
+        "BPHS dasha and house result reference was retrieved for the AI retry.",
+      likely_event:
+        seed.status === "past"
+          ? `This past ${seed.period} window may have shown ${seed.life_area}.`
+          : seed.status === "current"
+            ? `This current ${seed.period} window can bring ${seed.life_area} into focus.`
+            : `This ${seed.period} window may prepare ${seed.life_area}.`,
+      confidence: seed.confidence,
+      guidance:
+        "Use this as a validation and preparation window; retry for the full BPHS narrative.",
+    })),
     dasha_predictions: dashaRows,
     risk_watch: healthIndicators.slice(0, 4).map((indicator) => ({
       theme: "Preventive health watch",
@@ -1849,6 +2307,12 @@ const buildFallbackKundliAnalysis = ({
       },
     ],
     planet_effects: buildPlanetEffects(chart),
+    special_case_readings: buildSpecialCaseReadings({
+      chart,
+      detectedCases,
+      targetedRemedySeeds,
+      knowledgePassages,
+    }),
     likely_challenges: detectedYogas.slice(0, 5),
     issue_analysis: mainCases.map((item) => item.combined_effect),
     practical_solutions: targetedRemedySeeds.map((item) => item.daily_practice),
@@ -1941,12 +2405,14 @@ export async function POST(request: NextRequest) {
     detectedYogas,
     healthIndicators
   )
+  const lifeEventSeeds = buildLifeEventSeeds(chart)
   const knowledgePassages = buildKundliKnowledgePassages({
     chart,
     detectedYogas,
     detectedCases,
     healthIndicators,
     targetedRemedySeeds,
+    lifeEventSeeds,
     subQuestions,
   })
 
@@ -2023,6 +2489,7 @@ export async function POST(request: NextRequest) {
     stones,
     healthIndicators,
     targetedRemedySeeds,
+    lifeEventSeeds,
     subQuestions,
     language,
     knowledgePassages,
@@ -2042,6 +2509,7 @@ export async function POST(request: NextRequest) {
       detectedCases,
       healthIndicators,
       targetedRemedySeeds,
+      lifeEventSeeds,
       knowledgePassages,
     })
     await recordAiUsage({
@@ -2097,6 +2565,7 @@ export async function POST(request: NextRequest) {
         stones,
         health_indicators: healthIndicators,
         targeted_remedy_seeds: targetedRemedySeeds,
+        life_event_seeds: lifeEventSeeds,
         knowledge_references: getKnowledgeIds(knowledgePassages),
         analysis: fallbackAnalysis,
         analysis_mode: "standard",
@@ -2129,6 +2598,45 @@ export async function POST(request: NextRequest) {
       parsed?.current_period_analysis,
       1800
     ),
+    major_life_events: Array.isArray(parsed?.major_life_events)
+      ? parsed.major_life_events
+          .map((item: any) => ({
+            window: sanitizeString(item?.window, 80),
+            age_range: sanitizeString(item?.age_range, 40),
+            life_area: sanitizeString(item?.life_area, 260),
+            chart_basis: sanitizeString(item?.chart_basis, 800),
+            classical_basis: sanitizeString(item?.classical_basis, 800),
+            likely_event: sanitizeString(item?.likely_event, 900),
+            confidence: sanitizeString(item?.confidence, 180),
+            guidance: sanitizeString(item?.guidance, 700),
+          }))
+          .filter(
+            (item: {
+              window: string
+              age_range: string
+              life_area: string
+              chart_basis: string
+              likely_event: string
+            }) =>
+              Boolean(
+                item.window &&
+                  item.age_range &&
+                  item.life_area &&
+                  item.chart_basis &&
+                  item.likely_event
+              )
+          )
+          .slice(0, 7)
+      : lifeEventSeeds.slice(0, 7).map((seed) => ({
+          window: seed.window,
+          age_range: seed.age_range,
+          life_area: seed.life_area,
+          chart_basis: seed.chart_basis,
+          classical_basis: knowledgePassages[0]?.citation || "BPHS dasha reference",
+          likely_event: `${seed.period} may activate ${seed.life_area}.`,
+          confidence: seed.confidence,
+          guidance: "Use this as a timing clue, not a fixed guarantee.",
+        })),
     dasha_predictions: Array.isArray(parsed?.dasha_predictions)
       ? parsed.dasha_predictions
           .map((item: any) => ({
@@ -2204,12 +2712,46 @@ export async function POST(request: NextRequest) {
           )
           .slice(0, 8)
       : [],
+    special_case_readings: Array.isArray(parsed?.special_case_readings)
+      ? parsed.special_case_readings
+          .map((item: any) => ({
+            case_name: sanitizeString(item?.case_name, 180),
+            chart_basis: sanitizeString(item?.chart_basis, 900),
+            classical_basis: sanitizeString(item?.classical_basis, 900),
+            combined_effect: sanitizeString(item?.combined_effect, 1100),
+            timing: sanitizeString(item?.timing, 700),
+            solution: sanitizeString(item?.solution, 900),
+          }))
+          .filter(
+            (item: {
+              case_name: string
+              chart_basis: string
+              combined_effect: string
+              solution: string
+            }) =>
+              Boolean(
+                item.case_name &&
+                  item.chart_basis &&
+                  item.combined_effect &&
+                  item.solution
+              )
+          )
+          .slice(0, 5)
+      : buildSpecialCaseReadings({
+          chart,
+          detectedCases,
+          targetedRemedySeeds,
+          knowledgePassages,
+        }),
     planet_effects: Array.isArray(parsed?.planet_effects)
       ? parsed.planet_effects
           .map((item: any) => ({
             planet: sanitizeString(item?.planet, 40),
             placement: sanitizeString(item?.placement, 520),
+            life_area: sanitizeString(item?.life_area, 520),
+            activation_period: sanitizeString(item?.activation_period, 240),
             effect: sanitizeString(item?.effect, 1000),
+            likely_effect: sanitizeString(item?.likely_effect, 1000),
             advice: sanitizeString(item?.advice, 700),
           }))
           .filter(
@@ -2293,6 +2835,7 @@ export async function POST(request: NextRequest) {
     stones,
     health_indicators: healthIndicators,
     targeted_remedy_seeds: targetedRemedySeeds,
+    life_event_seeds: lifeEventSeeds,
     analysis,
     analysis_mode: "standard",
     usage_units: usageUnits,
@@ -2317,6 +2860,7 @@ export async function POST(request: NextRequest) {
       detected_cases: detectedCases,
       health_indicators: healthIndicators,
       targeted_remedy_seeds: targetedRemedySeeds,
+      life_event_seeds: lifeEventSeeds,
     },
     model: gemini.model,
     ...gemini.usage,

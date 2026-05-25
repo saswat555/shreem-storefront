@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 
-import { getCartWeightKg } from "@lib/util/shiprocket"
+import { getCartPackageDetails, getCartWeightKg } from "@lib/util/shiprocket"
 
 const getBackendUrl = () =>
   (process.env.MEDUSA_BACKEND_URL || process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "")
@@ -15,12 +15,28 @@ const sanitizeWeight = (value: unknown) => {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : 1
 }
 
+const sanitizeDimension = (value: unknown) => {
+  const parsed = Number(value)
+
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined
+}
+
 export async function POST(request: NextRequest) {
   const payload = await request.json().catch(() => null)
   const postalCode = sanitizePincode(payload?.postal_code)
   const weight = sanitizeWeight(
     payload?.weight || (payload?.cart ? getCartWeightKg(payload.cart) : 1)
   )
+  const packageDetails = payload?.cart ? getCartPackageDetails(payload.cart) : null
+  const length =
+    sanitizeDimension(payload?.length || payload?.length_cm) ||
+    packageDetails?.lengthCm
+  const breadth =
+    sanitizeDimension(payload?.breadth || payload?.breadth_cm || payload?.width_cm) ||
+    packageDetails?.breadthCm
+  const height =
+    sanitizeDimension(payload?.height || payload?.height_cm) ||
+    packageDetails?.heightCm
   const backendUrl = getBackendUrl()
   const publishableKey = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY
 
@@ -51,6 +67,9 @@ export async function POST(request: NextRequest) {
     body: JSON.stringify({
       postal_code: postalCode,
       weight,
+      length,
+      breadth,
+      height,
       cod: Boolean(payload?.cod),
     }),
     cache: "no-store",

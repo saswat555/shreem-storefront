@@ -337,21 +337,21 @@
     color: var(--shreem-accent-dark);
   }
 
-  body:has(.astrology-realm) .site-nav-shell {
+  body.astrology-night-mode:has(.astrology-realm) .site-nav-shell {
     background:
       radial-gradient(circle at 16% 0%, rgba(95, 175, 255, 0.22), transparent 34%),
       radial-gradient(circle at 86% 0%, rgba(255, 106, 155, 0.18), transparent 34%),
       linear-gradient(180deg, rgba(4, 16, 31, 0.96), rgba(4, 16, 31, 0.74));
   }
 
-  body:has(.astrology-realm) .site-nav-panel {
+  body.astrology-night-mode:has(.astrology-realm) .site-nav-panel {
     border-color: rgba(155, 188, 255, 0.28);
     box-shadow:
       0 20px 70px rgba(2, 8, 19, 0.46),
       0 0 0 1px rgba(255, 217, 121, 0.08);
   }
 
-  body:has(.astrology-realm) .site-nav-bg {
+  body.astrology-night-mode:has(.astrology-realm) .site-nav-bg {
     background:
       radial-gradient(circle at 22% 0%, rgba(102, 173, 255, 0.26), transparent 27%),
       radial-gradient(circle at 50% 50%, rgba(255, 217, 121, 0.09), transparent 28%),
@@ -359,7 +359,7 @@
       linear-gradient(135deg, rgba(4, 16, 31, 0.98), rgba(12, 31, 70, 0.96) 46%, rgba(45, 18, 62, 0.94) 100%) !important;
   }
 
-  body:has(.astrology-realm) .site-nav-bg::before {
+  body.astrology-night-mode:has(.astrology-realm) .site-nav-bg::before {
     content: "";
     position: absolute;
     inset: 0;
@@ -373,7 +373,7 @@
       linear-gradient(105deg, transparent 0 48%, rgba(255, 217, 121, 0.1) 50%, transparent 54%);
   }
 
-  body:has(.astrology-realm) .site-footer-shell {
+  body.astrology-night-mode:has(.astrology-realm) .site-footer-shell {
     position: relative;
     background:
       radial-gradient(circle at 18% 100%, rgba(96, 255, 224, 0.16), transparent 28%),
@@ -381,7 +381,7 @@
       linear-gradient(180deg, rgba(4, 16, 31, 0.82), rgba(4, 16, 31, 0.98));
   }
 
-  body:has(.astrology-realm) .site-footer-shell::before {
+  body.astrology-night-mode:has(.astrology-realm) .site-footer-shell::before {
     content: "";
     position: absolute;
     inset: 0;
@@ -397,12 +397,12 @@
     opacity: 0.8;
   }
 
-  body:has(.astrology-realm) .site-footer-shell .content-container {
+  body.astrology-night-mode:has(.astrology-realm) .site-footer-shell .content-container {
     position: relative;
     z-index: 1;
   }
 
-  body:has(.astrology-realm) .site-footer-panel {
+  body.astrology-night-mode:has(.astrology-realm) .site-footer-panel {
     position: relative;
     isolation: isolate;
     border-color: rgba(155, 188, 255, 0.28);
@@ -417,7 +417,7 @@
       inset 0 1px 0 rgba(255, 255, 255, 0.09);
   }
 
-  body:has(.astrology-realm) .site-footer-panel::before {
+  body.astrology-night-mode:has(.astrology-realm) .site-footer-panel::before {
     content: "";
     position: absolute;
     inset: 0;
@@ -434,7 +434,7 @@
     opacity: 0.78;
   }
 
-  body:has(.astrology-realm) .site-footer-panel::after {
+  body.astrology-night-mode:has(.astrology-realm) .site-footer-panel::after {
     content: "♈  ♉  ♊  ♋  ♌  ♍  ♎  ♏  ♐  ♑  ♒  ♓";
     position: absolute;
     right: -1.4rem;
@@ -453,17 +453,17 @@
     white-space: nowrap;
   }
 
-  body:has(.astrology-realm) .site-footer-panel > * {
+  body.astrology-night-mode:has(.astrology-realm) .site-footer-panel > * {
     position: relative;
     z-index: 1;
   }
 
-  body:has(.astrology-realm) .site-footer-panel .brand-kicker {
+  body.astrology-night-mode:has(.astrology-realm) .site-footer-panel .brand-kicker {
     color: #ffe7a8;
     text-shadow: 0 0 18px rgba(255, 217, 121, 0.24);
   }
 
-  body:has(.astrology-realm) .site-footer-panel [class*="bg-white"] {
+  body.astrology-night-mode:has(.astrology-realm) .site-footer-panel [class*="bg-white"] {
     background-color: rgba(13, 28, 61, 0.56);
     border-color: rgba(168, 197, 255, 0.2);
     box-shadow:
@@ -471,7 +471,7 @@
       0 18px 44px rgba(2, 8, 19, 0.18);
   }
 
-  body:has(.astrology-realm) .site-footer-panel a:hover {
+  body.astrology-night-mode:has(.astrology-realm) .site-footer-panel a:hover {
     color: #ffe7a8;
   }
 
@@ -1012,6 +1012,114 @@
       rotate(calc(var(--zodiac-index) * -30deg));
   }
 
+  .astrology-tool-switcher {
+    scroll-margin-top: 6rem;
+  }
+
+  .astrology-tab-card {
+    position: relative;
+    min-height: 8rem;
+    overflow: hidden;
+    border-radius: 1.25rem;
+    border: 1px solid rgba(166, 199, 255, 0.24);
+    padding: 1.05rem 1.1rem;
+    text-align: left;
+    color: #eaf4ff;
+    background:
+      radial-gradient(circle at 88% 14%, rgba(255, 217, 121, 0.12), transparent 25%),
+      linear-gradient(145deg, rgba(17, 35, 78, 0.82), rgba(21, 25, 62, 0.72));
+    box-shadow:
+      0 18px 44px rgba(2, 8, 19, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.07);
+    transition:
+      transform 180ms ease,
+      border-color 180ms ease,
+      box-shadow 180ms ease,
+      background 180ms ease;
+  }
+
+  .astrology-tab-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(circle at 18% 72%, rgba(255, 248, 216, 0.72) 0 1px, transparent 2px),
+      radial-gradient(circle at 48% 28%, rgba(124, 185, 255, 0.56) 0 1px, transparent 2px),
+      radial-gradient(circle at 84% 62%, rgba(255, 112, 161, 0.5) 0 1px, transparent 2px),
+      linear-gradient(122deg, transparent 0 54%, rgba(255, 217, 121, 0.1) 55%, transparent 57%);
+    opacity: 0.62;
+  }
+
+  .astrology-tab-card::after {
+    content: "☉";
+    position: absolute;
+    right: -0.45rem;
+    bottom: -0.7rem;
+    pointer-events: none;
+    color: rgba(255, 231, 168, 0.16);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 4.6rem;
+    line-height: 1;
+    text-shadow: 0 0 28px rgba(255, 217, 121, 0.18);
+  }
+
+  .astrology-tab-card:nth-child(2)::after {
+    content: "☾";
+  }
+
+  .astrology-tab-card:nth-child(3)::after {
+    content: "♂";
+  }
+
+  .astrology-tab-card:nth-child(4)::after {
+    content: "☊";
+  }
+
+  .astrology-tab-card:nth-child(5)::after {
+    content: "♌";
+  }
+
+  .astrology-tab-card:nth-child(6)::after {
+    content: "♀";
+  }
+
+  .astrology-tab-card > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .astrology-tab-card:hover,
+  .astrology-tab-card-active {
+    transform: translateY(-2px);
+    border-color: rgba(255, 217, 121, 0.55);
+    box-shadow:
+      0 24px 58px rgba(2, 8, 19, 0.28),
+      0 0 0 1px rgba(255, 217, 121, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.09);
+  }
+
+  .astrology-tab-card-active {
+    background:
+      radial-gradient(circle at 18% 12%, rgba(255, 217, 121, 0.24), transparent 30%),
+      radial-gradient(circle at 88% 18%, rgba(124, 185, 255, 0.24), transparent 28%),
+      linear-gradient(145deg, rgba(27, 48, 104, 0.9), rgba(42, 28, 86, 0.84));
+  }
+
+  .astrology-tab-card p:last-child {
+    color: #c8d6e7;
+  }
+
+  .astrology-tab-dot {
+    display: inline-block;
+    width: 0.55rem;
+    aspect-ratio: 1;
+    flex: 0 0 auto;
+    border-radius: 999px;
+    background: #ffd979;
+    box-shadow: 0 0 18px rgba(255, 217, 121, 0.48);
+  }
+
   .astrology-graha-card {
     @apply rounded-[18px] border px-3 py-3;
     background: rgba(255, 255, 255, 0.08);
@@ -1022,6 +1130,131 @@
   .astrology-graha-card-center {
     background: rgba(245, 217, 139, 0.14);
     border-color: rgba(245, 217, 139, 0.28);
+  }
+
+  body:not(.astrology-night-mode) .astrology-realm {
+    --shreem-ink: #0b2735;
+    --shreem-muted: #5f7883;
+    --shreem-border: rgba(15, 49, 70, 0.12);
+    --shreem-gold-deep: #a06618;
+    --shreem-accent-dark: #8f5c13;
+    background:
+      radial-gradient(circle at 14% 18%, rgba(255, 232, 162, 0.34), transparent 24%),
+      radial-gradient(circle at 86% 12%, rgba(121, 199, 184, 0.2), transparent 25%),
+      linear-gradient(180deg, rgba(255, 252, 246, 0.98), rgba(248, 241, 229, 0.96));
+  }
+
+  body:not(.astrology-night-mode) .astrology-realm::before,
+  body:not(.astrology-night-mode) .astrology-realm::after,
+  body:not(.astrology-night-mode) .astrology-zodiac-field,
+  body:not(.astrology-night-mode) .astrology-yantra-gate {
+    opacity: 0;
+  }
+
+  body:not(.astrology-night-mode) .astrology-realm .brand-surface {
+    border-color: rgba(15, 49, 70, 0.12);
+    background:
+      radial-gradient(circle at top right, rgba(236, 191, 77, 0.16), transparent 28%),
+      linear-gradient(180deg, rgba(255, 252, 248, 0.96), rgba(249, 244, 236, 0.9));
+    box-shadow: 0 18px 54px rgba(15, 49, 70, 0.1);
+  }
+
+  body:not(.astrology-night-mode) .astrology-realm .brand-surface::before,
+  body:not(.astrology-night-mode) .astrology-realm .brand-surface::after,
+  body:not(.astrology-night-mode) .astrology-realm .brand-card::before,
+  body:not(.astrology-night-mode) .astrology-realm .brand-card::after {
+    opacity: 0;
+  }
+
+  body:not(.astrology-night-mode) .astrology-realm .brand-card {
+    border-color: rgba(15, 49, 70, 0.12);
+    background: rgba(255, 252, 248, 0.72);
+    box-shadow:
+      0 14px 36px rgba(15, 49, 70, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.65);
+  }
+
+  body:not(.astrology-night-mode) .astrology-realm .brand-page-title,
+  body:not(.astrology-night-mode) .astrology-realm .brand-section-title,
+  body:not(.astrology-night-mode) .astrology-realm .brand-card-title {
+    color: #0b2735;
+    text-shadow: none;
+  }
+
+  body:not(.astrology-night-mode) .astrology-realm .brand-pill {
+    background: rgba(255, 248, 233, 0.84);
+    border-color: rgba(212, 161, 38, 0.24);
+    color: #8f5c13;
+    box-shadow: none;
+  }
+
+  body:not(.astrology-night-mode) .astrology-tab-card {
+    color: #0b2735;
+    border-color: rgba(15, 49, 70, 0.13);
+    background:
+      radial-gradient(circle at 90% 12%, rgba(212, 161, 38, 0.14), transparent 28%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(248, 242, 230, 0.84));
+    box-shadow:
+      0 14px 34px rgba(15, 49, 70, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  }
+
+  body:not(.astrology-night-mode) .astrology-tab-card::before {
+    opacity: 0.34;
+  }
+
+  body:not(.astrology-night-mode) .astrology-tab-card::after {
+    color: rgba(160, 102, 24, 0.1);
+  }
+
+  body:not(.astrology-night-mode) .astrology-tab-card-active,
+  body:not(.astrology-night-mode) .astrology-tab-card:hover {
+    border-color: rgba(13, 129, 126, 0.4);
+    background:
+      radial-gradient(circle at 14% 8%, rgba(212, 161, 38, 0.22), transparent 30%),
+      radial-gradient(circle at 92% 12%, rgba(13, 129, 126, 0.16), transparent 28%),
+      linear-gradient(180deg, rgba(255, 253, 248, 0.98), rgba(246, 239, 225, 0.94));
+    box-shadow:
+      0 22px 48px rgba(15, 49, 70, 0.12),
+      0 0 0 2px rgba(13, 129, 126, 0.08);
+  }
+
+  body:not(.astrology-night-mode) .astrology-tab-card p:last-child {
+    color: #5f7883;
+  }
+
+  body:not(.astrology-night-mode) .astrology-realm [class*="bg-white"] {
+    background-color: rgba(255, 255, 255, 0.68);
+    border-color: rgba(15, 49, 70, 0.12);
+    box-shadow: none;
+  }
+
+  body:not(.astrology-night-mode) .astrology-realm [class*="bg-[rgba(255,248,233"],
+  body:not(.astrology-night-mode) .astrology-realm [class*="bg-[rgba(240,248,246"],
+  body:not(.astrology-night-mode) .astrology-realm [class*="bg-amber"],
+  body:not(.astrology-night-mode) .astrology-realm [class*="bg-rose"] {
+    background: rgba(255, 248, 233, 0.72);
+    border-color: rgba(212, 161, 38, 0.2);
+  }
+
+  body:not(.astrology-night-mode) .astrology-realm input,
+  body:not(.astrology-night-mode) .astrology-realm select,
+  body:not(.astrology-night-mode) .astrology-realm textarea {
+    background: rgba(255, 255, 255, 0.82) !important;
+    border-color: rgba(15, 49, 70, 0.12) !important;
+    color: #0b2735 !important;
+    box-shadow: none;
+  }
+
+  body:not(.astrology-night-mode) .astrology-star-map {
+    background:
+      radial-gradient(circle at 48% 46%, rgba(255, 255, 255, 0.42), transparent 7%),
+      radial-gradient(circle at 82% 78%, rgba(255, 155, 79, 0.22), transparent 18%),
+      linear-gradient(135deg, #123f63 0%, #0d817e 48%, #6f211f 100%);
+  }
+
+  body:not(.astrology-night-mode) .astrology-zodiac-wheel {
+    opacity: 0.24;
   }
 
   .brand-primary-button {

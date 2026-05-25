@@ -43,7 +43,7 @@ const revalidateCartState = async (countryCode?: string) => {
 export async function retrieveCart(cartId?: string, fields?: string) {
   const id = cartId || (await getCartId())
   fields ??=
-    "*items, *region, *items.product, *items.variant, *items.variant.product, *items.thumbnail, *items.metadata, +items.total, *promotions, +shipping_methods.name, +items.product.thumbnail, *items.product.images, +items.variant.product.thumbnail, *items.variant.product.images"
+    "*items, *region, *items.product, *items.variant, *items.variant.product, *items.thumbnail, *items.metadata, +items.total, *promotions, +shipping_methods.name, +items.product.thumbnail, *items.product.images, +items.product.weight, +items.product.length, +items.product.width, +items.product.height, +items.product.metadata, +items.variant.weight, +items.variant.length, +items.variant.width, +items.variant.height, +items.variant.metadata, +items.variant.product.thumbnail, *items.variant.product.images"
 
   if (!id) {
     return null

@@ -125,6 +125,8 @@ const normalizeDegrees = (value: number) => ((value % 360) + 360) % 360
 const toDegrees = (value: number) => (180 / Math.PI) * value
 const toRadians = (value: number) => (Math.PI / 180) * value
 const roundDegree = (value: number) => Number(value.toFixed(2))
+const clamp = (value: number, min: number, max: number) =>
+  Math.min(max, Math.max(min, value))
 const julianDay = (date: Date) => date.getTime() / 86400000 + 2440587.5
 
 const earth = new planetposition.Planet(astronomyData.vsop87Bearth)
@@ -467,6 +469,16 @@ const interpolateZodiac = (from: number, to: number, ratio: number) =>
 const midpointZodiac = (from: number, to: number) =>
   interpolateZodiac(from, to, 0.5)
 
+type BhavaPlacement = {
+  house: number
+  cuspLongitude: number
+  startLongitude: number
+  endLongitude: number
+  distanceFromCusp: number
+  impactPercent: number
+  impactState: "strong" | "moderate" | "weak" | "sandhi"
+}
+
 const buildSripatiCusps = ({
   ascendantLongitude,
   midheavenLongitude,
@@ -474,23 +486,23 @@ const buildSripatiCusps = ({
   ascendantLongitude: number
   midheavenLongitude: number
 }) => {
-  const cusps: Record<number, number> = {
+  const bhavaMadhya: Record<number, number> = {
     1: normalizeDegrees(ascendantLongitude),
     4: normalizeDegrees(midheavenLongitude + 180),
     7: normalizeDegrees(ascendantLongitude + 180),
     10: normalizeDegrees(midheavenLongitude),
   }
 
-  cusps[11] = interpolateZodiac(cusps[10], cusps[1], 1 / 3)
-  cusps[12] = interpolateZodiac(cusps[10], cusps[1], 2 / 3)
-  cusps[2] = interpolateZodiac(cusps[1], cusps[4], 1 / 3)
-  cusps[3] = interpolateZodiac(cusps[1], cusps[4], 2 / 3)
-  cusps[5] = interpolateZodiac(cusps[4], cusps[7], 1 / 3)
-  cusps[6] = interpolateZodiac(cusps[4], cusps[7], 2 / 3)
-  cusps[8] = interpolateZodiac(cusps[7], cusps[10], 1 / 3)
-  cusps[9] = interpolateZodiac(cusps[7], cusps[10], 2 / 3)
+  bhavaMadhya[11] = interpolateZodiac(bhavaMadhya[10], bhavaMadhya[1], 1 / 3)
+  bhavaMadhya[12] = interpolateZodiac(bhavaMadhya[10], bhavaMadhya[1], 2 / 3)
+  bhavaMadhya[2] = interpolateZodiac(bhavaMadhya[1], bhavaMadhya[4], 1 / 3)
+  bhavaMadhya[3] = interpolateZodiac(bhavaMadhya[1], bhavaMadhya[4], 2 / 3)
+  bhavaMadhya[5] = interpolateZodiac(bhavaMadhya[4], bhavaMadhya[7], 1 / 3)
+  bhavaMadhya[6] = interpolateZodiac(bhavaMadhya[4], bhavaMadhya[7], 2 / 3)
+  bhavaMadhya[8] = interpolateZodiac(bhavaMadhya[7], bhavaMadhya[10], 1 / 3)
+  bhavaMadhya[9] = interpolateZodiac(bhavaMadhya[7], bhavaMadhya[10], 2 / 3)
 
-  return cusps
+  return bhavaMadhya
 }
 
 const longitudeInHouseBoundary = ({
@@ -529,6 +541,82 @@ const getSripatiHouse = (
   return getPlanetHouse(longitude, cusps[1])
 }
 
+const getBhavaBoundary = (house: number, cusps: Record<number, number>) => {
+  const previousHouse = house === 1 ? 12 : house - 1
+  const nextHouse = house === 12 ? 1 : house + 1
+
+  return {
+    house,
+    cuspLongitude: normalizeDegrees(cusps[house]),
+    startLongitude: midpointZodiac(cusps[previousHouse], cusps[house]),
+    endLongitude: midpointZodiac(cusps[house], cusps[nextHouse]),
+  }
+}
+
+const getBhavaImpactState = (
+  impactPercent: number
+): BhavaPlacement["impactState"] => {
+  if (impactPercent >= 80) {
+    return "strong"
+  }
+
+  if (impactPercent >= 50) {
+    return "moderate"
+  }
+
+  if (impactPercent >= 25) {
+    return "weak"
+  }
+
+  return "sandhi"
+}
+
+const getSripatiPlacement = (
+  longitude: number,
+  cusps: Record<number, number>
+): BhavaPlacement => {
+  const normalizedLongitude = normalizeDegrees(longitude)
+  const fallbackHouse = getPlanetHouse(longitude, cusps[1])
+  let boundary = getBhavaBoundary(fallbackHouse, cusps)
+
+  for (let house = 1; house <= 12; house += 1) {
+    const candidate = getBhavaBoundary(house, cusps)
+
+    if (
+      longitudeInHouseBoundary({
+        value: normalizedLongitude,
+        start: candidate.startLongitude,
+        end: candidate.endLongitude,
+      })
+    ) {
+      boundary = candidate
+      break
+    }
+  }
+
+  const span = zodiacArc(boundary.startLongitude, boundary.endLongitude)
+  const cuspOffset = zodiacArc(boundary.startLongitude, boundary.cuspLongitude)
+  const planetOffset = zodiacArc(boundary.startLongitude, normalizedLongitude)
+  const beforeCusp = planetOffset <= cuspOffset
+  const distanceFromCusp = beforeCusp
+    ? cuspOffset - planetOffset
+    : planetOffset - cuspOffset
+  const halfSpan = beforeCusp ? cuspOffset : span - cuspOffset
+  const impactPercent =
+    halfSpan > 0 ? clamp(100 - (distanceFromCusp / halfSpan) * 100, 0, 100) : 0
+  const roundedImpact = Math.round(impactPercent)
+
+  return {
+    house: boundary.house,
+    cuspLongitude: roundDegree(boundary.cuspLongitude),
+    startLongitude: roundDegree(boundary.startLongitude),
+    endLongitude: roundDegree(boundary.endLongitude),
+    distanceFromCusp: roundDegree(distanceFromCusp),
+    impactPercent: roundedImpact,
+    impactState: getBhavaImpactState(roundedImpact),
+  }
+}
+
 const getSelectedHouse = ({
   longitude,
   ascendantLongitude,
@@ -541,7 +629,7 @@ const getSelectedHouse = ({
   sripatiCusps?: Record<number, number>
 }) =>
   houseSystemId === "sripati-bhava" && sripatiCusps
-    ? getSripatiHouse(longitude, sripatiCusps)
+    ? getSripatiPlacement(longitude, sripatiCusps).house
     : getPlanetHouse(longitude, ascendantLongitude)
 
 const getSignedAngleDelta = (from: number, to: number) =>
@@ -587,7 +675,10 @@ const createPlanet = ({
 }): PrashnaPlanet => {
   const nakshatra = getNakshatraFromDegree(longitude)
   const rashiHouse = getPlanetHouse(longitude, ascendantLongitude)
-  const bhavaHouse = sripatiCusps ? getSripatiHouse(longitude, sripatiCusps) : rashiHouse
+  const bhavaPlacement = sripatiCusps
+    ? getSripatiPlacement(longitude, sripatiCusps)
+    : undefined
+  const bhavaHouse = bhavaPlacement?.house || rashiHouse
   const house = getSelectedHouse({
     longitude,
     ascendantLongitude,
@@ -607,10 +698,20 @@ const createPlanet = ({
     house,
     rashiHouse,
     bhavaHouse,
+    bhavaCuspLongitude: bhavaPlacement?.cuspLongitude,
+    bhavaCuspDegree:
+      typeof bhavaPlacement?.cuspLongitude === "number"
+        ? getDegreeInSign(bhavaPlacement.cuspLongitude)
+        : undefined,
+    bhavaStartLongitude: bhavaPlacement?.startLongitude,
+    bhavaEndLongitude: bhavaPlacement?.endLongitude,
+    bhavaDistanceFromCusp: bhavaPlacement?.distanceFromCusp,
+    bhavaImpactPercent: bhavaPlacement?.impactPercent,
+    bhavaImpactState: bhavaPlacement?.impactState,
     houseSystem: houseSystem.id,
     houseNote:
-      rashiHouse !== bhavaHouse
-        ? `Rashi house ${rashiHouse}; Bhava Chalit house ${bhavaHouse}.`
+      bhavaPlacement
+        ? `Rashi house ${rashiHouse}; Bhava Chalit house ${bhavaHouse}; ${bhavaPlacement.impactPercent}% ${bhavaPlacement.impactState} bhava impact, ${bhavaPlacement.distanceFromCusp} deg from bhava madhya.`
         : undefined,
     retrograde,
   }
@@ -630,9 +731,12 @@ const buildHouses = ({
   return Array.from({ length: 12 }, (_, index) => {
     const house = index + 1
     const signLongitude = normalizeDegrees((ascendantSignIndex + index) * 30)
+    const bhavaBoundary = sripatiCusps
+      ? getBhavaBoundary(house, sripatiCusps)
+      : undefined
     const cuspLongitude =
-      houseSystem.id === "sripati-bhava" && sripatiCusps
-        ? roundDegree(sripatiCusps[house])
+      typeof bhavaBoundary?.cuspLongitude === "number"
+        ? roundDegree(bhavaBoundary.cuspLongitude)
         : undefined
     const sign = getSignFromDegree(signLongitude)
     const cuspSign =
@@ -648,6 +752,14 @@ const buildHouses = ({
       cuspDegree:
         typeof cuspLongitude === "number"
           ? getDegreeInSign(cuspLongitude)
+          : undefined,
+      bhavaStartLongitude:
+        typeof bhavaBoundary?.startLongitude === "number"
+          ? roundDegree(bhavaBoundary.startLongitude)
+          : undefined,
+      bhavaEndLongitude:
+        typeof bhavaBoundary?.endLongitude === "number"
+          ? roundDegree(bhavaBoundary.endLongitude)
           : undefined,
     }
   })

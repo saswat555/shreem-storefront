@@ -32,6 +32,7 @@ export type ShiprocketStatus =
   | "error"
 
 const fallbackWeightKg = 1
+const fallbackDimensionCm = 0
 
 const getNumericWeight = (value: unknown) => {
   const parsed = Number(value)
@@ -39,27 +40,162 @@ const getNumericWeight = (value: unknown) => {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : 0
 }
 
+const getNumericDimension = (value: unknown) => {
+  const parsed = Number(value)
+
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 0
+}
+
+const readMetadataNumber = (
+  metadata: Record<string, unknown> | null | undefined,
+  keys: string[]
+) => {
+  for (const key of keys) {
+    const value = getNumericDimension(metadata?.[key])
+
+    if (value > 0) {
+      return value
+    }
+  }
+
+  return 0
+}
+
+const medusaWeightToKg = (value: unknown) => {
+  const parsed = getNumericWeight(value)
+
+  if (!parsed) {
+    return 0
+  }
+
+  // Medusa native product/variant weight is conventionally grams.
+  // Explicit metadata like weight_kg remains kilograms.
+  return parsed > 50 ? parsed / 1000 : parsed
+}
+
+const getLineWeightKg = (
+  line: HttpTypes.StoreCartLineItem & {
+    product?: { weight?: number | null; metadata?: Record<string, unknown> | null }
+    variant?: HttpTypes.StoreProductVariant & {
+      weight?: number | null
+      metadata?: Record<string, unknown> | null
+    }
+  }
+) =>
+  getNumericWeight(line.variant?.metadata?.weight_kg) ||
+  getNumericWeight(line.product?.metadata?.weight_kg) ||
+  medusaWeightToKg(line.variant?.weight) ||
+  medusaWeightToKg(line.product?.weight) ||
+  fallbackWeightKg
+
+const getLineDimensionsCm = (
+  line: HttpTypes.StoreCartLineItem & {
+    product?: {
+      length?: number | null
+      width?: number | null
+      height?: number | null
+      metadata?: Record<string, unknown> | null
+    }
+    variant?: HttpTypes.StoreProductVariant & {
+      length?: number | null
+      width?: number | null
+      height?: number | null
+      metadata?: Record<string, unknown> | null
+    }
+  }
+) => {
+  const variantMetadata = line.variant?.metadata || {}
+  const productMetadata = line.product?.metadata || {}
+  const lengthCm =
+    readMetadataNumber(variantMetadata, ["length_cm", "package_length_cm"]) ||
+    readMetadataNumber(productMetadata, ["length_cm", "package_length_cm"]) ||
+    getNumericDimension((line.variant as any)?.length) ||
+    getNumericDimension(line.product?.length) ||
+    fallbackDimensionCm
+  const breadthCm =
+    readMetadataNumber(variantMetadata, [
+      "breadth_cm",
+      "width_cm",
+      "package_breadth_cm",
+      "package_width_cm",
+    ]) ||
+    readMetadataNumber(productMetadata, [
+      "breadth_cm",
+      "width_cm",
+      "package_breadth_cm",
+      "package_width_cm",
+    ]) ||
+    getNumericDimension((line.variant as any)?.width) ||
+    getNumericDimension(line.product?.width) ||
+    fallbackDimensionCm
+  const heightCm =
+    readMetadataNumber(variantMetadata, ["height_cm", "package_height_cm"]) ||
+    readMetadataNumber(productMetadata, ["height_cm", "package_height_cm"]) ||
+    getNumericDimension((line.variant as any)?.height) ||
+    getNumericDimension(line.product?.height) ||
+    fallbackDimensionCm
+
+  return {
+    lengthCm,
+    breadthCm,
+    heightCm,
+  }
+}
+
 export function getCartWeightKg(cart: Pick<HttpTypes.StoreCart, "items">) {
   const total = cart.items?.reduce((sum, item) => {
     const quantity = Number(item.quantity || 1)
     const line = item as HttpTypes.StoreCartLineItem & {
-      product?: { metadata?: Record<string, unknown> | null }
+      product?: { weight?: number | null; metadata?: Record<string, unknown> | null }
       variant?: HttpTypes.StoreProductVariant & {
         weight?: number | null
         metadata?: Record<string, unknown> | null
       }
     }
 
-    const weight =
-      getNumericWeight(line.variant?.weight) ||
-      getNumericWeight(line.variant?.metadata?.weight_kg) ||
-      getNumericWeight(line.product?.metadata?.weight_kg) ||
-      fallbackWeightKg
-
-    return sum + quantity * weight
+    return sum + quantity * getLineWeightKg(line)
   }, 0)
 
   return total && total > 0 ? total : fallbackWeightKg
+}
+
+export function getCartPackageDetails(cart: Pick<HttpTypes.StoreCart, "items">) {
+  const weightKg = getCartWeightKg(cart)
+  const dimensions =
+    cart.items?.reduce(
+      (acc, item) => {
+        const quantity = Math.max(1, Number(item.quantity || 1))
+        const line = item as HttpTypes.StoreCartLineItem & {
+          product?: {
+            length?: number | null
+            width?: number | null
+            height?: number | null
+            metadata?: Record<string, unknown> | null
+          }
+          variant?: HttpTypes.StoreProductVariant & {
+            length?: number | null
+            width?: number | null
+            height?: number | null
+            metadata?: Record<string, unknown> | null
+          }
+        }
+        const lineDims = getLineDimensionsCm(line)
+
+        return {
+          lengthCm: Math.max(acc.lengthCm, lineDims.lengthCm),
+          breadthCm: Math.max(acc.breadthCm, lineDims.breadthCm),
+          heightCm: acc.heightCm + lineDims.heightCm * quantity,
+        }
+      },
+      { lengthCm: 0, breadthCm: 0, heightCm: 0 }
+    ) || { lengthCm: 0, breadthCm: 0, heightCm: 0 }
+
+  return {
+    weightKg,
+    lengthCm: dimensions.lengthCm || undefined,
+    breadthCm: dimensions.breadthCm || undefined,
+    heightCm: dimensions.heightCm || undefined,
+  }
 }
 
 export function getCartShiprocketSignature(
@@ -83,6 +219,14 @@ export function getCartShiprocketSignature(
           line.variant?.weight,
           line.variant?.metadata?.weight_kg,
           line.product?.metadata?.weight_kg,
+          line.variant?.metadata?.length_cm,
+          line.variant?.metadata?.breadth_cm,
+          line.variant?.metadata?.width_cm,
+          line.variant?.metadata?.height_cm,
+          line.product?.metadata?.length_cm,
+          line.product?.metadata?.breadth_cm,
+          line.product?.metadata?.width_cm,
+          line.product?.metadata?.height_cm,
         ].join(":")
       })
       .join("|") || "empty"
@@ -184,10 +328,12 @@ export function buildShiprocketShippingData({
   rate,
   weightKg,
   postalCode,
+  packageDetails,
 }: {
   rate: ShiprocketRate | null
   weightKg: number
   postalCode: string
+  packageDetails?: ReturnType<typeof getCartPackageDetails>
 }) {
   if (!rate?.available) {
     return undefined
@@ -200,6 +346,9 @@ export function buildShiprocketShippingData({
     amount: rate.amount,
     amount_paise: getShiprocketAmountPaise(rate),
     weight_kg: weightKg,
+    length_cm: packageDetails?.lengthCm,
+    breadth_cm: packageDetails?.breadthCm,
+    height_cm: packageDetails?.heightCm,
     courier: rate.courier
       ? {
           courier_name: rate.courier.courier_name,

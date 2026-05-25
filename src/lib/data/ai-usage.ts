@@ -16,6 +16,7 @@ export type AiUsagePayload = {
   estimated_cost_usd?: number
   estimated_cost_inr?: number
   expert_recommended?: boolean
+  tags?: string[]
 }
 
 export type AiUsageRecord = AiUsagePayload & {

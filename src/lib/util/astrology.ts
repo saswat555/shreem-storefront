@@ -201,6 +201,13 @@ export type PrashnaPlanet = {
   house: number
   rashiHouse?: number
   bhavaHouse?: number
+  bhavaCuspLongitude?: number
+  bhavaCuspDegree?: number
+  bhavaStartLongitude?: number
+  bhavaEndLongitude?: number
+  bhavaDistanceFromCusp?: number
+  bhavaImpactPercent?: number
+  bhavaImpactState?: "strong" | "moderate" | "weak" | "sandhi"
   houseSystem?: HouseSystemId
   houseNote?: string
   retrograde?: boolean
@@ -214,6 +221,8 @@ export type PrashnaHouse = {
   cuspLongitude?: number
   cuspSign?: string
   cuspDegree?: number
+  bhavaStartLongitude?: number
+  bhavaEndLongitude?: number
 }
 
 export type DashaPeriod = {

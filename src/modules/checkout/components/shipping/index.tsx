@@ -301,6 +301,7 @@ const Shipping: React.FC<ShippingProps> = ({
             rate: shiprocket.rate,
             weightKg: shiprocket.cartWeightKg,
             postalCode: deliveryPincode,
+            packageDetails: shiprocket.cartPackageDetails,
           })
         : undefined
 
@@ -428,6 +429,15 @@ const Shipping: React.FC<ShippingProps> = ({
                     <p>
                       Quote weight: {shiprocket.cartWeightKg.toFixed(2)} kg.
                     </p>
+                    {shiprocket.cartPackageDetails.lengthCm &&
+                      shiprocket.cartPackageDetails.breadthCm &&
+                      shiprocket.cartPackageDetails.heightCm && (
+                        <p>
+                          Package: {shiprocket.cartPackageDetails.lengthCm} x{" "}
+                          {shiprocket.cartPackageDetails.breadthCm} x{" "}
+                          {shiprocket.cartPackageDetails.heightCm} cm.
+                        </p>
+                      )}
                     {hasCalculatedShiprocketOption ? (
                       <p className="font-medium text-[var(--shreem-accent-dark)]">
                         Ready to sync with secure checkout payment using the

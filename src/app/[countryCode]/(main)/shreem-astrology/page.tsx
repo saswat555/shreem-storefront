@@ -196,60 +196,6 @@ export default async function ShreemAstrologyPage(props: {
           dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
         />
 
-        <section className="astrology-page-hero brand-surface relative mb-6 overflow-hidden px-5 py-8 small:px-10 small:py-11">
-          <div className="relative z-10 grid gap-6 xl:grid-cols-[minmax(0,1fr)_390px] xl:items-end">
-            <div>
-              <div className="mb-5 flex flex-wrap items-center gap-3">
-                <p className="brand-pill w-fit">Jyotish desk</p>
-                <div className="astrology-logo-seal astrology-logo-seal-compact">
-                  <Image
-                    src="/logo.jpeg"
-                    alt="Shreem logo"
-                    width={44}
-                    height={44}
-                    className="rounded-full object-cover"
-                    priority
-                  />
-                  <span>Shreem</span>
-                </div>
-              </div>
-              <h1 className="brand-page-title max-w-[17ch]">
-                Read the sky without losing the ground.
-              </h1>
-              <p className="brand-page-copy mt-5 max-w-[52rem]">
-                Daily Muhurth, Hindu calendar, Prashna Kundli, birth chart
-                generation, and guided consultation with Sanjay Kumar Pandey in a
-                clearer Vedic astrology workspace.
-              </p>
-              <div className="mt-5 flex flex-wrap gap-2">
-                <span className="brand-pill px-3 py-1.5">Navagraha view</span>
-                <span className="brand-pill px-3 py-1.5">North Indian chart</span>
-                <span className="brand-pill px-3 py-1.5">BPHS-informed reading</span>
-              </div>
-            </div>
-            <div className="astrology-hero-orbit rounded-[28px] border border-[rgba(245,199,96,0.3)] bg-[rgba(10,30,48,0.74)] px-5 py-5 text-white shadow-[0_28px_70px_rgba(10,30,48,0.22)]">
-              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-[#f5d98b]">
-                Ancient computation
-              </p>
-              <p className="mt-3 text-sm leading-7 text-[#e8f4f3]">
-                Graha movement, tithi, nakshatra, dasha, and house context are
-                arranged for practical decisions, not vague fortune-telling.
-              </p>
-              <div className="mt-5 grid grid-cols-3 gap-2 text-center text-xs font-semibold text-[#ffe7a1]">
-                <span className="rounded-full border border-white/12 bg-white/10 px-2 py-2">
-                  Tithi
-                </span>
-                <span className="rounded-full border border-white/12 bg-white/10 px-2 py-2">
-                  Dasha
-                </span>
-                <span className="rounded-full border border-white/12 bg-white/10 px-2 py-2">
-                  Yoga
-                </span>
-              </div>
-            </div>
-          </div>
-        </section>
-
         <AstrologyExperience
           customerEmail={customer.email}
           customerName={`${customer.first_name || ""} ${

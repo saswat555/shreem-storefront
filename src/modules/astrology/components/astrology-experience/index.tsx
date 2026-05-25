@@ -25,6 +25,11 @@ type PrashnaResult = {
   chart_summary?: string
   direct_indication?: string
   house_focus?: string
+  sub_question_answers?: {
+    question: string
+    answer: string
+    chart_reason: string
+  }[]
   expert_call_recommended?: boolean
   expert_call_reason?: string
   recommended_service?: string
@@ -45,6 +50,24 @@ type BookCitation = {
   relevance: string
 }
 
+type HindiCalendarMonthDay = {
+  date: string
+  day_number: number
+  weekday: string
+  tithi: string
+  paksha: "Shukla" | "Krishna"
+  nakshatra: string
+  yoga: string
+  karana: string
+  month: HindiCalendarDay["month"]
+}
+
+type HindiCalendarMonth = {
+  month: string
+  city: AstrologyCity
+  days: HindiCalendarMonthDay[]
+}
+
 type KundliAnalysis = {
   summary?: string
   person_information?: string
@@ -57,6 +80,16 @@ type KundliAnalysis = {
   health_caution?: string
   health_indicators?: string[]
   current_period_analysis?: string
+  major_life_events?: {
+    window: string
+    age_range: string
+    life_area: string
+    chart_basis: string
+    classical_basis: string
+    likely_event: string
+    confidence: string
+    guidance: string
+  }[]
   dasha_predictions?: {
     period: string
     chart_basis: string
@@ -75,6 +108,14 @@ type KundliAnalysis = {
     chart_basis: string
     prediction: string
     advice: string
+  }[]
+  special_case_readings?: {
+    case_name: string
+    chart_basis: string
+    classical_basis: string
+    combined_effect: string
+    timing: string
+    solution: string
   }[]
   likely_challenges?: string[]
   issue_analysis?: string[]
@@ -104,7 +145,10 @@ type KundliAnalysis = {
   planet_effects?: {
     planet: string
     placement: string
+    life_area?: string
+    activation_period?: string
     effect: string
+    likely_effect?: string
     advice: string
   }[]
   expert_call_recommended?: boolean
@@ -226,6 +270,32 @@ type MatchmakingResult = {
   packs?: AiCreditPack[]
 }
 
+type LostItemResult = {
+  chart?: PrashnaChart
+  lochan?: {
+    label?: string
+    direction?: string
+    retrieval?: string
+    timing?: string
+    meaning?: string
+  }
+  recoveryScore?: number
+  answer?: string
+  likely_location?: string
+  direction?: string
+  recovery_timing?: string
+  search_steps?: string[]
+  chart_reasoning?: string[]
+  caution?: string
+  ai_enhanced?: boolean
+  message?: string
+  retryable?: boolean
+  usage_synced?: boolean
+  wallet?: AiWallet
+  quota?: AiQuota
+  packs?: AiCreditPack[]
+}
+
 type AiQuota = {
   limit?: number
   used?: number
@@ -255,18 +325,19 @@ type AiCreditPack = {
 
 type AstrologyHistoryItem = {
   id: string
-  type: "Prashna" | "Kundli" | "Matchmaking"
+  type: "Prashna" | "Kundli" | "Matchmaking" | "Lost item"
   title: string
   createdAt: string
   summary: string
   synced?: boolean
-  response?: PrashnaResult | KundliResult | MatchmakingResult
+  response?: PrashnaResult | KundliResult | MatchmakingResult | LostItemResult
 }
 
 type AstrologyTab =
   | "muhurth"
   | "calendar"
   | "prashna"
+  | "lost-item"
   | "kundli"
   | "matchmaking"
 type AstrologyLanguage = "english" | "hindi" | "hinglish"
@@ -372,6 +443,11 @@ const astrologyTabs: { id: AstrologyTab; label: string; description: string }[] 
     description: "Ask one focused question",
   },
   {
+    id: "lost-item",
+    label: "Lost item",
+    description: "Nashta-Vastu Lochan",
+  },
+  {
     id: "kundli",
     label: "Kundli",
     description: "Birth chart and PDF",
@@ -385,6 +461,9 @@ const astrologyTabs: { id: AstrologyTab; label: string; description: string }[] 
 
 const HISTORY_KEY = "shreem_astrology_history_v1"
 const LANGUAGE_KEY = "shreem_site_language_v1"
+const THEME_KEY = "shreem_astrology_theme_v1"
+
+type AstrologyTheme = "day" | "night"
 
 const languageOptions: {
   value: AstrologyLanguage
@@ -448,6 +527,96 @@ const findCityIdFromLabel = (value?: string) => {
   })
 
   return partial?.id || ""
+}
+
+const parseDateParts = (value: string) => {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value)
+
+  if (!match) {
+    return null
+  }
+
+  return {
+    year: Number(match[1]),
+    month: Number(match[2]),
+    day: Number(match[3]),
+  }
+}
+
+const formatDateParts = (year: number, month: number, day: number) =>
+  `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`
+
+const shiftMonth = (value: string, offset: number) => {
+  const parsed = parseDateParts(value) || parseDateParts(getTodayDateString())
+  const base = new Date((parsed?.year || 2026), (parsed?.month || 1) - 1 + offset, 1)
+
+  return formatDateParts(base.getFullYear(), base.getMonth() + 1, 1)
+}
+
+const getCalendarMonthLabel = (value: string) => {
+  const parsed = parseDateParts(value) || parseDateParts(getTodayDateString())
+  const base = new Date(parsed?.year || 2026, (parsed?.month || 1) - 1, 1)
+
+  return new Intl.DateTimeFormat("en-IN", {
+    month: "long",
+    year: "numeric",
+  }).format(base)
+}
+
+const getCalendarMonthKey = (value: string) => {
+  const parsed = parseDateParts(value) || parseDateParts(getTodayDateString())
+
+  return `${parsed?.year || 2026}-${String(parsed?.month || 1).padStart(2, "0")}`
+}
+
+const getCompactTithi = (value?: string) => {
+  if (!value) {
+    return "Tithi"
+  }
+
+  return value
+    .replace(/\s*\(\d+\)\s*/g, "")
+    .replace(/^Shukla\s+/i, "S. ")
+    .replace(/^Krishna\s+/i, "K. ")
+    .trim()
+}
+
+const getCompactWeekday = (value?: string) =>
+  value ? value.slice(0, 3) : "Day"
+
+const buildCalendarGrid = (value: string) => {
+  const parsed = parseDateParts(value) || parseDateParts(getTodayDateString())
+  const year = parsed?.year || 2026
+  const month = parsed?.month || 1
+  const selected = parsed?.day || 1
+  const firstDay = new Date(year, month - 1, 1).getDay()
+  const daysInMonth = new Date(year, month, 0).getDate()
+  const today = getTodayDateString()
+
+  return [
+    ...Array.from({ length: firstDay }, (_, index) => ({
+      key: `blank-${index}`,
+      date: "",
+      day: "",
+      selected: false,
+      today: false,
+      weekend: false,
+    })),
+    ...Array.from({ length: daysInMonth }, (_, index) => {
+      const day = index + 1
+      const dateString = formatDateParts(year, month, day)
+      const weekday = new Date(year, month - 1, day).getDay()
+
+      return {
+        key: dateString,
+        date: dateString,
+        day: String(day),
+        selected: day === selected,
+        today: dateString === today,
+        weekend: weekday === 0 || weekday === 6,
+      }
+    }),
+  ]
 }
 
 const CityPicker = ({
@@ -596,12 +765,16 @@ const ChartMiniCard = ({
 const formatHousePosition = (planet: PrashnaPlanet) => {
   const rashi = planet.rashiHouse || planet.house
   const bhava = planet.bhavaHouse || planet.house
+  const impact =
+    typeof planet.bhavaImpactPercent === "number"
+      ? `, ${planet.bhavaImpactPercent}% ${planet.bhavaImpactState || "bhava"} impact`
+      : ""
 
   if (rashi !== bhava) {
-    return `House ${planet.house} (Rashi H${rashi}, Bhava H${bhava})`
+    return `House ${planet.house} (Rashi H${rashi}, Bhava H${bhava}${impact})`
   }
 
-  return `House ${planet.house}`
+  return `House ${planet.house}${impact ? ` (${impact.replace(/^, /, "")})` : ""}`
 }
 
 const PlanetCard = ({ planet }: { planet: PrashnaPlanet }) => (
@@ -631,6 +804,17 @@ const PlanetCard = ({ planet }: { planet: PrashnaPlanet }) => (
         {planet.houseNote}
       </p>
     )}
+    {typeof planet.bhavaCuspDegree === "number" && (
+      <p className="mt-1 text-[0.68rem] leading-5 text-[var(--shreem-muted)]">
+        Bhava madhya: {formatDegree(planet.bhavaCuspDegree)} in{" "}
+        {typeof planet.bhavaCuspLongitude === "number"
+          ? SIGNS[Math.floor(planet.bhavaCuspLongitude / 30)]
+          : "this bhava"}
+        {typeof planet.bhavaDistanceFromCusp === "number"
+          ? ` · ${formatDegree(planet.bhavaDistanceFromCusp)} from cusp`
+          : ""}
+      </p>
+    )}
   </div>
 )
 
@@ -653,8 +837,21 @@ const HouseCard = ({ house }: { house: PrashnaHouse }) => (
   </div>
 )
 
-const getHousePlanets = (chart: PrashnaChart, houseNumber: number) =>
-  chart.planets.filter((planet) => planet.house === houseNumber)
+const getHousePlanets = (
+  chart: PrashnaChart,
+  houseNumber: number,
+  basis: "selected" | "rashi" | "bhava" = "selected"
+) =>
+  chart.planets.filter((planet) => {
+    const house =
+      basis === "rashi"
+        ? planet.rashiHouse || planet.house
+        : basis === "bhava"
+        ? planet.bhavaHouse || planet.house
+        : planet.house
+
+    return house === houseNumber
+  })
 
 const DashaCard = ({ chart }: { chart: PrashnaChart }) => {
   const dasha = chart.dasha
@@ -755,7 +952,7 @@ const HouseTable = ({ chart }: { chart: PrashnaChart }) => (
       <table className="w-full min-w-[720px] text-left text-xs">
         <thead className="bg-[rgba(240,248,246,0.86)] text-[var(--shreem-gold-deep)]">
           <tr>
-            {["House", "Sign", "Lord", "Planets", "Theme"].map((heading) => (
+            {["House", "Sign", "Bhava madhya", "Lord", "Planets", "Theme"].map((heading) => (
               <th
                 key={heading}
                 className="px-3 py-3 font-semibold uppercase tracking-[0.14em]"
@@ -778,6 +975,11 @@ const HouseTable = ({ chart }: { chart: PrashnaChart }) => (
                   {house.house}
                 </td>
                 <td className="px-3 py-3">{house.sign}</td>
+                <td className="px-3 py-3">
+                  {typeof house.cuspDegree === "number" && house.cuspSign
+                    ? `${house.cuspSign} ${formatDegree(house.cuspDegree)}`
+                    : "-"}
+                </td>
                 <td className="px-3 py-3">{house.signLord}</td>
                 <td className="px-3 py-3">
                   {planets.length
@@ -889,6 +1091,13 @@ const PrashnaChartView = ({ result }: { result: PrashnaResult }) => {
         />
       </div>
 
+      <div className="grid gap-4 xl:grid-cols-2">
+        <NorthIndianChart chart={chart} mode="lagna" title="Prashna Rashi chart" />
+        <NorthIndianChart chart={chart} mode="bhava" title="Prashna Bhava Chalit" />
+      </div>
+
+      <BhavaChalitSummary chart={chart} />
+
       {result.answer && (
         <div className="grid gap-3">
           {[
@@ -914,6 +1123,32 @@ const PrashnaChartView = ({ result }: { result: PrashnaResult }) => {
               </div>
             ) : null
           )}
+        </div>
+      )}
+
+      {Boolean(result.sub_question_answers?.length) && (
+        <div className="rounded-[20px] border border-[var(--shreem-border)] bg-white/60 px-4 py-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
+            Question-wise Prashna answer
+          </p>
+          <div className="mt-3 grid gap-3">
+            {result.sub_question_answers?.map((item, index) => (
+              <div
+                key={`${item.question}-${index}`}
+                className="rounded-[16px] border border-[var(--shreem-border)] bg-white/70 px-3 py-3"
+              >
+                <p className="text-sm font-semibold leading-6 text-[var(--shreem-ink)]">
+                  {index + 1}. {item.question}
+                </p>
+                <p className="mt-2 text-sm leading-7 text-[var(--shreem-muted)]">
+                  {item.answer}
+                </p>
+                <p className="mt-2 rounded-[14px] bg-[rgba(255,248,233,0.72)] px-3 py-2 text-xs leading-5 text-[var(--shreem-muted)]">
+                  Chart reason: {item.chart_reason}
+                </p>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
@@ -991,15 +1226,140 @@ const PrashnaChartView = ({ result }: { result: PrashnaResult }) => {
   )
 }
 
-const getPlanetsByHouse = (chart?: PrashnaChart) => {
+const LostItemResultView = ({ result }: { result: LostItemResult }) => {
+  const chart = result.chart
+
+  return (
+    <div className="grid gap-4">
+      {chart && (
+        <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_280px]">
+          <NorthIndianChart
+            chart={chart}
+            mode="bhava"
+            title="Lost item Prashna Bhava"
+          />
+          <div className="grid gap-3">
+            <ChartMiniCard
+              label="Lochan"
+              value={result.lochan?.label || chart.nakshatra}
+              detail={`${chart.nakshatra} pada ${chart.nakshatraPada}`}
+            />
+            <ChartMiniCard
+              label="Recovery"
+              value={`${Math.round(Number(result.recoveryScore || 0))}%`}
+              detail={result.lochan?.retrieval || "Prashna signal"}
+            />
+            <ChartMiniCard
+              label="Direction"
+              value={result.direction || result.lochan?.direction || "Check chart"}
+              detail={result.recovery_timing || result.lochan?.timing || "Timing"}
+            />
+          </div>
+        </div>
+      )}
+
+      <div className="rounded-[22px] border border-[rgba(212,161,38,0.24)] bg-[rgba(255,248,233,0.74)] px-4 py-4">
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
+          Four Eyes reading
+        </p>
+        <p className="mt-2 text-sm leading-7 text-[var(--shreem-muted)]">
+          {result.answer}
+        </p>
+        {result.lochan?.meaning && (
+          <p className="mt-2 rounded-[16px] bg-white/64 px-3 py-2 text-xs leading-5 text-[var(--shreem-muted)]">
+            {result.lochan.meaning}
+          </p>
+        )}
+      </div>
+
+      <div className="grid gap-3 md:grid-cols-3">
+        {[
+          ["Likely location", result.likely_location],
+          ["Direction", result.direction],
+          ["Timing", result.recovery_timing],
+        ].map(([label, value]) =>
+          value ? (
+            <div
+              key={label}
+              className="rounded-[18px] border border-[var(--shreem-border)] bg-white/64 px-4 py-4"
+            >
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
+                {label}
+              </p>
+              <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
+                {value}
+              </p>
+            </div>
+          ) : null
+        )}
+      </div>
+
+      {Boolean(result.search_steps?.length) && (
+        <div className="rounded-[20px] border border-[rgba(13,129,126,0.16)] bg-[rgba(240,248,246,0.72)] px-4 py-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
+            Search sequence
+          </p>
+          <div className="mt-3 grid gap-2">
+            {result.search_steps?.map((step, index) => (
+              <p
+                key={`${step}-${index}`}
+                className="rounded-[14px] bg-white/72 px-3 py-2 text-sm leading-6 text-[var(--shreem-muted)]"
+              >
+                <span className="font-semibold text-[var(--shreem-ink)]">
+                  {index + 1}.
+                </span>{" "}
+                {step}
+              </p>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {Boolean(result.chart_reasoning?.length) && (
+        <div className="rounded-[20px] border border-[var(--shreem-border)] bg-white/60 px-4 py-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
+            Chart reasoning
+          </p>
+          <div className="mt-3 grid gap-2">
+            {result.chart_reasoning?.map((reason, index) => (
+              <p
+                key={`${reason}-${index}`}
+                className="rounded-[14px] bg-white/68 px-3 py-2 text-xs leading-5 text-[var(--shreem-muted)]"
+              >
+                {reason}
+              </p>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {result.caution && (
+        <p className="rounded-[18px] border border-[rgba(111,33,31,0.16)] bg-[rgba(255,244,241,0.74)] px-4 py-3 text-xs leading-5 text-[var(--shreem-muted)]">
+          {result.caution}
+        </p>
+      )}
+    </div>
+  )
+}
+
+const getPlanetsByHouse = (
+  chart?: PrashnaChart,
+  basis: "selected" | "rashi" | "bhava" = "selected"
+) => {
   if (!chart) {
     return new Map<number, PrashnaPlanet[]>()
   }
 
   return chart.planets.reduce((map, planet) => {
-    const list = map.get(planet.house) || []
+    const house =
+      basis === "rashi"
+        ? planet.rashiHouse || planet.house
+        : basis === "bhava"
+        ? planet.bhavaHouse || planet.house
+        : planet.house
+    const list = map.get(house) || []
     list.push(planet)
-    map.set(planet.house, list)
+    map.set(house, list)
     return map
   }, new Map<number, PrashnaPlanet[]>())
 }
@@ -1073,16 +1433,19 @@ const splitPlanetLabels = (labels: string[]) => {
 
 const buildChartCells = (
   chart: PrashnaChart,
-  mode: "lagna" | "moon"
+  mode: "lagna" | "moon" | "bhava"
 ) => {
-  const planetsByHouse = getPlanetsByHouse(chart)
+  const planetsByHouse = getPlanetsByHouse(
+    chart,
+    mode === "bhava" ? "bhava" : "selected"
+  )
 
-  if (mode === "lagna") {
+  if (mode === "lagna" || mode === "bhava") {
     return chart.houses.map((house) => ({
       house: house.house,
       sign: house.sign,
       planets: planetsByHouse.get(house.house) || [],
-      marker: house.house === 1 ? "Lagna" : "",
+      marker: house.house === 1 ? (mode === "bhava" ? "Bhava" : "Lagna") : "",
     }))
   }
 
@@ -1107,7 +1470,7 @@ const NorthIndianChart = ({
   title,
 }: {
   chart?: PrashnaChart
-  mode?: "lagna" | "moon"
+  mode?: "lagna" | "moon" | "bhava"
   title: string
 }) => {
   if (!chart) {
@@ -1123,7 +1486,7 @@ const NorthIndianChart = ({
           {title}
         </p>
         <p className="text-xs font-semibold text-[var(--shreem-muted)]">
-          {mode === "lagna" ? chart.ascendant : chart.moonSign}
+          {mode === "moon" ? chart.moonSign : chart.ascendant}
         </p>
       </div>
       <div className="relative mx-auto aspect-[7/5] w-full max-w-[520px] overflow-hidden rounded-[14px] bg-white shadow-[inset_0_0_0_1px_rgba(156,105,18,0.08)]">
@@ -1159,7 +1522,13 @@ const NorthIndianChart = ({
             const slot = northIndianHouseSlots[cell.house]
             const planetLabels = splitPlanetLabels([
               ...(cell.marker
-                ? [cell.marker === "Lagna" ? "Asc" : "Ch"]
+                ? [
+                    cell.marker === "Lagna"
+                      ? "Asc"
+                      : cell.marker === "Bhava"
+                      ? "Bh"
+                      : "Ch",
+                  ]
                 : []),
               ...cell.planets.map(
                 (planet) => PLANET_SHORT[planet.name] || planet.name.slice(0, 2)
@@ -1208,6 +1577,52 @@ const NorthIndianChart = ({
   )
 }
 
+const BhavaChalitSummary = ({ chart }: { chart: PrashnaChart }) => {
+  const shiftedPlanets = chart.planets.filter(
+    (planet) =>
+      typeof planet.rashiHouse === "number" &&
+      typeof planet.bhavaHouse === "number" &&
+      planet.rashiHouse !== planet.bhavaHouse
+  )
+
+  return (
+    <div className="rounded-[20px] border border-[rgba(212,161,38,0.24)] bg-[rgba(255,248,233,0.68)] px-4 py-4">
+      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
+        Bhava Chalit impact
+      </p>
+      <p className="mt-2 text-xs leading-5 text-[var(--shreem-muted)]">
+        Rashi chart is used for sign dignity, ownership, and yogas. Bhava
+        Chalit is used for lived house effects, timing impact, and how the
+        planet may deliver results in real life.
+      </p>
+      {shiftedPlanets.length > 0 ? (
+        <div className="mt-3 grid gap-2">
+          {shiftedPlanets.map((planet) => (
+            <p
+              key={`bhava-shift-${planet.key}`}
+              className="rounded-[14px] border border-[var(--shreem-border)] bg-white/66 px-3 py-2 text-xs leading-5 text-[var(--shreem-muted)]"
+            >
+              <span className="font-semibold text-[var(--shreem-ink)]">
+                {planet.name}
+              </span>{" "}
+              shifts from Rashi house {planet.rashiHouse} to Bhava house{" "}
+              {planet.bhavaHouse}; Bhava impact is{" "}
+              {planet.bhavaImpactPercent ?? "-"}%{" "}
+              {planet.bhavaImpactState || "measured"} and the planet is{" "}
+              {planet.bhavaDistanceFromCusp ?? "-"} deg from bhava madhya.
+            </p>
+          ))}
+        </div>
+      ) : (
+        <p className="mt-3 rounded-[14px] border border-[var(--shreem-border)] bg-white/66 px-3 py-2 text-xs leading-5 text-[var(--shreem-muted)]">
+          No graha changes house between Rashi and Bhava Chalit in this chart;
+          house effects are therefore more direct.
+        </p>
+      )}
+    </div>
+  )
+}
+
 const buildPlanetEffectsFallback = (chart: PrashnaChart) =>
   chart.planets.map((planet) => {
     const theme = HOUSE_THEMES[planet.house - 1] || "life matters"
@@ -1216,7 +1631,10 @@ const buildPlanetEffectsFallback = (chart: PrashnaChart) =>
     return {
       planet: planet.name,
       placement: `${planet.sign}, ${formatHousePosition(planet)}, ${planet.nakshatra} pada ${planet.pada}`,
+      life_area: theme,
+      activation_period: "Shown most clearly during this graha's dasha, antardasha, pratyantar, or strong transit.",
       effect: `${planet.name} activates ${theme.toLowerCase()} through the nature of ${planet.sign} and ${lord}.`,
+      likely_effect: `${theme} becomes more noticeable when ${planet.name} is activated by dasha or transit.`,
       advice:
         planet.name === "Rahu" || planet.name === "Ketu"
           ? "Keep remedies simple and take expert review before strong pooja or gemstone decisions."
@@ -1255,6 +1673,27 @@ const PlanetEffectList = ({
             <p className="mt-2 text-xs leading-5 text-[var(--shreem-muted)]">
               {item.effect}
             </p>
+            {item.life_area && (
+              <p className="mt-2 text-xs leading-5 text-[var(--shreem-muted)]">
+                <span className="font-semibold text-[var(--shreem-ink)]">
+                  Personal area:
+                </span>{" "}
+                {item.life_area}
+              </p>
+            )}
+            {item.activation_period && (
+              <p className="mt-2 rounded-[14px] bg-[rgba(13,129,126,0.08)] px-3 py-2 text-xs leading-5 text-[var(--shreem-muted)]">
+                <span className="font-semibold text-[var(--shreem-ink)]">
+                  Timing:
+                </span>{" "}
+                {item.activation_period}
+              </p>
+            )}
+            {item.likely_effect && (
+              <p className="mt-2 text-xs leading-5 text-[var(--shreem-muted)]">
+                {item.likely_effect}
+              </p>
+            )}
             <p className="mt-2 rounded-[14px] bg-[rgba(255,248,233,0.74)] px-3 py-2 text-xs leading-5 text-[var(--shreem-muted)]">
               {item.advice}
             </p>
@@ -1299,6 +1738,104 @@ const DashaPredictionList = ({
             </p>
             <p className="mt-2 rounded-[14px] bg-[rgba(255,248,233,0.78)] px-3 py-2 text-xs leading-5 text-[var(--shreem-muted)]">
               {item.action}
+            </p>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+const MajorLifeEventList = ({
+  rows,
+}: {
+  rows?: KundliAnalysis["major_life_events"]
+}) => {
+  if (!rows?.length) {
+    return null
+  }
+
+  return (
+    <div className="rounded-[20px] border border-[rgba(212,161,38,0.24)] bg-[rgba(255,248,233,0.72)] px-4 py-4">
+      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
+        Major life event windows
+      </p>
+      <p className="mt-1 text-xs leading-5 text-[var(--shreem-muted)]">
+        Dasha-based windows for validation and preparation, not fixed fate.
+      </p>
+      <div className="mt-3 grid gap-3 md:grid-cols-2">
+        {rows.map((item, index) => (
+          <div
+            key={`${item.window}-${item.life_area}-${index}`}
+            className="rounded-[16px] border border-[var(--shreem-border)] bg-white/76 px-3 py-3"
+          >
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="rounded-full bg-[rgba(13,129,126,0.08)] px-2 py-0.5 text-[0.68rem] font-semibold text-[var(--shreem-ink)]">
+                {item.window}
+              </span>
+              <span className="rounded-full bg-[rgba(212,161,38,0.12)] px-2 py-0.5 text-[0.68rem] font-semibold text-[var(--shreem-muted)]">
+                Age {item.age_range}
+              </span>
+            </div>
+            <p className="mt-2 text-sm font-semibold leading-6 text-[var(--shreem-ink)]">
+              {item.life_area}
+            </p>
+            <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
+              {item.likely_event}
+            </p>
+            <p className="mt-2 text-xs leading-5 text-[var(--shreem-muted)]">
+              Chart basis: {item.chart_basis}
+            </p>
+            <p className="mt-2 text-xs leading-5 text-[var(--shreem-muted)]">
+              BPHS basis: {item.classical_basis}
+            </p>
+            <p className="mt-2 rounded-[14px] bg-[rgba(13,129,126,0.08)] px-3 py-2 text-xs leading-5 text-[var(--shreem-muted)]">
+              {item.confidence} · {item.guidance}
+            </p>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+const SpecialCaseReadingList = ({
+  rows,
+}: {
+  rows?: KundliAnalysis["special_case_readings"]
+}) => {
+  if (!rows?.length) {
+    return null
+  }
+
+  return (
+    <div className="rounded-[20px] border border-[var(--shreem-border)] bg-white/60 px-4 py-4">
+      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
+        Special case synthesis
+      </p>
+      <div className="mt-3 grid gap-3">
+        {rows.map((item, index) => (
+          <div
+            key={`${item.case_name}-${index}`}
+            className="rounded-[16px] border border-[var(--shreem-border)] bg-white/74 px-3 py-3"
+          >
+            <p className="text-sm font-semibold leading-6 text-[var(--shreem-ink)]">
+              {item.case_name}
+            </p>
+            <p className="mt-2 text-xs leading-5 text-[var(--shreem-muted)]">
+              Chart basis: {item.chart_basis}
+            </p>
+            <p className="mt-2 text-xs leading-5 text-[var(--shreem-muted)]">
+              BPHS basis: {item.classical_basis}
+            </p>
+            <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
+              {item.combined_effect}
+            </p>
+            <p className="mt-2 rounded-[14px] bg-[rgba(13,129,126,0.08)] px-3 py-2 text-xs leading-5 text-[var(--shreem-muted)]">
+              Timing: {item.timing}
+            </p>
+            <p className="mt-2 rounded-[14px] bg-[rgba(255,248,233,0.74)] px-3 py-2 text-xs leading-5 text-[var(--shreem-muted)]">
+              Solution: {item.solution}
             </p>
           </div>
         ))}
@@ -1357,8 +1894,8 @@ const HistoryPanel = ({
     <p className="brand-kicker">Recent history</p>
     {!items.length && (
       <p className="mt-3 text-sm leading-6 text-[var(--shreem-muted)]">
-        Your last Prashna, Kundli, and matchmaking sessions will appear here
-        after you run them.
+        Your last Prashna, Lost item, Kundli, and matchmaking sessions will
+        appear here after you run them.
       </p>
     )}
     <div className="mt-3 grid gap-2">
@@ -1435,14 +1972,14 @@ const AstralGrahaPanel = () => (
       ))}
     </div>
 
-    <div className="relative z-10 mt-4 grid gap-2 text-xs leading-5 text-[#d8e8ea] min-[540px]:grid-cols-3">
-      <p className="rounded-[16px] border border-white/10 bg-white/8 px-3 py-2">
+    <div className="relative z-10 mt-4 grid gap-2 text-xs font-semibold leading-5 text-[#0b2735] min-[540px]:grid-cols-3">
+      <p className="rounded-[16px] border border-white/25 bg-white/85 px-3 py-2 shadow-[0_12px_24px_rgba(2,8,19,0.14)]">
         North Indian chart view
       </p>
-      <p className="rounded-[16px] border border-white/10 bg-white/8 px-3 py-2">
+      <p className="rounded-[16px] border border-white/25 bg-white/85 px-3 py-2 shadow-[0_12px_24px_rgba(2,8,19,0.14)]">
         Panchang comparison
       </p>
-      <p className="rounded-[16px] border border-white/10 bg-white/8 px-3 py-2">
+      <p className="rounded-[16px] border border-white/25 bg-white/85 px-3 py-2 shadow-[0_12px_24px_rgba(2,8,19,0.14)]">
         BPHS-backed prompts
       </p>
     </div>
@@ -1570,6 +2107,7 @@ const KundliResultView = ({
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(280px,0.65fr)]">
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
           <NorthIndianChart chart={chart} mode="lagna" title="Lagna chart" />
+          <NorthIndianChart chart={chart} mode="bhava" title="Bhava Chalit chart" />
           <NorthIndianChart chart={chart} mode="moon" title="Chandra chart" />
         </div>
         <div className="grid gap-3">
@@ -1590,6 +2128,8 @@ const KundliResultView = ({
           />
         </div>
       </div>
+
+      <BhavaChalitSummary chart={chart} />
 
       <DashaCard chart={chart} />
 
@@ -1646,9 +2186,11 @@ const KundliResultView = ({
       )}
 
       <PredictionTable rows={result.analysis?.prediction_table} />
+      <MajorLifeEventList rows={result.analysis?.major_life_events} />
       <DashaPredictionList rows={result.analysis?.dasha_predictions} />
       <RiskWatchList rows={result.analysis?.risk_watch} />
       <PlanetEffectList chart={chart} effects={result.analysis?.planet_effects} />
+      <SpecialCaseReadingList rows={result.analysis?.special_case_readings} />
       <BookCitationList items={result.analysis?.book_citations} />
 
       <div className="grid gap-3 xl:grid-cols-2">
@@ -2136,6 +2678,8 @@ const normalizeUsageHistory = (item: unknown): AstrologyHistoryItem | null => {
     ? "Matchmaking"
     : tool.includes("kundli")
     ? "Kundli"
+    : tool.includes("lost_item")
+    ? "Lost item"
     : "Prashna"
   const title =
     type === "Matchmaking"
@@ -2144,6 +2688,8 @@ const normalizeUsageHistory = (item: unknown): AstrologyHistoryItem | null => {
         )}`
       : type === "Kundli"
       ? `${String(profile.name || input.name || "Generated")} Kundli`
+      : type === "Lost item"
+      ? `Lost ${String(input.itemName || input.itemType || "item")}`
       : String(input.question || "Prashna session")
   const summary =
     String(
@@ -2166,6 +2712,7 @@ const normalizeUsageHistory = (item: unknown): AstrologyHistoryItem | null => {
       | PrashnaResult
       | KundliResult
       | MatchmakingResult
+      | LostItemResult
       | undefined,
   }
 }
@@ -2191,6 +2738,7 @@ export default function AstrologyExperience({
   customerName?: string
 }) {
   const [activeTab, setActiveTab] = useState<AstrologyTab>("muhurth")
+  const [astrologyTheme, setAstrologyTheme] = useState<AstrologyTheme>("day")
   const [language, setLanguage] = useState<AstrologyLanguage>("english")
   const [languageReady, setLanguageReady] = useState(false)
   const [panchangSystemId, setPanchangSystemId] = useState("lahiri-mean")
@@ -2199,10 +2747,26 @@ export default function AstrologyExperience({
   const [question, setQuestion] = useState("")
   const [prashna, setPrashna] = useState<PrashnaResult | null>(null)
   const [loadingPrashna, setLoadingPrashna] = useState(false)
+  const [lostItemForm, setLostItemForm] = useState({
+    itemName: "",
+    itemType: "",
+    ownerName: customerName || "",
+    lastSeenPlace: "",
+    lastSeenDate: "",
+    lastSeenTime: "",
+    notes: "",
+  })
+  const [lostItemResult, setLostItemResult] = useState<LostItemResult | null>(
+    null
+  )
+  const [loadingLostItem, setLoadingLostItem] = useState(false)
   const [hindiCalendar, setHindiCalendar] = useState<HindiCalendarDay | null>(
     null
   )
+  const [hindiCalendarMonth, setHindiCalendarMonth] =
+    useState<HindiCalendarMonth | null>(null)
   const [loadingCalendar, setLoadingCalendar] = useState(true)
+  const [loadingCalendarMonth, setLoadingCalendarMonth] = useState(true)
   const [history, setHistory] = useState<AstrologyHistoryItem[]>([])
   const [aiWallet, setAiWallet] = useState<AiWallet | null>(null)
   const [aiQuota, setAiQuota] = useState<AiQuota | null>(null)
@@ -2225,6 +2789,7 @@ export default function AstrologyExperience({
     useState<MatchmakingResult | null>(null)
   const [loadingMatchmaking, setLoadingMatchmaking] = useState(false)
   const city = getCityById(cityId)
+  const calendarMonthKey = getCalendarMonthKey(date)
   const muhurat = useMemo(
     () => calculateDailyMuhurat({ city, date }),
     [city, date]
@@ -2249,8 +2814,31 @@ export default function AstrologyExperience({
       setLanguage(saved)
     }
 
+    const savedTheme = window.localStorage.getItem(THEME_KEY)
+
+    if (savedTheme === "night") {
+      setAstrologyTheme("night")
+    }
+
     setLanguageReady(true)
   }, [])
+
+  useEffect(() => {
+    document.body.classList.toggle(
+      "astrology-night-mode",
+      astrologyTheme === "night"
+    )
+    document.body.classList.toggle(
+      "astrology-day-mode",
+      astrologyTheme === "day"
+    )
+    window.localStorage.setItem(THEME_KEY, astrologyTheme)
+
+    return () => {
+      document.body.classList.remove("astrology-night-mode")
+      document.body.classList.remove("astrology-day-mode")
+    }
+  }, [astrologyTheme])
 
   useEffect(() => {
     if (!languageReady) {
@@ -2295,6 +2883,40 @@ export default function AstrologyExperience({
       active = false
     }
   }, [cityId, date, panchangSystemId])
+
+  useEffect(() => {
+    let active = true
+
+    setLoadingCalendarMonth(true)
+    fetch(
+      `/api/astrology/hindi-calendar?cityId=${encodeURIComponent(
+        cityId
+      )}&month=${encodeURIComponent(calendarMonthKey)}&panchangSystemId=${encodeURIComponent(
+        panchangSystemId
+      )}`,
+      { cache: "no-store" }
+    )
+      .then((response) => (response.ok ? response.json() : null))
+      .then((data: HindiCalendarMonth | null) => {
+        if (active) {
+          setHindiCalendarMonth(data?.days?.length ? data : null)
+        }
+      })
+      .catch(() => {
+        if (active) {
+          setHindiCalendarMonth(null)
+        }
+      })
+      .finally(() => {
+        if (active) {
+          setLoadingCalendarMonth(false)
+        }
+      })
+
+    return () => {
+      active = false
+    }
+  }, [cityId, calendarMonthKey, panchangSystemId])
 
   useEffect(() => {
     refreshWallet()
@@ -2358,7 +2980,7 @@ export default function AstrologyExperience({
     }).catch(() => null)
     const data = (await response?.json().catch(() => null)) as PrashnaResult | null
 
-    if (!response?.ok || !data?.answer) {
+    if (!data?.answer) {
       const retryHint = data?.retryable
         ? " This looks temporary — wait a few seconds and try again."
         : ""
@@ -2396,6 +3018,74 @@ export default function AstrologyExperience({
     }
 
     setLoadingPrashna(false)
+    refreshWallet()
+  }
+
+  const askLostItemPrashna = async () => {
+    if (loadingLostItem) {
+      return
+    }
+
+    setLoadingLostItem(true)
+    setLostItemResult(null)
+
+    const now = new Date()
+    const questionDate = now.toISOString().slice(0, 10)
+    const questionTime = now.toTimeString().slice(0, 5)
+    const response = await fetch("/api/astrology/lost-item", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        ...lostItemForm,
+        cityId,
+        language,
+        panchangSystemId,
+        questionDate,
+        questionTime,
+      }),
+      cache: "no-store",
+    }).catch(() => null)
+    const data = (await response?.json().catch(() => null)) as LostItemResult | null
+
+    if (!data?.answer) {
+      setLostItemResult({
+        message:
+          data?.message ||
+          "Lost item Prashna could not be generated right now. Please try again.",
+        retryable: data?.retryable,
+      })
+      setLoadingLostItem(false)
+      return
+    }
+
+    setLostItemResult(data)
+    if (data.wallet) {
+      setAiWallet(data.wallet)
+    }
+    if (data.quota) {
+      setAiQuota(data.quota)
+    }
+    if (Array.isArray(data.packs)) {
+      setAiPacks(data.packs)
+    }
+
+    rememberHistory(
+      {
+        id: `lost-item-${Date.now()}`,
+        type: "Lost item",
+        title: `Lost ${lostItemForm.itemName || lostItemForm.itemType || "item"}`,
+        createdAt: new Date().toISOString(),
+        summary: data.answer,
+        response: data,
+      },
+      {
+        persistLocal: !data.usage_synced,
+      }
+    )
+
+    setLoadingLostItem(false)
     refreshWallet()
   }
 
@@ -2518,6 +3208,12 @@ export default function AstrologyExperience({
     if (item.type === "Matchmaking") {
       setMatchmakingResult(item.response as MatchmakingResult)
       setActiveTab("matchmaking")
+      return
+    }
+
+    if (item.type === "Lost item") {
+      setLostItemResult(item.response as LostItemResult)
+      setActiveTab("lost-item")
       return
     }
 
@@ -2669,6 +3365,153 @@ export default function AstrologyExperience({
     )
   }
 
+  const ThemeToggle = () => (
+    <div className="inline-flex rounded-full border border-[var(--shreem-border)] bg-white/60 p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.42)]">
+      {([
+        ["day", "Day", "☀"],
+        ["night", "Night", "☾"],
+      ] as const).map(([value, label, icon]) => {
+        const active = astrologyTheme === value
+
+        return (
+          <button
+            key={value}
+            type="button"
+            onClick={() => setAstrologyTheme(value)}
+            className={`inline-flex min-h-9 items-center gap-2 rounded-full px-3 py-2 text-xs font-semibold transition ${
+              active
+                ? value === "night"
+                  ? "bg-[linear-gradient(135deg,#08152f,#33205d_58%,#6b2344)] text-white shadow-[0_10px_24px_rgba(8,21,47,0.28)]"
+                  : "bg-[linear-gradient(135deg,#fff8df,#f5d98b)] text-[#60420d] shadow-[0_10px_24px_rgba(212,161,38,0.16)]"
+                : "text-[var(--shreem-muted)] hover:text-[var(--shreem-ink)]"
+            }`}
+            aria-pressed={active}
+          >
+            <span aria-hidden="true">{icon}</span>
+            {label}
+          </button>
+        )
+      })}
+    </div>
+  )
+
+  const HinduCalendarGrid = () => {
+    const days = buildCalendarGrid(date)
+    const monthDetails = new Map(
+      (hindiCalendarMonth?.days || []).map((item) => [item.date, item])
+    )
+    const selectedDay = hindiCalendar ? monthDetails.get(date) : null
+
+    return (
+      <div className="rounded-[24px] border border-[var(--shreem-border)] bg-white/62 px-4 py-4 shadow-[0_18px_44px_rgba(18,63,99,0.08)]">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="brand-kicker">Month view</p>
+            <p className="mt-1 text-lg font-semibold text-[var(--shreem-ink)]">
+              {getCalendarMonthLabel(date)}
+            </p>
+            <p className="mt-1 text-xs leading-5 text-[var(--shreem-muted)]">
+              {loadingCalendarMonth
+                ? "Calculating tithi for every day..."
+                : hindiCalendarMonth
+                ? `${hindiCalendarMonth.city.name} panchang with weekday, paksha, and tithi in each cell.`
+                : "Month tithi could not load; selected-day details still work."}
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setDate(shiftMonth(date, -1))}
+              className="rounded-full border border-[var(--shreem-border)] bg-white/70 px-3 py-2 text-xs font-semibold text-[var(--shreem-ink)]"
+            >
+              Previous
+            </button>
+            <button
+              type="button"
+              onClick={() => setDate(getTodayDateString())}
+              className="rounded-full border border-[rgba(212,161,38,0.28)] bg-[rgba(255,248,233,0.78)] px-3 py-2 text-xs font-semibold text-[var(--shreem-ink)]"
+            >
+              Today
+            </button>
+            <button
+              type="button"
+              onClick={() => setDate(shiftMonth(date, 1))}
+              className="rounded-full border border-[var(--shreem-border)] bg-white/70 px-3 py-2 text-xs font-semibold text-[var(--shreem-ink)]"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+
+        <div className="mt-4 grid grid-cols-7 gap-1 text-center text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-[var(--shreem-gold-deep)]">
+          {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
+            <span key={day} className="py-1">
+              {day}
+            </span>
+          ))}
+        </div>
+
+        <div className="mt-2 grid grid-cols-7 gap-1.5">
+          {days.map((day) => {
+            if (!day.date) {
+              return <span key={day.key} aria-hidden="true" />
+            }
+
+              const details = monthDetails.get(day.date)
+
+              return (
+                <button
+                  key={day.key}
+                  type="button"
+                  onClick={() => setDate(day.date)}
+                  className={`min-h-[5.6rem] rounded-[16px] border px-1.5 py-2 text-left transition ${
+                    day.selected
+                      ? "border-[rgba(212,161,38,0.5)] bg-[rgba(255,248,233,0.9)] text-[var(--shreem-ink)] shadow-[0_12px_24px_rgba(212,161,38,0.12)]"
+                      : day.today
+                      ? "border-[rgba(13,129,126,0.32)] bg-[rgba(240,248,246,0.74)] text-[var(--shreem-ink)]"
+                      : "border-[var(--shreem-border)] bg-white/54 text-[var(--shreem-muted)] hover:border-[rgba(212,161,38,0.3)]"
+                  }`}
+                >
+                  <span className="flex items-start justify-between gap-1">
+                    <span className="text-base font-semibold leading-none text-[var(--shreem-ink)]">
+                      {day.day}
+                    </span>
+                    <span className="rounded-full bg-white/70 px-1.5 py-0.5 text-[0.58rem] font-semibold uppercase tracking-[0.08em] text-[var(--shreem-gold-deep)]">
+                      {getCompactWeekday(details?.weekday)}
+                    </span>
+                  </span>
+                  <span className="mt-2 line-clamp-2 block min-h-[2rem] text-[0.64rem] font-semibold leading-4 text-[var(--shreem-ink)]">
+                    {loadingCalendarMonth
+                      ? "Loading"
+                      : getCompactTithi(details?.tithi)}
+                  </span>
+                  <span className="mt-1 block text-[0.58rem] leading-4 text-[var(--shreem-muted)]">
+                    {details
+                      ? `${details.paksha} · ${details.nakshatra.replace(/ pada \d+$/i, "")}`
+                      : day.today
+                      ? "Today"
+                      : "Tap for detail"}
+                  </span>
+                </button>
+              )
+          })}
+        </div>
+
+        <div className="mt-4 grid gap-2 rounded-[18px] border border-[rgba(13,129,126,0.12)] bg-[rgba(240,248,246,0.64)] px-3 py-3 text-xs leading-5 text-[var(--shreem-muted)] small:grid-cols-[minmax(0,1fr)_auto] small:items-center">
+          <p>
+            Selected: <span className="font-semibold text-[var(--shreem-ink)]">
+              {hindiCalendar?.weekday || selectedDay?.weekday || "Day"}
+            </span>{" "}
+            · {hindiCalendar?.tithi || selectedDay?.tithi || "Tithi loading"}
+          </p>
+          <p className="font-semibold text-[var(--shreem-gold-deep)]">
+            {hindiCalendar?.month?.name || selectedDay?.month?.name || "Masa"}
+          </p>
+        </div>
+      </div>
+    )
+  }
+
   const AiWalletCard = () => {
     const balance = Math.max(0, Number(aiWallet?.credit_balance || 0))
     const proActive = Boolean(aiWallet?.pro_active)
@@ -2706,12 +3549,12 @@ export default function AstrologyExperience({
             </p>
             <p className="mt-1 text-xs leading-5 text-[var(--shreem-muted)]">
               {freeRemaining} of {freeLimit} free readings left today across
-              Prashna, Kundli, and Matchmaking. Used {freeUsed}; refreshes at
+              Prashna, Lost item, Kundli, and Matchmaking. Used {freeUsed}; refreshes at
               {" "}{resetLabel}.
             </p>
             <p className="mt-1 text-xs leading-5 text-[var(--shreem-muted)]">
               Extra readings use paid credits or Premium. Each Kundli,
-              Matchmaking, or Prashna request uses 1 AI turn.
+              Matchmaking, Lost item, or Prashna request uses 1 AI turn.
             </p>
             {proActive && premiumRemaining !== null && (
               <p className="mt-1 text-xs leading-5 text-[var(--shreem-muted)]">
@@ -2745,68 +3588,32 @@ export default function AstrologyExperience({
   }
 
   return (
-    <div className="astrology-dashboard grid gap-6 small:gap-8">
-      <section className="brand-surface relative overflow-hidden px-5 py-7 small:px-8 small:py-9">
+    <div
+      className={`astrology-dashboard astrology-dashboard-${astrologyTheme} grid gap-6 small:gap-8`}
+    >
+      <section className="astrology-tool-switcher brand-surface relative overflow-hidden px-5 py-6 small:px-8 small:py-8">
         <div className="pointer-events-none absolute inset-x-5 top-5 h-px bg-[linear-gradient(90deg,transparent,rgba(212,161,38,0.38),transparent)]" />
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,0.92fr)_minmax(360px,0.78fr)] xl:items-center">
+        <div className="relative z-10 flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
           <div>
-            <p className="brand-kicker">Jyotish observatory</p>
-            <h2 className="brand-section-title mt-3 max-w-[17ch]">
-              Ancient sky reading, made calm and practical.
-            </h2>
+            <p className="brand-kicker">Choose your Jyotish tool</p>
+            <h1 className="brand-section-title mt-3 max-w-[18ch]">
+              Start with the answer you need today.
+            </h1>
             <p className="mt-4 max-w-[52rem] text-sm leading-7 text-[var(--shreem-muted)] small:text-base">
-              Work with daily Muhurth, Hindu Calendar, Prashna, Kundli, and
-              matchmaking through one clear Jyotish desk. The interface keeps
-              the grahas visible without hiding the practical answer you came for.
+              Muhurth, Hindu calendar, Prashna, lost-item search, Kundli, and
+              matchmaking are arranged as direct workspaces so the right tool is
+              always one tap away.
             </p>
-            <div className="mt-5 grid gap-2 text-xs leading-5 text-[var(--shreem-muted)] min-[520px]:grid-cols-3">
-              <div className="rounded-[18px] border border-[rgba(212,161,38,0.22)] bg-white/58 px-3 py-3">
-                <p className="font-semibold text-[var(--shreem-ink)]">
-                  Muhurth
-                </p>
-                <p className="mt-1">City-based sunrise and Choghadiya windows.</p>
-              </div>
-              <div className="rounded-[18px] border border-[rgba(13,129,126,0.18)] bg-white/58 px-3 py-3">
-                <p className="font-semibold text-[var(--shreem-ink)]">
-                  Kundli
-                </p>
-                <p className="mt-1">North Indian chart, dasha, yoga, and remedies.</p>
-              </div>
-              <div className="rounded-[18px] border border-[rgba(111,33,31,0.14)] bg-white/58 px-3 py-3">
-                <p className="font-semibold text-[var(--shreem-ink)]">
-                  Guidance
-                </p>
-                <p className="mt-1">AI-first reading with expert review when needed.</p>
-              </div>
-            </div>
           </div>
-
-          <div className="grid gap-4">
-            <AstralGrahaPanel />
-            <div className="brand-card px-4 py-4">
-              <p className="brand-kicker">Account</p>
-              <p className="mt-2 break-words text-sm font-semibold text-[var(--shreem-ink)]">
-                {customerEmail}
-              </p>
-              <p className="mt-2 text-xs leading-5 text-[var(--shreem-muted)]">
-                Your recent Prashna, Kundli, and matchmaking sessions appear in
-                history.
-              </p>
-              <div className="mt-4">
-                <LanguageControls />
-              </div>
-              <div className="mt-4 border-t border-[var(--shreem-border)] pt-4">
-                <PanchangControls compact />
-              </div>
-            </div>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <ThemeToggle />
+            <p className="max-w-[18rem] text-xs leading-5 text-[var(--shreem-muted)]">
+              Day keeps the Shreem calm. Night opens the astral desk.
+            </p>
           </div>
         </div>
 
-        <div className="mt-5">
-          <AiWalletCard />
-        </div>
-
-        <div className="mt-6 grid gap-2 min-[520px]:grid-cols-2 xl:grid-cols-5">
+        <div className="astrology-tab-grid mt-6 grid gap-3 min-[520px]:grid-cols-2 xl:grid-cols-6">
           {astrologyTabs.map((tab) => {
             const active = tab.id === activeTab
 
@@ -2815,24 +3622,41 @@ export default function AstrologyExperience({
                 key={tab.id}
                 type="button"
                 onClick={() => setActiveTab(tab.id)}
-                className={`rounded-[18px] border px-4 py-4 text-left transition ${
-                  active
-                    ? "border-[rgba(255,217,121,0.54)] bg-[linear-gradient(135deg,rgba(255,217,121,0.16),rgba(50,84,168,0.24),rgba(255,91,144,0.12))] shadow-[0_16px_34px_rgba(2,8,19,0.26)]"
-                    : "border-[var(--shreem-border)] bg-[rgba(13,28,61,0.54)] hover:border-[rgba(255,217,121,0.34)] hover:bg-[rgba(22,42,86,0.72)]"
+                className={`astrology-tab-card ${
+                  active ? "astrology-tab-card-active" : ""
                 }`}
               >
                 <div className="flex items-center gap-2">
-                  <span className="size-2 rounded-full bg-[var(--shreem-gold-deep)] opacity-70" />
-                  <p className="text-sm font-semibold text-[var(--shreem-ink)]">
-                    {tab.label}
-                  </p>
+                  <span className="astrology-tab-dot" />
+                  <p className="text-sm font-semibold">{tab.label}</p>
                 </div>
-                <p className="mt-2 text-xs leading-5 text-[var(--shreem-muted)]">
-                  {tab.description}
-                </p>
+                <p className="mt-2 text-xs leading-5">{tab.description}</p>
               </button>
             )
           })}
+        </div>
+
+        <div className="mt-6">
+          <div className="brand-card px-4 py-4 small:px-5 small:py-5">
+            <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(320px,0.55fr)] xl:items-start">
+              <div>
+                <p className="brand-kicker">Your desk</p>
+                <p className="mt-2 break-words text-sm font-semibold text-[var(--shreem-ink)]">
+                  {customerEmail}
+                </p>
+                <div className="mt-4">
+                  <LanguageControls />
+                </div>
+              </div>
+              <div className="border-t border-[var(--shreem-border)] pt-4 xl:border-l xl:border-t-0 xl:pl-5 xl:pt-0">
+                <PanchangControls compact />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-5">
+          <AiWalletCard />
         </div>
       </section>
 
@@ -2914,12 +3738,15 @@ export default function AstrologyExperience({
                 Panchang, masa, and festivals
               </h3>
               <p className="mt-4 text-sm leading-7 text-[var(--shreem-muted)]">
-                Select a date and city to view tithi, paksha, nakshatra,
-                karana, Hindi month significance, and the month&apos;s major
-                festival themes.
+                Pick a day directly on the calendar to view tithi, paksha,
+                nakshatra, karana, Hindi month significance, and festival
+                themes for the selected city.
               </p>
               <div className="mt-5">
-                <LocationDateControls />
+                <LocationDateControls showDate={false} />
+              </div>
+              <div className="mt-5">
+                <HinduCalendarGrid />
               </div>
             </div>
 
@@ -3007,12 +3834,13 @@ export default function AstrologyExperience({
             <div>
               <p className="brand-kicker">Prashna Kundli</p>
               <h2 className="brand-section-title mt-2 max-w-[16ch]">
-                Ask one clear question at the moment it matters.
+                Ask the question exactly as it arises.
               </h2>
               <p className="mt-4 text-sm leading-7 text-[var(--shreem-muted)] small:text-base">
                 The chart is generated for the exact moment you ask, using the
                 selected city. The AI reads the calculated Vedic factors and
-                keeps chart facts separate from interpretation.
+                keeps chart facts separate from interpretation. If your question
+                has parts, they are answered as first, second, and third.
               </p>
               <div className="mt-5">
                 <LocationDateControls showDate={false} />
@@ -3023,7 +3851,7 @@ export default function AstrologyExperience({
               <textarea
                 value={question}
                 onChange={(event) => setQuestion(event.target.value)}
-                placeholder="Example: Is this a good time to start the planned work?"
+                placeholder="Example: First, should I start this work now? Second, will money get blocked? Third, what should I avoid?"
                 className="mt-5 min-h-[150px] w-full resize-none rounded-[22px] border border-[var(--shreem-border)] bg-white/80 px-4 py-4 text-sm leading-6 text-[var(--shreem-ink)] outline-none"
               />
               <button
@@ -3043,6 +3871,7 @@ export default function AstrologyExperience({
                   <LogoLoader
                     label="Reading the Prashna chart..."
                     detail="Calculating the moment chart, then asking Shreem AI for a concise Vedic interpretation."
+                    inverse={astrologyTheme === "night"}
                   />
                 )}
                 {!loadingPrashna && !prashna && (
@@ -3072,6 +3901,209 @@ export default function AstrologyExperience({
                 {prashna?.answer && prashna.chart && (
                   <div className="mt-4">
                     <PrashnaChartView result={prashna} />
+                  </div>
+                )}
+              </div>
+              <HistoryPanel items={history} onSelect={selectHistoryItem} />
+            </div>
+          </div>
+        </section>
+      )}
+
+      {activeTab === "lost-item" && (
+        <section className="brand-surface px-5 py-7 small:px-8 small:py-9">
+          <div className="grid gap-5 xl:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]">
+            <div className="brand-card px-4 py-5 small:px-5">
+              <p className="brand-kicker">Nashta-Vastu Prashna</p>
+              <h2 className="brand-card-title mt-2 max-w-[14ch]">
+                Find a lost item with Lochan Nakshatra.
+              </h2>
+              <p className="mt-3 text-sm leading-7 text-[var(--shreem-muted)]">
+                This casts a Prashna chart for the moment you ask and applies
+                the Four Eyes nakshatra method: Manda, Madhya, Andha, or
+                Sulochana. Use it as a focused search map, not as proof against
+                any person.
+              </p>
+              <div className="mt-5 grid gap-3">
+                <div className="grid gap-3 small:grid-cols-2">
+                  <label className="grid gap-2">
+                    <span className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
+                      Item name
+                    </span>
+                    <input
+                      value={lostItemForm.itemName}
+                      onChange={(event) =>
+                        setLostItemForm((current) => ({
+                          ...current,
+                          itemName: event.target.value,
+                        }))
+                      }
+                      className="h-12 rounded-[16px] border border-[var(--shreem-border)] bg-white/82 px-3 text-sm text-[var(--shreem-ink)] outline-none"
+                      placeholder="Phone, ring, document..."
+                    />
+                  </label>
+                  <label className="grid gap-2">
+                    <span className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
+                      Item type
+                    </span>
+                    <select
+                      value={lostItemForm.itemType}
+                      onChange={(event) =>
+                        setLostItemForm((current) => ({
+                          ...current,
+                          itemType: event.target.value,
+                        }))
+                      }
+                      className="h-12 rounded-[16px] border border-[var(--shreem-border)] bg-white/82 px-3 text-sm text-[var(--shreem-ink)] outline-none"
+                    >
+                      <option value="">Select type</option>
+                      <option value="phone or electronics">Phone / electronics</option>
+                      <option value="jewellery or metal">Jewellery / metal</option>
+                      <option value="documents or card">Documents / card</option>
+                      <option value="keys or tool">Keys / tool</option>
+                      <option value="money or wallet">Money / wallet</option>
+                      <option value="clothes or bag">Clothes / bag</option>
+                      <option value="other personal item">Other personal item</option>
+                    </select>
+                  </label>
+                </div>
+
+                <label className="grid gap-2">
+                  <span className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
+                    Owner name
+                  </span>
+                  <input
+                    value={lostItemForm.ownerName}
+                    onChange={(event) =>
+                      setLostItemForm((current) => ({
+                        ...current,
+                        ownerName: event.target.value,
+                      }))
+                    }
+                    className="h-12 rounded-[16px] border border-[var(--shreem-border)] bg-white/82 px-3 text-sm text-[var(--shreem-ink)] outline-none"
+                    placeholder="Whose item is it?"
+                  />
+                </label>
+
+                <label className="grid gap-2">
+                  <span className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
+                    Last seen place
+                  </span>
+                  <input
+                    value={lostItemForm.lastSeenPlace}
+                    onChange={(event) =>
+                      setLostItemForm((current) => ({
+                        ...current,
+                        lastSeenPlace: event.target.value,
+                      }))
+                    }
+                    className="h-12 rounded-[16px] border border-[var(--shreem-border)] bg-white/82 px-3 text-sm text-[var(--shreem-ink)] outline-none"
+                    placeholder="Kitchen shelf, car, office desk..."
+                  />
+                </label>
+
+                <div className="grid gap-3 small:grid-cols-2">
+                  <label className="grid gap-2">
+                    <span className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
+                      Last seen date
+                    </span>
+                    <input
+                      type="date"
+                      value={lostItemForm.lastSeenDate}
+                      onChange={(event) =>
+                        setLostItemForm((current) => ({
+                          ...current,
+                          lastSeenDate: event.target.value,
+                        }))
+                      }
+                      className="h-12 rounded-[16px] border border-[var(--shreem-border)] bg-white/82 px-3 text-sm text-[var(--shreem-ink)] outline-none"
+                    />
+                  </label>
+                  <label className="grid gap-2">
+                    <span className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
+                      Approx time
+                    </span>
+                    <input
+                      type="time"
+                      value={lostItemForm.lastSeenTime}
+                      onChange={(event) =>
+                        setLostItemForm((current) => ({
+                          ...current,
+                          lastSeenTime: event.target.value,
+                        }))
+                      }
+                      className="h-12 rounded-[16px] border border-[var(--shreem-border)] bg-white/82 px-3 text-sm text-[var(--shreem-ink)] outline-none"
+                    />
+                  </label>
+                </div>
+
+                <CityPicker label="Question city" value={cityId} onChange={setCityId} />
+                <div className="rounded-[20px] border border-[var(--shreem-border)] bg-white/52 px-3 py-3">
+                  <PanchangControls compact />
+                </div>
+                <textarea
+                  value={lostItemForm.notes}
+                  onChange={(event) =>
+                    setLostItemForm((current) => ({
+                      ...current,
+                      notes: event.target.value,
+                    }))
+                  }
+                  placeholder="Who was nearby? Any recent travel, cleaning, guests, vehicle use, or suspected direction?"
+                  className="min-h-[120px] w-full resize-none rounded-[22px] border border-[var(--shreem-border)] bg-white/80 px-4 py-4 text-sm leading-6 text-[var(--shreem-ink)] outline-none"
+                />
+                <button
+                  type="button"
+                  disabled={
+                    loadingLostItem ||
+                    (!lostItemForm.itemName.trim() &&
+                      !lostItemForm.itemType.trim()) ||
+                    !lostItemForm.lastSeenPlace.trim()
+                  }
+                  onClick={askLostItemPrashna}
+                  className="mt-2 w-full rounded-full border-0 bg-[linear-gradient(135deg,#0d817e_0%,#123f63_52%,#6f211f_100%)] px-5 py-3 text-sm font-semibold text-white shadow-[0_18px_34px_rgba(18,63,99,0.26)] disabled:cursor-not-allowed disabled:opacity-45"
+                >
+                  {loadingLostItem ? "Casting lost item Prashna..." : "Find lost item"}
+                </button>
+              </div>
+            </div>
+
+            <div className="grid gap-4">
+              <div className="brand-card px-4 py-5 small:px-6">
+                <p className="brand-kicker">Lost item result</p>
+                {loadingLostItem && (
+                  <LogoLoader
+                    label="Reading Lochan Nakshatra..."
+                    detail="Casting the moment chart, checking Moon nakshatra, Bhava Chalit houses, direction, timing, and search sequence."
+                    inverse={astrologyTheme === "night"}
+                  />
+                )}
+                {!loadingLostItem && !lostItemResult && (
+                  <p className="mt-3 text-sm leading-7 text-[var(--shreem-muted)]">
+                    The answer will show the Four Eyes group, likely direction,
+                    search places, timing, recovery signal, and chart reasoning.
+                  </p>
+                )}
+                {lostItemResult?.message && !lostItemResult?.answer && (
+                  <div className="mt-3 rounded-[16px] border border-rose-200 bg-rose-50 px-4 py-3">
+                    <p className="text-sm leading-6 text-rose-700">
+                      {lostItemResult.message}
+                    </p>
+                    {lostItemResult.retryable && (
+                      <button
+                        type="button"
+                        onClick={askLostItemPrashna}
+                        disabled={loadingLostItem}
+                        className="mt-3 rounded-full bg-white px-4 py-2 text-xs font-semibold text-rose-700 shadow-sm disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        Retry same lost item Prashna
+                      </button>
+                    )}
+                  </div>
+                )}
+                {lostItemResult?.answer && (
+                  <div className="mt-4">
+                    <LostItemResultView result={lostItemResult} />
                   </div>
                 )}
               </div>
@@ -3232,6 +4264,7 @@ export default function AstrologyExperience({
                   <LogoLoader
                     label="Generating your Kundli..."
                     detail="Preparing the North Indian chart, dasha context, yogas, house table, and AI reading."
+                    inverse={astrologyTheme === "night"}
                   />
                 )}
                 {!loadingKundli && !kundliResult && (
@@ -3344,6 +4377,7 @@ export default function AstrologyExperience({
                   <LogoLoader
                     label="Matching both Kundlis..."
                     detail="Calculating Moon, nakshatra, guna score, dasha context, and the AI recommendation."
+                    inverse={astrologyTheme === "night"}
                   />
                 )}
                 {!loadingMatchmaking && !matchmakingResult && (

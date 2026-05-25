@@ -19,6 +19,34 @@ const getNumericWeight = (value: unknown) => {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : 0
 }
 
+const getNumericDimension = (value: unknown) => {
+  const parsed = Number(value)
+
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 0
+}
+
+const medusaWeightToKg = (value: unknown) => {
+  const parsed = getNumericWeight(value)
+
+  if (!parsed) {
+    return 0
+  }
+
+  return parsed > 50 ? parsed / 1000 : parsed
+}
+
+const metadataNumber = (metadata: Record<string, unknown>, keys: string[]) => {
+  for (const key of keys) {
+    const value = getNumericDimension(metadata[key])
+
+    if (value > 0) {
+      return value
+    }
+  }
+
+  return 0
+}
+
 const getProductWeightKg = (product: HttpTypes.StoreProduct) => {
   const firstVariantWithWeight = product.variants?.find((variant) => {
     const metadata = (variant.metadata || {}) as Record<string, unknown>
@@ -32,11 +60,53 @@ const getProductWeightKg = (product: HttpTypes.StoreProduct) => {
   const productMetadata = (product.metadata || {}) as Record<string, unknown>
 
   return (
-    getNumericWeight((firstVariantWithWeight as any)?.weight) ||
     getNumericWeight(variantMetadata.weight_kg) ||
     getNumericWeight(productMetadata.weight_kg) ||
+    medusaWeightToKg((firstVariantWithWeight as any)?.weight) ||
+    medusaWeightToKg((product as any).weight) ||
     1
   )
+}
+
+const getProductPackage = (product: HttpTypes.StoreProduct) => {
+  const firstVariant = product.variants?.[0]
+  const variantMetadata = (firstVariant?.metadata || {}) as Record<
+    string,
+    unknown
+  >
+  const productMetadata = (product.metadata || {}) as Record<string, unknown>
+
+  return {
+    weight: getProductWeightKg(product),
+    length:
+      metadataNumber(variantMetadata, ["length_cm", "package_length_cm"]) ||
+      metadataNumber(productMetadata, ["length_cm", "package_length_cm"]) ||
+      getNumericDimension((firstVariant as any)?.length) ||
+      getNumericDimension((product as any).length) ||
+      undefined,
+    breadth:
+      metadataNumber(variantMetadata, [
+        "breadth_cm",
+        "width_cm",
+        "package_breadth_cm",
+        "package_width_cm",
+      ]) ||
+      metadataNumber(productMetadata, [
+        "breadth_cm",
+        "width_cm",
+        "package_breadth_cm",
+        "package_width_cm",
+      ]) ||
+      getNumericDimension((firstVariant as any)?.width) ||
+      getNumericDimension((product as any).width) ||
+      undefined,
+    height:
+      metadataNumber(variantMetadata, ["height_cm", "package_height_cm"]) ||
+      metadataNumber(productMetadata, ["height_cm", "package_height_cm"]) ||
+      getNumericDimension((firstVariant as any)?.height) ||
+      getNumericDimension((product as any).height) ||
+      undefined,
+  }
 }
 
 const savePincodeForCustomer = async (pincode: string) => {
@@ -61,7 +131,7 @@ const ProductDeliveryChecker = ({
   >("idle")
   const [message, setMessage] = useState("")
   const [rate, setRate] = useState<ShiprocketRate | null>(null)
-  const weight = useMemo(() => getProductWeightKg(product), [product])
+  const packageDetails = useMemo(() => getProductPackage(product), [product])
 
   useEffect(() => {
     const localPincode =
@@ -107,7 +177,10 @@ const ProductDeliveryChecker = ({
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         postal_code: normalized,
-        weight,
+        weight: packageDetails.weight,
+        length: packageDetails.length,
+        breadth: packageDetails.breadth,
+        height: packageDetails.height,
       }),
       cache: "no-store",
     }).catch(() => null)

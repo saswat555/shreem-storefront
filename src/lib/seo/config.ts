@@ -1,4 +1,5 @@
 const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1", "0.0.0.0"])
+const DEFAULT_INDEXED_COUNTRY_CODES = ["in"]
 
 function stripTrailingSlash(url: string) {
   return url.replace(/\/$/, "")
@@ -22,19 +23,59 @@ function normalizeSiteUrl(raw: string): string | null {
   }
 }
 
-/** Raw value from NEXT_PUBLIC_SITE_URL (may be invalid). */
-export function getConfiguredSiteUrl(): string | null {
-  const raw = process.env.NEXT_PUBLIC_SITE_URL
-  if (!raw) {
-    return null
+function parseCountryCodes(raw?: string | null) {
+  return (raw || "")
+    .split(",")
+    .map((code) => code.trim().toLowerCase())
+    .filter((code) => /^[a-z]{2}$/.test(code))
+}
+
+export function getIndexedCountryCodes() {
+  const configured = parseCountryCodes(
+    process.env.NEXT_PUBLIC_INDEXED_COUNTRY_CODES ||
+      process.env.NEXT_PUBLIC_SITEMAP_COUNTRY_CODES ||
+      process.env.INDEXED_COUNTRY_CODES ||
+      process.env.SITEMAP_COUNTRY_CODES
+  )
+
+  return configured.length ? configured : DEFAULT_INDEXED_COUNTRY_CODES
+}
+
+export function isIndexedCountryCode(countryCode?: string | null) {
+  if (!countryCode) {
+    return false
   }
 
-  return normalizeSiteUrl(raw)
+  return getIndexedCountryCodes().includes(countryCode.toLowerCase())
+}
+
+const SITE_URL_ENV_KEYS = [
+  "NEXT_PUBLIC_SITE_URL",
+  "NEXT_PUBLIC_BASE_URL",
+  "SITE_URL",
+] as const
+
+/** Raw canonical site URL value from env, normalized when valid. */
+export function getConfiguredSiteUrl(): string | null {
+  for (const key of SITE_URL_ENV_KEYS) {
+    const raw = process.env[key]
+    if (!raw) {
+      continue
+    }
+
+    const normalized = normalizeSiteUrl(raw)
+    if (normalized) {
+      return normalized
+    }
+  }
+
+  return null
 }
 
 /**
- * Production SEO is active only when NEXT_PUBLIC_SITE_URL is a public HTTPS URL.
- * Local/staging hosts stay noindex until you set the live domain.
+ * Production SEO is active only when the configured canonical site URL is a
+ * public HTTPS URL. Local/staging hosts stay noindex until you set the live
+ * domain through NEXT_PUBLIC_SITE_URL or NEXT_PUBLIC_BASE_URL.
  */
 export function isSeoEnabled(): boolean {
   const siteUrl = getConfiguredSiteUrl()

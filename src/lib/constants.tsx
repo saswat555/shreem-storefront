@@ -41,6 +41,12 @@ export const paymentInfoMap: Record<
     icon: <PhonePe />,
     description: "Popular UPI-based checkout for quick confirmation",
   },
+  pp_manual_upi_manual_upi: {
+    title: "UPI QR - manual approval",
+    icon: <CreditCard />,
+    description:
+      "Scan the QR or use the UPI link. Shreem verifies the bank credit before dispatch.",
+  },
   pp_system_default: {
     title: "Manual Payment",
     icon: <CreditCard />,
@@ -67,6 +73,15 @@ export const getPaymentInfo = (providerId?: string) => {
       title: "PhonePe",
       icon: <PhonePe />,
       description: "Popular UPI-based checkout for quick confirmation",
+    }
+  }
+
+  if (providerId.toLowerCase().includes("manual_upi")) {
+    return {
+      title: "UPI QR - manual approval",
+      icon: <CreditCard />,
+      description:
+        "Scan the QR or use the UPI link. Shreem verifies the bank credit before dispatch.",
     }
   }
 
@@ -101,7 +116,10 @@ export const isPaypal = (providerId?: string) => {
   return providerId?.startsWith("pp_paypal")
 }
 export const isManual = (providerId?: string) => {
-  return providerId?.startsWith("pp_system_default")
+  return (
+    providerId?.startsWith("pp_system_default") ||
+    providerId?.toLowerCase().includes("manual_upi")
+  )
 }
 
 export const isOfflineLike = (providerId?: string) => {

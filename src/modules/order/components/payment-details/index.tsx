@@ -34,6 +34,12 @@ const PaymentDetails = ({ order }: PaymentDetailsProps) => {
     "reference",
     "id",
   ])
+  const upiId = getStringValue(paymentData, ["upi_id", "upiId"])
+  const upiReference = getStringValue(paymentData, ["reference"])
+  const qrImageUrl = getStringValue(paymentData, ["qr_image_url", "qrImageUrl"])
+  const isManualUpi = payment?.provider_id
+    ?.toLowerCase()
+    .includes("manual_upi")
   const amountPaid = payment
     ? convertToLocale({
         amount: payment.amount,
@@ -91,6 +97,22 @@ const PaymentDetails = ({ order }: PaymentDetailsProps) => {
                     <Text className="mt-2 text-sm font-semibold text-[var(--shreem-ink)]">
                       {cardBrand ? `${cardBrand} ` : ""}**** {cardLast4}
                     </Text>
+                  )}
+                  {isManualUpi && (
+                    <div className="mt-3 grid gap-2 text-xs leading-5 text-[var(--shreem-muted)]">
+                      {qrImageUrl && (
+                        <img
+                          src={qrImageUrl}
+                          alt="UPI QR code"
+                          className="h-28 w-28 rounded-[14px] border border-[var(--shreem-border)] bg-white object-contain p-2"
+                        />
+                      )}
+                      {upiId && <p>UPI ID: {upiId}</p>}
+                      {upiReference && <p>Reference: {upiReference}</p>}
+                      <p>
+                        Bank credit is verified manually before dispatch.
+                      </p>
+                    </div>
                   )}
                 </div>
               </div>

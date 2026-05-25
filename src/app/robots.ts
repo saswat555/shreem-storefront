@@ -3,6 +3,8 @@ import { MetadataRoute } from "next"
 import { isSeoEnabled } from "@lib/seo/config"
 import { getBaseURL } from "@lib/util/env"
 
+export const dynamic = "force-dynamic"
+
 export default function robots(): MetadataRoute.Robots {
   if (!isSeoEnabled()) {
     return {
