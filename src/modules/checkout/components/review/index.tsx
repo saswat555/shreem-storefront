@@ -11,6 +11,12 @@ import ManualUpiQrImage from "@modules/common/components/manual-upi-qr-image"
 
 import PaymentButton from "../payment-button"
 import { useSearchParams } from "next/navigation"
+import { useEffect, useState } from "react"
+
+type ManualUpiLiveConfig = {
+  upi_id?: string
+  qr_image_url?: string
+}
 
 const Review = ({ cart }: { cart: any }) => {
   const shiprocket = useShiprocketCheckout()
@@ -52,6 +58,42 @@ const Review = ({ cart }: { cart: any }) => {
   const isManualUpi = paymentSession?.provider_id
     ?.toLowerCase()
     .includes("manual_upi")
+  const [manualUpiConfig, setManualUpiConfig] = useState<ManualUpiLiveConfig | null>(null)
+  const manualUpiQrImageUrl =
+    (typeof paymentData.qr_image_url === "string" ? paymentData.qr_image_url : "") ||
+    manualUpiConfig?.qr_image_url ||
+    ""
+  const manualUpiId =
+    (typeof paymentData.upi_id === "string" ? paymentData.upi_id : "") ||
+    manualUpiConfig?.upi_id ||
+    ""
+
+  useEffect(() => {
+    if (!isManualUpi) {
+      return
+    }
+
+    let active = true
+
+    fetch("/api/manual-upi/config", { cache: "no-store" })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((payload) => {
+        if (!active || !payload?.ok) {
+          return
+        }
+
+        setManualUpiConfig({
+          upi_id: typeof payload.upi_id === "string" ? payload.upi_id : "",
+          qr_image_url:
+            typeof payload.qr_image_url === "string" ? payload.qr_image_url : "",
+        })
+      })
+      .catch(() => null)
+
+    return () => {
+      active = false
+    }
+  }, [isManualUpi])
 
   return (
     <section className="brand-card px-4 py-5 small:px-6 small:py-6">
@@ -99,18 +141,15 @@ const Review = ({ cart }: { cart: any }) => {
                 verify the bank credit before dispatch.
               </Text>
               <div className="mt-3 grid gap-3 small:grid-cols-[120px_minmax(0,1fr)] small:items-center">
-                {typeof paymentData.qr_image_url === "string" &&
-                paymentData.qr_image_url ? (
+                {manualUpiQrImageUrl ? (
                   <ManualUpiQrImage
-                    src={paymentData.qr_image_url}
+                    src={manualUpiQrImageUrl}
                     alt="UPI QR code"
                     className="h-[120px] w-[120px] rounded-[16px] border border-[var(--shreem-border)] bg-white object-contain p-2"
                   />
                 ) : null}
                 <div className="grid gap-1 text-xs leading-5 text-[var(--shreem-muted)]">
-                  {typeof paymentData.upi_id === "string" && paymentData.upi_id && (
-                    <p>UPI ID: {paymentData.upi_id}</p>
-                  )}
+                  {manualUpiId && <p>UPI ID: {manualUpiId}</p>}
                   {typeof paymentData.reference === "string" &&
                     paymentData.reference && <p>Reference: {paymentData.reference}</p>}
                   {typeof paymentData.upi_deep_link === "string" &&

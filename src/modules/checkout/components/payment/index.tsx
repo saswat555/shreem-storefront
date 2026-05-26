@@ -23,13 +23,54 @@ import { useCallback, useEffect, useState } from "react"
 const isManualUpiProvider = (providerId?: string | null) =>
   Boolean(providerId?.toLowerCase().includes("manual_upi"))
 
+type ManualUpiLiveConfig = {
+  upi_id?: string
+  payee_name?: string
+  qr_image_url?: string
+}
+
 const ManualUpiNotice = ({ data }: { data?: Record<string, unknown> | null }) => {
-  const qrImageUrl = typeof data?.qr_image_url === "string" ? data.qr_image_url : ""
+  const [liveConfig, setLiveConfig] = useState<ManualUpiLiveConfig | null>(null)
+  const qrImageUrl =
+    (typeof data?.qr_image_url === "string" ? data.qr_image_url : "") ||
+    liveConfig?.qr_image_url ||
+    ""
   const upiDeepLink =
     typeof data?.upi_deep_link === "string" ? data.upi_deep_link : ""
-  const upiId = typeof data?.upi_id === "string" ? data.upi_id : ""
-  const payeeName = typeof data?.payee_name === "string" ? data.payee_name : ""
+  const upiId =
+    (typeof data?.upi_id === "string" ? data.upi_id : "") ||
+    liveConfig?.upi_id ||
+    ""
+  const payeeName =
+    (typeof data?.payee_name === "string" ? data.payee_name : "") ||
+    liveConfig?.payee_name ||
+    ""
   const reference = typeof data?.reference === "string" ? data.reference : ""
+
+  useEffect(() => {
+    let active = true
+
+    fetch("/api/manual-upi/config", { cache: "no-store" })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((payload) => {
+        if (!active || !payload?.ok) {
+          return
+        }
+
+        setLiveConfig({
+          upi_id: typeof payload.upi_id === "string" ? payload.upi_id : "",
+          payee_name:
+            typeof payload.payee_name === "string" ? payload.payee_name : "",
+          qr_image_url:
+            typeof payload.qr_image_url === "string" ? payload.qr_image_url : "",
+        })
+      })
+      .catch(() => null)
+
+    return () => {
+      active = false
+    }
+  }, [])
 
   return (
     <div className="mt-4 rounded-[18px] border border-[rgba(212,161,38,0.24)] bg-[rgba(255,248,233,0.78)] px-4 py-4">
@@ -49,7 +90,7 @@ const ManualUpiNotice = ({ data }: { data?: Record<string, unknown> | null }) =>
           />
         ) : (
           <div className="flex h-[120px] w-[120px] items-center justify-center rounded-[16px] border border-[var(--shreem-border)] bg-white px-3 text-center text-xs leading-5 text-[var(--shreem-muted)]">
-            Add MANUAL_UPI_QR_IMAGE_URL to show QR here.
+            QR is loading. Refresh payment if it does not appear.
           </div>
         )}
         <div className="grid gap-1 text-xs leading-5 text-[var(--shreem-muted)]">
