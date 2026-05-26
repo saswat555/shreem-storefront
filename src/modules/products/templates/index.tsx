@@ -66,10 +66,21 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
             >
               <ProductActionsWrapper id={product.id} region={region} />
             </Suspense>
-            <ProductDeliveryChecker
-              product={product}
-              initialPincode={initialDeliveryPincode}
-            />
+            <Suspense
+              fallback={
+                <div className="rounded-[22px] border border-[rgba(18,63,99,0.12)] bg-[rgba(255,252,248,0.82)] px-4 py-4">
+                  <p className="brand-kicker">Delivery</p>
+                  <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
+                    Loading delivery checker...
+                  </p>
+                </div>
+              }
+            >
+              <ProductDeliveryChecker
+                product={product}
+                initialPincode={initialDeliveryPincode}
+              />
+            </Suspense>
           </div>
 
           <div className="order-1 min-w-0 xl:order-2">

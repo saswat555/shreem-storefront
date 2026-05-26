@@ -2,6 +2,7 @@ import { Container, Heading, Text } from "@medusajs/ui"
 
 import { getPaymentInfo, isStripeLike } from "@lib/constants"
 import Divider from "@modules/common/components/divider"
+import ManualUpiQrImage from "@modules/common/components/manual-upi-qr-image"
 import { convertToLocale } from "@lib/util/money"
 import { HttpTypes } from "@medusajs/types"
 
@@ -101,7 +102,7 @@ const PaymentDetails = ({ order }: PaymentDetailsProps) => {
                   {isManualUpi && (
                     <div className="mt-3 grid gap-2 text-xs leading-5 text-[var(--shreem-muted)]">
                       {qrImageUrl && (
-                        <img
+                        <ManualUpiQrImage
                           src={qrImageUrl}
                           alt="UPI QR code"
                           className="h-28 w-28 rounded-[14px] border border-[var(--shreem-border)] bg-white object-contain p-2"

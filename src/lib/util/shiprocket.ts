@@ -83,7 +83,9 @@ const getLineWeightKg = (
   }
 ) =>
   getNumericWeight(line.variant?.metadata?.weight_kg) ||
+  getNumericWeight(line.variant?.metadata?.package_weight_kg) ||
   getNumericWeight(line.product?.metadata?.weight_kg) ||
+  getNumericWeight(line.product?.metadata?.package_weight_kg) ||
   medusaWeightToKg(line.variant?.weight) ||
   medusaWeightToKg(line.product?.weight) ||
   fallbackWeightKg
@@ -218,7 +220,9 @@ export function getCartShiprocketSignature(
           item.quantity,
           line.variant?.weight,
           line.variant?.metadata?.weight_kg,
+          line.variant?.metadata?.package_weight_kg,
           line.product?.metadata?.weight_kg,
+          line.product?.metadata?.package_weight_kg,
           line.variant?.metadata?.length_cm,
           line.variant?.metadata?.breadth_cm,
           line.variant?.metadata?.width_cm,

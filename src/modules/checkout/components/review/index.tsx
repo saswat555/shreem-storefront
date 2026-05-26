@@ -7,6 +7,7 @@ import {
 } from "@lib/util/shiprocket"
 import { Heading, Text, clx } from "@medusajs/ui"
 import { useShiprocketCheckout } from "@modules/checkout/context/shiprocket-context"
+import ManualUpiQrImage from "@modules/common/components/manual-upi-qr-image"
 
 import PaymentButton from "../payment-button"
 import { useSearchParams } from "next/navigation"
@@ -100,7 +101,7 @@ const Review = ({ cart }: { cart: any }) => {
               <div className="mt-3 grid gap-3 small:grid-cols-[120px_minmax(0,1fr)] small:items-center">
                 {typeof paymentData.qr_image_url === "string" &&
                 paymentData.qr_image_url ? (
-                  <img
+                  <ManualUpiQrImage
                     src={paymentData.qr_image_url}
                     alt="UPI QR code"
                     className="h-[120px] w-[120px] rounded-[16px] border border-[var(--shreem-border)] bg-white object-contain p-2"

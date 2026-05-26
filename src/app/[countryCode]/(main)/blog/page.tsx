@@ -134,34 +134,36 @@ export default async function BlogPage(props: {
       </section>
 
       <section className="pb-16 pt-2 small:pb-24">
-        <div className="grid gap-4 xl:grid-cols-2">
+        <div className="grid items-stretch gap-4 md:grid-cols-2 xl:grid-cols-3">
           {posts.map((post) => (
             <LocalizedClientLink
               key={post.slug}
               href={`/blog/${post.slug}`}
               className="block"
             >
-              <article className="brand-card h-full overflow-hidden">
-                <div className="relative aspect-[16/10] border-b border-[var(--shreem-border)] bg-[linear-gradient(180deg,rgba(255,251,243,0.98),rgba(248,242,230,0.92))]">
+              <article className="brand-card flex h-full min-h-[33rem] flex-col overflow-hidden">
+                <div className="relative aspect-[16/10] shrink-0 border-b border-[var(--shreem-border)] bg-[linear-gradient(180deg,rgba(255,251,243,0.98),rgba(248,242,230,0.92))]">
                   <Image
                     src={post.image}
                     alt={post.imageAlt}
                     fill
-                    sizes="(max-width: 1280px) 100vw, 640px"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
                     className="object-cover"
                   />
                 </div>
-                <div className="p-5 small:p-6">
+                <div className="flex flex-1 flex-col p-5 small:p-6">
                   <p className="brand-kicker">{post.category}</p>
-                  <h2 className="mt-3 text-[2rem] leading-[1.04] text-[var(--shreem-ink)]">
+                  <h2 className="mt-3 min-h-[4.2rem] text-[1.55rem] leading-[1.08] text-[var(--shreem-ink)] small:text-[1.75rem]">
                     {post.title}
                   </h2>
-                  <p className="mt-3 text-sm leading-6 text-[var(--shreem-muted)]">
+                  <p className="mt-3 min-h-[6rem] text-sm leading-6 text-[var(--shreem-muted)]">
                     {post.excerpt}
                   </p>
-                  <div className="mt-5 flex items-center justify-between text-sm text-[var(--shreem-muted)]">
+                  <div className="mt-auto flex items-center justify-between gap-4 pt-5 text-sm text-[var(--shreem-muted)]">
                     <span>{post.readTime}</span>
-                    <span>Read now</span>
+                    <span className="font-semibold text-[var(--shreem-ink)]">
+                      Read now
+                    </span>
                   </div>
                 </div>
               </article>

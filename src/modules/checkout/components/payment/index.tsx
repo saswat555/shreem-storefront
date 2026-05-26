@@ -15,6 +15,7 @@ import { useShiprocketCheckout } from "@modules/checkout/context/shiprocket-cont
 import PaymentContainer, {
   StripeCardContainer,
 } from "@modules/checkout/components/payment-container"
+import ManualUpiQrImage from "@modules/common/components/manual-upi-qr-image"
 import Divider from "@modules/common/components/divider"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { useCallback, useEffect, useState } from "react"
@@ -41,7 +42,7 @@ const ManualUpiNotice = ({ data }: { data?: Record<string, unknown> | null }) =>
       </p>
       <div className="mt-3 grid gap-3 small:grid-cols-[120px_minmax(0,1fr)] small:items-center">
         {qrImageUrl ? (
-          <img
+          <ManualUpiQrImage
             src={qrImageUrl}
             alt="UPI QR code"
             className="h-[120px] w-[120px] rounded-[16px] border border-[var(--shreem-border)] bg-white object-contain p-2"

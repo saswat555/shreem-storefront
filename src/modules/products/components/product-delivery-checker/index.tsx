@@ -1,6 +1,7 @@
 "use client"
 
 import { HttpTypes } from "@medusajs/types"
+import { useSearchParams } from "next/navigation"
 import { useEffect, useMemo, useState } from "react"
 
 import {
@@ -47,13 +48,51 @@ const metadataNumber = (metadata: Record<string, unknown>, keys: string[]) => {
   return 0
 }
 
-const getProductWeightKg = (product: HttpTypes.StoreProduct) => {
-  const firstVariantWithWeight = product.variants?.find((variant) => {
-    const metadata = (variant.metadata || {}) as Record<string, unknown>
+type StoreProductVariant = NonNullable<HttpTypes.StoreProduct["variants"]>[number]
 
-    return getNumericWeight((variant as any).weight) || getNumericWeight(metadata.weight_kg)
-  })
-  const variantMetadata = (firstVariantWithWeight?.metadata || {}) as Record<
+const hasVariantPackageSignal = (variant: StoreProductVariant) => {
+  const metadata = (variant.metadata || {}) as Record<string, unknown>
+
+  return Boolean(
+    getNumericWeight((variant as any).weight) ||
+      getNumericWeight(metadata.weight_kg) ||
+      getNumericWeight(metadata.package_weight_kg) ||
+      metadataNumber(metadata, ["length_cm", "package_length_cm"]) ||
+      metadataNumber(metadata, [
+        "breadth_cm",
+        "width_cm",
+        "package_breadth_cm",
+        "package_width_cm",
+      ]) ||
+      metadataNumber(metadata, ["height_cm", "package_height_cm"])
+  )
+}
+
+const resolveRateVariant = (
+  product: HttpTypes.StoreProduct,
+  selectedVariantId?: string | null
+) => {
+  const variants = product.variants || []
+
+  if (selectedVariantId) {
+    const selectedVariant = variants.find(
+      (variant) => variant.id === selectedVariantId
+    )
+
+    if (selectedVariant) {
+      return selectedVariant
+    }
+  }
+
+  return variants.find(hasVariantPackageSignal) || variants[0]
+}
+
+const getProductWeightKg = (
+  product: HttpTypes.StoreProduct,
+  variant?: StoreProductVariant
+) => {
+  const packageVariant = variant || product.variants?.find(hasVariantPackageSignal)
+  const variantMetadata = (packageVariant?.metadata || {}) as Record<
     string,
     unknown
   >
@@ -61,27 +100,33 @@ const getProductWeightKg = (product: HttpTypes.StoreProduct) => {
 
   return (
     getNumericWeight(variantMetadata.weight_kg) ||
+    getNumericWeight(variantMetadata.package_weight_kg) ||
     getNumericWeight(productMetadata.weight_kg) ||
-    medusaWeightToKg((firstVariantWithWeight as any)?.weight) ||
+    getNumericWeight(productMetadata.package_weight_kg) ||
+    medusaWeightToKg((packageVariant as any)?.weight) ||
     medusaWeightToKg((product as any).weight) ||
     1
   )
 }
 
-const getProductPackage = (product: HttpTypes.StoreProduct) => {
-  const firstVariant = product.variants?.[0]
-  const variantMetadata = (firstVariant?.metadata || {}) as Record<
+const getProductPackage = (
+  product: HttpTypes.StoreProduct,
+  selectedVariantId?: string | null
+) => {
+  const variant = resolveRateVariant(product, selectedVariantId)
+  const variantMetadata = (variant?.metadata || {}) as Record<
     string,
     unknown
   >
   const productMetadata = (product.metadata || {}) as Record<string, unknown>
 
   return {
-    weight: getProductWeightKg(product),
+    variantTitle: variant?.title,
+    weight: getProductWeightKg(product, variant),
     length:
       metadataNumber(variantMetadata, ["length_cm", "package_length_cm"]) ||
       metadataNumber(productMetadata, ["length_cm", "package_length_cm"]) ||
-      getNumericDimension((firstVariant as any)?.length) ||
+      getNumericDimension((variant as any)?.length) ||
       getNumericDimension((product as any).length) ||
       undefined,
     breadth:
@@ -97,13 +142,13 @@ const getProductPackage = (product: HttpTypes.StoreProduct) => {
         "package_breadth_cm",
         "package_width_cm",
       ]) ||
-      getNumericDimension((firstVariant as any)?.width) ||
+      getNumericDimension((variant as any)?.width) ||
       getNumericDimension((product as any).width) ||
       undefined,
     height:
       metadataNumber(variantMetadata, ["height_cm", "package_height_cm"]) ||
       metadataNumber(productMetadata, ["height_cm", "package_height_cm"]) ||
-      getNumericDimension((firstVariant as any)?.height) ||
+      getNumericDimension((variant as any)?.height) ||
       getNumericDimension((product as any).height) ||
       undefined,
   }
@@ -125,13 +170,30 @@ const ProductDeliveryChecker = ({
   product: HttpTypes.StoreProduct
   initialPincode?: string
 }) => {
+  const searchParams = useSearchParams()
+  const selectedVariantId = searchParams.get("v_id")
   const [pincode, setPincode] = useState("")
   const [status, setStatus] = useState<
     "idle" | "loading" | "available" | "unavailable" | "error"
   >("idle")
   const [message, setMessage] = useState("")
   const [rate, setRate] = useState<ShiprocketRate | null>(null)
-  const packageDetails = useMemo(() => getProductPackage(product), [product])
+  const packageDetails = useMemo(
+    () => getProductPackage(product, selectedVariantId),
+    [product, selectedVariantId]
+  )
+
+  useEffect(() => {
+    setStatus("idle")
+    setMessage("")
+    setRate(null)
+  }, [
+    packageDetails.variantTitle,
+    packageDetails.weight,
+    packageDetails.length,
+    packageDetails.breadth,
+    packageDetails.height,
+  ])
 
   useEffect(() => {
     const localPincode =
@@ -216,6 +278,11 @@ const ProductDeliveryChecker = ({
       <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
         Check Shiprocket serviceability and live delivery cost before checkout.
       </p>
+      {packageDetails.variantTitle && (
+        <p className="mt-2 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--shreem-gold-deep)]">
+          Variant: {packageDetails.variantTitle}
+        </p>
+      )}
 
       <div className="mt-4 flex flex-col gap-2 small:flex-row">
         <input

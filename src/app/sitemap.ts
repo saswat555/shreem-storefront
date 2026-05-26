@@ -175,19 +175,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   })
 
   const blogEntries: MetadataRoute.Sitemap = countryCodes.flatMap((countryCode) =>
-    blogPosts.map((post) =>
-      withOptionalImages(
-        withOptionalLastModified(
-          {
-            url: joinUrl(baseUrl, countryCode, "blog", post.slug),
-            changeFrequency: "monthly" as const,
-            priority: 0.74,
-          },
-          safeDate(post.publishedAt)
-        ),
-        post.image ? [toSitemapImageUrl(post.image)].filter(Boolean) : []
+    blogPosts
+      .filter((post) => post.slug)
+      .map((post) =>
+        withOptionalImages(
+          withOptionalLastModified(
+            {
+              url: joinUrl(baseUrl, countryCode, "blog", post.slug),
+              changeFrequency: "monthly" as const,
+              priority: 0.78,
+            },
+            safeDate(post.publishedAt)
+          ),
+          post.image ? [toSitemapImageUrl(post.image)].filter(Boolean) : []
+        )
       )
-    )
   )
 
   const categoryEntries: MetadataRoute.Sitemap = countryCodes.flatMap((countryCode) =>
