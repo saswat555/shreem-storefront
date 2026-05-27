@@ -7,6 +7,39 @@ export type ShiprocketCourier = {
   etd?: string
   rate?: number
   freight_charge?: number
+  provider?: "shiprocket" | "india_post" | string
+  option_id?: string
+}
+
+export type ShipmentCarrier = "shiprocket" | "india_post"
+
+export type ShipmentPackageLine = {
+  line_id?: string
+  variant_id?: string
+  title: string
+  quantity: number
+}
+
+export type ShipmentPackage = {
+  id: string
+  label: string
+  carrier: ShipmentCarrier
+  separate: boolean
+  shipping_class: string
+  line_items: ShipmentPackageLine[]
+  weight: number
+  length?: number
+  breadth?: number
+  height?: number
+}
+
+export type ShipmentPackageQuote = ShipmentPackage & {
+  cheapest?: ShiprocketCourier | null
+  selected_option?: ShiprocketCourier | null
+  all_options: ShiprocketCourier[]
+  amount?: number
+  amount_paise?: number
+  message?: string
 }
 
 export type ShiprocketRate = {
@@ -19,6 +52,7 @@ export type ShiprocketRate = {
   amount_paise?: number
   courier?: ShiprocketCourier
   all_options?: ShiprocketCourier[]
+  package_quotes?: ShipmentPackageQuote[]
   message?: string
   error?: string
 }
@@ -59,6 +93,36 @@ const readMetadataNumber = (
   }
 
   return 0
+}
+
+const readMetadataString = (
+  metadata: Record<string, unknown> | null | undefined,
+  keys: string[]
+) => {
+  for (const key of keys) {
+    const value = metadata?.[key]
+
+    if (typeof value === "string" && value.trim()) {
+      return value.trim().toLowerCase()
+    }
+  }
+
+  return ""
+}
+
+const readMetadataBool = (
+  metadata: Record<string, unknown> | null | undefined,
+  keys: string[]
+) => {
+  for (const key of keys) {
+    const value = metadata?.[key]
+
+    if (value === true || value === "true" || value === "yes" || value === "1") {
+      return true
+    }
+  }
+
+  return false
 }
 
 const medusaWeightToKg = (value: unknown) => {
@@ -200,6 +264,167 @@ export function getCartPackageDetails(cart: Pick<HttpTypes.StoreCart, "items">) 
   }
 }
 
+const getLineTitle = (line: HttpTypes.StoreCartLineItem & any) =>
+  String(line.title || line.product?.title || line.variant?.title || "Item")
+
+const getLineHandle = (line: HttpTypes.StoreCartLineItem & any) =>
+  String(line.product?.handle || line.variant?.product?.handle || "")
+
+const getShippingClass = (line: HttpTypes.StoreCartLineItem & any) => {
+  const metadata = {
+    ...(line.product?.metadata || {}),
+    ...(line.variant?.metadata || {}),
+    ...(line.metadata || {}),
+  }
+  const explicit = readMetadataString(metadata, [
+    "shipping_class",
+    "shipping_group",
+    "shipment_group",
+    "shipping_profile",
+  ])
+
+  if (explicit) {
+    return explicit
+  }
+
+  const haystack = `${getLineTitle(line)} ${getLineHandle(line)}`.toLowerCase()
+
+  if (/vermi|compost|bio\s*fertil|biofertil|fertilizer|cow\s*dung|dung\s*cake|gobar|upla/.test(haystack)) {
+    return "heavy-farm"
+  }
+
+  if (/ghee|amchur|mango\s*powder|powder/.test(haystack)) {
+    return "food-care"
+  }
+
+  return "standard"
+}
+
+const getPreferredCarrier = (line: HttpTypes.StoreCartLineItem & any): ShipmentCarrier => {
+  const metadata = {
+    ...(line.product?.metadata || {}),
+    ...(line.variant?.metadata || {}),
+    ...(line.metadata || {}),
+  }
+  const explicit = readMetadataString(metadata, [
+    "preferred_carrier",
+    "shipping_carrier",
+    "carrier",
+  ])
+
+  if (explicit.includes("india") || explicit.includes("post")) {
+    return "india_post"
+  }
+
+  if (explicit.includes("shiprocket")) {
+    return "shiprocket"
+  }
+
+  return getShippingClass(line) === "heavy-farm" ? "india_post" : "shiprocket"
+}
+
+const shouldShipSeparately = (line: HttpTypes.StoreCartLineItem & any) => {
+  const metadata = {
+    ...(line.product?.metadata || {}),
+    ...(line.variant?.metadata || {}),
+    ...(line.metadata || {}),
+  }
+
+  return (
+    readMetadataBool(metadata, [
+      "ship_separately",
+      "ships_separately",
+      "separate_shipping",
+      "separate_parcel",
+    ]) || getShippingClass(line) === "heavy-farm"
+  )
+}
+
+export function getCartShipmentPackages(cart: Pick<HttpTypes.StoreCart, "items">) {
+  const grouped = new Map<string, ShipmentPackage>()
+
+  cart.items?.forEach((item) => {
+    const line = item as HttpTypes.StoreCartLineItem & {
+      product?: {
+        handle?: string | null
+        weight?: number | null
+        length?: number | null
+        width?: number | null
+        height?: number | null
+        metadata?: Record<string, unknown> | null
+      }
+      variant?: HttpTypes.StoreProductVariant & {
+        weight?: number | null
+        length?: number | null
+        width?: number | null
+        height?: number | null
+        metadata?: Record<string, unknown> | null
+      }
+      metadata?: Record<string, unknown> | null
+    }
+    const quantity = Math.max(1, Number(item.quantity || 1))
+    const shippingClass = getShippingClass(line)
+    const carrier = getPreferredCarrier(line)
+    const separate = shouldShipSeparately(line)
+    const key = separate
+      ? `${carrier}:${shippingClass}:${item.id || line.variant_id || getLineTitle(line)}`
+      : `${carrier}:${shippingClass}`
+    const lineDims = getLineDimensionsCm(line)
+    const lineWeight = getLineWeightKg(line)
+    const existing = grouped.get(key) || {
+      id: key.replace(/[^a-z0-9:_-]/gi, "-").toLowerCase(),
+      label:
+        shippingClass === "heavy-farm"
+          ? "Heavy farm parcel"
+          : shippingClass === "food-care"
+            ? "Food and care parcel"
+            : "Standard parcel",
+      carrier,
+      separate,
+      shipping_class: shippingClass,
+      line_items: [],
+      weight: 0,
+      length: 0,
+      breadth: 0,
+      height: 0,
+    }
+
+    existing.line_items.push({
+      line_id: item.id,
+      variant_id: line.variant_id || line.variant?.id,
+      title: getLineTitle(line),
+      quantity,
+    })
+    existing.weight += lineWeight * quantity
+    existing.length = Math.max(existing.length || 0, lineDims.lengthCm)
+    existing.breadth = Math.max(existing.breadth || 0, lineDims.breadthCm)
+    existing.height = (existing.height || 0) + lineDims.heightCm * quantity
+    grouped.set(key, existing)
+  })
+
+  const packages = Array.from(grouped.values()).map((pkg) => ({
+    ...pkg,
+    weight: Number((pkg.weight || fallbackWeightKg).toFixed(3)),
+    length: pkg.length || undefined,
+    breadth: pkg.breadth || undefined,
+    height: pkg.height || undefined,
+  }))
+
+  return packages.length
+    ? packages
+    : [
+        {
+          id: "shiprocket:standard",
+          label: "Standard parcel",
+          carrier: "shiprocket" as ShipmentCarrier,
+          separate: false,
+          shipping_class: "standard",
+          line_items: [],
+          weight: fallbackWeightKg,
+        },
+      ]
+}
+
 export function getCartShiprocketSignature(
   cart: Pick<HttpTypes.StoreCart, "items">
 ) {
@@ -231,6 +456,12 @@ export function getCartShiprocketSignature(
           line.product?.metadata?.breadth_cm,
           line.product?.metadata?.width_cm,
           line.product?.metadata?.height_cm,
+          line.product?.metadata?.shipping_class,
+          line.variant?.metadata?.shipping_class,
+          line.product?.metadata?.preferred_carrier,
+          line.variant?.metadata?.preferred_carrier,
+          line.product?.metadata?.ship_separately,
+          line.variant?.metadata?.ship_separately,
         ].join(":")
       })
       .join("|") || "empty"
@@ -285,6 +516,38 @@ export function getShiprocketAmountPaise(rate?: ShiprocketRate | null) {
   return Math.round(Number(rate.amount || 0) * 100)
 }
 
+export function getShipmentPackageQuoteAmountPaise(
+  quote?: ShipmentPackageQuote | null
+) {
+  if (!quote) {
+    return 0
+  }
+
+  if (Number.isFinite(quote.selected_option?.rate)) {
+    return getShiprocketCourierAmountPaise(quote.selected_option)
+  }
+
+  if (Number.isFinite(quote.amount_paise)) {
+    return Number(quote.amount_paise)
+  }
+
+  if (Number.isFinite(quote.amount)) {
+    return Math.round(Number(quote.amount) * 100)
+  }
+
+  return getShiprocketCourierAmountPaise(quote.cheapest)
+}
+
+export function getShiprocketCourierAmountPaise(courier?: ShiprocketCourier | null) {
+  if (!courier) {
+    return 0
+  }
+
+  return Math.round(
+    Number(courier.rate ?? courier.freight_charge ?? 0) * 100
+  )
+}
+
 export function getShiprocketAmountMajor(rate?: ShiprocketRate | null) {
   return getShiprocketAmountPaise(rate) / 100
 }
@@ -330,11 +593,15 @@ export function isShiprocketShippingOption(option?: unknown) {
 
 export function buildShiprocketShippingData({
   rate,
+  courier,
+  packageQuotes,
   weightKg,
   postalCode,
   packageDetails,
 }: {
   rate: ShiprocketRate | null
+  courier?: ShiprocketCourier | null
+  packageQuotes?: ShipmentPackageQuote[]
   weightKg: number
   postalCode: string
   packageDetails?: ReturnType<typeof getCartPackageDetails>
@@ -343,24 +610,38 @@ export function buildShiprocketShippingData({
     return undefined
   }
 
+  const selectedCourier = courier || rate.courier
+  const selectedPackageQuotes = packageQuotes?.length
+    ? packageQuotes
+    : rate.package_quotes
+  const packageAmountPaise = selectedPackageQuotes?.reduce(
+    (sum, quote) => sum + getShipmentPackageQuoteAmountPaise(quote),
+    0
+  )
+  const selectedAmountPaise =
+    packageAmountPaise ||
+    getShiprocketCourierAmountPaise(selectedCourier) ||
+    getShiprocketAmountPaise(rate)
+
   return {
     provider: "shiprocket",
     pickup_postcode: rate.pickup_postcode || "486001",
     delivery_postcode: rate.delivery_postcode || postalCode,
-    amount: rate.amount,
-    amount_paise: getShiprocketAmountPaise(rate),
+    amount: selectedAmountPaise / 100,
+    amount_paise: selectedAmountPaise,
     weight_kg: weightKg,
     length_cm: packageDetails?.lengthCm,
     breadth_cm: packageDetails?.breadthCm,
     height_cm: packageDetails?.heightCm,
-    courier: rate.courier
+    package_quotes: selectedPackageQuotes,
+    courier: selectedCourier
       ? {
-          courier_name: rate.courier.courier_name,
-          courier_company_id: rate.courier.courier_company_id,
-          estimated_delivery_days: rate.courier.estimated_delivery_days,
-          etd: rate.courier.etd,
-          rate: rate.courier.rate,
-          freight_charge: rate.courier.freight_charge,
+          courier_name: selectedCourier.courier_name,
+          courier_company_id: selectedCourier.courier_company_id,
+          estimated_delivery_days: selectedCourier.estimated_delivery_days,
+          etd: selectedCourier.etd,
+          rate: selectedCourier.rate,
+          freight_charge: selectedCourier.freight_charge,
         }
       : undefined,
   }

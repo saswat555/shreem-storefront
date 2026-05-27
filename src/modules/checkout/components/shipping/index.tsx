@@ -9,11 +9,15 @@ import {
   formatShiprocketAmount,
   getCartShiprocketSignature,
   getShiprocketAmountPaise,
+  getShiprocketCourierAmountPaise,
   getShiprocketEtaLabel,
+  getShipmentPackageQuoteAmountPaise,
   isCompleteIndianPincode,
   isIndianAddress,
   isShiprocketShippingOption,
   normalizePincode,
+  ShiprocketCourier,
+  ShipmentPackageQuote,
 } from "@lib/util/shiprocket"
 import { CheckCircleSolid, Loader } from "@medusajs/icons"
 import { HttpTypes } from "@medusajs/types"
@@ -87,6 +91,10 @@ const Shipping: React.FC<ShippingProps> = ({
   const [shippingMethodId, setShippingMethodId] = useState<string | null>(
     cart.shipping_methods?.at(-1)?.shipping_option_id || null
   )
+  const [selectedCourierId, setSelectedCourierId] = useState<number | null>(null)
+  const [selectedPackageOptions, setSelectedPackageOptions] = useState<
+    Record<string, string>
+  >({})
 
   const searchParams = useSearchParams()
   const router = useRouter()
@@ -139,13 +147,81 @@ const Shipping: React.FC<ShippingProps> = ({
     isIndianDelivery &&
     Boolean(cart.shipping_methods?.[0] || shippingMethodId) &&
     !selectedIsShiprocket
-  const shiprocketAmountPaise = getShiprocketAmountPaise(shiprocket.rate)
-  const shiprocketEta = getShiprocketEtaLabel(shiprocket.rate)
   const shiprocketFresh =
     shiprocket.status === "available" &&
     Boolean(shiprocket.rate) &&
     shiprocket.postalCode === deliveryPincode &&
     shiprocket.cartSignature === cartSignature
+  const packageQuotes = useMemo(
+    () =>
+      Array.isArray(shiprocket.rate?.package_quotes)
+        ? shiprocket.rate.package_quotes
+        : [],
+    [shiprocket.rate?.package_quotes]
+  )
+  const selectedPackageQuotes = useMemo<ShipmentPackageQuote[]>(() => {
+    return packageQuotes.map((quote) => {
+      const selectedOptionId = selectedPackageOptions[quote.id]
+      const option =
+        quote.all_options?.find(
+          (item) =>
+            item.option_id === selectedOptionId ||
+            String(item.courier_company_id || "") === selectedOptionId
+        ) || quote.selected_option || quote.cheapest || null
+      const amountPaise = option
+        ? getShiprocketCourierAmountPaise(option)
+        : getShipmentPackageQuoteAmountPaise(quote)
+
+      return {
+        ...quote,
+        selected_option: option,
+        amount: amountPaise / 100,
+        amount_paise: amountPaise,
+      }
+    })
+  }, [packageQuotes, selectedPackageOptions])
+  const shiprocketOptions = useMemo(() => {
+    const options = Array.isArray(shiprocket.rate?.all_options)
+      ? shiprocket.rate.all_options
+      : []
+
+    return [...options]
+      .filter((option) => option?.courier_company_id)
+      .sort((a, b) => {
+        const ar = getShiprocketCourierAmountPaise(a)
+        const br = getShiprocketCourierAmountPaise(b)
+        const ae = Number(a.estimated_delivery_days || 999)
+        const be = Number(b.estimated_delivery_days || 999)
+
+        return ar === br ? ae - be : ar - br
+      })
+      .slice(0, 6)
+  }, [shiprocket.rate?.all_options])
+  const selectedCourier = useMemo<ShiprocketCourier | null>(() => {
+    if (!shiprocketFresh || selectedPackageQuotes.length) {
+      return null
+    }
+
+    return (
+      shiprocketOptions.find(
+        (option) => option.courier_company_id === selectedCourierId
+      ) ||
+      shiprocket.rate?.courier ||
+      null
+    )
+  }, [selectedCourierId, selectedPackageQuotes.length, shiprocket.rate?.courier, shiprocketFresh, shiprocketOptions])
+  const shiprocketAmountPaise =
+    selectedPackageQuotes.reduce(
+      (sum, quote) => sum + getShipmentPackageQuoteAmountPaise(quote),
+      0
+    ) ||
+    getShiprocketCourierAmountPaise(selectedCourier) ||
+    getShiprocketAmountPaise(shiprocket.rate)
+  const shiprocketEta = getShiprocketEtaLabel(
+    selectedCourier
+      ? { ok: true, available: true, courier: selectedCourier }
+      : shiprocket.rate
+  )
   const fallbackAllowed =
     shiprocket.status === "error" &&
     fallbackSelected &&
@@ -261,6 +337,51 @@ const Shipping: React.FC<ShippingProps> = ({
     shiprocket.calculate,
   ])
 
+  useEffect(() => {
+    if (!shiprocketFresh) {
+      setSelectedCourierId(null)
+      return
+    }
+
+    if (selectedCourierId) {
+      return
+    }
+
+    const defaultCourier = shiprocket.rate?.courier || shiprocketOptions[0]
+
+    if (defaultCourier?.courier_company_id) {
+      setSelectedCourierId(defaultCourier.courier_company_id)
+    }
+  }, [selectedCourierId, shiprocket.rate?.courier, shiprocketFresh, shiprocketOptions])
+
+  useEffect(() => {
+    if (!shiprocketFresh || !packageQuotes.length) {
+      setSelectedPackageOptions({})
+      return
+    }
+
+    setSelectedPackageOptions((current) => {
+      const next = { ...current }
+      let changed = false
+
+      packageQuotes.forEach((quote) => {
+        if (next[quote.id]) {
+          return
+        }
+
+        const option = quote.selected_option || quote.cheapest || quote.all_options?.[0]
+        const optionId = option?.option_id || String(option?.courier_company_id || "")
+
+        if (optionId) {
+          next[quote.id] = optionId
+          changed = true
+        }
+      })
+
+      return changed ? next : current
+    })
+  }, [packageQuotes, shiprocketFresh])
+
   const handleEdit = () => {
     router.push(pathname + "?step=delivery", { scroll: false })
   }
@@ -276,7 +397,9 @@ const Shipping: React.FC<ShippingProps> = ({
 
   const handleSetShippingMethod = async (
     id: string,
-    variant: "shipping" | "pickup"
+    variant: "shipping" | "pickup",
+    courierOverride?: ShiprocketCourier | null,
+    packageQuotesOverride?: ShipmentPackageQuote[]
   ) => {
     setError(null)
 
@@ -299,6 +422,8 @@ const Shipping: React.FC<ShippingProps> = ({
       shiprocketFresh
         ? buildShiprocketShippingData({
             rate: shiprocket.rate,
+            courier: courierOverride || selectedCourier,
+            packageQuotes: packageQuotesOverride || selectedPackageQuotes,
             weightKg: shiprocket.cartWeightKg,
             postalCode: deliveryPincode,
             packageDetails: shiprocket.cartPackageDetails,
@@ -417,11 +542,11 @@ const Shipping: React.FC<ShippingProps> = ({
               {shiprocketFresh && shiprocket.rate && (
                 <div className="mt-4 grid gap-3 small:grid-cols-[minmax(0,1fr)_auto] small:items-end">
                   <div className="grid gap-2 text-sm leading-6 text-[var(--shreem-muted)]">
-                    {shiprocket.rate.courier?.courier_name && (
+                    {selectedCourier?.courier_name && (
                       <p>
                         Courier:{" "}
                         <span className="font-semibold text-[var(--shreem-ink)]">
-                          {shiprocket.rate.courier.courier_name}
+                          {selectedCourier.courier_name}
                         </span>
                       </p>
                     )}
@@ -438,6 +563,11 @@ const Shipping: React.FC<ShippingProps> = ({
                           {shiprocket.cartPackageDetails.heightCm} cm.
                         </p>
                       )}
+                    {selectedPackageQuotes.length > 1 && (
+                      <p className="font-medium text-[var(--shreem-accent-dark)]">
+                        Split into {selectedPackageQuotes.length} parcels so heavy farm items do not inflate the price of ghee or food products.
+                      </p>
+                    )}
                     {hasCalculatedShiprocketOption ? (
                       <p className="font-medium text-[var(--shreem-accent-dark)]">
                         Ready to sync with secure checkout payment using the
@@ -467,6 +597,152 @@ const Shipping: React.FC<ShippingProps> = ({
                         Use Shiprocket
                       </Button>
                     )}
+                </div>
+              )}
+
+              {shiprocketFresh && selectedPackageQuotes.length > 0 && (
+                <div className="mt-4 grid gap-3">
+                  <p className="text-sm font-semibold text-[var(--shreem-ink)]">
+                    Item-wise delivery options
+                  </p>
+                  {selectedPackageQuotes.map((quote) => {
+                    const activeOptionId =
+                      quote.selected_option?.option_id ||
+                      String(quote.selected_option?.courier_company_id || "")
+
+                    return (
+                      <div
+                        key={quote.id}
+                        className="rounded-[18px] border border-[rgba(18,63,99,0.12)] bg-white/74 p-3"
+                      >
+                        <div className="flex flex-col gap-2 small:flex-row small:items-start small:justify-between">
+                          <div>
+                            <p className="font-semibold text-[var(--shreem-ink)]">
+                              {quote.label}
+                            </p>
+                            <p className="mt-1 text-xs leading-5 text-[var(--shreem-muted)]">
+                              {quote.line_items
+                                .map((item) => `${item.title} x ${item.quantity}`)
+                                .join(" · ") || "Selected items"}
+                            </p>
+                          </div>
+                          <span className="shrink-0 rounded-full bg-[rgba(13,129,126,0.1)] px-3 py-1 text-xs font-semibold text-[var(--shreem-ink)]">
+                            {quote.weight.toFixed(2)} kg
+                          </span>
+                        </div>
+                        <div className="mt-3 grid gap-2 small:grid-cols-2">
+                          {(quote.all_options || []).slice(0, 6).map((option) => {
+                            const optionId =
+                              option.option_id || String(option.courier_company_id || "")
+                            const amount = getShiprocketCourierAmountPaise(option)
+                            const active = activeOptionId === optionId
+
+                            return (
+                              <button
+                                key={optionId || option.courier_name}
+                                type="button"
+                                className={clx(
+                                  "rounded-[14px] border bg-white/82 px-3 py-2 text-left text-sm transition hover:border-[var(--shreem-accent-dark)]",
+                                  active
+                                    ? "border-[var(--shreem-accent-dark)] shadow-[0_10px_24px_rgba(13,129,126,0.13)]"
+                                    : "border-[rgba(18,63,99,0.12)]"
+                                )}
+                                onClick={() => {
+                                  setSelectedPackageOptions((current) => ({
+                                    ...current,
+                                    [quote.id]: optionId,
+                                  }))
+
+                                  if (selectedIsShiprocket && shiprocketMedusaOption?.id) {
+                                    const nextQuotes = selectedPackageQuotes.map((item) =>
+                                      item.id === quote.id
+                                        ? {
+                                            ...item,
+                                            selected_option: option,
+                                            amount: amount / 100,
+                                            amount_paise: amount,
+                                          }
+                                        : item
+                                    )
+
+                                    handleSetShippingMethod(
+                                      shiprocketMedusaOption.id,
+                                      "shipping",
+                                      null,
+                                      nextQuotes
+                                    )
+                                  }
+                                }}
+                              >
+                                <span className="block font-semibold text-[var(--shreem-ink)]">
+                                  {option.courier_name || "Courier option"}
+                                </span>
+                                <span className="mt-1 block text-[var(--shreem-muted)]">
+                                  {formatShiprocketAmount(amount, cart.currency_code)}
+                                  {option.estimated_delivery_days
+                                    ? ` · ${option.estimated_delivery_days} days`
+                                    : option.etd
+                                      ? ` · ${option.etd}`
+                                      : ""}
+                                </span>
+                              </button>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+
+              {shiprocketFresh && !selectedPackageQuotes.length && shiprocketOptions.length > 1 && (
+                <div className="mt-4 grid gap-2">
+                  <p className="text-sm font-semibold text-[var(--shreem-ink)]">
+                    Choose courier by speed and cost
+                  </p>
+                  <div className="grid gap-2 small:grid-cols-2">
+                    {shiprocketOptions.map((option) => {
+                      const amount = getShiprocketCourierAmountPaise(option)
+                      const active = selectedCourier?.courier_company_id === option.courier_company_id
+
+                      return (
+                        <button
+                          key={option.courier_company_id}
+                          type="button"
+                          className={clx(
+                            "rounded-[16px] border bg-white/72 px-3 py-3 text-left text-sm transition hover:border-[var(--shreem-accent-dark)]",
+                            active
+                              ? "border-[var(--shreem-accent-dark)] shadow-[0_12px_28px_rgba(13,129,126,0.14)]"
+                              : "border-[rgba(18,63,99,0.12)]"
+                          )}
+                          onClick={() => {
+                            setSelectedCourierId(option.courier_company_id || null)
+                            if (selectedIsShiprocket && shiprocketMedusaOption?.id) {
+                              handleSetShippingMethod(
+                                shiprocketMedusaOption.id,
+                                "shipping",
+                                option
+                              )
+                            }
+                          }}
+                        >
+                          <span className="block font-semibold text-[var(--shreem-ink)]">
+                            {option.courier_name || "Shiprocket courier"}
+                          </span>
+                          <span className="mt-1 block text-[var(--shreem-muted)]">
+                            {amount
+                              ? formatShiprocketAmount(amount, cart.currency_code)
+                              : "Rate available"}
+                            {option.estimated_delivery_days
+                              ? ` · ${option.estimated_delivery_days} days`
+                              : option.etd
+                                ? ` · ${option.etd}`
+                                : ""}
+                          </span>
+                        </button>
+                      )
+                    })}
+                  </div>
                 </div>
               )}
 
@@ -575,7 +851,8 @@ const Shipping: React.FC<ShippingProps> = ({
                             </span>
                             {optionIsShiprocket && shiprocketFresh && (
                               <span className="text-sm leading-5 text-[var(--shreem-muted)]">
-                                {shiprocket.rate?.courier?.courier_name ||
+                                {selectedCourier?.courier_name ||
+                                  shiprocket.rate?.courier?.courier_name ||
                                   "Live Shiprocket courier"}
                                 {shiprocketEta ? ` · ${shiprocketEta}` : ""}
                               </span>
@@ -732,10 +1009,10 @@ const Shipping: React.FC<ShippingProps> = ({
                 </Text>
                 {isShiprocketShippingOption(cart.shipping_methods!.at(-1)) &&
                   shiprocketFresh &&
-                  (shiprocket.rate?.courier?.courier_name || shiprocketEta) && (
+                  (selectedCourier?.courier_name || shiprocketEta) && (
                     <Text className="mt-1 text-sm leading-6 text-[var(--shreem-muted)]">
-                      {shiprocket.rate?.courier?.courier_name}
-                      {shiprocket.rate?.courier?.courier_name && shiprocketEta
+                      {selectedCourier?.courier_name}
+                      {selectedCourier?.courier_name && shiprocketEta
                         ? " · "
                         : ""}
                       {shiprocketEta}

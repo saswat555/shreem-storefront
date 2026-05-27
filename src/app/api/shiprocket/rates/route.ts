@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server"
 
-import { getCartPackageDetails, getCartWeightKg } from "@lib/util/shiprocket"
+import {
+  getCartPackageDetails,
+  getCartShipmentPackages,
+  getCartWeightKg,
+} from "@lib/util/shiprocket"
 
 const getBackendUrl = () =>
   (process.env.MEDUSA_BACKEND_URL || process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "")
@@ -28,6 +32,11 @@ export async function POST(request: NextRequest) {
     payload?.weight || (payload?.cart ? getCartWeightKg(payload.cart) : 1)
   )
   const packageDetails = payload?.cart ? getCartPackageDetails(payload.cart) : null
+  const packages = Array.isArray(payload?.packages)
+    ? payload.packages
+    : payload?.cart
+      ? getCartShipmentPackages(payload.cart)
+      : undefined
   const length =
     sanitizeDimension(payload?.length || payload?.length_cm) ||
     packageDetails?.lengthCm
@@ -70,6 +79,7 @@ export async function POST(request: NextRequest) {
       length,
       breadth,
       height,
+      packages,
       cod: Boolean(payload?.cod),
     }),
     cache: "no-store",
