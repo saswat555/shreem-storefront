@@ -152,6 +152,12 @@ const safeParseJson = (text: string) => {
   try {
     let cleanText = text.trim()
     
+    // Remove reasoning tags (like DeepSeek <think> blocks) if present
+    cleanText = cleanText.replace(/<think>[\s\S]*?<\/think>/gi, "")
+    // Remove unclosed reasoning tags just in case
+    cleanText = cleanText.replace(/<think>[\s\S]*$/gi, "")
+    cleanText = cleanText.trim()
+
     // Remove markdown code blocks if present
     if (cleanText.startsWith("```")) {
       const match = cleanText.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/i)
@@ -309,6 +315,10 @@ const attemptJsonRepair = async ({
     return null
   }
 
+  const ollamaUrl = process.env.OLLAMA_URL
+  const isOllama = Boolean(ollamaUrl)
+  const actualModel = isOllama ? (process.env.OLLAMA_MODEL || "deepseek-r1:1.5b") : model
+
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), timeoutMs)
   const repairPrompt = [
@@ -320,43 +330,71 @@ const attemptJsonRepair = async ({
     text.slice(0, 14000),
   ].join("\n")
 
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(
-      model
-    )}:generateContent`,
-    {
+  let response: Response | null = null
+
+  if (isOllama) {
+    response = await fetch(`${ollamaUrl}/api/generate`, {
       method: "POST",
       headers: {
-        "x-goog-api-key": apiKey,
         "Content-Type": "application/json",
       },
       signal: controller.signal,
       body: JSON.stringify({
-        contents: [
-          {
-            role: "user",
-            parts: [{ text: repairPrompt }],
-          },
-        ],
-        generationConfig: {
+        model: actualModel,
+        prompt: repairPrompt,
+        stream: false,
+        format: "json",
+        options: {
           temperature: 0,
-          maxOutputTokens: 4096,
-          responseMimeType: "application/json",
-          responseSchema,
+          num_predict: 4096,
+          num_ctx: Math.max(8192, 4096 + 1024 + Math.ceil(repairPrompt.length / 3)),
         },
       }),
-    }
-  ).catch((error) => {
-    console.error(`[${label}] Gemini JSON repair request failed`, {
-      error: error instanceof Error ? error.message : String(error),
+    }).catch((error) => {
+      console.error(`[${label}] Ollama JSON repair request failed`, {
+        error: error instanceof Error ? error.message : String(error),
+      })
+      return null
     })
-    return null
-  })
+  } else {
+    response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(
+        actualModel
+      )}:generateContent`,
+      {
+        method: "POST",
+        headers: {
+          "x-goog-api-key": apiKey,
+          "Content-Type": "application/json",
+        },
+        signal: controller.signal,
+        body: JSON.stringify({
+          contents: [
+            {
+              role: "user",
+              parts: [{ text: repairPrompt }],
+            },
+          ],
+          generationConfig: {
+            temperature: 0,
+            maxOutputTokens: 4096,
+            responseMimeType: "application/json",
+            responseSchema,
+          },
+        }),
+      }
+    ).catch((error) => {
+      console.error(`[${label}] Gemini JSON repair request failed`, {
+        error: error instanceof Error ? error.message : String(error),
+      })
+      return null
+    })
+  }
 
   clearTimeout(timeout)
 
   if (!response?.ok) {
-    console.error(`[${label}] Gemini JSON repair failed`, {
+    console.error(`[${label}] ${isOllama ? "Ollama" : "Gemini"} JSON repair failed`, {
       status: response?.status,
       statusText: response?.statusText,
     })
@@ -364,15 +402,28 @@ const attemptJsonRepair = async ({
   }
 
   const data = await response.json()
-  const repairedText = data.candidates?.[0]?.content?.parts
-    ?.map((part: { text?: string }) => part.text || "")
-    .join("")
-    .trim()
-  const parsed = safeParseJson(repairedText || "")
+  let repairedText = ""
+  let rawUsage: any = null
+
+  if (isOllama) {
+    repairedText = data.response || ""
+    rawUsage = {
+      promptTokenCount: data.prompt_eval_count || 0,
+      candidatesTokenCount: data.eval_count || 0,
+    }
+  } else {
+    repairedText = data.candidates?.[0]?.content?.parts
+      ?.map((part: { text?: string }) => part.text || "")
+      .join("")
+      .trim() || ""
+    rawUsage = data.usageMetadata
+  }
+
+  const parsed = safeParseJson(repairedText)
 
   if (!parsed) {
-    console.error(`[${label}] Gemini JSON repair returned invalid JSON`, {
-      textPreview: (repairedText || "").slice(0, 500),
+    console.error(`[${label}] ${isOllama ? "Ollama" : "Gemini"} JSON repair returned invalid JSON`, {
+      textPreview: repairedText.slice(0, 500),
     })
     return null
   }
@@ -380,11 +431,11 @@ const attemptJsonRepair = async ({
   return {
     ok: true,
     parsed,
-    text: repairedText || "",
-    model,
+    text: repairedText,
+    model: actualModel,
     usage: mergeGeminiUsage(
       usage,
-      normalizeGeminiUsage(data.usageMetadata, model)
+      normalizeGeminiUsage(rawUsage, actualModel)
     ),
     status: response.status,
     statusText: response.statusText,
@@ -414,42 +465,73 @@ export const generateGeminiJson = async ({
   const queuedMs = Date.now() - queuedAt
   let lastResult: GeminiGenerateResult | null = null
 
+  const ollamaUrl = process.env.OLLAMA_URL
+  const isOllama = Boolean(ollamaUrl)
+  const actualModel = isOllama ? (process.env.OLLAMA_MODEL || "deepseek-r1:1.5b") : model
+
   try {
     for (let attempt = 1; attempt <= attempts; attempt += 1) {
       const controller = new AbortController()
       const timeout = setTimeout(() => controller.abort(), timeoutMs)
       let fetchError: unknown = null
 
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(
-          model
-        )}:generateContent`,
-        {
+      let response: Response | null = null
+
+      if (isOllama) {
+        const fullPromptText = requestParts.map(p => "text" in p ? p.text : "").join("\n")
+        response = await fetch(`${ollamaUrl}/api/generate`, {
           method: "POST",
           headers: {
-            "x-goog-api-key": apiKey,
             "Content-Type": "application/json",
           },
           signal: controller.signal,
           body: JSON.stringify({
-            contents: [
-              {
-                role: "user",
-                parts: requestParts,
-              },
-            ],
-            generationConfig: {
+            model: actualModel,
+            prompt: fullPromptText,
+            stream: false,
+            format: "json",
+            options: {
               temperature,
-              maxOutputTokens: limitTokens,
-              responseMimeType: "application/json",
-              responseSchema,
+              num_predict: limitTokens,
+              num_ctx: Math.max(8192, limitTokens + 1024 + Math.ceil(fullPromptText.length / 3)),
             },
           }),
-        }
-      ).catch((error) => {
-        fetchError = error
-        return null
-      })
+        }).catch((error) => {
+          fetchError = error
+          return null
+        })
+      } else {
+        response = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(
+            actualModel
+          )}:generateContent`,
+          {
+            method: "POST",
+            headers: {
+              "x-goog-api-key": apiKey,
+              "Content-Type": "application/json",
+            },
+            signal: controller.signal,
+            body: JSON.stringify({
+              contents: [
+                {
+                  role: "user",
+                  parts: requestParts,
+                },
+              ],
+              generationConfig: {
+                temperature,
+                maxOutputTokens: limitTokens,
+                responseMimeType: "application/json",
+                responseSchema,
+              },
+            }),
+          }
+        ).catch((error) => {
+          fetchError = error
+          return null
+        })
+      }
 
       clearTimeout(timeout)
 
@@ -469,13 +551,13 @@ export const generateGeminiJson = async ({
         const errorMessage =
           fetchError instanceof Error
             ? fetchError.message
-            : errorDetails || "No response from Gemini"
+            : errorDetails || `No response from ${isOllama ? "Ollama" : "Gemini"}`
 
         lastResult = {
           ok: false,
           parsed: null,
           text: "",
-          model,
+          model: actualModel,
           usage: emptyGeminiUsage(),
           status: response?.status,
           statusText: response?.statusText,
@@ -510,17 +592,31 @@ export const generateGeminiJson = async ({
       }
 
       const data = await response.json()
-      const text = data.candidates?.[0]?.content?.parts
-        ?.map((part: { text?: string }) => part.text || "")
-        .join("")
-        .trim()
-      const parsed = safeParseJson(text || "")
+
+      let text = ""
+      let rawUsage: any = null
+
+      if (isOllama) {
+        text = data.response || ""
+        rawUsage = {
+          promptTokenCount: data.prompt_eval_count || 0,
+          candidatesTokenCount: data.eval_count || 0,
+        }
+      } else {
+        text = data.candidates?.[0]?.content?.parts
+          ?.map((part: { text?: string }) => part.text || "")
+          .join("")
+          .trim() || ""
+        rawUsage = data.usageMetadata
+      }
+
+      const parsed = safeParseJson(text)
 
       if (!parsed) {
-        const usage = normalizeGeminiUsage(data.usageMetadata, model)
+        const usage = normalizeGeminiUsage(rawUsage, actualModel)
         const repaired = await attemptJsonRepair({
           apiKey,
-          model,
+          model: actualModel,
           text: text || "",
           responseSchema,
           timeoutMs: Math.min(timeoutMs, 45_000),
@@ -530,9 +626,9 @@ export const generateGeminiJson = async ({
         })
 
         if (repaired) {
-          console.warn(`[${label}] Gemini JSON was repaired after truncation`, {
+          console.warn(`[${label}] ${isOllama ? "Ollama" : "Gemini"} JSON was repaired after truncation`, {
             attempt,
-            model,
+            model: actualModel,
             queuedMs,
           })
           return {
@@ -545,7 +641,7 @@ export const generateGeminiJson = async ({
           ok: false,
           parsed: null,
           text: text || "",
-          model,
+          model: actualModel,
           usage,
           status: response.status,
           statusText: response.statusText,
@@ -554,10 +650,10 @@ export const generateGeminiJson = async ({
           queuedMs,
         }
 
-        console.error(`[${label}] Gemini returned invalid JSON`, {
+        console.error(`[${label}] ${isOllama ? "Ollama" : "Gemini"} returned invalid JSON`, {
           attempt,
           attempts,
-          model,
+          model: actualModel,
           queuedMs,
           textPreview: (text || "").slice(0, 500),
         })
@@ -577,8 +673,8 @@ export const generateGeminiJson = async ({
         ok: true,
         parsed,
         text: text || "",
-        model,
-        usage: normalizeGeminiUsage(data.usageMetadata, model),
+        model: actualModel,
+        usage: normalizeGeminiUsage(rawUsage, actualModel),
         status: response.status,
         statusText: response.statusText,
         attempts: attempt,
@@ -594,9 +690,9 @@ export const generateGeminiJson = async ({
       ok: false,
       parsed: null,
       text: "",
-      model,
+      model: actualModel,
       usage: emptyGeminiUsage(),
-      error: "No response from Gemini",
+      error: `No response from ${isOllama ? "Ollama" : "Gemini"}`,
       attempts,
       queuedMs,
     }
