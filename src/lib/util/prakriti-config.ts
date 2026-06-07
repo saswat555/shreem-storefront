@@ -33,7 +33,7 @@ export const getGeminiModel = () =>
 export const getGeminiApiKey = () =>
   process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || ""
 
-export const isGeminiEnabled = () => Boolean(getGeminiApiKey())
+export const isGeminiEnabled = () => Boolean(getGeminiApiKey()) || Boolean(process.env.OLLAMA_URL)
 
 export const getPrakritiGuideModel = getGeminiModel
 
