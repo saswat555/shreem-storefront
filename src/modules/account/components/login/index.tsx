@@ -133,10 +133,23 @@ const Login = ({
           >
             Forgot password?
           </button>
+
           <SubmitButton data-testid="sign-in-button" className="w-full mt-2">
             Sign in
           </SubmitButton>
         </form>
+      )}
+      {!isResetView && (
+        <div className="w-full mt-4 flex flex-col items-center">
+          <div className="w-full flex items-center justify-between mb-4">
+            <hr className="w-full border-ui-border-base" />
+            <span className="px-2 text-ui-fg-muted text-small-regular">OR</span>
+            <hr className="w-full border-ui-border-base" />
+          </div>
+          <a href={`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "http://localhost:9000"}/auth/customer/google`} className="w-full flex items-center justify-center gap-x-2 rounded-full border border-[var(--shreem-teal)] px-4 py-2 text-small-regular font-semibold hover:bg-ui-bg-subtle transition-colors">
+            Sign in with Google
+          </a>
+        </div>
       )}
       {isResetView && (
         <button
