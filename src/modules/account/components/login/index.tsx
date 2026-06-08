@@ -2,6 +2,7 @@
 
 import { login, requestPasswordReset } from "@lib/data/customer"
 import { LOGIN_VIEW } from "@modules/account/templates/login-template"
+import GoogleLoginButton from "@modules/account/components/google-login-button"
 import ErrorMessage from "@modules/checkout/components/error-message"
 import { SubmitButton } from "@modules/checkout/components/submit-button"
 import Input from "@modules/common/components/input"
@@ -24,19 +25,24 @@ const Login = ({
   const [message, formAction] = useActionState(login, null)
   const [resetMessage, resetAction] = useActionState(requestPasswordReset, null)
   const [isResetView, setIsResetView] = useState(false)
+
   const loginNotice =
     typeof message === "string" &&
     (message.startsWith("VERIFY_EMAIL_SENT:") || message.startsWith("SUCCESS:"))
+
   const resetNotice =
     typeof resetMessage === "string" && resetMessage.startsWith("SUCCESS:")
+
   const displayLoginMessage =
     typeof message === "string"
       ? message.replace("VERIFY_EMAIL_SENT:", "").replace("SUCCESS:", "")
       : null
+
   const displayResetMessage =
     typeof resetMessage === "string"
       ? resetMessage.replace("SUCCESS:", "")
       : null
+
   const noticeMessage = signupNotice || (loginNotice ? displayLoginMessage : null)
 
   useEffect(() => {
@@ -55,20 +61,24 @@ const Login = ({
       <h1 className="mb-4 text-[2rem] leading-none text-[var(--shreem-ink)] small:mb-6 small:text-large-semi small:uppercase">
         {isResetView ? "Reset password" : "Welcome back"}
       </h1>
+
       <p className="text-center text-base-regular text-ui-fg-base mb-8">
         {isResetView
           ? "Enter your account email and we will send a secure reset link."
           : "Sign in to revisit your orders, saved details, and Shreem favourites."}
       </p>
+
       {noticeMessage && !isResetView && (
         <div className="mb-5 w-full rounded-[18px] border border-emerald-200 bg-emerald-50 px-4 py-4 text-sm leading-6 text-emerald-800">
           <p className="font-semibold">Check your email</p>
           <p className="mt-2">{noticeMessage}</p>
         </div>
       )}
+
       {isResetView ? (
         <form className="w-full" action={resetAction}>
           <input type="hidden" name="country_code" value={countryCode} />
+
           <div className="flex flex-col w-full gap-y-2">
             <Input
               label="Email"
@@ -80,6 +90,7 @@ const Login = ({
               data-testid="reset-email-input"
             />
           </div>
+
           {resetNotice ? (
             <div className="pt-3 text-center text-small-regular font-medium text-emerald-700">
               {displayResetMessage}
@@ -90,54 +101,71 @@ const Login = ({
               data-testid="reset-error-message"
             />
           )}
+
           <SubmitButton data-testid="reset-password-button" className="w-full mt-6">
             Send reset link
           </SubmitButton>
         </form>
       ) : (
-        <form className="w-full" action={formAction}>
-          <input type="hidden" name="country_code" value={countryCode} />
-          <div className="flex flex-col w-full gap-y-2">
-            <Input
-              label="Email"
-              name="email"
-              type="email"
-              title="Enter a valid email address."
-              autoComplete="email"
-              required
-              data-testid="email-input"
-            />
-            <Input
-              label="Password"
-              name="password"
-              type="password"
-              autoComplete="current-password"
-              required
-              data-testid="password-input"
-            />
+        <div className="w-full">
+          <GoogleLoginButton />
+
+          <div className="my-5 flex items-center gap-3 text-xs uppercase tracking-wide text-ui-fg-muted">
+            <div className="h-px flex-1 bg-ui-border-base" />
+            <span>or sign in with email</span>
+            <div className="h-px flex-1 bg-ui-border-base" />
           </div>
-          {loginNotice && !signupNotice ? (
-            <div className="pt-3 text-center text-small-regular font-medium text-emerald-700">
-              {displayLoginMessage}
+
+          <form className="w-full" action={formAction}>
+            <input type="hidden" name="country_code" value={countryCode} />
+
+            <div className="flex flex-col w-full gap-y-2">
+              <Input
+                label="Email"
+                name="email"
+                type="email"
+                title="Enter a valid email address."
+                autoComplete="email"
+                required
+                data-testid="email-input"
+              />
+
+              <Input
+                label="Password"
+                name="password"
+                type="password"
+                autoComplete="current-password"
+                required
+                data-testid="password-input"
+              />
             </div>
-          ) : (
-            <ErrorMessage
-              error={displayLoginMessage}
-              data-testid="login-error-message"
-            />
-          )}
-          <button
-            type="button"
-            onClick={() => setIsResetView(true)}
-            className="mt-4 min-h-11 rounded-full text-small-regular font-semibold text-[var(--shreem-teal)] underline"
-          >
-            Forgot password?
-          </button>
-          <SubmitButton data-testid="sign-in-button" className="w-full mt-2">
-            Sign in
-          </SubmitButton>
-        </form>
+
+            {loginNotice && !signupNotice ? (
+              <div className="pt-3 text-center text-small-regular font-medium text-emerald-700">
+                {displayLoginMessage}
+              </div>
+            ) : (
+              <ErrorMessage
+                error={displayLoginMessage}
+                data-testid="login-error-message"
+              />
+            )}
+
+            <button
+              type="button"
+              onClick={() => setIsResetView(true)}
+              className="mt-4 min-h-11 rounded-full text-small-regular font-semibold text-[var(--shreem-teal)] underline"
+            >
+              Forgot password?
+            </button>
+
+            <SubmitButton data-testid="sign-in-button" className="w-full mt-2">
+              Sign in
+            </SubmitButton>
+          </form>
+        </div>
       )}
+
       {isResetView && (
         <button
           type="button"
@@ -147,6 +175,7 @@ const Login = ({
           Back to sign in
         </button>
       )}
+
       <span className="text-center text-ui-fg-base text-small-regular mt-6">
         Not a member?{" "}
         <button
