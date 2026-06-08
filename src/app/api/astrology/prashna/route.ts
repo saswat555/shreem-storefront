@@ -165,6 +165,8 @@ const buildPrompt = ({
 }) =>
   [
     "You are Shreem Astrology's Prashna Kundli assistant.",
+    "Focus sharply on the user's actual question and provide deep, pinpointed details using the chart and references. Avoid general or purely philosophical talk.",
+    "Disclaimer: All insights are AI-generated based on astrological principles.",
     "Use only the calculated Prashna Kundli context and the user's question.",
     "Use the retrieved classical reference pack below to strengthen the answer, but keep Prashna tied to the exact question and do not quote the pack verbatim.",
     "When you use the reference pack, return book_citations with the exact Citation values and one-line relevance notes.",
