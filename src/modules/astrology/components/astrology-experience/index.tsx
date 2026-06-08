@@ -1650,53 +1650,52 @@ const PlanetEffectList = ({
   const rows = effects?.length ? effects : buildPlanetEffectsFallback(chart)
 
   return (
-    <div className="rounded-[20px] border border-[var(--shreem-border)] bg-white/60 px-4 py-4">
+    <div className="rounded-[20px] border border-[var(--shreem-border)] bg-white/60 px-4 py-4 overflow-hidden">
       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
         Planet effects
       </p>
-      <div className="mt-3 grid gap-3 md:grid-cols-2">
-        {rows.map((item, index) => (
-          <div
-            key={`${item.planet}-${index}`}
-            className="rounded-[16px] border border-[var(--shreem-border)] bg-white/72 px-3 py-3"
-          >
-            <div className="flex items-center justify-between gap-3">
-              <p className="text-sm font-semibold text-[var(--shreem-ink)]">
-                {item.planet}
-              </p>
-              <span className="rounded-full bg-[rgba(13,129,126,0.08)] px-2 py-0.5 text-[0.66rem] font-semibold text-[var(--shreem-muted)]">
-                {item.placement}
-              </span>
-            </div>
-            <p className="mt-2 text-xs leading-5 text-[var(--shreem-muted)]">
-              {item.effect}
-            </p>
-            {item.life_area && (
-              <p className="mt-2 text-xs leading-5 text-[var(--shreem-muted)]">
-                <span className="font-semibold text-[var(--shreem-ink)]">
-                  Personal area:
-                </span>{" "}
-                {item.life_area}
-              </p>
-            )}
-            {item.activation_period && (
-              <p className="mt-2 rounded-[14px] bg-[rgba(13,129,126,0.08)] px-3 py-2 text-xs leading-5 text-[var(--shreem-muted)]">
-                <span className="font-semibold text-[var(--shreem-ink)]">
-                  Timing:
-                </span>{" "}
-                {item.activation_period}
-              </p>
-            )}
-            {item.likely_effect && (
-              <p className="mt-2 text-xs leading-5 text-[var(--shreem-muted)]">
-                {item.likely_effect}
-              </p>
-            )}
-            <p className="mt-2 rounded-[14px] bg-[rgba(255,248,233,0.74)] px-3 py-2 text-xs leading-5 text-[var(--shreem-muted)]">
-              {item.advice}
-            </p>
-          </div>
-        ))}
+      <div className="mt-3 overflow-x-auto">
+        <table className="w-full text-left text-xs border-collapse min-w-[600px]">
+          <thead>
+            <tr className="border-b border-[var(--shreem-border)] text-[var(--shreem-muted)]">
+              <th className="py-2 pr-3 font-semibold w-1/6">Planet</th>
+              <th className="py-2 px-3 font-semibold w-1/4">Effect</th>
+              <th className="py-2 px-3 font-semibold w-1/4">Timing</th>
+              <th className="py-2 pl-3 font-semibold w-1/3">Advice</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-[var(--shreem-border)] text-[var(--shreem-ink)]">
+            {rows.map((item, index) => (
+              <tr key={`${item.planet}-${index}`} className="group hover:bg-white/40 transition-colors">
+                <td className="py-3 pr-3 align-top">
+                  <span className="font-semibold block">{item.planet}</span>
+                  <span className="text-[0.66rem] text-[var(--shreem-muted)] block mt-1 leading-snug">
+                    {item.placement}
+                  </span>
+                </td>
+                <td className="py-3 px-3 align-top">
+                  <p className="leading-5">{item.effect}</p>
+                  {item.life_area && (
+                    <p className="mt-1 text-[10px] text-[var(--shreem-muted)]">
+                      <span className="font-semibold">Area:</span> {item.life_area}
+                    </p>
+                  )}
+                  {item.likely_effect && (
+                    <p className="mt-1 text-[10px] text-[var(--shreem-muted)]">
+                      {item.likely_effect}
+                    </p>
+                  )}
+                </td>
+                <td className="py-3 px-3 align-top leading-5 text-[var(--shreem-muted)]">
+                  {item.activation_period || "-"}
+                </td>
+                <td className="py-3 pl-3 align-top leading-5 text-[var(--shreem-muted)]">
+                  {item.advice || "-"}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   )
@@ -1737,6 +1736,47 @@ const DashaPredictionList = ({
             <p className="mt-2 rounded-[14px] bg-[rgba(255,248,233,0.78)] px-3 py-2 text-xs leading-5 text-[var(--shreem-muted)]">
               {item.action}
             </p>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+const SubQuestionAnswersList = ({
+  rows,
+}: {
+  rows?: KundliAnalysis["sub_question_answers"]
+}) => {
+  if (!rows?.length) {
+    return null
+  }
+
+  return (
+    <div className="rounded-[20px] border border-[var(--shreem-border)] bg-[rgba(255,249,235,0.7)] px-4 py-4">
+      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
+        Your specific questions answered
+      </p>
+      <div className="mt-3 grid gap-3">
+        {rows.map((item, index) => (
+          <div
+            key={`question-${index}`}
+            className="rounded-[16px] border border-[var(--shreem-border)] bg-white/80 px-4 py-3"
+          >
+            <p className="text-sm font-semibold leading-6 text-[var(--shreem-ink)]">
+              Q: {item.question}
+            </p>
+            <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
+              {item.answer}
+            </p>
+            <div className="mt-3 rounded-[12px] bg-[rgba(13,129,126,0.06)] px-3 py-2">
+              <p className="text-[11px] font-semibold text-[var(--shreem-ink)] uppercase tracking-wide">
+                Chart Context
+              </p>
+              <p className="mt-1 text-xs leading-5 text-[var(--shreem-muted)]">
+                {item.chart_reason}
+              </p>
+            </div>
           </div>
         ))}
       </div>
@@ -2137,6 +2177,7 @@ const KundliResultView = ({
       <PredictionTable rows={result.analysis?.prediction_table} />
       <DashaPredictionList rows={result.analysis?.dasha_predictions} />
       <RiskWatchList rows={result.analysis?.risk_watch} />
+      <SubQuestionAnswersList rows={result.analysis?.sub_question_answers} />
       <PlanetEffectList chart={chart} effects={result.analysis?.planet_effects} />
       <SpecialCaseReadingList rows={result.analysis?.special_case_readings} />
       <BookCitationList items={result.analysis?.book_citations} />
@@ -2735,6 +2776,7 @@ export default function AstrologyExperience({
   })
   const [kundliResult, setKundliResult] = useState<KundliResult | null>(null)
   const [loadingKundli, setLoadingKundli] = useState(false)
+  const [kundliProgress, setKundliProgress] = useState(0)
   const [matchmakingForm, setMatchmakingForm] = useState({
     girl: emptyMatchPerson(),
     boy: emptyMatchPerson(),
@@ -3045,7 +3087,18 @@ export default function AstrologyExperience({
 
   const generateKundli = async () => {
     setLoadingKundli(true)
+    setKundliProgress(0)
     setKundliResult(null)
+
+    let progressInterval = setInterval(() => {
+      setKundliProgress((prev) => {
+        if (prev < 30) return prev + 2
+        if (prev < 60) return prev + 1
+        if (prev < 85) return prev + 0.5
+        if (prev < 95) return prev + 0.2
+        return prev
+      })
+    }, 1000)
 
     const response = await fetch("/api/astrology/kundli", {
       method: "POST",
@@ -3076,6 +3129,9 @@ export default function AstrologyExperience({
       setAiPacks(result.packs)
     }
 
+    clearInterval(progressInterval)
+    setKundliProgress(100)
+
     if (result.chart && result.analysis?.summary && !result.message) {
       rememberHistory({
         id: `kundli-${Date.now()}`,
@@ -3092,7 +3148,10 @@ export default function AstrologyExperience({
       })
     }
 
-    setLoadingKundli(false)
+    setTimeout(() => {
+      setLoadingKundli(false)
+      setKundliProgress(0)
+    }, 500)
     refreshWallet()
   }
 
@@ -4215,11 +4274,25 @@ export default function AstrologyExperience({
               <div className="brand-card px-4 py-5 small:px-6">
                 <p className="brand-kicker">Generated chart</p>
                 {loadingKundli && (
-                  <LogoLoader
-                    label="Generating your Kundli..."
-                    detail="Preparing the North Indian chart, dasha context, yogas, house table, and AI reading."
-                    inverse={astrologyTheme === "night"}
-                  />
+                  <div className="grid gap-2">
+                    <LogoLoader
+                      label={`Generating your Kundli... ${Math.floor(kundliProgress)}%`}
+                      detail={
+                        kundliProgress < 30
+                          ? "Casting the North Indian chart and planetary positions..."
+                          : kundliProgress < 60
+                          ? "Analyzing dasha context, house strengths, and yogas..."
+                          : "Asking Shreem AI for a comprehensive Vedic interpretation..."
+                      }
+                      inverse={astrologyTheme === "night"}
+                    />
+                    <div className="h-1.5 w-full bg-black/5 rounded-full overflow-hidden mt-1">
+                      <div
+                        className="h-full bg-[var(--shreem-gold)] transition-all duration-300"
+                        style={{ width: `${Math.floor(kundliProgress)}%` }}
+                      />
+                    </div>
+                  </div>
                 )}
                 {!loadingKundli && !kundliResult && (
                   <p className="mt-3 text-sm leading-7 text-[var(--shreem-muted)]">
