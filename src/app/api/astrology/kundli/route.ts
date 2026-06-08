@@ -1944,7 +1944,6 @@ const buildPrompt = ({
     "Return targeted_remedies with 3 to 6 exact pain-point remedies. Each row must map pain_point -> chart_basis -> mantra_or_pooja -> daily_practice. Avoid generic advice like simply do pooja; name the graha, day, mantra or deity, and the pain point it addresses.",
     "Gemstone guidance must only use the provided 1st, 5th, and 9th house lord stone indicators. Do not recommend a separate rashi/Moon stone unless it is already one of those trinal house indicators.",
     "Keep every string complete and self-contained. Do not end mid-sentence, do not use trailing ellipses, and prefer fewer complete rows over many unfinished rows.",
-    "Hard cap: summary/person_information/temperament/current_period_analysis max 70 words each; every array item max 28 words; every table field max 35 words.",
     "Never give medical, legal, or financial certainty. Gemstones must always redirect to expert review before wearing.",
     "If strong dosha, gemstone, pooja, marriage, health, or career-defining guidance appears, set expert_call_recommended true and recommend Sanjay Kumar Pandey.",
     LANGUAGE_INSTRUCTIONS[language] || LANGUAGE_INSTRUCTIONS.english,
@@ -2430,31 +2429,31 @@ export async function POST(request: NextRequest) {
 
   const parsed = gemini.parsed
   const analysis = {
-    summary: sanitizeString(parsed?.summary, 1800),
-    person_information: sanitizeString(parsed?.person_information, 1800),
-    temperament: sanitizeString(parsed?.temperament, 1400),
-    behavioral_traits: sanitizeStringArray(parsed?.behavioral_traits, 8, 520),
-    strengths: sanitizeStringArray(parsed?.strengths, 8, 520),
-    life_themes: sanitizeStringArray(parsed?.life_themes, 8, 520),
-    career_direction: sanitizeString(parsed?.career_direction, 1600),
-    relationship_pattern: sanitizeString(parsed?.relationship_pattern, 1600),
-    health_caution: sanitizeString(parsed?.health_caution, 1800),
+    summary: sanitizeString(parsed?.summary, 4000),
+    person_information: sanitizeString(parsed?.person_information, 4000),
+    temperament: sanitizeString(parsed?.temperament, 4000),
+    behavioral_traits: sanitizeStringArray(parsed?.behavioral_traits, 20, 2000),
+    strengths: sanitizeStringArray(parsed?.strengths, 20, 2000),
+    life_themes: sanitizeStringArray(parsed?.life_themes, 20, 2000),
+    career_direction: sanitizeString(parsed?.career_direction, 4000),
+    relationship_pattern: sanitizeString(parsed?.relationship_pattern, 4000),
+    health_caution: sanitizeString(parsed?.health_caution, 4000),
     health_indicators:
-      sanitizeStringArray(parsed?.health_indicators, 7, 700).length > 0
-        ? sanitizeStringArray(parsed?.health_indicators, 7, 700)
+      sanitizeStringArray(parsed?.health_indicators, 20, 2000).length > 0
+        ? sanitizeStringArray(parsed?.health_indicators, 20, 2000)
         : healthIndicators,
     current_period_analysis: sanitizeString(
       parsed?.current_period_analysis,
-      1800
+      4000
     ),
     dasha_predictions: Array.isArray(parsed?.dasha_predictions)
       ? parsed.dasha_predictions
           .map((item: any) => ({
-            period: sanitizeString(item?.period, 80),
-            chart_basis: sanitizeString(item?.chart_basis, 900),
-            classical_basis: sanitizeString(item?.classical_basis, 900),
-            prediction: sanitizeString(item?.prediction, 1400),
-            action: sanitizeString(item?.action, 700),
+            period: sanitizeString(item?.period, 500),
+            chart_basis: sanitizeString(item?.chart_basis, 2000),
+            classical_basis: sanitizeString(item?.classical_basis, 2000),
+            prediction: sanitizeString(item?.prediction, 4000),
+            action: sanitizeString(item?.action, 2000),
           }))
           .filter(
             (item: {
@@ -2472,15 +2471,15 @@ export async function POST(request: NextRequest) {
                   item.action
               )
           )
-          .slice(0, 4)
+          .slice(0, 10)
       : [],
     risk_watch: Array.isArray(parsed?.risk_watch)
       ? parsed.risk_watch
           .map((item: any) => ({
-            theme: sanitizeString(item?.theme, 120),
-            chart_basis: sanitizeString(item?.chart_basis, 800),
-            dasha_trigger: sanitizeString(item?.dasha_trigger, 700),
-            prevention: sanitizeString(item?.prevention, 700),
+            theme: sanitizeString(item?.theme, 500),
+            chart_basis: sanitizeString(item?.chart_basis, 2000),
+            dasha_trigger: sanitizeString(item?.dasha_trigger, 2000),
+            prevention: sanitizeString(item?.prevention, 2000),
           }))
           .filter(
             (item: {
@@ -2496,15 +2495,15 @@ export async function POST(request: NextRequest) {
                   item.prevention
               )
           )
-          .slice(0, 5)
+          .slice(0, 10)
       : [],
     prediction_table: Array.isArray(parsed?.prediction_table)
       ? parsed.prediction_table
           .map((item: any) => ({
-            area: sanitizeString(item?.area, 80),
-            chart_basis: sanitizeString(item?.chart_basis, 800),
-            prediction: sanitizeString(item?.prediction, 1200),
-            advice: sanitizeString(item?.advice, 700),
+            area: sanitizeString(item?.area, 500),
+            chart_basis: sanitizeString(item?.chart_basis, 2000),
+            prediction: sanitizeString(item?.prediction, 4000),
+            advice: sanitizeString(item?.advice, 2000),
           }))
           .filter(
             (item: {
@@ -2520,17 +2519,17 @@ export async function POST(request: NextRequest) {
                   item.advice
               )
           )
-          .slice(0, 8)
+          .slice(0, 20)
       : [],
     special_case_readings: Array.isArray(parsed?.special_case_readings)
       ? parsed.special_case_readings
           .map((item: any) => ({
-            case_name: sanitizeString(item?.case_name, 180),
-            chart_basis: sanitizeString(item?.chart_basis, 900),
-            classical_basis: sanitizeString(item?.classical_basis, 900),
-            combined_effect: sanitizeString(item?.combined_effect, 1100),
-            timing: sanitizeString(item?.timing, 700),
-            solution: sanitizeString(item?.solution, 900),
+            case_name: sanitizeString(item?.case_name, 500),
+            chart_basis: sanitizeString(item?.chart_basis, 2000),
+            classical_basis: sanitizeString(item?.classical_basis, 2000),
+            combined_effect: sanitizeString(item?.combined_effect, 4000),
+            timing: sanitizeString(item?.timing, 2000),
+            solution: sanitizeString(item?.solution, 2000),
           }))
           .filter(
             (item: {
@@ -2546,7 +2545,7 @@ export async function POST(request: NextRequest) {
                   item.solution
               )
           )
-          .slice(0, 5)
+          .slice(0, 10)
       : buildSpecialCaseReadings({
           chart,
           detectedCases,
@@ -2556,13 +2555,13 @@ export async function POST(request: NextRequest) {
     planet_effects: Array.isArray(parsed?.planet_effects)
       ? parsed.planet_effects
           .map((item: any) => ({
-            planet: sanitizeString(item?.planet, 40),
-            placement: sanitizeString(item?.placement, 520),
-            life_area: sanitizeString(item?.life_area, 520),
-            activation_period: sanitizeString(item?.activation_period, 240),
-            effect: sanitizeString(item?.effect, 1000),
-            likely_effect: sanitizeString(item?.likely_effect, 1000),
-            advice: sanitizeString(item?.advice, 700),
+            planet: sanitizeString(item?.planet, 100),
+            placement: sanitizeString(item?.placement, 1000),
+            life_area: sanitizeString(item?.life_area, 1000),
+            activation_period: sanitizeString(item?.activation_period, 500),
+            effect: sanitizeString(item?.effect, 2000),
+            likely_effect: sanitizeString(item?.likely_effect, 2000),
+            advice: sanitizeString(item?.advice, 2000),
           }))
           .filter(
             (item: {
@@ -2572,44 +2571,44 @@ export async function POST(request: NextRequest) {
               advice: string
             }) => Boolean(item.planet && item.effect)
           )
-          .slice(0, 9)
+          .slice(0, 20)
       : buildPlanetEffects(chart),
-    likely_challenges: sanitizeStringArray(parsed?.likely_challenges, 8, 520),
-    issue_analysis: sanitizeStringArray(parsed?.issue_analysis, 8, 700),
-    practical_solutions: sanitizeStringArray(parsed?.practical_solutions, 8, 700),
-    spiritual_guidance: sanitizeString(parsed?.spiritual_guidance, 1400),
+    likely_challenges: sanitizeStringArray(parsed?.likely_challenges, 20, 2000),
+    issue_analysis: sanitizeStringArray(parsed?.issue_analysis, 20, 2000),
+    practical_solutions: sanitizeStringArray(parsed?.practical_solutions, 20, 2000),
+    spiritual_guidance: sanitizeString(parsed?.spiritual_guidance, 4000),
     sub_question_answers: Array.isArray(parsed?.sub_question_answers)
       ? parsed.sub_question_answers
           .map((item: any) => ({
-            question: sanitizeString(item?.question, 220),
-            answer: sanitizeString(item?.answer, 1400),
-            chart_reason: sanitizeString(item?.chart_reason, 900),
+            question: sanitizeString(item?.question, 1000),
+            answer: sanitizeString(item?.answer, 4000),
+            chart_reason: sanitizeString(item?.chart_reason, 2000),
           }))
           .filter(
             (item: { question: string; answer: string; chart_reason: string }) =>
               Boolean(item.question && item.answer)
           )
-          .slice(0, 3)
+          .slice(0, 10)
       : [],
     special_cases: Array.isArray(parsed?.special_cases)
       ? parsed.special_cases
-          .map((item: unknown) => sanitizeString(item, 520))
+          .map((item: unknown) => sanitizeString(item, 2000))
           .filter(Boolean)
-          .slice(0, 8)
+          .slice(0, 20)
       : detectedYogas,
     upaay: Array.isArray(parsed?.upaay)
       ? parsed.upaay
-          .map((item: unknown) => sanitizeString(item, 520))
+          .map((item: unknown) => sanitizeString(item, 2000))
           .filter(Boolean)
-          .slice(0, 8)
+          .slice(0, 20)
       : [],
     targeted_remedies: Array.isArray(parsed?.targeted_remedies)
       ? parsed.targeted_remedies
           .map((item: any) => ({
-            pain_point: sanitizeString(item?.pain_point, 180),
-            chart_basis: sanitizeString(item?.chart_basis, 700),
-            mantra_or_pooja: sanitizeString(item?.mantra_or_pooja, 900),
-            daily_practice: sanitizeString(item?.daily_practice, 700),
+            pain_point: sanitizeString(item?.pain_point, 500),
+            chart_basis: sanitizeString(item?.chart_basis, 2000),
+            mantra_or_pooja: sanitizeString(item?.mantra_or_pooja, 2000),
+            daily_practice: sanitizeString(item?.daily_practice, 2000),
           }))
           .filter((item: TargetedRemedy) =>
             Boolean(
@@ -2619,11 +2618,11 @@ export async function POST(request: NextRequest) {
                 item.daily_practice
             )
           )
-          .slice(0, 6)
+          .slice(0, 15)
       : targetedRemedySeeds,
     book_citations: sanitizeBookCitations(parsed?.book_citations),
     expert_call_recommended: Boolean(parsed?.expert_call_recommended),
-    expert_call_reason: sanitizeString(parsed?.expert_call_reason, 1200),
+    expert_call_reason: sanitizeString(parsed?.expert_call_reason, 4000),
   }
   const result = {
     profile: {
