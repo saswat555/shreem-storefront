@@ -80,16 +80,6 @@ type KundliAnalysis = {
   health_caution?: string
   health_indicators?: string[]
   current_period_analysis?: string
-  major_life_events?: {
-    window: string
-    age_range: string
-    life_area: string
-    chart_basis: string
-    classical_basis: string
-    likely_event: string
-    confidence: string
-    guidance: string
-  }[]
   dasha_predictions?: {
     period: string
     chart_basis: string
@@ -1055,7 +1045,11 @@ const PrashnaChartView = ({ result }: { result: PrashnaResult }) => {
   }
 
   return (
-    <div className="grid gap-4">
+    <div className="grid gap-4 relative">
+      <div className="flex justify-center mb-4">
+        <LogoLoader compact label="Shreem Prashna Kundli" />
+      </div>
+
       <div className="rounded-[24px] border border-[rgba(13,129,126,0.16)] bg-[linear-gradient(135deg,rgba(13,129,126,0.08),rgba(254,248,233,0.78))] px-4 py-4">
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--shreem-gold-deep)]">
           Calculated chart
@@ -1221,6 +1215,10 @@ const PrashnaChartView = ({ result }: { result: PrashnaResult }) => {
 
       <p className="rounded-[18px] border border-[var(--shreem-border)] bg-white/52 px-4 py-3 text-xs leading-5 text-[var(--shreem-muted)]">
         {chart.accuracyNote}
+      </p>
+
+      <p className="mt-4 text-center text-xs text-[var(--shreem-muted)]">
+        Disclaimer: All insights are AI-generated based on astrological principles.
       </p>
     </div>
   )
@@ -1746,59 +1744,6 @@ const DashaPredictionList = ({
   )
 }
 
-const MajorLifeEventList = ({
-  rows,
-}: {
-  rows?: KundliAnalysis["major_life_events"]
-}) => {
-  if (!rows?.length) {
-    return null
-  }
-
-  return (
-    <div className="rounded-[20px] border border-[rgba(212,161,38,0.24)] bg-[rgba(255,248,233,0.72)] px-4 py-4">
-      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
-        Major life event windows
-      </p>
-      <p className="mt-1 text-xs leading-5 text-[var(--shreem-muted)]">
-        Dasha-based windows for validation and preparation, not fixed fate.
-      </p>
-      <div className="mt-3 grid gap-3 md:grid-cols-2">
-        {rows.map((item, index) => (
-          <div
-            key={`${item.window}-${item.life_area}-${index}`}
-            className="rounded-[16px] border border-[var(--shreem-border)] bg-white/76 px-3 py-3"
-          >
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="rounded-full bg-[rgba(13,129,126,0.08)] px-2 py-0.5 text-[0.68rem] font-semibold text-[var(--shreem-ink)]">
-                {item.window}
-              </span>
-              <span className="rounded-full bg-[rgba(212,161,38,0.12)] px-2 py-0.5 text-[0.68rem] font-semibold text-[var(--shreem-muted)]">
-                Age {item.age_range}
-              </span>
-            </div>
-            <p className="mt-2 text-sm font-semibold leading-6 text-[var(--shreem-ink)]">
-              {item.life_area}
-            </p>
-            <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
-              {item.likely_event}
-            </p>
-            <p className="mt-2 text-xs leading-5 text-[var(--shreem-muted)]">
-              Chart basis: {item.chart_basis}
-            </p>
-            <p className="mt-2 text-xs leading-5 text-[var(--shreem-muted)]">
-              BPHS basis: {item.classical_basis}
-            </p>
-            <p className="mt-2 rounded-[14px] bg-[rgba(13,129,126,0.08)] px-3 py-2 text-xs leading-5 text-[var(--shreem-muted)]">
-              {item.confidence} · {item.guidance}
-            </p>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
-
 const SpecialCaseReadingList = ({
   rows,
 }: {
@@ -2091,7 +2036,11 @@ const KundliResultView = ({
   }
 
   return (
-    <div className="grid gap-4">
+    <div className="grid gap-4 relative">
+      <div className="flex justify-center mb-4">
+        <LogoLoader compact label="Shreem Kundli" />
+      </div>
+
       <div className="rounded-[20px] border border-[var(--shreem-border)] bg-white/62 px-4 py-3">
         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
           {isInterruptedReading ? "Kundli not completed" : "Kundli reading"}
@@ -2186,7 +2135,6 @@ const KundliResultView = ({
       )}
 
       <PredictionTable rows={result.analysis?.prediction_table} />
-      <MajorLifeEventList rows={result.analysis?.major_life_events} />
       <DashaPredictionList rows={result.analysis?.dasha_predictions} />
       <RiskWatchList rows={result.analysis?.risk_watch} />
       <PlanetEffectList chart={chart} effects={result.analysis?.planet_effects} />
@@ -2386,6 +2334,10 @@ const KundliResultView = ({
           </LocalizedClientLink>
         </div>
       )}
+
+      <p className="mt-4 text-center text-xs text-[var(--shreem-muted)]">
+        Disclaimer: All insights are AI-generated based on astrological principles.
+      </p>
     </div>
   )
 }
@@ -2621,7 +2573,8 @@ const printKundliReport = (result: KundliResult) => {
 </head>
 <body>
   <button onclick="window.print()">Save as PDF</button>
-  <h1>Shreem Kundli Report</h1>
+  <div style="text-align: center; margin-bottom: 20px;"><img src="/logo.jpeg" alt="Shreem Logo" style="max-height: 80px;" /></div>
+  <h1 style="text-align: center;">Shreem Kundli Report</h1>
   <p class="small">${escapeHtml(profile?.name || "Native")} · ${escapeHtml(profile?.birth_date)} ${escapeHtml(profile?.birth_time)} · ${escapeHtml(profile?.city)}</p>
   <div class="grid">
     <div class="card"><strong>Lagna</strong><br/>${escapeHtml(chart.ascendant)} ${escapeHtml(chart.ascendantDegree)} deg<br/><span class="small">${escapeHtml(chart.ascendantNakshatra)} pada ${escapeHtml(chart.ascendantPada)}</span></div>
@@ -2658,6 +2611,7 @@ const printKundliReport = (result: KundliResult) => {
   <div class="card"><ul>${(analysis?.targeted_remedies || []).map((item) => `<li><strong>${escapeHtml(item.pain_point)}</strong><br/>${escapeHtml(item.chart_basis)}<br/>${escapeHtml(item.mantra_or_pooja)}<br/><span class="small">${escapeHtml(item.daily_practice)}</span></li>`).join("")}</ul></div>
   <h2>1st, 5th, and 9th House Stone Indicators</h2>
   <div class="card">${(stoneCards || []).map((stone) => `<p><strong>${escapeHtml(stone?.label)}</strong>: ${escapeHtml(stone?.primary)} (${escapeHtml(stone?.sign)}, lord ${escapeHtml(stone?.lord)})<br/><span class="small">${escapeHtml(stone?.chart_basis)} ${escapeHtml(stone?.caution)}</span></p>`).join("")}<p class="small">${escapeHtml(result.stones?.caution)}</p></div>
+  <p style="text-align: center; margin-top: 40px; font-size: 12px; color: #516b75;">Disclaimer: All insights are AI-generated based on astrological principles.</p>
 </body>
 </html>`)
   win.document.close()
