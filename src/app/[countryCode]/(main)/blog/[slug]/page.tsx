@@ -89,6 +89,7 @@ export default async function BlogArticlePage(props: Props) {
         <div className="mt-8 overflow-hidden rounded-[28px] border border-[var(--shreem-border)] bg-[linear-gradient(180deg,rgba(255,251,243,0.98),rgba(248,242,230,0.92))] p-2 shadow-[0_24px_60px_rgba(15,49,70,0.08)]">
           <div className="relative aspect-[16/9] overflow-hidden rounded-[22px]">
             <Image
+                  unoptimized
               src={post.image}
               alt={post.imageAlt}
               fill

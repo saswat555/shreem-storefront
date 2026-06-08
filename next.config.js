@@ -70,6 +70,22 @@ const nextConfig = {
         protocol: "https",
         hostname: "shreemfarms.in",
       },
+      {
+        protocol: "https",
+        hostname: "upload.wikimedia.org",
+      },
+      {
+        protocol: "https",
+        hostname: "commons.wikimedia.org",
+      },
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
+      },
+      {
+        protocol: "https",
+        hostname: "res.cloudinary.com",
+      },
       ...backendImagePattern,
       ...(S3_HOSTNAME && S3_PATHNAME
         ? [

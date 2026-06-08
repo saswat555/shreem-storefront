@@ -1,110 +1,83 @@
-import { MetadataRoute } from "next"
-
-import { listBlogPosts } from "@lib/data/journal"
-import { listCategories } from "@lib/data/categories"
-import { listCollections } from "@lib/data/collections"
-import { listAllProducts } from "@lib/data/products"
-import { listRegions } from "@lib/data/regions"
-import { getIndexedCountryCodes, isSeoEnabled } from "@lib/seo/config"
-import { toAbsoluteProductImageUrl, toAbsoluteUrl } from "@lib/util/absolute-url"
-import { getBaseURL } from "@lib/util/env"
-import { isPrakritiGuideEnabled } from "@lib/util/prakriti-config"
+import type { MetadataRoute } from "next"
 
 export const dynamic = "force-dynamic"
+export const revalidate = 3600
 
-type SitemapEntry = MetadataRoute.Sitemap[number]
-
-const PRODUCT_SITEMAP_PAGE_SIZE = 100
-const PRODUCT_SITEMAP_MAX_PAGES = 500
-
-const STATIC_ROUTES = [
-  { path: "", priority: 1, changeFrequency: "daily" },
-  { path: "/store", priority: 0.86, changeFrequency: "daily" },
-  { path: "/shreem-astrology", priority: 0.82, changeFrequency: "weekly" },
-  { path: "/blog", priority: 0.8, changeFrequency: "weekly" },
-  { path: "/customer-service", priority: 0.68, changeFrequency: "monthly" },
-  { path: "/gaatha", priority: 0.7, changeFrequency: "monthly" },
-  { path: "/terms-and-conditions", priority: 0.45, changeFrequency: "yearly" },
-  { path: "/privacy-policy", priority: 0.45, changeFrequency: "yearly" },
-  { path: "/refund-policy", priority: 0.45, changeFrequency: "yearly" },
-  { path: "/return-policy", priority: 0.45, changeFrequency: "yearly" },
-  { path: "/shipping-policy", priority: 0.45, changeFrequency: "yearly" },
-] as const
-
-const optionalStaticRoutes = (prakritiEnabled: boolean) =>
-  prakritiEnabled
-    ? [
-        {
-          path: "/prakriti-guide",
-          priority: 0.74,
-          changeFrequency: "weekly",
-        } as const,
-      ]
-    : []
-
-const safeDate = (value?: string | Date | null): Date | undefined => {
-  if (!value) {
-    return undefined
-  }
-
-  const date = value instanceof Date ? value : new Date(value)
-  return Number.isNaN(date.getTime()) ? undefined : date
+type Region = {
+  countries?: {
+    iso_2?: string
+  }[]
 }
 
-const joinUrl = (baseUrl: string, ...parts: string[]) => {
-  const path = parts
+type Product = {
+  handle?: string
+  updated_at?: string
+  created_at?: string
+}
+
+type Category = {
+  handle?: string
+  updated_at?: string
+  created_at?: string
+}
+
+type Collection = {
+  handle?: string
+  updated_at?: string
+  created_at?: string
+}
+
+type BlogPost = {
+  slug?: string
+  status?: string
+  updated_at?: string
+  updatedAt?: string
+  created_at?: string
+  createdAt?: string
+  publishedAt?: string
+}
+
+const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL ||
+  process.env.NEXT_PUBLIC_BASE_URL ||
+  process.env.SITE_URL ||
+  "https://shreemfarms.in"
+
+const BACKEND_URL =
+  process.env.MEDUSA_BACKEND_URL ||
+  process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL ||
+  "https://shreemfarms.in"
+
+const PUBLISHABLE_KEY =
+  process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY ||
+  process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_API_KEY ||
+  ""
+
+const cleanBase = (url: string) => url.replace(/\/+$/, "")
+
+const siteUrl = cleanBase(SITE_URL)
+const backendUrl = cleanBase(BACKEND_URL)
+
+const joinUrl = (...parts: Array<string | undefined | null>) =>
+  parts
     .filter(Boolean)
+    .map((part, index) =>
+      index === 0
+        ? String(part).replace(/\/+$/, "")
+        : String(part).replace(/^\/+|\/+$/g, "")
+    )
     .join("/")
-    .replace(/\/+/g, "/")
-    .replace(/^\//, "")
 
-  return new URL(path, `${baseUrl}/`).toString()
-}
-
-const withOptionalLastModified = (
-  entry: Omit<SitemapEntry, "lastModified">,
-  lastModified?: Date
-): SitemapEntry => ({
-  ...entry,
-  ...(lastModified ? { lastModified } : {}),
-})
-
-const withOptionalImages = (
-  entry: Omit<SitemapEntry, "images">,
-  images: string[]
-): SitemapEntry => ({
-  ...entry,
-  ...(images.length ? { images } : {}),
-})
-
-const unwrapNextImageUrl = (value: string) => {
-  try {
-    const url = new URL(value)
-    if (url.pathname !== "/_next/image") {
-      return value
-    }
-
-    return url.searchParams.get("url") || value
-  } catch {
-    return value
+const lastModified = (value?: string) => {
+  if (!value) {
+    return new Date()
   }
+
+  const date = new Date(value)
+  return Number.isNaN(date.getTime()) ? new Date() : date
 }
 
-const toSitemapImageUrl = (
-  value?: string | null,
-  options: { preferBackend?: boolean } = {}
-) => {
-  const absoluteUrl = options.preferBackend
-    ? toAbsoluteProductImageUrl(value)
-    : toAbsoluteUrl(value)
-  const originalUrl = unwrapNextImageUrl(absoluteUrl)
-
-  return options.preferBackend
-    ? toAbsoluteProductImageUrl(originalUrl)
-    : toAbsoluteUrl(originalUrl)
-}
-
-const dedupeByUrl = (entries: SitemapEntry[]) => {
+const uniqByUrl = (entries: MetadataRoute.Sitemap) => {
   const seen = new Set<string>()
 
   return entries.filter((entry) => {
@@ -117,153 +90,164 @@ const dedupeByUrl = (entries: SitemapEntry[]) => {
   })
 }
 
-const getStaticLastModified = () =>
-  safeDate(process.env.NEXT_PUBLIC_SITE_LASTMOD || process.env.SITE_LASTMOD)
+async function fetchStore<T>(path: string): Promise<T | null> {
+  try {
+    const headers: Record<string, string> = {}
 
-const getCountryCodes = async () => {
-  const indexedCountryCodes = getIndexedCountryCodes()
-  const regions = await listRegions().catch(() => [])
-  const countryCodes = regions
-    ?.flatMap((region) => region.countries?.map((country) => country.iso_2))
-    .filter((code): code is string => Boolean(code))
-    .map((code) => code.toLowerCase())
+    if (PUBLISHABLE_KEY) {
+      headers["x-publishable-api-key"] = PUBLISHABLE_KEY
+    }
 
-  if (!countryCodes?.length) {
-    return indexedCountryCodes
+    const res = await fetch(`${backendUrl}${path}`, {
+      headers,
+      next: {
+        revalidate: 3600,
+      },
+    })
+
+    if (!res.ok) {
+      return null
+    }
+
+    return (await res.json()) as T
+  } catch {
+    return null
   }
+}
 
-  const enabledCodes = new Set(countryCodes)
-  const canonicalCodes = indexedCountryCodes.filter((code) =>
-    enabledCodes.has(code)
+async function getCountryCodes() {
+  const data = await fetchStore<{ regions?: Region[] }>("/store/regions")
+
+  const countries =
+    data?.regions
+      ?.flatMap((region) => region.countries || [])
+      ?.map((country) => country.iso_2?.toLowerCase())
+      ?.filter(Boolean) || []
+
+  return Array.from(new Set(countries.length ? countries : ["in"]))
+}
+
+async function getProducts() {
+  const data = await fetchStore<{ products?: Product[] }>(
+    "/store/products?limit=1000&fields=handle,updated_at,created_at"
   )
 
-  return canonicalCodes.length ? canonicalCodes : indexedCountryCodes
+  return (data?.products || []).filter((product) => product.handle)
+}
+
+async function getCategories() {
+  const data = await fetchStore<{ product_categories?: Category[] }>(
+    "/store/product-categories?limit=1000&fields=handle,updated_at,created_at"
+  )
+
+  return (data?.product_categories || []).filter((category) => category.handle)
+}
+
+async function getCollections() {
+  const data = await fetchStore<{ collections?: Collection[] }>(
+    "/store/collections?limit=1000&fields=handle,updated_at,created_at"
+  )
+
+  return (data?.collections || []).filter((collection) => collection.handle)
+}
+
+async function getBlogPosts() {
+  const data = await fetchStore<{ posts?: BlogPost[] }>("/store/blog")
+
+  return (data?.posts || []).filter(
+    (post) => post.slug && (!post.status || post.status === "published")
+  )
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  if (!isSeoEnabled()) {
-    return []
-  }
+  const [countryCodes, products, categories, collections, blogPosts] =
+    await Promise.all([
+      getCountryCodes(),
+      getProducts(),
+      getCategories(),
+      getCollections(),
+      getBlogPosts(),
+    ])
 
-  const baseUrl = getBaseURL()
-  const staticLastModified = getStaticLastModified()
-  const countryCodes = await getCountryCodes()
-  const prakritiEnabled = isPrakritiGuideEnabled()
-  const blogPosts = await listBlogPosts().catch(() => [])
-  const categories = await listCategories({
-    limit: 1000,
-    fields: "handle,updated_at,created_at",
-  }).catch(() => [])
-  const { collections } = await listCollections({
-    fields: "handle,updated_at,created_at",
-    limit: "1000",
-  }).catch(() => ({ collections: [], count: 0 }))
+  const now = new Date()
 
-  const staticEntries: MetadataRoute.Sitemap = countryCodes.flatMap((countryCode) => {
-    const routes = [...STATIC_ROUTES, ...optionalStaticRoutes(prakritiEnabled)]
+  const staticPaths = [
+    "",
+    "store",
+    "blog",
+    "customer-service",
+    "prakriti-guide",
+    "privacy-policy",
+    "shipping-policy",
+    "refund-policy",
+    "return-policy",
+    "terms-and-conditions",
+  ]
 
-    return routes.map((route) =>
-      withOptionalLastModified(
-        {
-          url: joinUrl(baseUrl, countryCode, route.path),
-          changeFrequency: route.changeFrequency,
-          priority: route.priority,
-        },
-        staticLastModified
-      )
-    )
-  })
+  const staticEntries: MetadataRoute.Sitemap = countryCodes.flatMap(
+    (countryCode) =>
+      staticPaths.map((path) => ({
+        url: joinUrl(siteUrl, countryCode, path),
+        lastModified: now,
+        changeFrequency:
+          path === "" || path === "store" ? "daily" : path === "blog" ? "weekly" : "monthly",
+        priority:
+          path === ""
+            ? 1
+            : path === "store"
+              ? 0.95
+              : path === "blog"
+                ? 0.85
+                : 0.55,
+      }))
+  )
+
+  const productEntries: MetadataRoute.Sitemap = countryCodes.flatMap(
+    (countryCode) =>
+      products.map((product) => ({
+        url: joinUrl(siteUrl, countryCode, "products", product.handle),
+        lastModified: lastModified(product.updated_at || product.created_at),
+        changeFrequency: "weekly",
+        priority: 0.9,
+      }))
+  )
+
+  const categoryEntries: MetadataRoute.Sitemap = countryCodes.flatMap(
+    (countryCode) =>
+      categories.map((category) => ({
+        url: joinUrl(siteUrl, countryCode, "categories", category.handle),
+        lastModified: lastModified(category.updated_at || category.created_at),
+        changeFrequency: "weekly",
+        priority: 0.8,
+      }))
+  )
+
+  const collectionEntries: MetadataRoute.Sitemap = countryCodes.flatMap(
+    (countryCode) =>
+      collections.map((collection) => ({
+        url: joinUrl(siteUrl, countryCode, "collections", collection.handle),
+        lastModified: lastModified(collection.updated_at || collection.created_at),
+        changeFrequency: "weekly",
+        priority: 0.75,
+      }))
+  )
 
   const blogEntries: MetadataRoute.Sitemap = countryCodes.flatMap((countryCode) =>
-    blogPosts
-      .filter((post) => post.slug)
-      .map((post) =>
-        withOptionalImages(
-          withOptionalLastModified(
-            {
-              url: joinUrl(baseUrl, countryCode, "blog", post.slug),
-              changeFrequency: "monthly" as const,
-              priority: 0.78,
-            },
-            safeDate(post.publishedAt)
-          ),
-          post.image ? [toSitemapImageUrl(post.image)].filter(Boolean) : []
-        )
-      )
+    blogPosts.map((post) => ({
+      url: joinUrl(siteUrl, countryCode, "blog", post.slug),
+      lastModified: lastModified(
+        post.updated_at || post.updatedAt || post.publishedAt || post.created_at || post.createdAt
+      ),
+      changeFrequency: "weekly",
+      priority: 0.8,
+    }))
   )
 
-  const categoryEntries: MetadataRoute.Sitemap = countryCodes.flatMap((countryCode) =>
-    categories
-      .filter((category) => category.handle)
-      .map((category) =>
-        withOptionalLastModified(
-          {
-            url: joinUrl(baseUrl, countryCode, "categories", category.handle!),
-            changeFrequency: "weekly" as const,
-            priority: 0.72,
-          },
-          safeDate(category.updated_at || category.created_at)
-        )
-      )
-  )
-
-  const collectionEntries: MetadataRoute.Sitemap = countryCodes.flatMap((countryCode) =>
-    collections
-      .filter((collection) => collection.handle)
-      .map((collection) =>
-        withOptionalLastModified(
-          {
-            url: joinUrl(baseUrl, countryCode, "collections", collection.handle!),
-            changeFrequency: "weekly" as const,
-            priority: 0.76,
-          },
-          safeDate(collection.updated_at || collection.created_at)
-        )
-      )
-  )
-
-  const productEntries = await Promise.all(
-    countryCodes.map(async (countryCode) => {
-      const products = await listAllProducts({
-        countryCode,
-        pageSize: PRODUCT_SITEMAP_PAGE_SIZE,
-        maxPages: PRODUCT_SITEMAP_MAX_PAGES,
-        queryParams: {
-          fields: "handle,thumbnail,images.url,updated_at,created_at",
-        },
-      })
-        .catch(() => [])
-
-      return products
-        .filter((product) => product.handle)
-        .map((product) => {
-          const imageUrls = [
-            product.thumbnail,
-            ...(product.images || []).map((image) => image.url),
-          ]
-            .map((image) => toSitemapImageUrl(image, { preferBackend: true }))
-            .filter(Boolean) as string[]
-
-          return withOptionalImages(
-            withOptionalLastModified(
-              {
-                url: joinUrl(baseUrl, countryCode, "products", product.handle!),
-                changeFrequency: "weekly" as const,
-                priority: 0.9,
-              },
-              safeDate(product.updated_at || product.created_at)
-            ),
-            Array.from(new Set(imageUrls)).slice(0, 10)
-          )
-        })
-    })
-  )
-
-  return dedupeByUrl([
+  return uniqByUrl([
     ...staticEntries,
-    ...blogEntries,
+    ...productEntries,
     ...categoryEntries,
     ...collectionEntries,
-    ...productEntries.flat(),
+    ...blogEntries,
   ])
 }

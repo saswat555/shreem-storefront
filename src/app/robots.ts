@@ -1,41 +1,37 @@
-import { MetadataRoute } from "next"
-
-import { isSeoEnabled } from "@lib/seo/config"
-import { getBaseURL } from "@lib/util/env"
+import type { MetadataRoute } from "next"
 
 export const dynamic = "force-dynamic"
+export const revalidate = 3600
+
+const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL ||
+  process.env.NEXT_PUBLIC_BASE_URL ||
+  process.env.SITE_URL ||
+  "https://shreemfarms.in"
+
+const siteUrl = SITE_URL.replace(/\/+$/, "")
 
 export default function robots(): MetadataRoute.Robots {
-  if (!isSeoEnabled()) {
-    return {
-      rules: [
-        {
-          userAgent: "*",
-          disallow: "/",
-        },
-      ],
-    }
-  }
-
-  const baseUrl = getBaseURL()
-
   return {
     rules: [
       {
         userAgent: "*",
         allow: "/",
         disallow: [
+          "/app/",
+          "/admin/",
+          "/account/",
+          "/cart/",
+          "/checkout/",
+          "/order/",
+          "/reset-password/",
+          "/verify-email/",
           "/api/",
-          "/*/account/",
-          "/*/cart",
-          "/*/checkout",
-          "/*/order/",
-          "/*/verify-email",
-          "/*/reset-password",
+          "/_next/",
         ],
       },
     ],
-    sitemap: `${baseUrl}/sitemap.xml`,
-    host: baseUrl,
+    sitemap: `${siteUrl}/sitemap.xml`,
+    host: siteUrl,
   }
 }

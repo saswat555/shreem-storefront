@@ -75,6 +75,7 @@ export default async function BlogPage(props: {
                 <div className="grid gap-0 md:grid-cols-[240px_1fr]">
                   <div className="relative min-h-[260px] border-b border-[var(--shreem-border)] bg-[radial-gradient(circle_at_top,rgba(212,161,38,0.22),transparent_40%),linear-gradient(180deg,rgba(248,241,226,0.96),rgba(239,246,242,0.92))] md:border-b-0 md:border-r">
                     <Image
+                  unoptimized
                       src={mascot.imagePath}
                       alt={`${mascot.name}, one of the Shreem mascots`}
                       fill
@@ -102,6 +103,7 @@ export default async function BlogPage(props: {
             <div className="grid gap-0 lg:grid-cols-[1.05fr_0.95fr]">
               <div className="relative min-h-[320px] border-b border-[var(--shreem-border)] bg-[linear-gradient(180deg,rgba(255,251,243,0.98),rgba(248,242,230,0.92))] lg:border-b-0 lg:border-r">
                 <Image
+                  unoptimized
                   src={featuredPost.image}
                   alt={featuredPost.imageAlt}
                   fill
@@ -144,6 +146,7 @@ export default async function BlogPage(props: {
               <article className="brand-card flex h-full min-h-[33rem] flex-col overflow-hidden">
                 <div className="relative aspect-[16/10] shrink-0 border-b border-[var(--shreem-border)] bg-[linear-gradient(180deg,rgba(255,251,243,0.98),rgba(248,242,230,0.92))]">
                   <Image
+                  unoptimized
                     src={post.image}
                     alt={post.imageAlt}
                     fill
