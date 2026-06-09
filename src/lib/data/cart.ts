@@ -279,6 +279,67 @@ export async function initiatePaymentSession(
     .catch(medusaError)
 }
 
+
+export async function updatePaymentSession({
+  paymentCollectionId,
+  paymentSessionId,
+  data,
+}: {
+  paymentCollectionId: string
+  paymentSessionId: string
+  data: Record<string, unknown>
+}) {
+  const headers = {
+    ...(await getAuthHeaders()),
+  }
+
+  return sdk.client
+    .fetch(`/store/payment-collections/${paymentCollectionId}/payment-sessions/${paymentSessionId}`, {
+      method: "POST",
+      headers,
+      body: {
+        data,
+      },
+      cache: "no-store",
+    })
+    .then(async (resp: any) => {
+      await revalidateCartState()
+      return resp
+    })
+    .catch(medusaError)
+}
+
+export async function safeInitiatePaymentSession(
+  cart: HttpTypes.StoreCart,
+  data: HttpTypes.StoreInitializePaymentSession
+): Promise<{ ok: true; data: any } | { ok: false; error: string }> {
+  try {
+    const response = await initiatePaymentSession(cart, data)
+
+    return {
+      ok: true,
+      data: response,
+    }
+  } catch (error: any) {
+    const message =
+      error?.message ||
+      error?.response?.data?.message ||
+      error?.response?.data?.error ||
+      "Payment setup failed. Please try another payment method."
+
+    console.error("[checkout] safe payment session failed", {
+      provider_id: (data as any)?.provider_id,
+      cart_id: (cart as any)?.id,
+      message,
+    })
+
+    return {
+      ok: false,
+      error: message,
+    }
+  }
+}
+
 export async function applyPromotions(codes: string[]) {
   const cartId = await getCartId()
 

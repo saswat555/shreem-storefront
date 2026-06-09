@@ -4,7 +4,6 @@ import { CreditCard } from "@medusajs/icons"
 import Ideal from "@modules/common/icons/ideal"
 import Bancontact from "@modules/common/icons/bancontact"
 import PayPal from "@modules/common/icons/paypal"
-import PhonePe from "@modules/common/icons/phonepe"
 
 /* Map of payment provider_id to their title and icon. Add in any payment providers you want to use. */
 export const paymentInfoMap: Record<
@@ -36,10 +35,10 @@ export const paymentInfoMap: Record<
     icon: <PayPal />,
     description: "Pay through your PayPal balance or saved methods",
   },
-  pp_phonepe_phonepe: {
-    title: "PhonePe",
-    icon: <PhonePe />,
-    description: "Popular UPI-based checkout for quick confirmation",
+  pp_razorpay_razorpay: {
+    title: "Razorpay",
+    icon: <CreditCard />,
+    description: "Pay securely using UPI, cards, netbanking, and wallets.",
   },
   pp_manual_upi_manual_upi: {
     title: "UPI QR - manual approval",
@@ -68,13 +67,14 @@ export const getPaymentInfo = (providerId?: string) => {
     return paymentInfoMap[providerId]
   }
 
-  if (providerId.toLowerCase().includes("phonepe")) {
+  if (providerId.toLowerCase().includes("razorpay")) {
     return {
-      title: "PhonePe",
-      icon: <PhonePe />,
-      description: "Popular UPI-based checkout for quick confirmation",
+      title: "Razorpay",
+      icon: <CreditCard />,
+      description: "Pay securely using UPI, cards, netbanking, and wallets.",
     }
   }
+
 
   if (providerId.toLowerCase().includes("manual_upi")) {
     return {
@@ -122,8 +122,12 @@ export const isManual = (providerId?: string) => {
   )
 }
 
+export const isRazorpayLike = (providerId?: string) => {
+  return Boolean(providerId?.toLowerCase().includes("razorpay"))
+}
+
 export const isOfflineLike = (providerId?: string) => {
-  return !isStripeLike(providerId)
+  return !isStripeLike(providerId) && !isRazorpayLike(providerId)
 }
 
 // Add currencies that don't need to be divided by 100

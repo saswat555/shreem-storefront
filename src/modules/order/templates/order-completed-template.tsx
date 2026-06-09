@@ -1,3 +1,4 @@
+import Link from "next/link"
 import { Heading } from "@medusajs/ui"
 import { cookies as nextCookies } from "next/headers"
 
@@ -52,6 +53,12 @@ export default async function OrderCompletedTemplate({
                 <p>
                   Keep order #{order.display_id} handy if you contact support.
                 </p>
+                <Link
+                  href={`/${order.shipping_address?.country_code?.toLowerCase() || "in"}/account/orders`}
+                  className="mt-2 inline-flex w-full items-center justify-center rounded-full bg-[linear-gradient(135deg,#0d817e_0%,#123f63_58%,#6f211f_100%)] px-4 py-3 text-sm font-semibold text-white shadow-[0_16px_30px_rgba(18,63,99,0.18)]"
+                >
+                  View my orders
+                </Link>
               </div>
             </div>
           </div>

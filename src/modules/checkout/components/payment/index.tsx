@@ -1,27 +1,17 @@
 "use client"
 
-import { RadioGroup } from "@headlessui/react"
-import { getPaymentInfo, isStripeLike, paymentInfoMap } from "@lib/constants"
-import { initiatePaymentSession } from "@lib/data/cart"
-import {
-  isIndianAddress,
-  isShiprocketShippingOption,
-  normalizePincode,
-} from "@lib/util/shiprocket"
 import { CheckCircleSolid, CreditCard } from "@medusajs/icons"
-import { Button, Container, Heading, Text, clx } from "@medusajs/ui"
+import { Button, Heading, Text, clx } from "@medusajs/ui"
 import ErrorMessage from "@modules/checkout/components/error-message"
-import { useShiprocketCheckout } from "@modules/checkout/context/shiprocket-context"
 import PaymentContainer, {
   StripeCardContainer,
 } from "@modules/checkout/components/payment-container"
 import ManualUpiQrImage from "@modules/common/components/manual-upi-qr-image"
 import Divider from "@modules/common/components/divider"
+import { getPaymentInfo, isStripeLike, paymentInfoMap } from "@lib/constants"
+import { safeInitiatePaymentSession } from "@lib/data/cart"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
-import { useCallback, useEffect, useState } from "react"
-
-const isManualUpiProvider = (providerId?: string | null) =>
-  Boolean(providerId?.toLowerCase().includes("manual_upi"))
+import { useCallback, useEffect, useMemo, useState } from "react"
 
 type ManualUpiLiveConfig = {
   upi_id?: string
@@ -29,22 +19,36 @@ type ManualUpiLiveConfig = {
   qr_image_url?: string
 }
 
+const isManualUpiProvider = (providerId?: string | null) =>
+  Boolean(providerId?.toLowerCase().includes("manual_upi"))
+
+const getActiveSession = (cart: any) =>
+  cart?.payment_collection?.payment_sessions?.find(
+    (session: any) =>
+      session?.status === "pending" || session?.status === "authorized"
+  ) || cart?.payment_collection?.payment_sessions?.[0]
+
 const ManualUpiNotice = ({ data }: { data?: Record<string, unknown> | null }) => {
   const [liveConfig, setLiveConfig] = useState<ManualUpiLiveConfig | null>(null)
+
   const qrImageUrl =
     (typeof data?.qr_image_url === "string" ? data.qr_image_url : "") ||
     liveConfig?.qr_image_url ||
     ""
+
   const upiDeepLink =
     typeof data?.upi_deep_link === "string" ? data.upi_deep_link : ""
+
   const upiId =
     (typeof data?.upi_id === "string" ? data.upi_id : "") ||
     liveConfig?.upi_id ||
     ""
+
   const payeeName =
     (typeof data?.payee_name === "string" ? data.payee_name : "") ||
     liveConfig?.payee_name ||
     ""
+
   const reference = typeof data?.reference === "string" ? data.reference : ""
 
   useEffect(() => {
@@ -62,7 +66,9 @@ const ManualUpiNotice = ({ data }: { data?: Record<string, unknown> | null }) =>
           payee_name:
             typeof payload.payee_name === "string" ? payload.payee_name : "",
           qr_image_url:
-            typeof payload.qr_image_url === "string" ? payload.qr_image_url : "",
+            typeof payload.qr_image_url === "string"
+              ? payload.qr_image_url
+              : "",
         })
       })
       .catch(() => null)
@@ -81,6 +87,7 @@ const ManualUpiNotice = ({ data }: { data?: Record<string, unknown> | null }) =>
         Pay using the QR/link, then place the order. Dispatch starts after the
         bank credit is verified by Shreem Farms.
       </p>
+
       <div className="mt-3 grid gap-3 small:grid-cols-[120px_minmax(0,1fr)] small:items-center">
         {qrImageUrl ? (
           <ManualUpiQrImage
@@ -93,10 +100,32 @@ const ManualUpiNotice = ({ data }: { data?: Record<string, unknown> | null }) =>
             QR is loading. Refresh payment if it does not appear.
           </div>
         )}
+
         <div className="grid gap-1 text-xs leading-5 text-[var(--shreem-muted)]">
-          {upiId && <p><span className="font-semibold text-[var(--shreem-ink)]">UPI:</span> {upiId}</p>}
-          {payeeName && <p><span className="font-semibold text-[var(--shreem-ink)]">Payee:</span> {payeeName}</p>}
-          {reference && <p><span className="font-semibold text-[var(--shreem-ink)]">Reference:</span> {reference}</p>}
+          {upiId && (
+            <p>
+              <span className="font-semibold text-[var(--shreem-ink)]">
+                UPI:
+              </span>{" "}
+              {upiId}
+            </p>
+          )}
+          {payeeName && (
+            <p>
+              <span className="font-semibold text-[var(--shreem-ink)]">
+                Payee:
+              </span>{" "}
+              {payeeName}
+            </p>
+          )}
+          {reference && (
+            <p>
+              <span className="font-semibold text-[var(--shreem-ink)]">
+                Reference:
+              </span>{" "}
+              {reference}
+            </p>
+          )}
           {upiDeepLink && (
             <a
               href={upiDeepLink}
@@ -118,99 +147,53 @@ const Payment = ({
   cart: any
   availablePaymentMethods: any[]
 }) => {
-  const shiprocket = useShiprocketCheckout()
-  const activeSession =
-    cart.payment_collection?.payment_sessions?.find(
-      (paymentSession: any) =>
-        paymentSession.status === "pending" ||
-        paymentSession.status === "authorized"
-    ) || cart.payment_collection?.payment_sessions?.[0]
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const pathname = usePathname()
+
+  const activeSession = useMemo(() => getActiveSession(cart), [cart])
+  const providerMethods = Array.isArray(availablePaymentMethods)
+    ? availablePaymentMethods
+    : []
 
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [cardBrand, setCardBrand] = useState<string | null>(null)
   const [cardComplete, setCardComplete] = useState(false)
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(
-    activeSession?.provider_id ?? availablePaymentMethods?.[0]?.id ?? ""
+    activeSession?.provider_id || providerMethods?.[0]?.id || ""
   )
 
-  const searchParams = useSearchParams()
-  const router = useRouter()
-  const pathname = usePathname()
+  useEffect(() => {
+    const latestSession = getActiveSession(cart)
+    const nextMethod =
+      latestSession?.provider_id || providerMethods?.[0]?.id || ""
+
+    if (!selectedPaymentMethod && nextMethod) {
+      setSelectedPaymentMethod(nextMethod)
+    }
+  }, [cart, providerMethods, selectedPaymentMethod])
 
   const isOpen = searchParams.get("step") === "payment"
 
-  const setPaymentMethod = async (method: string) => {
-    setError(null)
-    setSelectedPaymentMethod(method)
-
-    await initiatePaymentSession(cart, {
-      provider_id: method,
-    }).catch((err) => {
-      setError(err.message)
-    })
-  }
-
   const paidByGiftcard =
-    cart?.gift_cards && cart?.gift_cards?.length > 0 && cart?.total === 0
-  const selectedShippingMethod = cart.shipping_methods?.at(-1)
-  const isIndianDelivery = isIndianAddress(cart.shipping_address?.country_code)
-  const deliveryPincode = normalizePincode(cart.shipping_address?.postal_code)
-  const selectedIsShiprocket =
-    isShiprocketShippingOption(selectedShippingMethod)
-  const shiprocketQuoteReady =
-    shiprocket.status === "available" &&
-    Boolean(shiprocket.rate) &&
-    shiprocket.postalCode === deliveryPincode
-  const fallbackAllowed =
-    shiprocket.status === "error" &&
-    Boolean(selectedShippingMethod) &&
-    !selectedIsShiprocket
-  const shiprocketPaymentReady =
-    !isIndianDelivery ||
-    fallbackAllowed ||
-    (shiprocketQuoteReady && selectedIsShiprocket)
-  const shiprocketPaymentMessage = (() => {
-    if (!isIndianDelivery || shiprocketPaymentReady) {
-      return null
-    }
+    Array.isArray(cart?.gift_cards) &&
+    cart.gift_cards.length > 0 &&
+    Number(cart?.total || 0) === 0
 
-    if (shiprocket.status === "loading") {
-      return "Checking the Shiprocket delivery price before payment."
-    }
-
-    if (shiprocket.status === "unavailable") {
-      return (
-        shiprocket.error ||
-        "Delivery is not available for this pincode. Please try another address."
-      )
-    }
-
-    if (shiprocket.status === "error") {
-      return (
-        shiprocket.error ||
-        "Unable to calculate shipping right now. Please try again."
-      )
-    }
-
-    if (!shiprocketQuoteReady) {
-      return "Calculate Shiprocket Delivery for this pincode before payment."
-    }
-
-    return "Select Shiprocket Delivery so the live shipping price is included in payment."
-  })()
+  const hasShipping =
+    !cart?.shipping_address ||
+    !Array.isArray(cart?.shipping_methods) ||
+    cart.shipping_methods.length > 0
 
   const paymentReady =
-    (((activeSession || selectedPaymentMethod) &&
-      cart?.shipping_methods.length !== 0) ||
-      paidByGiftcard) &&
-    shiprocketPaymentReady
+    paidByGiftcard ||
+    (Boolean(activeSession || selectedPaymentMethod) && hasShipping)
 
   const createQueryString = useCallback(
     (name: string, value: string) => {
       const params = new URLSearchParams(searchParams)
       params.set(name, value)
-
       return params.toString()
     },
     [searchParams]
@@ -222,36 +205,41 @@ const Payment = ({
     })
   }
 
+  const setPaymentMethod = async (method: string) => {
+    setError(null)
+    setSelectedPaymentMethod(method)
+  }
+
   const handleSubmit = async () => {
-    if (shiprocketPaymentMessage) {
-      setError(shiprocketPaymentMessage)
-      return
-    }
-
     setIsLoading(true)
+    setError(null)
+
     try {
-      const shouldInputCard =
-        isStripeLike(selectedPaymentMethod) && !activeSession
+      if (!paidByGiftcard && !selectedPaymentMethod) {
+        throw new Error("Please select a payment method.")
+      }
 
-      const checkActiveSession =
-        activeSession?.provider_id === selectedPaymentMethod
+      const latestSession = getActiveSession(cart)
+      const sessionMatches = latestSession?.provider_id === selectedPaymentMethod
 
-      if (!checkActiveSession) {
-        await initiatePaymentSession(cart, {
+      if (!paidByGiftcard && !sessionMatches) {
+        const result = await safeInitiatePaymentSession(cart, {
           provider_id: selectedPaymentMethod,
         })
+
+        if (!result.ok) {
+          setError(result.error)
+          setIsLoading(false)
+          return
+        }
       }
 
-      if (!shouldInputCard) {
-        return router.push(
-          pathname + "?" + createQueryString("step", "review"),
-          {
-            scroll: false,
-          }
-        )
-      }
+      router.push(pathname + "?" + createQueryString("step", "review"), {
+        scroll: false,
+      })
+      router.refresh()
     } catch (err: any) {
-      setError(err.message)
+      setError(err?.message || "Unable to continue to review.")
     } finally {
       setIsLoading(false)
     }
@@ -261,9 +249,13 @@ const Payment = ({
     setError(null)
   }, [isOpen])
 
+  const summaryProvider = activeSession?.provider_id || selectedPaymentMethod
+  const summaryInfo = getPaymentInfo(summaryProvider)
+
   return (
     <section className="brand-card px-4 py-5 small:px-6 small:py-6">
       <p className="brand-kicker">Step 3</p>
+
       <div className="mb-5 flex flex-col gap-3 small:flex-row small:items-center small:justify-between">
         <Heading
           level="h2"
@@ -278,6 +270,7 @@ const Payment = ({
           Payment
           {!isOpen && paymentReady && <CheckCircleSolid />}
         </Heading>
+
         {!isOpen && paymentReady && (
           <Text>
             <button
@@ -290,6 +283,7 @@ const Payment = ({
           </Text>
         )}
       </div>
+
       <div>
         <div className={isOpen ? "block" : "hidden"}>
           <div className="mb-4 rounded-[18px] border border-[rgba(18,63,99,0.1)] bg-white/58 px-4 py-3">
@@ -300,34 +294,49 @@ const Payment = ({
               Choose a provider and continue to review.
             </p>
           </div>
-          {!paidByGiftcard && availablePaymentMethods?.length && (
-            <>
-              <RadioGroup
-                value={selectedPaymentMethod}
-                onChange={(value: string) => setPaymentMethod(value)}
-              >
-                {availablePaymentMethods.map((paymentMethod) => (
-                  <div key={paymentMethod.id}>
-                    {isStripeLike(paymentMethod.id) ? (
-                      <StripeCardContainer
-                        paymentProviderId={paymentMethod.id}
-                        selectedPaymentOptionId={selectedPaymentMethod}
-                        paymentInfoMap={paymentInfoMap}
-                        setCardBrand={setCardBrand}
-                        setError={setError}
-                        setCardComplete={setCardComplete}
-                      />
-                    ) : (
-                      <PaymentContainer
-                        paymentInfoMap={paymentInfoMap}
-                        paymentProviderId={paymentMethod.id}
-                        selectedPaymentOptionId={selectedPaymentMethod}
-                      />
+
+          {!paidByGiftcard && providerMethods.length > 0 && (
+            <div className="grid gap-3">
+              {providerMethods.map((paymentMethod) => {
+                const methodId = paymentMethod.id
+                const selected = selectedPaymentMethod === methodId
+
+                return (
+                  <button
+                    key={methodId}
+                    type="button"
+                    onClick={() => setPaymentMethod(methodId)}
+                    className={clx(
+                      "rounded-[18px] border px-4 py-4 text-left transition",
+                      selected
+                        ? "border-[var(--shreem-accent)] bg-[rgba(255,248,233,0.8)]"
+                        : "border-[rgba(18,63,99,0.1)] bg-white/58 hover:border-[var(--shreem-accent)]"
                     )}
-                  </div>
-                ))}
-              </RadioGroup>
-            </>
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="flex h-10 w-10 items-center justify-center rounded-[14px] border border-[rgba(18,63,99,0.12)] bg-white/80">
+                        {getPaymentInfo(methodId).icon || <CreditCard />}
+                      </span>
+                      <div>
+                        <Text className="txt-medium text-ui-fg-base">
+                          {getPaymentInfo(methodId).title}
+                        </Text>
+                        <Text className="mt-1 text-sm leading-6 text-[var(--shreem-muted)]">
+                          {getPaymentInfo(methodId).description}
+                        </Text>
+                      </div>
+                    </div>
+                  </button>
+                )
+              })}
+            </div>
+          )}
+
+          {!paidByGiftcard && providerMethods.length === 0 && (
+            <div className="rounded-[18px] border border-orange-200 bg-orange-50 px-4 py-4 text-sm text-orange-700">
+              No payment method is available for this region. Enable Razorpay or
+              manual UPI in Medusa Admin → Region payment providers.
+            </div>
           )}
 
           {paidByGiftcard && (
@@ -345,18 +354,15 @@ const Payment = ({
           )}
 
           {isManualUpiProvider(selectedPaymentMethod) && (
-            <ManualUpiNotice data={activeSession?.data as Record<string, unknown>} />
+            <ManualUpiNotice
+              data={activeSession?.data as Record<string, unknown>}
+            />
           )}
 
           <ErrorMessage
             error={error}
             data-testid="payment-method-error-message"
           />
-          {shiprocketPaymentMessage && (
-            <div className="mt-4 rounded-[16px] border border-[rgba(212,161,38,0.24)] bg-[rgba(255,248,233,0.78)] px-4 py-3 text-sm leading-6 text-[var(--shreem-ink)]">
-              {shiprocketPaymentMessage}
-            </div>
-          )}
 
           <Button
             size="large"
@@ -364,15 +370,13 @@ const Payment = ({
             onClick={handleSubmit}
             isLoading={isLoading}
             disabled={
-              (isStripeLike(selectedPaymentMethod) && !cardComplete) ||
+              isLoading ||
               (!selectedPaymentMethod && !paidByGiftcard) ||
-              Boolean(shiprocketPaymentMessage)
+              (isStripeLike(selectedPaymentMethod) && !cardComplete)
             }
             data-testid="submit-payment-button"
           >
-            {!activeSession && isStripeLike(selectedPaymentMethod)
-              ? "Enter card details"
-              : "Continue to review"}
+            Continue to review
           </Button>
         </div>
 
@@ -383,31 +387,25 @@ const Payment = ({
                 <Text className="txt-medium-plus text-ui-fg-base mb-1">
                   Payment method
                 </Text>
+
                 <div className="flex items-center gap-3">
                   <span className="flex h-10 w-10 items-center justify-center rounded-[14px] border border-[rgba(18,63,99,0.12)] bg-white/80">
-                    {getPaymentInfo(
-                      activeSession?.provider_id || selectedPaymentMethod
-                    ).icon || <CreditCard />}
+                    {summaryInfo.icon || <CreditCard />}
                   </span>
                   <div>
                     <Text
                       className="txt-medium text-ui-fg-base"
                       data-testid="payment-method-summary"
                     >
-                      {getPaymentInfo(
-                        activeSession?.provider_id || selectedPaymentMethod
-                      ).title}
+                      {summaryInfo.title}
                     </Text>
                     <Text className="mt-1 text-sm leading-6 text-[var(--shreem-muted)]">
-                      {
-                        getPaymentInfo(
-                          activeSession?.provider_id || selectedPaymentMethod
-                        ).description
-                      }
+                      {summaryInfo.description}
                     </Text>
                   </div>
                 </div>
               </div>
+
               <div className="rounded-[18px] border border-[rgba(18,63,99,0.1)] bg-white/58 px-4 py-4">
                 <Text className="txt-medium-plus text-ui-fg-base mb-1">
                   Payment details
@@ -416,13 +414,11 @@ const Payment = ({
                   className="flex items-start gap-3 txt-medium text-ui-fg-subtle"
                   data-testid="payment-details-summary"
                 >
-                  <Container className="flex h-10 w-10 items-center justify-center rounded-[14px] border border-[rgba(18,63,99,0.12)] bg-white/80 p-2">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-[14px] border border-[rgba(18,63,99,0.12)] bg-white/80">
                     <CreditCard />
-                  </Container>
+                  </span>
                   <Text className="text-sm leading-6 text-[var(--shreem-muted)]">
-                    {isStripeLike(
-                      activeSession?.provider_id || selectedPaymentMethod
-                    ) && cardBrand
+                    {isStripeLike(summaryProvider) && cardBrand
                       ? cardBrand
                       : "Ready for secure confirmation in the final review step."}
                   </Text>
@@ -444,6 +440,7 @@ const Payment = ({
           ) : null}
         </div>
       </div>
+
       <Divider className="mt-6" />
     </section>
   )
