@@ -98,6 +98,8 @@ export type PrashnaChart = {
   karana: string
   planets: PrashnaPlanet[]
   houses: PrashnaHouse[]
+  aspects?: GrahaAspect[]
+  houseSynthesis?: HouseSynthesis[]
   dasha?: VimshottariDasha
   prashnaFactors: string[]
   accuracyNote: string
@@ -189,6 +191,28 @@ export const getPanchangSystem = (id?: string | null) =>
 export const getHouseSystem = (id?: string | null) =>
   HOUSE_SYSTEMS.find((system) => system.id === id) || HOUSE_SYSTEMS[0]
 
+export type GrahaAspect = {
+  fromPlanet: string
+  fromHouse: number
+  fromSign: string
+  toHouse: number
+  toSign: string
+  aspectType: "7th" | "special" | "node-special"
+  strength: "full"
+  theme: string
+  interpretation: string
+}
+
+export type HouseSynthesis = {
+  house: number
+  sign: string
+  signLord: string
+  theme: string
+  planetsPlaced: string[]
+  aspectsReceived: GrahaAspect[]
+  synthesis: string
+}
+
 export type PrashnaPlanet = {
   key: string
   name: string
@@ -211,6 +235,7 @@ export type PrashnaPlanet = {
   houseSystem?: HouseSystemId
   houseNote?: string
   retrograde?: boolean
+  aspects?: GrahaAspect[]
 }
 
 export type PrashnaHouse = {
@@ -223,6 +248,9 @@ export type PrashnaHouse = {
   cuspDegree?: number
   bhavaStartLongitude?: number
   bhavaEndLongitude?: number
+  planetsPlaced?: string[]
+  aspectsReceived?: GrahaAspect[]
+  synthesis?: string
 }
 
 export type DashaPeriod = {

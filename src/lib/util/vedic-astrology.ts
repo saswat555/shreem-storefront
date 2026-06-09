@@ -16,6 +16,8 @@ import {
   type PrashnaChart,
   type PrashnaHouse,
   type PrashnaPlanet,
+  type GrahaAspect,
+  type HouseSynthesis,
   type DashaPeriod,
   type HouseSystem,
   type HouseSystemId,
@@ -431,6 +433,161 @@ const getPlanetHouse = (longitude: number, ascendantLongitude: number) => {
   const planetSignIndex = Math.floor(normalizeDegrees(longitude) / 30)
 
   return ((planetSignIndex - ascendantSignIndex + 12) % 12) + 1
+}
+
+const getGrahaAspectDistances = (planetName: string) => {
+  const base = [7]
+
+  if (planetName === "Mars") {
+    return [...base, 4, 8]
+  }
+
+  if (planetName === "Jupiter") {
+    return [...base, 5, 9]
+  }
+
+  if (planetName === "Saturn") {
+    return [...base, 3, 10]
+  }
+
+  if (planetName === "Rahu" || planetName === "Ketu") {
+    return [...base, 5, 9]
+  }
+
+  return base
+}
+
+const getAspectTargetHouse = (fromHouse: number, distance: number) =>
+  ((fromHouse + distance - 2) % 12) + 1
+
+const getAspectType = (
+  planetName: string,
+  distance: number
+): GrahaAspect["aspectType"] => {
+  if (distance === 7) {
+    return "7th"
+  }
+
+  if (planetName === "Rahu" || planetName === "Ketu") {
+    return "node-special"
+  }
+
+  return "special"
+}
+
+const buildGrahaAspects = ({
+  planets,
+  houses,
+}: {
+  planets: PrashnaPlanet[]
+  houses: PrashnaHouse[]
+}): GrahaAspect[] => {
+  const houseByNumber = new Map(houses.map((house) => [house.house, house]))
+
+  return planets.flatMap((planet) =>
+    getGrahaAspectDistances(planet.name).map((distance) => {
+      const targetHouseNumber = getAspectTargetHouse(
+        planet.bhavaHouse || planet.house,
+        distance
+      )
+      const targetHouse = houseByNumber.get(targetHouseNumber)
+      const targetSign = targetHouse?.sign || ""
+      const theme = targetHouse?.theme || ""
+
+      return {
+        fromPlanet: planet.name,
+        fromHouse: planet.bhavaHouse || planet.house,
+        fromSign: planet.sign,
+        toHouse: targetHouseNumber,
+        toSign: targetSign,
+        aspectType: getAspectType(planet.name, distance),
+        strength: "full",
+        theme,
+        interpretation: `${planet.name} from house ${
+          planet.bhavaHouse || planet.house
+        } aspects house ${targetHouseNumber} (${targetSign}), modifying ${theme}.`,
+      }
+    })
+  )
+}
+
+const buildHouseSynthesis = ({
+  planets,
+  houses,
+  aspects,
+}: {
+  planets: PrashnaPlanet[]
+  houses: PrashnaHouse[]
+  aspects: GrahaAspect[]
+}): HouseSynthesis[] =>
+  houses.map((house) => {
+    const planetsPlaced = planets
+      .filter((planet) => (planet.bhavaHouse || planet.house) === house.house)
+      .map((planet) => planet.name)
+    const aspectsReceived = aspects.filter(
+      (aspect) => aspect.toHouse === house.house
+    )
+    const aspectText = aspectsReceived.length
+      ? `Receives drishti from ${aspectsReceived
+          .map((aspect) => aspect.fromPlanet)
+          .join(", ")}.`
+      : "Receives no major graha drishti by the configured Parashari rules."
+
+    const placementText = planetsPlaced.length
+      ? `Contains ${planetsPlaced.join(", ")}.`
+      : "No graha placed directly in this bhava."
+
+    return {
+      house: house.house,
+      sign: house.sign,
+      signLord: house.signLord,
+      theme: house.theme,
+      planetsPlaced,
+      aspectsReceived,
+      synthesis: `House ${house.house} (${house.theme}) is ${house.sign}, ruled by ${house.signLord}. ${placementText} ${aspectText}`,
+    }
+  })
+
+const attachDrishtiToChart = ({
+  planets,
+  houses,
+}: {
+  planets: PrashnaPlanet[]
+  houses: PrashnaHouse[]
+}) => {
+  const aspects = buildGrahaAspects({ planets, houses })
+  const houseSynthesis = buildHouseSynthesis({ planets, houses, aspects })
+  const aspectsByPlanet = new Map<string, GrahaAspect[]>()
+
+  aspects.forEach((aspect) => {
+    aspectsByPlanet.set(aspect.fromPlanet, [
+      ...(aspectsByPlanet.get(aspect.fromPlanet) || []),
+      aspect,
+    ])
+  })
+
+  const planetsWithAspects = planets.map((planet) => ({
+    ...planet,
+    aspects: aspectsByPlanet.get(planet.name) || [],
+  }))
+
+  const housesWithSynthesis = houses.map((house) => {
+    const synthesis = houseSynthesis.find((item) => item.house === house.house)
+
+    return {
+      ...house,
+      planetsPlaced: synthesis?.planetsPlaced || [],
+      aspectsReceived: synthesis?.aspectsReceived || [],
+      synthesis: synthesis?.synthesis,
+    }
+  })
+
+  return {
+    planetsWithAspects,
+    housesWithSynthesis,
+    aspects,
+    houseSynthesis,
+  }
 }
 
 const getMidheavenLongitude = ({
@@ -883,6 +1040,12 @@ export const buildDetailedPrashnaChart = ({
   const lagnaLord = getPlanetByName(planets, SIGN_LORDS[ascendant])
   const moon = getPlanetByName(planets, "Moon")
   const sun = getPlanetByName(planets, "Sun")
+  const {
+    planetsWithAspects,
+    housesWithSynthesis,
+    aspects,
+    houseSynthesis,
+  } = attachDrishtiToChart({ planets, houses })
 
   return {
     generatedAtIso: date.toISOString(),
@@ -911,8 +1074,10 @@ export const buildDetailedPrashnaChart = ({
     paksha,
     yoga: YOGAS[yogaIndex] || "Unknown",
     karana: getKarana(moonSunDistance),
-    planets,
-    houses,
+    planets: planetsWithAspects,
+    houses: housesWithSynthesis,
+    aspects,
+    houseSynthesis,
     dasha,
     prashnaFactors: [
       `Prashna cast for ${getLocalDateTime(date, city)} at ${city.name}, ${
@@ -934,6 +1099,13 @@ export const buildDetailedPrashnaChart = ({
         YOGAS[yogaIndex] || "Unknown"
       } yoga, ${getKarana(moonSunDistance)} karana.`,
       `Current period: ${dasha.mahadasha.lord} Mahadasha, ${dasha.antardasha.lord} Antardasha, ${dasha.pratyantar.lord} Pratyantar Dasha.`,
+      `Major drishti map: ${aspects
+        .slice(0, 18)
+        .map(
+          (aspect) =>
+            `${aspect.fromPlanet} H${aspect.fromHouse}->H${aspect.toHouse}`
+        )
+        .join("; ")}.`,
     ],
     accuracyNote:
       `Chart is calculated with astronomical ephemeris, ${panchangSystem.label}, and ${houseSystem.label}. Printed panchang editions can differ around sunrise, ayanamsa, house division, and boundary moments; final ritual, gemstone, medical, legal, or financial decisions should be confirmed with a qualified astrologer or professional.`,

@@ -128,13 +128,18 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // if one of the country codes is in the url and the cache id is not set, set the cache id and redirect
+  // If the URL already has a valid country code, never redirect to itself.
+  // Set the cache cookie on the normal response instead. This prevents bot/crawler
+  // redirect loops on URLs like /in/store, /in/products/..., etc.
   if (urlHasCountryCode && !cacheIdCookie) {
-    response.cookies.set("_medusa_cache_id", cacheId, {
+    const nextResponse = NextResponse.next()
+
+    nextResponse.cookies.set("_medusa_cache_id", cacheId, {
       maxAge: 60 * 60 * 24,
+      path: "/",
     })
 
-    return response
+    return nextResponse
   }
 
   const redirectPath =

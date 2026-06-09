@@ -19,14 +19,15 @@ const normalizeUsageUnits = (value: unknown, fallback = 1) => {
 
 export const getDailyAiLimit = () => {
   const parsed = Number(
-    process.env.ASTROLOGY_AI_DAILY_LIMIT ||
+    process.env.ASTROLOGY_AI_LIFETIME_FREE_LIMIT ||
+      process.env.ASTROLOGY_AI_DAILY_LIMIT ||
       process.env.AI_DAILY_LIMIT ||
-      3
+      1
   )
 
   return Number.isFinite(parsed) && parsed > 0
-    ? Math.min(Math.floor(parsed), 20)
-    : 3
+    ? Math.min(Math.floor(parsed), 3)
+    : 1
 }
 
 export const getIstDayWindow = (now = new Date()) => {
@@ -70,13 +71,13 @@ export const checkAstrologyDailyQuota = async ({
 } = {}) => {
   const limit = getDailyAiLimit()
   const units = normalizeUsageUnits(requestedUnits)
-  const { startIso, endIso } = getIstDayWindow()
+
+  // Lifetime free quota: count all astrology usage, not just today's usage.
   const usage = await listAiUsage({
-    limit: Math.max(50, limit * 8),
+    limit: 200,
     toolPrefix: "astrology",
-    createdFrom: startIso,
-    createdTo: endIso,
   })
+
   const used = usage.items.reduce((sum, item) => sum + getAiUsageUnits(item), 0)
   const remaining = Math.max(0, limit - used)
 
@@ -87,7 +88,8 @@ export const checkAstrologyDailyQuota = async ({
     remaining,
     requested_units: units,
     allowed: usage.synced ? remaining >= units : true,
-    reset_at: endIso,
+    reset_at: null,
+    quota_type: "lifetime_free",
   }
 }
 
@@ -136,7 +138,7 @@ export const checkAstrologyAccess = async ({
   if (freeAllowed) {
     return {
       allowed: true,
-      reason: "daily_free",
+      reason: "lifetime_free",
       charge_required: false,
       charge_units: 0,
       requested_units: units,
@@ -182,9 +184,9 @@ export const getAstrologyBillingMetadata = (access: AstrologyAccess) => ({
   requested_units: access.requested_units,
   charge_required: access.charge_required,
   charge_units: access.charge_units,
-  free_daily_limit: access.quota.limit,
-  free_used_today: access.quota.used,
-  free_remaining_today: access.quota.remaining,
+  free_lifetime_limit: access.quota.limit,
+  free_used_lifetime: access.quota.used,
+  free_remaining_lifetime: access.quota.remaining,
   free_reset_at: access.quota.reset_at,
   wallet_synced: access.wallet_synced,
   wallet_plan: access.wallet?.plan || "free",

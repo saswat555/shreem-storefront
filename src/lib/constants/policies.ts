@@ -55,7 +55,7 @@ export const policyPages = {
       {
         heading: "Shipping, returns, and refunds",
         body: [
-          "Shipping is handled according to our Shipping Policy, including Shiprocket serviceability, courier assignment, estimated timelines, and delivery charges.",
+          "Shipping is handled according to our Shipping Policy, including courier partner serviceability, courier assignment, estimated timelines, and delivery charges.",
           "Returns and refunds are governed by the Return Policy and Refund Policy published on this website.",
         ],
       },
@@ -129,14 +129,14 @@ export const policyPages = {
         heading: "How we use information",
         body: [
           "We use your data to process orders, calculate shipping, provide customer support, manage accounts, verify email, prevent fraud, improve products, operate AI features, maintain wallet credits, and comply with legal or tax obligations.",
-          "Saved delivery pincode is used to show serviceability and Shiprocket delivery estimates on product and checkout pages.",
+          "Saved delivery pincode is used to show serviceability and courier partner delivery estimates on product and checkout pages.",
         ],
       },
       {
         heading: "Payments and shipping partners",
         body: [
           "Payment details are processed by our payment gateway and banking partners. We do not store full card, UPI, wallet, or banking credentials on the storefront.",
-          "Delivery information required to ship an order may be shared with Shiprocket and courier partners for pickup, tracking, delivery, returns, and proof of delivery.",
+          "Delivery information required to ship an order may be shared with courier partner and courier partners for pickup, tracking, delivery, returns, and proof of delivery.",
         ],
       },
       {
@@ -192,7 +192,7 @@ export const policyPages = {
       {
         heading: "Return pickup and inspection",
         body: [
-          "When a return is approved, pickup may be arranged through Shiprocket or another courier partner where serviceable.",
+          "When a return is approved, pickup may be arranged through courier partner or another courier partner where serviceable.",
           "Refund or replacement is processed after inspection. If the returned item does not match the approved claim, the request may be rejected.",
         ],
       },
@@ -206,16 +206,16 @@ export const policyPages = {
   },
   shipping: {
     title: "Shipping Policy",
-    eyebrow: "Delivery through Shiprocket",
+    eyebrow: "Delivery through courier partners",
     summary:
-      "This policy explains how Shreem uses Shiprocket and courier partners to calculate delivery, ship orders, and handle delivery exceptions.",
+      "This policy explains how Shreem uses courier partner and courier partners to calculate delivery, ship orders, and handle delivery exceptions.",
     lastUpdated: "20 May 2026",
     sections: [
       {
         heading: "Shipping partner",
         body: [
-          "We use Shiprocket to check pincode serviceability, calculate shipping rates, allocate courier partners, generate labels, arrange pickup, and provide tracking for most orders.",
-          "Courier selection may depend on delivery pincode, product weight, pickup pincode, serviceability, estimated delivery time, and Shiprocket/courier availability.",
+          "We use courier partner to check pincode serviceability, calculate shipping rates, allocate courier partners, generate labels, arrange pickup, and provide tracking for most orders.",
+          "Courier selection may depend on delivery pincode, product weight, pickup pincode, serviceability, estimated delivery time, and courier partner/courier availability.",
         ],
       },
       {
@@ -229,7 +229,7 @@ export const policyPages = {
         heading: "Dispatch and delivery timeline",
         body: [
           "Orders are usually prepared for dispatch within 1-3 business days after payment confirmation, unless the product page or support team states otherwise.",
-          "Estimated delivery time is shown from Shiprocket/courier data where available. Delivery may be delayed by weather, strikes, holidays, incorrect address, customer unavailability, remote areas, courier disruptions, or force majeure.",
+          "Estimated delivery time is shown from courier partner/courier data where available. Delivery may be delayed by weather, strikes, holidays, incorrect address, customer unavailability, remote areas, courier disruptions, or force majeure.",
           "The order will be delivered within a maximum period of 15-20 days.",
         ],
       },

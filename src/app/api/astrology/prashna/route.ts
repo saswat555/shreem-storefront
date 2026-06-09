@@ -150,6 +150,32 @@ const retrievePrashnaKnowledgeSafely = (
   }
 }
 
+const buildPrashnaDrishtiPromptPack = (chart: PrashnaChart) =>
+  JSON.stringify(
+    {
+      instruction:
+        "Use this deterministic drishti table for Prashna judgement. Answer the exact question using Lagna, Lagna lord, Moon, relevant house/lord, placed grahas, drishti, dignity and dasha.",
+      graha_drishti: (chart.aspects || []).map((aspect) => ({
+        from: `${aspect.fromPlanet} H${aspect.fromHouse} ${aspect.fromSign}`,
+        to: `H${aspect.toHouse} ${aspect.toSign}`,
+        type: aspect.aspectType,
+        theme: aspect.theme,
+        interpretation: aspect.interpretation,
+      })),
+      house_synthesis: (chart.houseSynthesis || []).map((house) => ({
+        house: house.house,
+        sign: house.sign,
+        lord: house.signLord,
+        theme: house.theme,
+        planets: house.planetsPlaced,
+        drishti_from: house.aspectsReceived.map((aspect) => aspect.fromPlanet),
+        synthesis: house.synthesis,
+      })),
+    },
+    null,
+    2
+  )
+
 const buildPrompt = ({
   question,
   questionParts,
@@ -166,6 +192,8 @@ const buildPrompt = ({
   [
     "You are Shreem Astrology's Prashna Kundli assistant.",
     "Focus sharply on the user's actual question and provide deep, pinpointed details using the chart and references. Avoid general or purely philosophical talk.",
+    "Use deterministic_drishti_pack. Do not invent drishti. Judge each answer from Lagna, Lagna lord, Moon, relevant house/lord, placed grahas, drishti received, dignity, and dasha.",
+    "Do not repeat the user's question as the answer. Start answer with a direct verdict: yes, no, likely, unlikely, delayed, mixed, or yes with conditions.",
     "Disclaimer: All insights are AI-generated based on astrological principles.",
     "Use only the calculated Prashna Kundli context and the user's question.",
     "Use the retrieved classical reference pack below to strengthen the answer, but keep Prashna tied to the exact question and do not quote the pack verbatim.",
@@ -355,7 +383,7 @@ export async function POST(request: NextRequest) {
       knowledgePassages,
     }),
     responseSchema: PRASHNA_SCHEMA,
-    temperature: 0.25,
+    temperature: 0.16,
     label: "Prashna API",
   })
 

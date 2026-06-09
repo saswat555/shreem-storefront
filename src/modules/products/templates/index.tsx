@@ -6,7 +6,6 @@ import ProductOnboardingCta from "@modules/products/components/product-onboardin
 import ProductTabs from "@modules/products/components/product-tabs"
 import RelatedProducts from "@modules/products/components/related-products"
 import ProductReviews from "@modules/products/components/product-reviews"
-import ProductDeliveryChecker from "@modules/products/components/product-delivery-checker"
 import ProductInfo from "@modules/products/templates/product-info"
 import SkeletonRelatedProducts from "@modules/skeletons/templates/skeleton-related-products"
 import { notFound } from "next/navigation"
@@ -76,11 +75,7 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
                 </div>
               }
             >
-              <ProductDeliveryChecker
-                product={product}
-                initialPincode={initialDeliveryPincode}
-              />
-            </Suspense>
+</Suspense>
           </div>
 
           <div className="order-1 min-w-0 xl:order-2">

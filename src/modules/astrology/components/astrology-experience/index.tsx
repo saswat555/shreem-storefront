@@ -344,14 +344,14 @@ const serviceCards = [
   {
     title: "Focused Jyotish call",
     amount: "Rs. 499",
-    href: "/products/shreem-astrology-15-minute-call",
+    href: "/products/shreem-expert-jyotish-consultation",
     description:
       "15 minutes for one clear question, timing concern, or remedy review with Sanjay Kumar Pandey ji.",
   },
   {
     title: "Detailed Kundli call",
     amount: "Rs. 999",
-    href: "/products/shreem-astrology-30-minute-call",
+    href: "/products/shreem-expert-jyotish-consultation",
     description:
       "30 minutes for chart context, gemstone caution, pooja direction, and practical next steps.",
   },
@@ -2059,6 +2059,500 @@ const getStoneCards = (stones?: KundliResult["stones"]) => {
   ].filter(Boolean) as NonNullable<KundliResult["stones"]>["trinal"]
 }
 
+
+const cleanKundliText = (value?: string | null) =>
+  typeof value === "string" ? value.trim() : ""
+
+const compactKundliText = (value?: string | null, maxLength = 240) => {
+  const cleaned = cleanKundliText(value).replace(/\s+/g, " ")
+
+  if (!cleaned) {
+    return ""
+  }
+
+  return cleaned.length > maxLength
+    ? `${cleaned.slice(0, maxLength - 1).trim()}…`
+    : cleaned
+}
+
+const normalizeKundliText = (value?: string | null) =>
+  cleanKundliText(value)
+    .toLowerCase()
+    .replace(/[^a-z0-9\u0900-\u097f]+/gi, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+
+const uniqueByText = <T,>(items: T[], getText: (item: T) => string) => {
+  const seen = new Set<string>()
+
+  return items.filter((item) => {
+    const key = normalizeKundliText(getText(item))
+
+    if (!key || seen.has(key)) {
+      return false
+    }
+
+    seen.add(key)
+    return true
+  })
+}
+
+const getKundliQuestions = (result: KundliResult) =>
+  (result.profile?.sub_questions || [])
+    .map((item) => cleanKundliText(item))
+    .filter(Boolean)
+
+const getKundliQuestionText = (result: KundliResult) => {
+  const questions = getKundliQuestions(result)
+
+  return questions.length ? questions.join(" · ") : ""
+}
+
+const findPredictionRow = (result: KundliResult, terms: string[]) => {
+  const rows = result.analysis?.prediction_table || []
+
+  return rows.find((row) => {
+    const area = normalizeKundliText(row.area)
+    const prediction = normalizeKundliText(row.prediction)
+    const basis = normalizeKundliText(row.chart_basis)
+    const joined = `${area} ${prediction} ${basis}`
+
+    return terms.some((term) => joined.includes(term))
+  })
+}
+
+const getFocusedPredictionRows = (result: KundliResult) => {
+  const rows = result.analysis?.prediction_table || []
+
+  const priorityTerms = [
+    "user question",
+    "question",
+    "current dasha",
+    "current period",
+    "career",
+    "work",
+    "business",
+    "money",
+    "marriage",
+    "relationship",
+    "health",
+    "remedy",
+  ]
+
+  const scoreRow = (row: NonNullable<KundliAnalysis["prediction_table"]>[number]) => {
+    const area = normalizeKundliText(row.area)
+    const joined = `${area} ${normalizeKundliText(row.prediction)}`
+    const index = priorityTerms.findIndex((term) => joined.includes(term))
+
+    return index === -1 ? 999 : index
+  }
+
+  return uniqueByText(rows, (row) => `${row.area} ${row.prediction}`)
+    .sort((a, b) => scoreRow(a) - scoreRow(b))
+    .slice(0, 8)
+}
+
+const getKundliDirectAnswer = (result: KundliResult) => {
+  const analysis = result.analysis
+  const questionAnswer = cleanKundliText(analysis?.sub_question_answers?.[0]?.answer)
+
+  if (questionAnswer) {
+    return questionAnswer
+  }
+
+  const questions = getKundliQuestions(result)
+  const questionTokens = questions
+    .join(" ")
+    .toLowerCase()
+    .split(/[^a-z0-9\u0900-\u097f]+/i)
+    .filter((item) => item.length > 3)
+    .slice(0, 8)
+
+  const questionMatchedRow =
+    questionTokens.length > 0
+      ? findPredictionRow(result, questionTokens)
+      : undefined
+
+  const priorityRow =
+    questionMatchedRow ||
+    findPredictionRow(result, [
+      "user question",
+      "question",
+      "current dasha",
+      "current period",
+      "business",
+      "career",
+      "work",
+      "money",
+      "marriage",
+      "relationship",
+      "health",
+    ]) ||
+    getFocusedPredictionRows(result)[0]
+
+  const rowPrediction = cleanKundliText(priorityRow?.prediction)
+
+  if (rowPrediction) {
+    return rowPrediction
+  }
+
+  const dashaPrediction = cleanKundliText(analysis?.dasha_predictions?.[0]?.prediction)
+
+  if (dashaPrediction) {
+    return dashaPrediction
+  }
+
+  return (
+    cleanKundliText(analysis?.summary) ||
+    cleanKundliText(analysis?.current_period_analysis) ||
+    cleanKundliText(analysis?.person_information) ||
+    cleanKundliText(result.message)
+  )
+}
+
+const getKundliDirectReason = (result: KundliResult) => {
+  const analysis = result.analysis
+  const questionReason = cleanKundliText(analysis?.sub_question_answers?.[0]?.chart_reason)
+
+  if (questionReason) {
+    return questionReason
+  }
+
+  const row =
+    findPredictionRow(result, ["user question", "question", "current dasha", "current period"]) ||
+    getFocusedPredictionRows(result)[0]
+
+  return (
+    cleanKundliText(row?.chart_basis) ||
+    cleanKundliText(analysis?.dasha_predictions?.[0]?.chart_basis) ||
+    cleanKundliText(analysis?.current_period_analysis) ||
+    cleanKundliText(result.detected_yogas?.slice(0, 3).join("; "))
+  )
+}
+
+const getKundliDashaText = (chart?: PrashnaChart) => {
+  const dasha = chart?.dasha
+
+  if (!dasha) {
+    return ""
+  }
+
+  return `${dasha.mahadasha.lord} Mahadasha · ${dasha.antardasha.lord} Antardasha · ${dasha.pratyantar.lord} Pratyantar`
+}
+
+const getKundliDashaWindow = (chart?: PrashnaChart) => {
+  const dasha = chart?.dasha
+
+  if (!dasha) {
+    return ""
+  }
+
+  return `${dasha.mahadasha.startLabel} to ${dasha.mahadasha.endLabel}; Antardasha ${dasha.antardasha.startLabel} to ${dasha.antardasha.endLabel}; Pratyantar ${dasha.pratyantar.startLabel} to ${dasha.pratyantar.endLabel}.`
+}
+
+const KundliAnswerFirstCard = ({ result }: { result: KundliResult }) => {
+  const question = getKundliQuestionText(result)
+  const directAnswer = getKundliDirectAnswer(result)
+  const directReason = getKundliDirectReason(result)
+  const dashaText = getKundliDashaText(result.chart)
+  const dashaWindow = getKundliDashaWindow(result.chart)
+
+  if (!directAnswer && !directReason && !dashaText) {
+    return null
+  }
+
+  return (
+    <section className="rounded-[24px] border border-[rgba(13,129,126,0.24)] bg-[rgba(240,248,246,0.88)] px-4 py-5 small:px-6 small:py-6">
+      {question ? (
+        <>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
+            Your question
+          </p>
+          <h3 className="mt-2 text-xl font-semibold leading-7 text-[var(--shreem-ink)]">
+            {question}
+          </h3>
+        </>
+      ) : (
+        <h3 className="text-xl font-semibold leading-7 text-[var(--shreem-ink)]">
+          Kundli reading
+        </h3>
+      )}
+
+      {directAnswer && (
+        <div className="mt-4 rounded-[18px] border border-white/80 bg-white/78 px-4 py-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
+            Direct reading
+          </p>
+          <p className="mt-2 text-base leading-7 text-[var(--shreem-ink)]">
+            {directAnswer}
+          </p>
+        </div>
+      )}
+
+      <div className="mt-4 grid gap-3 small:grid-cols-2">
+        {dashaText && (
+          <div className="rounded-[18px] border border-[rgba(212,161,38,0.24)] bg-white/78 px-4 py-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
+              Current dasha
+            </p>
+            <p className="mt-2 text-sm font-semibold leading-6 text-[var(--shreem-ink)]">
+              {dashaText}
+            </p>
+            {dashaWindow && (
+              <p className="mt-1 text-xs leading-5 text-[var(--shreem-muted)]">
+                {dashaWindow}
+              </p>
+            )}
+          </div>
+        )}
+
+        {directReason && (
+          <div className="rounded-[18px] border border-[var(--shreem-border)] bg-white/78 px-4 py-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
+              Chart basis
+            </p>
+            <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
+              {directReason}
+            </p>
+          </div>
+        )}
+      </div>
+    </section>
+  )
+}
+
+const FocusedPredictionCards = ({ result }: { result: KundliResult }) => {
+  const rows = getFocusedPredictionRows(result)
+
+  if (!rows.length) {
+    return null
+  }
+
+  return (
+    <section className="rounded-[22px] border border-[rgba(13,129,126,0.16)] bg-[rgba(240,248,246,0.72)] px-4 py-4">
+      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
+        Main judgement
+      </p>
+      <div className="mt-3 grid gap-3">
+        {rows.slice(0, 5).map((row, index) => (
+          <article
+            key={`${row.area}-${index}`}
+            className="rounded-[16px] border border-[var(--shreem-border)] bg-white/74 px-3 py-3"
+          >
+            <p className="text-sm font-semibold text-[var(--shreem-ink)]">
+              {row.area}
+            </p>
+            <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
+              {row.prediction}
+            </p>
+            <p className="mt-2 rounded-[14px] bg-[rgba(255,248,233,0.74)] px-3 py-2 text-xs leading-5 text-[var(--shreem-muted)]">
+              {row.advice}
+            </p>
+            {row.chart_basis && (
+              <p className="mt-2 text-xs leading-5 text-[var(--shreem-muted)]">
+                Basis: {compactKundliText(row.chart_basis, 180)}
+              </p>
+            )}
+          </article>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+const CompactSpecialCaseSummary = ({ result }: { result: KundliResult }) => {
+  const caseReadings = result.analysis?.special_case_readings || []
+  const rawCases = result.analysis?.special_cases?.length
+    ? result.analysis.special_cases
+    : result.detected_yogas || []
+
+  const rows = caseReadings.length
+    ? caseReadings.map((item) => ({
+        title: item.case_name,
+        body:
+          item.combined_effect ||
+          item.chart_basis ||
+          item.classical_basis ||
+          item.solution,
+        timing: item.timing,
+        solution: item.solution,
+      }))
+    : rawCases.map((item) => ({
+        title: item,
+        body: item,
+        timing: "",
+        solution: "",
+      }))
+
+  const uniqueRows = uniqueByText(rows, (row) => `${row.title} ${row.body}`).slice(0, 8)
+
+  if (!uniqueRows.length) {
+    return null
+  }
+
+  return (
+    <section className="rounded-[20px] border border-[var(--shreem-border)] bg-white/60 px-4 py-4">
+      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
+        Special cases checked
+      </p>
+      <div className="mt-3 grid gap-2">
+        {uniqueRows.map((item, index) => (
+          <div
+            key={`${item.title}-${index}`}
+            className="rounded-[14px] bg-white/72 px-3 py-2 text-xs leading-5 text-[var(--shreem-muted)]"
+          >
+            <span className="font-semibold text-[var(--shreem-ink)]">
+              {compactKundliText(item.title, 60)}
+            </span>
+            {item.body && (
+              <span> — {compactKundliText(item.body, 150)}</span>
+            )}
+            {item.timing && (
+              <span> Timing: {compactKundliText(item.timing, 90)}</span>
+            )}
+          </div>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+const GrahaDrishtiCard = ({ chart }: { chart?: PrashnaChart }) => {
+  const aspects = chart?.aspects || []
+  const houseSynthesis = chart?.houseSynthesis || []
+
+  if (!aspects.length && !houseSynthesis.length) {
+    return null
+  }
+
+  const keyHouses = houseSynthesis
+    .filter((house) => [1, 2, 5, 7, 9, 10, 11].includes(house.house))
+    .slice(0, 7)
+
+  return (
+    <section className="rounded-[24px] border border-[rgba(212,161,38,0.24)] bg-[rgba(255,248,233,0.78)] px-4 py-5 small:px-6">
+      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
+        Graha drishti synthesis
+      </p>
+      <h3 className="mt-2 text-xl font-semibold leading-7 text-[var(--shreem-ink)]">
+        Planet aspects and combined house impact
+      </h3>
+      <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
+        This section is calculated deterministically before AI interpretation, so the reading does not miss major Parashari drishti.
+      </p>
+
+      <div className="mt-4 grid gap-3 small:grid-cols-2">
+        {aspects.slice(0, 12).map((aspect, index) => (
+          <article
+            key={`${aspect.fromPlanet}-${aspect.toHouse}-${index}`}
+            className="rounded-[18px] border border-[var(--shreem-border)] bg-white/72 px-3 py-3"
+          >
+            <p className="text-sm font-semibold text-[var(--shreem-ink)]">
+              {aspect.fromPlanet} → House {aspect.toHouse}
+            </p>
+            <p className="mt-1 text-xs uppercase tracking-[0.12em] text-[var(--shreem-gold-deep)]">
+              {aspect.aspectType} drishti · {aspect.toSign}
+            </p>
+            <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
+              {compactKundliText(aspect.interpretation, 180)}
+            </p>
+          </article>
+        ))}
+      </div>
+
+      {!!keyHouses.length && (
+        <div className="mt-4 grid gap-3">
+          {keyHouses.map((house) => (
+            <article
+              key={`house-synthesis-${house.house}`}
+              className="rounded-[18px] border border-white/80 bg-white/70 px-4 py-3"
+            >
+              <p className="text-sm font-semibold text-[var(--shreem-ink)]">
+                House {house.house}: {house.theme}
+              </p>
+              <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
+                {compactKundliText(house.synthesis, 260)}
+              </p>
+            </article>
+          ))}
+        </div>
+      )}
+    </section>
+  )
+}
+
+const CompactDashaPredictionList = ({
+  rows,
+}: {
+  rows?: KundliAnalysis["dasha_predictions"]
+}) => {
+  const uniqueRows = uniqueByText(rows || [], (row) => `${row.period} ${row.prediction}`).slice(0, 3)
+
+  if (!uniqueRows.length) {
+    return null
+  }
+
+  return (
+    <section className="rounded-[20px] border border-[rgba(13,129,126,0.18)] bg-[rgba(240,248,246,0.68)] px-4 py-4">
+      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
+        Dasha timing
+      </p>
+      <div className="mt-3 grid gap-3 small:grid-cols-3">
+        {uniqueRows.map((item, index) => (
+          <article
+            key={`${item.period}-${index}`}
+            className="rounded-[16px] border border-[var(--shreem-border)] bg-white/74 px-3 py-3"
+          >
+            <p className="text-sm font-semibold text-[var(--shreem-ink)]">
+              {item.period}
+            </p>
+            <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
+              {compactKundliText(item.prediction, 260)}
+            </p>
+            <p className="mt-2 rounded-[14px] bg-[rgba(255,248,233,0.74)] px-3 py-2 text-xs leading-5 text-[var(--shreem-muted)]">
+              {compactKundliText(item.action, 180)}
+            </p>
+          </article>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+const CompactInsightList = ({
+  title,
+  items,
+  limit = 5,
+}: {
+  title: string
+  items?: string[]
+  limit?: number
+}) => {
+  const uniqueItems = uniqueByText(items || [], (item) => item).slice(0, limit)
+
+  if (!uniqueItems.length) {
+    return null
+  }
+
+  return (
+    <section className="rounded-[20px] border border-[var(--shreem-border)] bg-white/60 px-4 py-4">
+      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
+        {title}
+      </p>
+      <div className="mt-3 grid gap-2">
+        {uniqueItems.map((item, index) => (
+          <p
+            key={`${title}-${index}`}
+            className="rounded-[14px] bg-white/70 px-3 py-2 text-xs leading-5 text-[var(--shreem-muted)]"
+          >
+            {compactKundliText(item, 180)}
+          </p>
+        ))}
+      </div>
+    </section>
+  )
+}
+
 const KundliResultView = ({
   result,
   onPrint,
@@ -2075,12 +2569,19 @@ const KundliResultView = ({
     return null
   }
 
+  const hasQuestionAnswers = Boolean(result.analysis?.sub_question_answers?.length)
+  const showGeneralText =
+    !hasQuestionAnswers &&
+    Boolean(
+      result.analysis?.summary ||
+        result.analysis?.career_direction ||
+        result.analysis?.relationship_pattern ||
+        result.analysis?.health_caution ||
+        result.analysis?.current_period_analysis
+    )
+
   return (
     <div className="grid gap-4 relative">
-      <div className="flex justify-center mb-4">
-        <LogoLoader compact label="Shreem Kundli" />
-      </div>
-
       <div className="rounded-[20px] border border-[var(--shreem-border)] bg-white/62 px-4 py-3">
         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
           {isInterruptedReading ? "Kundli not completed" : "Kundli reading"}
@@ -2093,69 +2594,31 @@ const KundliResultView = ({
               }.`}
         </p>
       </div>
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(280px,0.65fr)]">
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
-          <NorthIndianChart chart={chart} mode="lagna" title="Lagna chart" />
-          <NorthIndianChart chart={chart} mode="bhava" title="Bhava Chalit chart" />
-          <NorthIndianChart chart={chart} mode="moon" title="Chandra chart" />
-        </div>
-        <div className="grid gap-3">
-          <ChartMiniCard
-            label="Lagna"
-            value={`${chart.ascendant} ${formatDegree(chart.ascendantDegree)}`}
-            detail={`${chart.ascendantNakshatra} pada ${chart.ascendantPada}`}
-          />
-          <ChartMiniCard
-            label="Rashi"
-            value={`${chart.moonSign} ${formatDegree(chart.moonDegree)}`}
-            detail={`${chart.nakshatra} pada ${chart.nakshatraPada}`}
-          />
-          <ChartMiniCard
-            label="Birth panchang"
-            value={chart.tithi}
-            detail={`${chart.yoga} yoga · ${chart.karana} karana`}
-          />
-        </div>
-      </div>
 
-      <BhavaChalitSummary chart={chart} />
+      <KundliAnswerFirstCard result={result} />
+
+      <SubQuestionAnswersList rows={result.analysis?.sub_question_answers} />
+
+      <FocusedPredictionCards result={result} />
 
       <DashaCard chart={chart} />
 
-      <div className="grid gap-4">
-        <div>
-          <p className="mb-3 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
-            House information
-          </p>
-          <HouseTable chart={chart} />
-        </div>
-        <div>
-          <p className="mb-3 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
-            Graha table
-          </p>
-          <PlanetTable chart={chart} />
-        </div>
-      </div>
+      <GrahaDrishtiCard chart={chart} />
 
-      <button
-        type="button"
-        onClick={onPrint}
-        className="w-full rounded-full bg-[linear-gradient(135deg,#0d817e_0%,#123f63_52%,#6f211f_100%)] px-5 py-3 text-sm font-semibold text-white small:w-fit"
-      >
-        Download PDF-ready Kundli
-      </button>
+      <CompactDashaPredictionList rows={result.analysis?.dasha_predictions} />
 
-      {result.analysis && (
-        <div className="grid gap-3">
+      <RiskWatchList rows={result.analysis?.risk_watch} />
+
+      <CompactSpecialCaseSummary result={result} />
+
+      {showGeneralText && (
+        <section className="grid gap-3">
           {[
-            ["Summary", result.analysis.summary],
-            ["Person information", result.analysis.person_information],
-            ["Temperament", result.analysis.temperament],
-            ["Career direction", result.analysis.career_direction],
-            ["Relationship pattern", result.analysis.relationship_pattern],
-            ["Health caution", result.analysis.health_caution],
-            ["Current period", result.analysis.current_period_analysis],
-            ["Spiritual guidance", result.analysis.spiritual_guidance],
+            ["Summary", result.analysis?.summary],
+            ["Career direction", result.analysis?.career_direction],
+            ["Relationship pattern", result.analysis?.relationship_pattern],
+            ["Health caution", result.analysis?.health_caution],
+            ["Current period", result.analysis?.current_period_analysis],
           ].map(([label, value]) =>
             value ? (
               <div
@@ -2171,159 +2634,92 @@ const KundliResultView = ({
               </div>
             ) : null
           )}
-        </div>
+        </section>
       )}
 
-      <PredictionTable rows={result.analysis?.prediction_table} />
-      <DashaPredictionList rows={result.analysis?.dasha_predictions} />
-      <RiskWatchList rows={result.analysis?.risk_watch} />
-      <SubQuestionAnswersList rows={result.analysis?.sub_question_answers} />
-      <PlanetEffectList chart={chart} effects={result.analysis?.planet_effects} />
-      <SpecialCaseReadingList rows={result.analysis?.special_case_readings} />
-      <BookCitationList items={result.analysis?.book_citations} />
-
       <div className="grid gap-3 xl:grid-cols-2">
-        <InsightList
-          title="Behavioral traits"
-          items={result.analysis?.behavioral_traits}
-        />
-        <InsightList title="Strengths" items={result.analysis?.strengths} />
-        <InsightList title="Life themes" items={result.analysis?.life_themes} />
-        <InsightList
-          title="Health watchlist"
-          items={result.analysis?.health_indicators || result.health_indicators}
-        />
-        <InsightList
+        <CompactInsightList
           title="Likely issues"
           items={result.analysis?.likely_challenges}
         />
-        <InsightList
-          title="Issue analysis"
-          items={result.analysis?.issue_analysis}
-        />
-        <InsightList
+        <CompactInsightList
           title="Practical solutions"
           items={result.analysis?.practical_solutions}
         />
+        <CompactInsightList
+          title="Health watchlist"
+          items={result.analysis?.health_indicators || result.health_indicators}
+        />
+        <CompactInsightList
+          title="Strengths"
+          items={result.analysis?.strengths}
+        />
       </div>
-
-      {Boolean(result.analysis?.sub_question_answers?.length) && (
-        <div className="rounded-[20px] border border-[rgba(13,129,126,0.16)] bg-[rgba(240,248,246,0.74)] px-4 py-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
-            Your chart questions
-          </p>
-          <div className="mt-3 grid gap-3">
-            {result.analysis?.sub_question_answers?.map((item, index) => (
-              <div
-                key={`${item.question}-${index}`}
-                className="rounded-[16px] border border-[var(--shreem-border)] bg-white/72 px-3 py-3"
-              >
-                <p className="text-sm font-semibold leading-6 text-[var(--shreem-ink)]">
-                  {item.question}
-                </p>
-                <p className="mt-2 text-sm leading-7 text-[var(--shreem-muted)]">
-                  {item.answer}
-                </p>
-                <p className="mt-2 rounded-[14px] bg-[rgba(255,248,233,0.76)] px-3 py-2 text-xs leading-5 text-[var(--shreem-muted)]">
-                  Chart reason: {item.chart_reason}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      <div className="grid gap-3 small:grid-cols-3">
-        {stoneCards?.map((stone, index) => (
-          <div
-            key={`${stone?.label || "stone"}-${stone?.primary || index}`}
-            className="rounded-[18px] border border-[var(--shreem-border)] bg-white/66 px-4 py-4"
-          >
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
-              {stone?.label || "Trinal stone"}
-            </p>
-            <p className="mt-2 text-base font-semibold text-[var(--shreem-ink)]">
-              {stone?.primary}
-            </p>
-            <p className="mt-1 text-xs leading-5 text-[var(--shreem-muted)]">
-              {stone?.chart_basis || `${stone?.sign} sign, lord ${stone?.lord}.`}{" "}
-              {stone?.caution}
-            </p>
-          </div>
-        ))}
-      </div>
-      {result.stones?.caution && (
-        <p className="rounded-[16px] border border-[rgba(212,161,38,0.26)] bg-[rgba(255,248,233,0.74)] px-4 py-3 text-xs leading-5 text-[var(--shreem-muted)]">
-          {result.stones.caution}
-        </p>
-      )}
-
-      {Boolean(result.analysis?.special_cases?.length || result.detected_yogas?.length) && (
-        <div className="rounded-[20px] border border-[var(--shreem-border)] bg-white/60 px-4 py-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
-            Special cases checked
-          </p>
-          <div className="mt-3 grid gap-2">
-            {(result.analysis?.special_cases?.length
-              ? result.analysis.special_cases
-              : result.detected_yogas || []
-            ).map((item, index) => (
-              <p
-                key={`${item}-${index}`}
-                className="rounded-[14px] bg-white/68 px-3 py-2 text-xs leading-5 text-[var(--shreem-muted)]"
-              >
-                {item}
-              </p>
-            ))}
-          </div>
-        </div>
-      )}
 
       {Boolean(result.analysis?.targeted_remedies?.length) && (
         <div className="rounded-[20px] border border-[var(--shreem-border)] bg-white/60 px-4 py-4">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
-            Pain-point mantra and pooja
+            Targeted remedies
           </p>
           <div className="mt-3 grid gap-3">
-            {result.analysis?.targeted_remedies?.map((item, index) => (
-              <div
-                key={`${item.pain_point}-${index}`}
-                className="rounded-[16px] border border-[var(--shreem-border)] bg-white/72 px-3 py-3"
-              >
-                <p className="text-sm font-semibold leading-6 text-[var(--shreem-ink)]">
-                  {item.pain_point}
-                </p>
-                <p className="mt-2 text-xs leading-5 text-[var(--shreem-muted)]">
-                  {item.chart_basis}
-                </p>
-                <p className="mt-2 rounded-[14px] bg-[rgba(255,248,233,0.74)] px-3 py-2 text-xs leading-5 text-[var(--shreem-muted)]">
-                  {item.mantra_or_pooja}
-                </p>
-                <p className="mt-2 text-xs leading-5 text-[var(--shreem-muted)]">
-                  {item.daily_practice}
-                </p>
-              </div>
-            ))}
+            {uniqueByText(result.analysis?.targeted_remedies || [], (item) => `${item.pain_point} ${item.mantra_or_pooja}`)
+              .slice(0, 4)
+              .map((item, index) => (
+                <div
+                  key={`${item.pain_point}-${index}`}
+                  className="rounded-[16px] border border-[var(--shreem-border)] bg-white/72 px-3 py-3"
+                >
+                  <p className="text-sm font-semibold leading-6 text-[var(--shreem-ink)]">
+                    {item.pain_point}
+                  </p>
+                  <p className="mt-2 text-xs leading-5 text-[var(--shreem-muted)]">
+                    {compactKundliText(item.chart_basis, 180)}
+                  </p>
+                  <p className="mt-2 rounded-[14px] bg-[rgba(255,248,233,0.74)] px-3 py-2 text-xs leading-5 text-[var(--shreem-muted)]">
+                    {compactKundliText(item.mantra_or_pooja, 180)}
+                  </p>
+                  <p className="mt-2 text-xs leading-5 text-[var(--shreem-muted)]">
+                    {compactKundliText(item.daily_practice, 180)}
+                  </p>
+                </div>
+              ))}
           </div>
         </div>
       )}
 
       {Boolean(result.analysis?.upaay?.length) && (
-        <div className="rounded-[20px] border border-[var(--shreem-border)] bg-white/60 px-4 py-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
-            Upaay
-          </p>
-          <div className="mt-3 grid gap-2">
-            {result.analysis?.upaay?.map((item, index) => (
-              <p
-                key={`${item}-${index}`}
-                className="rounded-[14px] bg-white/68 px-3 py-2 text-xs leading-5 text-[var(--shreem-muted)]"
-              >
-                {item}
+        <CompactInsightList title="Upaay" items={result.analysis?.upaay} limit={5} />
+      )}
+
+      {(stoneCards?.length || 0) > 0 && (
+        <section className="grid gap-3 small:grid-cols-3">
+          {(stoneCards || []).slice(0, 3).map((stone, index) => (
+            <div
+              key={`${stone?.label || "stone"}-${stone?.primary || index}`}
+              className="rounded-[18px] border border-[var(--shreem-border)] bg-white/66 px-4 py-4"
+            >
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
+                {stone?.label || "Stone"}
               </p>
-            ))}
-          </div>
-        </div>
+              <p className="mt-2 text-base font-semibold text-[var(--shreem-ink)]">
+                {stone?.primary}
+              </p>
+              <p className="mt-1 text-xs leading-5 text-[var(--shreem-muted)]">
+                {compactKundliText(
+                  stone?.chart_basis ||
+                    `${stone?.sign || ""} sign, lord ${stone?.lord || ""}. ${stone?.caution || ""}`,
+                  160
+                )}
+              </p>
+            </div>
+          ))}
+        </section>
+      )}
+
+      {result.stones?.caution && (
+        <p className="rounded-[16px] border border-[rgba(212,161,38,0.26)] bg-[rgba(255,248,233,0.74)] px-4 py-3 text-xs leading-5 text-[var(--shreem-muted)]">
+          {compactKundliText(result.stones.caution, 220)}
+        </p>
       )}
 
       {Boolean(result.analysis?.shreem_product_suggestions?.length) && (
@@ -2332,7 +2728,7 @@ const KundliResultView = ({
             Helpful support for your remedy
           </p>
           <div className="mt-3 grid gap-3">
-            {result.analysis?.shreem_product_suggestions?.map((item) => (
+            {result.analysis?.shreem_product_suggestions?.slice(0, 3).map((item) => (
               <LocalizedClientLink
                 key={`${item.handle}-${item.title}`}
                 href={item.product_url || `/products/${item.handle}`}
@@ -2349,7 +2745,7 @@ const KundliResultView = ({
                     {item.title}
                   </p>
                   <p className="mt-1 text-xs leading-5 text-[var(--shreem-muted)]">
-                    {item.reason}
+                    {compactKundliText(item.reason, 150)}
                   </p>
                 </div>
               </LocalizedClientLink>
@@ -2375,6 +2771,71 @@ const KundliResultView = ({
           </LocalizedClientLink>
         </div>
       )}
+
+      <BookCitationList items={result.analysis?.book_citations} />
+
+      <section className="grid gap-4">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
+            Chart proof
+          </p>
+          <h3 className="mt-2 text-xl font-semibold text-[var(--shreem-ink)]">
+            Calculated chart and tables
+          </h3>
+        </div>
+
+        <div className="grid gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(280px,0.65fr)]">
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
+            <NorthIndianChart chart={chart} mode="lagna" title="Lagna chart" />
+            <NorthIndianChart chart={chart} mode="bhava" title="Bhava Chalit chart" />
+            <NorthIndianChart chart={chart} mode="moon" title="Chandra chart" />
+          </div>
+          <div className="grid gap-3">
+            <ChartMiniCard
+              label="Lagna"
+              value={`${chart.ascendant} ${formatDegree(chart.ascendantDegree)}`}
+              detail={`${chart.ascendantNakshatra} pada ${chart.ascendantPada}`}
+            />
+            <ChartMiniCard
+              label="Rashi"
+              value={`${chart.moonSign} ${formatDegree(chart.moonDegree)}`}
+              detail={`${chart.nakshatra} pada ${chart.nakshatraPada}`}
+            />
+            <ChartMiniCard
+              label="Birth panchang"
+              value={chart.tithi}
+              detail={`${chart.yoga} yoga · ${chart.karana} karana`}
+            />
+          </div>
+        </div>
+
+        <BhavaChalitSummary chart={chart} />
+
+        <div className="grid gap-4">
+          <div>
+            <p className="mb-3 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
+              House information
+            </p>
+            <HouseTable chart={chart} />
+          </div>
+          <div>
+            <p className="mb-3 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
+              Graha table
+            </p>
+            <PlanetTable chart={chart} />
+          </div>
+        </div>
+
+        <PlanetEffectList chart={chart} effects={result.analysis?.planet_effects} />
+      </section>
+
+      <button
+        type="button"
+        onClick={onPrint}
+        className="w-full rounded-full bg-[linear-gradient(135deg,#0d817e_0%,#123f63_52%,#6f211f_100%)] px-5 py-3 text-sm font-semibold text-white small:w-fit"
+      >
+        Download PDF-ready Kundli
+      </button>
 
       <p className="mt-4 text-center text-xs text-[var(--shreem-muted)]">
         Disclaimer: All insights are AI-generated based on astrological principles.
@@ -2627,6 +3088,10 @@ const printKundliReport = (result: KundliResult) => {
   <table><thead><tr><th>Graha</th><th>Sign</th><th>Degree</th><th>House</th><th>Nakshatra</th></tr></thead><tbody>${chart.planets.map((planet) => `<tr><td>${escapeHtml(planet.name)}</td><td>${escapeHtml(planet.sign)}</td><td>${escapeHtml(planet.signDegree)} deg</td><td>${escapeHtml(formatHousePosition(planet))}</td><td>${escapeHtml(planet.nakshatra)} pada ${escapeHtml(planet.pada)}${planet.retrograde ? " (retrograde)" : ""}</td></tr>`).join("")}</tbody></table>
   <h2>House Information</h2>
   <table><thead><tr><th>House</th><th>Sign</th><th>Lord</th><th>Planets</th><th>Theme</th></tr></thead><tbody>${chart.houses.map((house) => `<tr><td>${escapeHtml(house.house)}</td><td>${escapeHtml(house.sign)}</td><td>${escapeHtml(house.signLord)}</td><td>${escapeHtml(getHousePlanets(chart, house.house).map((planet) => planet.name).join(", ") || "-")}</td><td>${escapeHtml(house.theme)}</td></tr>`).join("")}</tbody></table>
+  <h2>Graha Drishti</h2>
+  <table><thead><tr><th>From</th><th>To House</th><th>Type</th><th>Impact</th></tr></thead><tbody>${(chart.aspects || []).map((aspect) => `<tr><td>${escapeHtml(aspect.fromPlanet)} from H${escapeHtml(aspect.fromHouse)}</td><td>H${escapeHtml(aspect.toHouse)} ${escapeHtml(aspect.toSign)}</td><td>${escapeHtml(aspect.aspectType)}</td><td>${escapeHtml(aspect.interpretation)}</td></tr>`).join("")}</tbody></table>
+  <h2>House-wise Combined Synthesis</h2>
+  <table><thead><tr><th>House</th><th>Theme</th><th>Planets</th><th>Drishti From</th><th>Synthesis</th></tr></thead><tbody>${(chart.houseSynthesis || []).map((house) => `<tr><td>${escapeHtml(house.house)}</td><td>${escapeHtml(house.theme)}</td><td>${escapeHtml((house.planetsPlaced || []).join(", ") || "-")}</td><td>${escapeHtml((house.aspectsReceived || []).map((aspect) => aspect.fromPlanet).join(", ") || "-")}</td><td>${escapeHtml(house.synthesis)}</td></tr>`).join("")}</tbody></table>
   <h2>Prediction Table</h2>
   <table><thead><tr><th>Area</th><th>Chart Basis</th><th>Prediction</th><th>Advice</th></tr></thead><tbody>${(analysis?.prediction_table || []).map((row) => `<tr><td>${escapeHtml(row.area)}</td><td>${escapeHtml(row.chart_basis)}</td><td>${escapeHtml(row.prediction)}</td><td>${escapeHtml(row.advice)}</td></tr>`).join("")}</tbody></table>
   <h2>Analysis</h2>
@@ -3086,11 +3551,15 @@ export default function AstrologyExperience({
   }
 
   const generateKundli = async () => {
+    if (loadingKundli) {
+      return
+    }
+
     setLoadingKundli(true)
     setKundliProgress(0)
     setKundliResult(null)
 
-    let progressInterval = setInterval(() => {
+    const progressInterval = setInterval(() => {
       setKundliProgress((prev) => {
         if (prev < 30) return prev + 2
         if (prev < 60) return prev + 1
@@ -3100,59 +3569,72 @@ export default function AstrologyExperience({
       })
     }, 1000)
 
-    const response = await fetch("/api/astrology/kundli", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        ...kundliForm,
-        language,
-        panchangSystemId,
-      }),
-      cache: "no-store",
-    }).catch(() => null)
-    const data = (await response?.json().catch(() => null)) as KundliResult | null
-    const result =
-      data || ({
-        message: "Kundli AI could not generate the chart right now.",
-      } satisfies KundliResult)
+    try {
+      const response = await fetch("/api/astrology/kundli", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...kundliForm,
+          language,
+          panchangSystemId,
+        }),
+        cache: "no-store",
+      }).catch(() => null)
 
-    setKundliResult(result)
-    if (result.wallet) {
-      setAiWallet(result.wallet)
-    }
-    if (result.quota) {
-      setAiQuota(result.quota)
-    }
-    if (Array.isArray(result.packs)) {
-      setAiPacks(result.packs)
-    }
+      const data = (await response?.json().catch(() => null)) as KundliResult | null
+      const result =
+        data || ({
+          message: "Kundli AI could not generate the chart right now.",
+        } satisfies KundliResult)
 
-    clearInterval(progressInterval)
-    setKundliProgress(100)
+      setKundliResult(result)
 
-    if (result.chart && result.analysis?.summary && !result.message) {
-      rememberHistory({
-        id: `kundli-${Date.now()}`,
-        type: "Kundli",
-        title: `${result.profile?.name || kundliForm.name || "Generated"} Kundli`,
-        createdAt: new Date().toISOString(),
-        summary:
-          result.analysis?.summary ||
-          result.detected_yogas?.[0] ||
-          "Birth chart generated",
-        response: result,
-      }, {
-        persistLocal: !result.usage_synced,
+      if (result.wallet) {
+        setAiWallet(result.wallet)
+      }
+      if (result.quota) {
+        setAiQuota(result.quota)
+      }
+      if (Array.isArray(result.packs)) {
+        setAiPacks(result.packs)
+      }
+
+      setKundliProgress(100)
+
+      if (result.chart && (result.analysis?.summary || result.analysis?.prediction_table?.length) && !result.message) {
+        rememberHistory({
+          id: `kundli-${Date.now()}`,
+          type: "Kundli",
+          title: `${result.profile?.name || kundliForm.name || "Generated"} Kundli`,
+          createdAt: new Date().toISOString(),
+          summary:
+            result.analysis?.sub_question_answers?.[0]?.answer ||
+            result.analysis?.prediction_table?.[0]?.prediction ||
+            result.analysis?.summary ||
+            result.detected_yogas?.[0] ||
+            "Birth chart generated",
+          response: result,
+        }, {
+          persistLocal: !result.usage_synced,
+        })
+      }
+
+      refreshWallet()
+    } catch (error) {
+      console.error("Kundli generation failed", error)
+      setKundliResult({
+        message: "Kundli generation failed unexpectedly. Please try again.",
+        retryable: true,
       })
+    } finally {
+      clearInterval(progressInterval)
+      window.setTimeout(() => {
+        setLoadingKundli(false)
+        setKundliProgress(0)
+      }, 300)
     }
-
-    setTimeout(() => {
-      setLoadingKundli(false)
-      setKundliProgress(0)
-    }, 500)
-    refreshWallet()
   }
 
   const generateMatchmaking = async () => {
