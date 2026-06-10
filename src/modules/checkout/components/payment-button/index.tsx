@@ -158,8 +158,8 @@ const RazorpayPaymentButton = ({
     setErrorMessage(null)
 
     try {
-      if (!session?.provider_id || !cart.payment_collection?.id) {
-        throw new Error("Razorpay payment session is not ready. Please refresh checkout.")
+      if (!session?.id || !session?.provider_id || !cart.payment_collection?.id) {
+        throw new Error("Razorpay payment session is not ready. Please select Razorpay again.")
       }
 
       if (!razorpayOrderId) {

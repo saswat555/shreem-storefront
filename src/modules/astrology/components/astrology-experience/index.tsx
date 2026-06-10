@@ -2125,17 +2125,30 @@ const getFocusedPredictionRows = (result: KundliResult) => {
   const rows = result.analysis?.prediction_table || []
 
   const priorityTerms = [
-    "user question",
-    "question",
     "current dasha",
     "current period",
     "career",
+    "professional",
     "work",
-    "business",
     "money",
-    "marriage",
-    "relationship",
+    "wealth",
+    "finance",
+    "business",
+    "entrepreneurship",
     "health",
+    "mental",
+    "relationship",
+    "marriage",
+    "family",
+    "home",
+    "property",
+    "foreign",
+    "spiritual",
+    "education",
+    "skill",
+    "next 30",
+    "next 3",
+    "next 12",
     "remedy",
   ]
 
@@ -2322,7 +2335,19 @@ const KundliAnswerFirstCard = ({ result }: { result: KundliResult }) => {
 }
 
 const FocusedPredictionCards = ({ result }: { result: KundliResult }) => {
+  const directAnswer = normalizeKundliText(getKundliDirectAnswer(result))
   const rows = getFocusedPredictionRows(result)
+    .filter((row) => {
+      const area = normalizeKundliText(row.area)
+      const prediction = normalizeKundliText(row.prediction)
+
+      return (
+        !area.includes("user question") &&
+        !area.includes("question") &&
+        prediction !== directAnswer
+      )
+    })
+    .slice(0, 10)
 
   if (!rows.length) {
     return null
@@ -2331,10 +2356,10 @@ const FocusedPredictionCards = ({ result }: { result: KundliResult }) => {
   return (
     <section className="rounded-[22px] border border-[rgba(13,129,126,0.16)] bg-[rgba(240,248,246,0.72)] px-4 py-4">
       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
-        Main judgement
+        Detailed life guidance
       </p>
-      <div className="mt-3 grid gap-3">
-        {rows.slice(0, 5).map((row, index) => (
+      <div className="mt-3 grid gap-3 md:grid-cols-2">
+        {rows.map((row, index) => (
           <article
             key={`${row.area}-${index}`}
             className="rounded-[16px] border border-[var(--shreem-border)] bg-white/74 px-3 py-3"
@@ -2596,8 +2621,6 @@ const KundliResultView = ({
       </div>
 
       <KundliAnswerFirstCard result={result} />
-
-      <SubQuestionAnswersList rows={result.analysis?.sub_question_answers} />
 
       <FocusedPredictionCards result={result} />
 
@@ -3108,7 +3131,7 @@ const printKundliReport = (result: KundliResult) => {
     <p><strong>Practical solutions:</strong> ${(analysis?.practical_solutions || []).map(escapeHtml).join(", ")}</p>
   </div>
   <h2>Chart Questions</h2>
-  <div class="card"><ul>${(analysis?.sub_question_answers || []).map((item) => `<li><strong>${escapeHtml(item.question)}</strong><br/>${escapeHtml(item.answer)}<br/><span class="small">Chart reason: ${escapeHtml(item.chart_reason)}</span></li>`).join("")}</ul></div>
+  <div class="card"><p><strong>Direct answer:</strong> ${escapeHtml(analysis?.sub_question_answers?.[0]?.answer || "")}</p></div>
   <h2>Special Cases Checked</h2>
   <div class="card"><ul>${(analysis?.special_cases || result.detected_yogas || []).map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul></div>
   <h2>Upaay</h2>

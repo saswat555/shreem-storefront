@@ -313,30 +313,39 @@ export async function safeInitiatePaymentSession(
   cart: HttpTypes.StoreCart,
   data: HttpTypes.StoreInitializePaymentSession
 ): Promise<{ ok: true; data: any } | { ok: false; error: string }> {
-  try {
-    const response = await initiatePaymentSession(cart, data)
+  let lastMessage = "Payment setup failed. Please try again."
 
-    return {
-      ok: true,
-      data: response,
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try {
+      const response = await initiatePaymentSession(cart, data)
+
+      return {
+        ok: true,
+        data: response,
+      }
+    } catch (error: any) {
+      lastMessage =
+        error?.message ||
+        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        "Payment setup failed. Please try another payment method."
+
+      console.error("[checkout] safe payment session failed", {
+        provider_id: (data as any)?.provider_id,
+        cart_id: (cart as any)?.id,
+        attempt,
+        message: lastMessage,
+      })
+
+      if (attempt < 2) {
+        await new Promise((resolve) => setTimeout(resolve, 600))
+      }
     }
-  } catch (error: any) {
-    const message =
-      error?.message ||
-      error?.response?.data?.message ||
-      error?.response?.data?.error ||
-      "Payment setup failed. Please try another payment method."
+  }
 
-    console.error("[checkout] safe payment session failed", {
-      provider_id: (data as any)?.provider_id,
-      cart_id: (cart as any)?.id,
-      message,
-    })
-
-    return {
-      ok: false,
-      error: message,
-    }
+  return {
+    ok: false,
+    error: lastMessage,
   }
 }
 
@@ -479,6 +488,18 @@ export async function placeOrder(cartId?: string) {
 
   const headers = {
     ...(await getAuthHeaders()),
+  }
+
+  const latestCart = await retrieveCart(
+    id,
+    "id,total,currency_code,*payment_collection,*payment_collection.payment_sessions"
+  )
+
+  const hasPaymentSession =
+    (latestCart as any)?.payment_collection?.payment_sessions?.length > 0
+
+  if (!hasPaymentSession) {
+    throw new Error("Payment sessions are required to complete cart. Please select a payment method again.")
   }
 
   const cartRes = await sdk.store.cart

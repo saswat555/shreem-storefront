@@ -1759,248 +1759,6 @@ const getImportantHouseBasis = (chart: PrashnaChart, houses: number[]) =>
     .filter(Boolean)
     .join(" | ")
 
-
-const createCuratedKundliPassage = ({
-  id,
-  section,
-  citation,
-  text,
-  keywords,
-  score = 9.5,
-}: {
-  id: string
-  section: string
-  citation: string
-  text: string
-  keywords: string[]
-  score?: number
-}): RetrievedAstrologyPassage => ({
-  id,
-  source: "Shreem curated Parashari rules",
-  sourceFile: "shreem-curated-parashari-rules",
-  sourceVolume: "Curated classical interpretation layer",
-  section,
-  citation,
-  chapterNumber: 0,
-  chapterTitle: section,
-  text,
-  keywords,
-  score,
-})
-
-const buildCuratedKundliKnowledgePassages = ({
-  chart,
-  detectedYogas,
-  detectedCases,
-  healthIndicators,
-  subQuestions,
-}: {
-  chart: PrashnaChart
-  detectedYogas: string[]
-  detectedCases: DetectedAstrologyCase[]
-  healthIndicators: string[]
-  subQuestions: string[]
-}): RetrievedAstrologyPassage[] => {
-  const activeDasha = activeDashaText(chart)
-  const priorityCases = selectPriorityCases(detectedCases)
-    .map((item) => `${item.name}: ${item.description}`)
-    .join(" | ")
-
-  const lagnaBasis = getImportantHouseBasis(chart, [1])
-  const careerBasis = getImportantHouseBasis(chart, [1, 3, 6, 9, 10, 11])
-  const wealthBasis = getImportantHouseBasis(chart, [2, 5, 8, 9, 11, 12])
-  const healthBasis = getImportantHouseBasis(chart, [1, 6, 8, 12])
-  const relationshipBasis = getImportantHouseBasis(chart, [1, 2, 5, 7, 8, 11])
-  const propertyBasis = getImportantHouseBasis(chart, [4, 9, 10, 11, 12])
-  const spiritualBasis = getImportantHouseBasis(chart, [5, 8, 9, 12])
-
-  const careerPlanets = planetPlacementText(chart, [
-    "Sun",
-    "Mercury",
-    "Venus",
-    "Saturn",
-    "Mars",
-    "Rahu",
-  ])
-  const wealthPlanets = planetPlacementText(chart, [
-    "Moon",
-    "Mercury",
-    "Venus",
-    "Jupiter",
-    "Saturn",
-    "Rahu",
-  ])
-  const healthPlanets = planetPlacementText(chart, [
-    "Sun",
-    "Moon",
-    "Mars",
-    "Saturn",
-    "Rahu",
-    "Ketu",
-  ])
-  const relationshipPlanets = planetPlacementText(chart, [
-    "Venus",
-    "Jupiter",
-    "Saturn",
-    "Mars",
-    "Moon",
-    "Rahu",
-    "Ketu",
-  ])
-
-  return [
-    createCuratedKundliPassage({
-      id: "shreem-curated-direct-question",
-      section:
-        "question_pack: User question evidence. Use only for the direct answer at the top.",
-      citation:
-        "Shreem curated Parashari synthesis: exact question answer using Lagna, Moon, dasha, relevant houses and detected yogas",
-      keywords: ["question", "direct answer", "timing", "dasha", "action"],
-      text: [
-        "Answer the user's exact question once. First identify the houses relevant to the question, then judge their lords, occupants, dignity, drishti, Bhava Chalit delivery, Moon condition and current Mahadasha-Antardasha-Pratyantar.",
-        `User question(s): ${subQuestions.join(" | ") || "general Kundli reading"}.`,
-        `Current dasha basis: ${activeDasha}.`,
-        `Lagna basis: ${lagnaBasis}.`,
-        `Important cases: ${priorityCases || detectedYogas.join(", ") || "none detected"}.`,
-        "Do not repeat this direct answer in summary or life-area rows.",
-      ].join("\n"),
-    }),
-    createCuratedKundliPassage({
-      id: "shreem-curated-career",
-      section:
-        "career_pack: Career, work, authority, profession, recognition, business visibility and 10th-house judgement.",
-      citation:
-        "Shreem curated Parashari synthesis: career judged from 1st, 3rd, 6th, 9th, 10th and 11th houses, their lords, Sun, Mercury, Saturn, Mars, Venus, Rahu and active dasha",
-      keywords: [
-        "career",
-        "profession",
-        "karma",
-        "10th house",
-        "authority",
-        "work",
-        "business",
-        "recognition",
-      ],
-      text: [
-        "Career judgement must not be made from dasha passages alone. Use 10th house and 10th lord for profession and public role; 6th for employment/service/competition; 3rd for effort, sales, communication and courage; 9th for fortune, mentors and dharma; 11th for gains and network; Lagna for ability to execute.",
-        "Sun shows authority and leadership; Mercury shows analytics, trade, communication and technology; Saturn shows structure, delay and responsibility; Mars shows engineering, operations and courage; Venus shows design, commerce and comforts; Rahu shows technology, foreign systems, unconventional rise and obsession.",
-        "If 10th lord is weak/debilitated but receives cancellation, support from Lagna/lords, benefic aspect or dasha activation, predict rise after struggle rather than denial.",
-        `Career house basis: ${careerBasis}.`,
-        `Career planet basis: ${careerPlanets}.`,
-        `Active dasha: ${activeDasha}.`,
-      ].join("\n"),
-    }),
-    createCuratedKundliPassage({
-      id: "shreem-curated-wealth",
-      section:
-        "wealth_pack: Money, income, savings, assets, gains, losses and wealth-building judgement.",
-      citation:
-        "Shreem curated Parashari synthesis: wealth judged from 2nd, 5th, 8th, 9th, 11th and 12th houses, dhana/labha lords, Jupiter, Venus, Mercury and active dasha",
-      keywords: [
-        "wealth",
-        "income",
-        "savings",
-        "2nd house",
-        "11th house",
-        "dhana",
-        "labha",
-        "assets",
-      ],
-      text: [
-        "Wealth judgement must separate income, savings, assets and leakage. 2nd house shows savings, speech and family resources; 11th shows gains, network and fulfilment; 5th shows speculation/intelligence; 8th shows sudden events, inheritance, risk and hidden money; 9th shows fortune; 12th shows expenses and foreign/spiritual outflow.",
-        "Jupiter gives expansion and wisdom; Venus gives luxury/commerce; Mercury gives trade/data/business; Saturn gives slow accumulation; Rahu gives spikes and foreign/tech income but volatility.",
-        "If wealth houses are connected with dusthana or Rahu/Ketu, advise disciplined cash management and avoid speculative overreach during weak sub-periods.",
-        `Wealth house basis: ${wealthBasis}.`,
-        `Wealth planet basis: ${wealthPlanets}.`,
-        `Active dasha: ${activeDasha}.`,
-      ].join("\n"),
-    }),
-    createCuratedKundliPassage({
-      id: "shreem-curated-health",
-      section:
-        "health_pack: Health, disease tendency, recovery, accident risk, mental pressure, sleep and chronic issues.",
-      citation:
-        "Shreem curated Parashari synthesis: health judged from Lagna, Moon, 6th, 8th, 12th houses, Mars, Saturn, Rahu, Ketu and active dasha",
-      keywords: [
-        "health",
-        "disease",
-        "6th house",
-        "8th house",
-        "12th house",
-        "accident",
-        "sleep",
-        "mental wellbeing",
-      ],
-      text: [
-        "Health judgement must be careful and non-medical. Lagna and Lagna lord show vitality; Moon shows mind and emotional stability; 6th shows disease and recovery; 8th shows chronic/sudden risk; 12th shows sleep, hospitalization, isolation and expenses.",
-        "Mars indicates inflammation, injury, blood/heat and accidents; Saturn indicates chronicity, bones, nerves and delay; Rahu indicates unusual, allergic, toxic, anxiety or misdiagnosed patterns; Ketu indicates hidden, sudden or difficult-to-pinpoint issues.",
-        "Give practical watch areas and advise medical checkups when risk appears. Do not make fatalistic claims.",
-        `Health house basis: ${healthBasis}.`,
-        `Health planet basis: ${healthPlanets}.`,
-        `Health indicators: ${healthIndicators.join(" | ") || "none flagged"}.`,
-        `Active dasha: ${activeDasha}.`,
-      ].join("\n"),
-    }),
-    createCuratedKundliPassage({
-      id: "shreem-curated-relationship",
-      section:
-        "relationship_pack: Marriage, spouse, partnership, public dealing, contracts and emotional relationship pattern.",
-      citation:
-        "Shreem curated Parashari synthesis: relationship judged from 7th house/lord, Venus, Jupiter, Moon, Mars, Saturn, Rahu-Ketu, 2nd/5th/8th/11th and active dasha",
-      keywords: [
-        "relationship",
-        "marriage",
-        "spouse",
-        "7th house",
-        "partnership",
-        "public dealing",
-      ],
-      text: [
-        "Relationship judgement must separate marriage potential, partner quality, timing and conflict pattern. 7th house/lord shows spouse and partnership; Venus shows affection and attraction; Jupiter gives wisdom/support; Moon gives emotional bonding; Mars gives passion/conflict; Saturn gives delay/responsibility; Rahu/Ketu give unconventional or karmic patterns.",
-        "2nd supports family continuity; 5th supports romance; 8th shows intimacy, trust and shocks; 11th shows fulfilment of desire.",
-        `Relationship house basis: ${relationshipBasis}.`,
-        `Relationship planet basis: ${relationshipPlanets}.`,
-        `Active dasha: ${activeDasha}.`,
-      ].join("\n"),
-    }),
-    createCuratedKundliPassage({
-      id: "shreem-curated-property-home",
-      section:
-        "property_pack: Home, land, vehicles, mother, domestic peace and settlement.",
-      citation:
-        "Shreem curated Parashari synthesis: property judged from 4th, 9th, 10th, 11th, 12th houses, Moon, Venus, Mars, Saturn and active dasha",
-      keywords: ["property", "home", "land", "vehicle", "4th house", "settlement"],
-      text: [
-        "Property and home judgement uses 4th house/lord for home, land, mother and inner peace; Mars for land/construction; Venus for vehicles/comforts; Moon for home happiness; Saturn for long-term property, delay and responsibility; 11th for fulfilment; 12th for foreign residence or expenses.",
-        `Property basis: ${propertyBasis}.`,
-        `Active dasha: ${activeDasha}.`,
-      ].join("\n"),
-    }),
-    createCuratedKundliPassage({
-      id: "shreem-curated-spiritual-foreign",
-      section:
-        "foreign_spiritual_pack: Foreign travel, isolation, spiritual growth, inner transformation and moksha tendencies.",
-      citation:
-        "Shreem curated Parashari synthesis: foreign/spiritual judged from 5th, 8th, 9th, 12th, Rahu, Ketu, Jupiter, Saturn and active dasha",
-      keywords: [
-        "foreign",
-        "spiritual",
-        "12th house",
-        "9th house",
-        "Rahu",
-        "Ketu",
-        "moksha",
-      ],
-      text: [
-        "Foreign and spiritual judgement uses 9th for fortune/dharma/long travel, 12th for foreign stay/isolation/moksha/expenses, 8th for occult and transformation, 5th for mantra/purva punya. Rahu gives foreign/unconventional environments; Ketu gives detachment and spiritualization; Jupiter gives dharma; Saturn gives discipline and isolation.",
-        `Foreign/spiritual basis: ${spiritualBasis}.`,
-        `Active dasha: ${activeDasha}.`,
-      ].join("\n"),
-    }),
-  ]
-}
-
-
 const buildKundliKnowledgePassages = ({
   chart,
   detectedYogas,
@@ -2023,11 +1781,6 @@ const buildKundliKnowledgePassages = ({
         chart.dasha.pratyantar.lord,
       ]
     : []
-
-  const activeDasha = activeDashaText(chart)
-  const caseTerms = getCaseSearchTerms(detectedCases)
-  const selectedCases = selectPriorityCases(detectedCases)
-
   const afflictedRiskPlanets = chart.planets
     .filter(
       (planet) =>
@@ -2039,113 +1792,53 @@ const buildKundliKnowledgePassages = ({
         `${planet.name} ${planet.sign} house ${planet.house} ${planet.nakshatra}`
     )
 
-  const topicQueries: {
-    label: string
-    purpose: string
-    query: string
-    detectedCases?: string[]
-    min: number
-    max: number
-  }[] = [
-    {
-      label: "dasha_pack",
-      purpose:
-        "Use only for Vimshottari Mahadasha, Antardasha, Pratyantar, timing, past/future dasha flow, and event timing.",
+  return mergeKnowledgePassages(
+    8,
+    retrieveKnowledgeSafely({
       query: [
-        "vimshottari dasha mahadasha antardasha pratyantar bhukti dasha lord effects phala timing दशा महादशा अन्तर्दशा",
-        activeDasha,
-        dashaLords.join(" "),
+        "vimshottari dasha mahadasha antardasha pratyantar dasha lord effects दशा महादशा अन्तर्दशा",
+        activeDashaText(chart),
       ].join(" "),
+      chart,
       detectedCases: dashaLords,
-      min: 2,
-      max: 4,
-    },
-    {
-      label: "career_pack",
-      purpose:
-        "Use only for career, profession, authority, work, recognition, karma, job, business visibility, and 10th-house judgement.",
+      min: 1,
+      max: 2,
+    }),
+    retrieveKnowledgeSafely({
       query: [
-        "career profession karma tenth house 10th house authority livelihood work status recognition government business success कर्म दशम भाव पेशा व्यवसाय",
-        getImportantHouseBasis(chart, [1, 3, 6, 9, 10, 11]),
-        planetPlacementText(chart, ["Sun", "Mercury", "Venus", "Saturn", "Mars", "Rahu"]),
-      ].join(" "),
-      detectedCases: ["career", "profession", "karma", "tenth house", "10th house"],
-      min: 2,
-      max: 4,
-    },
-    {
-      label: "wealth_pack",
-      purpose:
-        "Use only for money, income, savings, wealth, gains, family resources, assets, losses, and 2nd/11th-house judgement.",
-      query: [
-        "money wealth income savings finance profit gains second house 2nd house eleventh house 11th house dhana labha assets loss धन लाभ आय बचत",
-        getImportantHouseBasis(chart, [2, 5, 8, 9, 11, 12]),
-        planetPlacementText(chart, ["Moon", "Mercury", "Venus", "Jupiter", "Saturn", "Rahu"]),
-      ].join(" "),
-      detectedCases: ["wealth", "income", "dhana", "labha", "second house", "eleventh house"],
-      min: 2,
-      max: 4,
-    },
-    {
-      label: "health_pack",
-      purpose:
-        "Use only for health, disease tendency, recovery, chronic issues, accident risk, inflammation, surgery, sleep, and 6th/8th/12th-house judgement.",
-      query: [
-        "health disease illness recovery accident injury surgery sixth house 6th eighth house 8th twelfth house 12th ari randhra vyaya arishta rog रोग अरिष्ट दुर्घटना अष्टम षष्ठ व्यय",
-        healthIndicators.join(" "),
-        afflictedRiskPlanets.join(" "),
-        getImportantHouseBasis(chart, [1, 6, 8, 12]),
-      ].join(" "),
-      detectedCases: healthIndicators.length
-        ? healthIndicators
-        : ["health", "disease", "sixth house", "eighth house", "twelfth house"],
-      min: 2,
-      max: 4,
-    },
-    {
-      label: "relationship_pack",
-      purpose:
-        "Use only for marriage, spouse, relationship pattern, public dealing, contracts, partnership, and 7th-house judgement.",
-      query: [
-        "marriage spouse relationship partner seventh house 7th house public dealing agreements contracts venus jupiter saturn mars mangal विवाह युति नाड़ी भकूट",
-        getImportantHouseBasis(chart, [1, 2, 5, 7, 8, 11]),
-        planetPlacementText(chart, ["Venus", "Jupiter", "Saturn", "Mars", "Moon", "Rahu", "Ketu"]),
-      ].join(" "),
-      detectedCases: ["marriage", "relationship", "seventh house", "spouse", "partnership"],
-      min: 2,
-      max: 4,
-    },
-    {
-      label: "yoga_pack",
-      purpose:
-        "Use only for yogas, dosha, neechabhanga, cancellation, special combinations, Rahu-Ketu patterns, and Moon-Jupiter patterns.",
-      query: [
-        "parashari yoga special combination neechabhanga debilitation cancellation gajakesari shakata budhaditya kaal sarp rahu ketu conjunction aspect result योग नीचभंग राजयोग",
+        "parashari yoga special combination gajakesari budhaditya kaal sarp rahu ketu conjunction aspect result",
         detectedYogas.join(" "),
-        caseTerms.join(" "),
-        selectedCases.map((item) => `${item.name} ${item.description}`).join(" "),
+        getCaseSearchTerms(detectedCases).join(" "),
         planetPlacementText(chart, [
-          "Sun",
           "Moon",
           "Jupiter",
-          "Venus",
-          "Saturn",
+          "Sun",
           "Mercury",
           "Mars",
           "Rahu",
           "Ketu",
         ]),
       ].join(" "),
-      detectedCases: [...detectedYogas, ...caseTerms],
+      chart,
+      detectedCases: [...detectedYogas, ...getCaseSearchTerms(detectedCases)],
       min: detectedYogas.length ? 2 : 1,
-      max: 4,
-    },
-    {
-      label: "remedy_pack",
-      purpose:
-        "Use only for remedies, mantra, daan, pooja, graha shanti, practical discipline, and gemstone caution.",
+      max: 3,
+    }),
+    retrieveKnowledgeSafely({
       query: [
-        "remedy mantra pooja daan graha shanti upaya deity gemstone सावधानी उपाय मंत्र दान पूजा ग्रह शांति",
+        "health disease accident injury ari randhra sixth eighth twelfth mars saturn rahu ketu रोग अरिष्ट दुर्घटना अष्टम षष्ठ",
+        healthIndicators.join(" "),
+        afflictedRiskPlanets.join(" "),
+        activeDashaText(chart),
+      ].join(" "),
+      chart,
+      detectedCases: healthIndicators,
+      min: 1,
+      max: 2,
+    }),
+    retrieveKnowledgeSafely({
+      query: [
+        "remedy mantra pooja daan graha shanti upaya mantra deity gemstone सावधानी उपाय मंत्र दान पूजा",
         targetedRemedySeeds
           .map(
             (item) =>
@@ -2153,97 +1846,25 @@ const buildKundliKnowledgePassages = ({
           )
           .join(" "),
       ].join(" "),
+      chart,
       detectedCases: targetedRemedySeeds.map((item) => item.pain_point),
       min: 1,
-      max: 3,
-    },
-    ...(subQuestions.length
-      ? [
-          {
-            label: "question_pack",
-            purpose:
-              "Use only for answering the user's exact question once at the top. Do not reuse this answer in other report sections.",
-            query: [
-              "specific user question parashari prediction chart result timing action",
-              subQuestions.join(" "),
-              activeDasha,
-              getImportantHouseBasis(chart, [1, 2, 6, 9, 10, 11, 12]),
-            ].join(" "),
-            detectedCases: subQuestions,
-            min: 1,
-            max: 3,
-          },
-        ]
-      : []),
-  ]
-
-  const seen = new Set<string>()
-  const selected: RetrievedAstrologyPassage[] = []
-
-  topicQueries.forEach((topic) => {
-    const passages = retrieveKnowledgeSafely({
-      query: topic.query,
-      // Deliberately do not pass full chart here.
-      // Each topic query already carries focused chart basis.
-      detectedCases: topic.detectedCases || [],
-      min: topic.min,
-      max: topic.max,
-    })
-
-    let topicCount = 0
-
-    passages.forEach((passage) => {
-      if (topicCount >= topic.max || seen.has(passage.id)) {
-        return
-      }
-
-      seen.add(passage.id)
-      topicCount += 1
-
-      selected.push({
-        ...passage,
-        section: `${topic.label}: ${topic.purpose} | ${passage.section}`,
-      })
-    })
-  })
-
-  if (selected.length < 10) {
-    mergeKnowledgePassages(
-      12,
-      retrieveKnowledgeSafely({
-        query: [
-          "vimshottari dasha yoga health remedy parashari classical judgement",
-          activeDasha,
-          detectedYogas.join(" "),
-          caseTerms.join(" "),
-        ].join(" "),
-        detectedCases: [...dashaLords, ...detectedYogas, ...caseTerms],
-        min: 4,
-        max: 8,
-      })
-    ).forEach((passage) => {
-      if (!seen.has(passage.id) && selected.length < 16) {
-        seen.add(passage.id)
-        selected.push({
-          ...passage,
-          section: `fallback_pack: Classical support only if a specific topic pack is weak | ${passage.section}`,
+      max: 2,
+    }),
+    subQuestions.length
+      ? retrieveKnowledgeSafely({
+          query: [
+            "specific question parashari prediction chart result",
+            subQuestions.join(" "),
+            activeDashaText(chart),
+          ].join(" "),
+          chart,
+          detectedCases: subQuestions,
+          min: 1,
+          max: 1,
         })
-      }
-    })
-  }
-
-  const curatedPassages = buildCuratedKundliKnowledgePassages({
-    chart,
-    detectedYogas,
-    detectedCases,
-    healthIndicators,
-    subQuestions,
-  })
-
-  // Curated section-specific rules come first. BPHS passages then provide
-  // classical dasha/yoga/remedy backing. This prevents generic dasha passages
-  // from becoming the only evidence for career/wealth/health/marriage.
-  return mergeKnowledgePassages(32, curatedPassages, selected).slice(0, 32)
+      : []
+  )
 }
 
 const formatCompactPassagesForPrompt = (
@@ -2256,7 +1877,7 @@ const formatCompactPassagesForPrompt = (
         .slice(0, limit)
         .map(
           (passage, index) =>
-            `${index + 1}. [${passage.id}] Topic: ${passage.section}\nCitation: ${
+            `${index + 1}. [${passage.id}] Citation: ${
               passage.citation
             }\nExcerpt: ${compactPromptText(passage.text, excerptLength)}`
         )
@@ -2335,10 +1956,7 @@ const buildPrompt = ({
     "Use the Rashi/Lagna chart for sign dignity, graha ownership, yogas, debility/exaltation, conjunctions, and classical combinations. Use Bhava Chalit for practical house impact, lived results, timing delivery, health-risk house activation, and real-world manifestation.",
     "Bhava Chalit is calculated from Sripati bhava madhya and sandhi boundaries. Use bhava_impact_percent to judge delivery strength: strong planets near bhava madhya deliver clearly; sandhi/weak planets deliver mixed, delayed, or transitional effects.",
     "If rashi_house and bhava_house differ, explain the difference plainly: Rashi shows the graha's sign/yoga condition, while Bhava Chalit shows where its result is likely delivered. Do not ignore Bhava Chalit even when the selected panchang mode is whole-sign.",
-    "Use the retrieved evidence as a two-layer RAG system. First use Shreem curated Parashari rules for section structure and exact life-area judgement. Then use BPHS passages for classical dasha, yoga, remedy and supporting language. Do not let a generic dasha passage override a section-specific curated rule.",
-    "For career, wealth, health, relationship, property and foreign/spiritual rows, use the matching curated pack first. BPHS dasha passages may adjust timing but must not become the whole prediction.",
-    "Every prediction_table row must mention a concrete chart basis: house/lord/planet/dignity/drishti/Bhava Chalit/dasha. Avoid generic results even if BPHS passage is broad.",
-    "If BPHS passage is dasha-focused, use it only for timing and dasha effects unless the row itself is Current dasha or dasha_predictions.",
+    "Use the retrieved Brihat Parashara Hora Shastra reference pack as the interpretive base for dasha, yoga, health-risk, and remedy judgement. It is not decorative citation. Apply it only after checking the calculated chart facts.",
     "First read Vimshottari timing: Mahadasha, Antardasha, and Pratyantar lord placement by house, sign, dignity, association, and relevant houses. Then explain how the BPHS reference pack modifies timing and outcomes.",
     "For past windows, phrase as 'you may have seen' or 'often shows' so the person can validate. For current/future windows, phrase as preparation and watch periods.",
     "When two strong combinations coexist, synthesize them rather than listing them separately. Example: if Gajakesari support and Kaal Sarp/Rahu-Ketu pressure both appear, judge which dominates by dasha, house relevance, and afflicted/protective grahas.",
@@ -2357,7 +1975,7 @@ const buildPrompt = ({
     "Health analysis must be deeper than generic caution: name likely vulnerability areas and possible disease tendencies from chart indicators, but use cautious language like tendency/watch/monitor. Do not diagnose. Tell the user to consult a qualified doctor for symptoms, emergencies, or persistent issues.",
     "Accident or major-incident analysis must be framed only as watch periods and preventive care. Mention it only when 6th/8th/12th houses, Mars/Saturn/Rahu/Ketu, and active dasha signals support it. Never guarantee harm or use frightening certainty.",
     "Return health_indicators with 3 to 5 specific watchlist items. Each item must include chart basis and a practical prevention note in one complete sentence.",
-    "Return dasha_predictions with one row each for Mahadasha, Antardasha, and Pratyantar. Use dasha_pack as the main classical basis, and do not let dasha_pack replace career_pack, wealth_pack, health_pack, or relationship_pack in their own sections.",
+    "Return dasha_predictions with one row each for Mahadasha, Antardasha, and Pratyantar. Each row must include chart_basis, classical_basis from the retrieved pack, prediction, and action.",
     "Return special_case_readings with the 3 to 5 most important detected cases. If BPHS does not directly name a modern case such as Kaal Sarp, say the classical basis is Rahu-Ketu, house, dasha, and affliction logic from the retrieved pack.",
     "Do not return risk_watch unless there is a clear 6th/8th/12th plus active dasha trigger.",
     "Return prediction_table with non-duplicate rows only. If user_questions are present, the first row must be area: User question and must answer the first user question once. Then include Current dasha plus detailed life-area rows for career, wealth, business, health, relationship, family/home/property, foreign/spiritual, education/skills, and practical timing. Each row must include chart_basis, prediction, and advice.",
@@ -3269,9 +2887,8 @@ export async function POST(request: NextRequest) {
   }
 
   const enhanceQuestionAnswersWithGemini = async () => {
-    // Production single-call mode:
-    // Do not call Gemini again for sub-questions. The main Kundli Gemini call must
-    // generate both full Kundli analysis and exact question answering in one response.
+    // Single-call mode: do not run a second LLM call for the same user question.
+    // The main Gemini call must provide sub_question_answers and prediction_table.
     const questions = (Array.isArray(subQuestions) ? subQuestions : [])
       .map((item) => normalizeQuestionText(item, 1000))
       .filter(Boolean)
@@ -3292,7 +2909,6 @@ export async function POST(request: NextRequest) {
 
     const finalAnswers = questions.map((question, index) => {
       const normalizedQuestion = normalizeQuestionSearchText(question)
-
       const existing =
         existingAnswers.find(
           (row: any) =>
@@ -3302,9 +2918,9 @@ export async function POST(request: NextRequest) {
       if (existing && !isWeakQuestionAnswer(existing.answer)) {
         return {
           question,
-          answer: normalizeQuestionText(existing.answer, 3200),
+          answer: normalizeQuestionText(existing.answer, 3000),
           chart_reason:
-            normalizeQuestionText(existing.chart_reason, 2200) ||
+            normalizeQuestionText(existing.chart_reason, 2000) ||
             getDeterministicQuestionFallback(question).chart_reason,
         }
       }
@@ -3317,9 +2933,9 @@ export async function POST(request: NextRequest) {
       if (userQuestionRow && !isWeakQuestionAnswer(userQuestionRow.prediction)) {
         return {
           question,
-          answer: normalizeQuestionText(userQuestionRow.prediction, 3200),
+          answer: normalizeQuestionText(userQuestionRow.prediction, 3000),
           chart_reason:
-            normalizeQuestionText(userQuestionRow.chart_basis, 2200) ||
+            normalizeQuestionText(userQuestionRow.chart_basis, 2000) ||
             getDeterministicQuestionFallback(question).chart_reason,
         }
       }
@@ -3336,8 +2952,6 @@ export async function POST(request: NextRequest) {
     analysis.sub_question_answers = finalAnswers
 
     const firstFallback = getDeterministicQuestionFallback(finalAnswers[0].question)
-    const directAnswer = normalizeQuestionSearchText(finalAnswers[0].answer)
-
     const firstUserRow = {
       area: "User question",
       chart_basis: finalAnswers[0].chart_reason,
@@ -3350,21 +2964,21 @@ export async function POST(request: NextRequest) {
       ...predictionRows.filter((row: any) => {
         const area = normalizeQuestionSearchText(row?.area)
         const prediction = normalizeQuestionSearchText(row?.prediction)
+        const firstAnswer = normalizeQuestionSearchText(finalAnswers[0].answer)
 
         return (
           !area.includes("user question") &&
-          !area.includes("question") &&
-          prediction !== directAnswer &&
+          prediction !== firstAnswer &&
           !prediction.includes("ai did not return") &&
           !prediction.includes("calculated chart is available") &&
           !prediction.includes("retry the ai")
         )
       }),
-    ].slice(0, 18)
+    ].slice(0, 16)
 
     if (
-      normalizeQuestionSearchText(analysis.summary) === directAnswer ||
-      normalizeQuestionSearchText(analysis.summary).includes(directAnswer.slice(0, 120))
+      normalizeQuestionSearchText(analysis.summary) ===
+      normalizeQuestionSearchText(finalAnswers[0].answer)
     ) {
       analysis.summary =
         analysis.current_period_analysis ||
@@ -3373,6 +2987,135 @@ export async function POST(request: NextRequest) {
         )?.prediction ||
         "This Kundli shows a mixed but growth-oriented life pattern where dasha timing, disciplined effort, and correct direction matter more than quick results."
     }
+
+    return
+
+    const questions = (Array.isArray(subQuestions) ? subQuestions : [])
+      .map((item) => normalizeQuestionText(item, 1000))
+      .filter(Boolean)
+      .slice(0, 3)
+
+    if (!questions.length) {
+      analysis.sub_question_answers = []
+      return
+    }
+
+    const prompt = [
+      "You are the second-stage focused Vedic astrology answerer for Shreem Astrology.",
+      "The first Gemini call has already calculated the full Kundli reading, dasha, yogas, special cases and BPHS reference context.",
+      "Your job is ONLY to answer the user's exact sub-questions in a detailed, useful, practical way.",
+      "Do not produce a generic Kundli reading.",
+      "Do not say AI failed, chart is available, retry, or anything similar.",
+      "For outcome questions, begin with a direct verdict: Likely, Unlikely, Mixed, Yes with conditions, or No unless conditions change.",
+      "For wealth questions like billionaire/crorepati/rich, be realistic. Do not promise billionaire status. Explain wealth potential, required conditions, chart basis, timing, risks and action.",
+      "Every answer must use Lagna, Moon/nakshatra, relevant houses/lords, graha placement, and current Mahadasha/Antardasha/Pratyantar when relevant.",
+      "Each answer should be detailed: 5 to 9 sentences.",
+      "Return strict JSON only.",
+      "",
+      "USER QUESTIONS",
+      JSON.stringify(questions, null, 2),
+      "",
+      "KUNDLI CONTEXT",
+      buildFocusedQuestionContext(),
+      "",
+      "Return JSON with sub_question_answers only.",
+    ].join("\n")
+
+    const focusedGemini = await generateGeminiJson({
+      prompt,
+      responseSchema: focusedQuestionSchema,
+      temperature: 0.18,
+      maxOutputTokens: Number(
+        process.env.ASTROLOGY_FOCUSED_QUESTION_MAX_OUTPUT_TOKENS || 5000
+      ),
+      label: "Kundli focused question Gemini",
+    })
+
+    const rows = Array.isArray(focusedGemini.parsed?.sub_question_answers)
+      ? focusedGemini.parsed.sub_question_answers
+      : []
+
+    const finalAnswers = questions.map((question, index) => {
+      const normalizedQuestion = normalizeQuestionSearchText(question)
+      const geminiRow =
+        rows.find(
+          (row: any) =>
+            normalizeQuestionSearchText(row?.question) === normalizedQuestion
+        ) || rows[index]
+
+      if (geminiRow && !isWeakQuestionAnswer(geminiRow.answer)) {
+        const timing = normalizeQuestionText(geminiRow.timing, 1200)
+        const action = normalizeQuestionText(geminiRow.action, 1200)
+        const answerParts = [
+          normalizeQuestionText(geminiRow.answer, 3000),
+          timing ? `Timing: ${timing}` : "",
+          action ? `Action: ${action}` : "",
+        ].filter(Boolean)
+
+        return {
+          question,
+          answer: answerParts.join(" "),
+          chart_reason:
+            normalizeQuestionText(geminiRow.chart_reason, 2000) ||
+            getDeterministicQuestionFallback(question).chart_reason,
+        }
+      }
+
+      const existing = Array.isArray(analysis.sub_question_answers)
+        ? analysis.sub_question_answers.find(
+            (row: any) =>
+              normalizeQuestionSearchText(row?.question) === normalizedQuestion
+          )
+        : null
+
+      if (existing && !isWeakQuestionAnswer(existing.answer)) {
+        return {
+          question,
+          answer: normalizeQuestionText(existing.answer, 3000),
+          chart_reason:
+            normalizeQuestionText(existing.chart_reason, 2000) ||
+            getDeterministicQuestionFallback(question).chart_reason,
+        }
+      }
+
+      const fallback = getDeterministicQuestionFallback(question)
+
+      return {
+        question,
+        answer: `${fallback.answer} Timing: ${fallback.timing} Action: ${fallback.action}`,
+        chart_reason: fallback.chart_reason,
+      }
+    })
+
+    analysis.sub_question_answers = finalAnswers
+
+    const predictionRows = Array.isArray(analysis.prediction_table)
+      ? analysis.prediction_table
+      : []
+
+    const firstFallback = getDeterministicQuestionFallback(finalAnswers[0].question)
+
+    analysis.prediction_table = [
+      {
+        area: "User question",
+        chart_basis: finalAnswers[0].chart_reason,
+        prediction: finalAnswers[0].answer,
+        advice: firstFallback.action,
+      },
+      ...predictionRows.filter((row: any) => {
+        const area = normalizeQuestionSearchText(row?.area)
+        const prediction = normalizeQuestionSearchText(row?.prediction)
+
+        return (
+          !area.includes("user question") &&
+          !prediction.includes("ai did not return") &&
+          !prediction.includes("calculated chart is available") &&
+          !prediction.includes("retry the ai")
+        )
+      }),
+    ].slice(0, 8)
+
+    // Do not copy the direct user question answer into summary; it creates duplicate output.
   }
 
   await enhanceQuestionAnswersWithGemini()

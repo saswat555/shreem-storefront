@@ -318,6 +318,316 @@ const specialCaseBoost = (normalizedQuery: string, chunk: BphsRagChunk) => {
   }, 0)
 }
 
+const topicRelevanceBoost = (normalizedQuery: string, chunk: BphsRagChunk) => {
+  const haystack = normalizeText(
+    `${chunk.chapterTitle} ${chunk.keywords.join(" ")} ${chunk.text.slice(0, 1100)}`
+  )
+
+  const topicRules: {
+    topic: RegExp
+    must: string[]
+    should: string[]
+    boost: number
+  }[] = [
+    {
+      topic: /career|profession|karma|tenth|10th|authority|livelihood|work|job|business|status|recognition|कर्म|दशम|पेशा|व्यवसाय/,
+      must: ["karma", "profession", "work", "tenth", "10th", "livelihood", "authority", "business", "government", "success", "कर्म", "दशम"],
+      should: ["king", "status", "position", "reputation", "ventures", "employment", "office", "राज", "व्यवसाय"],
+      boost: 0.42,
+    },
+    {
+      topic: /wealth|money|income|saving|finance|profit|gains|second|2nd|eleventh|11th|dhana|labha|धन|लाभ|आय|बचत/,
+      must: ["wealth", "money", "income", "gains", "gain", "dhana", "labha", "second", "eleventh", "profit", "grains", "cattle", "land", "धन", "लाभ"],
+      should: ["ornaments", "village", "property", "resources", "savings"],
+      boost: 0.36,
+    },
+    {
+      topic: /health|disease|illness|recovery|accident|injury|surgery|sixth|6th|eighth|8th|twelfth|12th|ari|randhra|vyaya|arishta|rog|रोग|अरिष्ट|दुर्घटना|अष्टम|षष्ठ/,
+      must: ["disease", "illness", "ari", "randhr", "vyaya", "sixth", "eighth", "twelfth", "injury", "accident", "wounds", "fever", "physical distress", "रोग", "अरिष्ट", "अष्टम", "षष्ठ"],
+      should: ["headaches", "heart", "poison", "snakes", "surgery", "danger", "hospital"],
+      boost: 0.38,
+    },
+    {
+      topic: /marriage|relationship|spouse|partner|seventh|7th|public dealing|contracts|partnership|venus|विवाह|नाड़ी|भकूट/,
+      must: ["marriage", "wife", "spouse", "seventh", "yuvati", "venus", "sukr", "partner", "relationship", "विवाह"],
+      should: ["children", "family", "kinsmen", "happiness from wife", "distress to wife"],
+      boost: 0.38,
+    },
+    {
+      topic: /neech|neechabhanga|debilitat|cancellation|exaltation|नीच|भंग/,
+      must: ["debilitation", "debilitated", "exaltation", "exalted", "own rasi", "kendr", "trikon", "नीच", "भंग"],
+      should: ["strength", "benefic", "malefic", "own navahs"],
+      boost: 0.34,
+    },
+    {
+      topic: /dasha|mahadasha|antardasha|pratyantar|bhukti|vimshottari|दशा|महादशा|अन्तर्दशा/,
+      must: ["dasha", "antar", "bhukti", "mahadasha", "vimshottari", "period", "दशा"],
+      should: ["effects", "results", "commencement", "later"],
+      boost: 0.26,
+    },
+  ]
+
+  return topicRules.reduce((score, rule) => {
+    if (!rule.topic.test(normalizedQuery)) {
+      return score
+    }
+
+    const mustHits = rule.must.filter((term) => haystack.includes(normalizeText(term))).length
+    const shouldHits = rule.should.filter((term) => haystack.includes(normalizeText(term))).length
+
+    if (!mustHits) {
+      return score
+    }
+
+    return score + Math.min(rule.boost + mustHits * 0.035 + shouldHits * 0.018, 0.72)
+  }, 0)
+}
+
+const genericDashaDominancePenalty = (
+  normalizedQuery: string,
+  chunk: BphsRagChunk
+) => {
+  const haystack = normalizeText(
+    `${chunk.chapterTitle} ${chunk.keywords.join(" ")} ${chunk.text.slice(0, 900)}`
+  )
+
+  const isLifeAreaQuery =
+    /career|profession|karma|tenth|10th|wealth|money|income|second|2nd|eleventh|11th|health|disease|sixth|6th|eighth|8th|twelfth|12th|marriage|relationship|seventh|7th/.test(
+      normalizedQuery
+    )
+
+  const isPureDashaChapter =
+    /effects of .*dasha|antar dashas|dasha of/.test(haystack) ||
+    /dasha/.test(haystack)
+
+  const hasLifeAreaSpecificEvidence =
+    /tenth|10th|karma|profession|second|eleventh|dhana|labha|sixth|eighth|twelfth|ari|randhr|vyaya|seventh|yuvati|marriage|wife|spouse|career|wealth|disease|health/.test(
+      haystack
+    )
+
+  if (isLifeAreaQuery && isPureDashaChapter && !hasLifeAreaSpecificEvidence) {
+    return -0.45
+  }
+
+  return 0
+}
+
+
+
+const topicEvidenceScore = (normalizedQuery: string, chunk: BphsRagChunk) => {
+  const haystack = normalizeText(
+    `${chunk.chapterTitle} ${chunk.keywords.join(" ")} ${chunk.text.slice(0, 1400)}`
+  )
+
+  const rules: { topic: RegExp; evidence: string[] }[] = [
+    {
+      topic: /career|profession|karma|tenth|10th|authority|livelihood|work|job|business|status|recognition|कर्म|दशम|पेशा|व्यवसाय/,
+      evidence: [
+        "tenth",
+        "10th",
+        "karma",
+        "karm",
+        "karm s lord",
+        "profession",
+        "livelihood",
+        "work",
+        "obstacles in work",
+        "success in the desired ventures",
+        "employment",
+        "office",
+        "authority",
+        "governmental authority",
+        "entrustment of governmental authority",
+        "position",
+        "status",
+        "reputation",
+        "name and fame",
+        "raj yog",
+        "राज",
+        "कर्म",
+        "दशम",
+        "पेशा",
+      ],
+    },
+    {
+      topic: /wealth|money|income|saving|finance|profit|gains|second|2nd|eleventh|11th|dhana|labha|धन|लाभ|आय|बचत/,
+      evidence: [
+        "second",
+        "2nd",
+        "eleventh",
+        "11th",
+        "dhana",
+        "labha",
+        "wealth",
+        "money",
+        "income",
+        "gain of wealth",
+        "gains",
+        "profit",
+        "grains",
+        "cattle",
+        "land",
+        "property",
+        "ornaments",
+        "धन",
+        "लाभ",
+      ],
+    },
+    {
+      topic: /health|disease|illness|recovery|accident|injury|surgery|sixth|6th|eighth|8th|twelfth|12th|ari|randhra|vyaya|arishta|rog|रोग|अरिष्ट|दुर्घटना|अष्टम|षष्ठ/,
+      evidence: [
+        "sixth",
+        "6th",
+        "eighth",
+        "8th",
+        "twelfth",
+        "12th",
+        "ari",
+        "randhr",
+        "vyaya",
+        "disease",
+        "illness",
+        "physical distress",
+        "mental agony",
+        "injury",
+        "wounds",
+        "accident",
+        "fever",
+        "heart disease",
+        "headaches",
+        "poison",
+        "रोग",
+        "अरिष्ट",
+        "अष्टम",
+        "षष्ठ",
+      ],
+    },
+    {
+      topic: /marriage|relationship|spouse|partner|seventh|7th|public dealing|contracts|partnership|venus|विवाह|नाड़ी|भकूट/,
+      evidence: [
+        "seventh",
+        "7th",
+        "yuvati",
+        "marriage",
+        "wife",
+        "spouse",
+        "partner",
+        "venus",
+        "sukr",
+        "relationship",
+        "happiness from wife",
+        "distress to wife",
+        "विवाह",
+      ],
+    },
+  ]
+
+  const matchedRule = rules.find((rule) => rule.topic.test(normalizedQuery))
+
+  if (!matchedRule) {
+    return 1
+  }
+
+  const hits = matchedRule.evidence.filter((term) =>
+    haystack.includes(normalizeText(term))
+  ).length
+
+  return hits
+}
+
+const exactTopicGatePenalty = (
+  normalizedQuery: string,
+  chunk: BphsRagChunk
+) => {
+  const isStrictLifeArea =
+    /career|profession|karma|tenth|10th|wealth|money|income|second|2nd|eleventh|11th|health|disease|sixth|6th|eighth|8th|twelfth|12th|marriage|relationship|seventh|7th/.test(
+      normalizedQuery
+    )
+
+  if (!isStrictLifeArea) {
+    return 0
+  }
+
+  const evidence = topicEvidenceScore(normalizedQuery, chunk)
+
+  const isCareerQuery =
+    /career|profession|karma|tenth|10th|authority|livelihood|work|job|status|recognition|कर्म|दशम|पेशा/.test(
+      normalizedQuery
+    )
+
+  if (evidence === 0) {
+    return isCareerQuery ? -1.8 : -1.25
+  }
+
+  if (evidence === 1) {
+    return isCareerQuery ? -0.75 : -0.35
+  }
+
+  return Math.min(evidence * 0.1, 0.4)
+}
+
+const selectDiverseAstrologyPassages = (
+  normalizedQuery: string,
+  passages: RetrievedAstrologyPassage[],
+  max: number
+) => {
+  const isLifeArea =
+    /career|profession|karma|tenth|10th|wealth|money|income|second|2nd|eleventh|11th|health|disease|sixth|6th|eighth|8th|twelfth|12th|marriage|relationship|seventh|7th/.test(
+      normalizedQuery
+    )
+
+  if (!isLifeArea) {
+    return passages.slice(0, max)
+  }
+
+  const chapterLimit = 1
+  const selected: RetrievedAstrologyPassage[] = []
+  const chapterCounts = new Map<number, number>()
+
+  const strong = passages.filter((passage) => {
+    const chunkLike = passage as unknown as BphsRagChunk
+
+    return topicEvidenceScore(normalizedQuery, chunkLike) > 0
+  })
+
+  for (const passage of strong) {
+    const used = chapterCounts.get(passage.chapterNumber) || 0
+
+    if (used >= chapterLimit) {
+      continue
+    }
+
+    selected.push(passage)
+    chapterCounts.set(passage.chapterNumber, used + 1)
+
+    if (selected.length >= max) {
+      return selected
+    }
+  }
+
+  for (const passage of passages) {
+    if (selected.some((item) => item.id === passage.id)) {
+      continue
+    }
+
+    const used = chapterCounts.get(passage.chapterNumber) || 0
+
+    if (used >= chapterLimit) {
+      continue
+    }
+
+    selected.push(passage)
+    chapterCounts.set(passage.chapterNumber, used + 1)
+
+    if (selected.length >= max) {
+      break
+    }
+  }
+
+  return selected
+}
+
+
 export const retrieveAstrologyKnowledge = ({
   query,
   chart,
@@ -343,7 +653,7 @@ export const retrieveAstrologyKnowledge = ({
   const queryTokens = new Set(tokenize(expandedSearchText))
   const queryVector = vectorizeQuery(expandedSearchText)
 
-  return rag.chunks
+  const scoredPassages = rag.chunks
     .map((chunk) => ({
       id: chunk.id,
       source: chunk.source,
@@ -358,11 +668,18 @@ export const retrieveAstrologyKnowledge = ({
       score:
         cosineSimilarity(queryVector, chunk.vector) +
         keywordOverlapBoost(queryTokens, chunk) +
-        specialCaseBoost(normalizedSearch, chunk),
+        specialCaseBoost(normalizedSearch, chunk) +
+        topicRelevanceBoost(normalizedSearch, chunk) +
+        genericDashaDominancePenalty(normalizedSearch, chunk) +
+        exactTopicGatePenalty(normalizedSearch, chunk),
     }))
     .sort((left, right) => right.score - left.score)
-    .slice(0, boundedMax)
-    .filter((passage, index) => index < boundedMin || passage.score > 0.08)
+
+  return selectDiverseAstrologyPassages(
+    normalizedSearch,
+    scoredPassages,
+    boundedMax
+  ).filter((passage, index) => index < boundedMin || passage.score > 0.08)
 }
 
 export const formatAstrologyKnowledgeForPrompt = (
