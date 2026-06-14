@@ -12,6 +12,11 @@ export type ShreemJournalPost = {
     heading: string
     body: string[]
   }[]
+  relatedLinks?: {
+    label: string
+    href: string
+    reason?: string
+  }[]
 }
 
 export const shreemSupportFaqs = [

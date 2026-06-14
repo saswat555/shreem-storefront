@@ -3,6 +3,7 @@ import React, { Suspense } from "react"
 import ImageGallery from "@modules/products/components/image-gallery"
 import ProductActions from "@modules/products/components/product-actions"
 import ProductOnboardingCta from "@modules/products/components/product-onboarding-cta"
+import ProductDeliveryChecker from "@modules/products/components/product-delivery-checker"
 import ProductTabs from "@modules/products/components/product-tabs"
 import RelatedProducts from "@modules/products/components/related-products"
 import ProductReviews from "@modules/products/components/product-reviews"
@@ -75,7 +76,12 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
                 </div>
               }
             >
-</Suspense>
+              <ProductDeliveryChecker
+                initialPincode={initialDeliveryPincode}
+                productTitle={product.title}
+                productHandle={product.handle}
+              />
+            </Suspense>
           </div>
 
           <div className="order-1 min-w-0 xl:order-2">

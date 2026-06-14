@@ -8,7 +8,9 @@ import { StoreCartShippingOption } from "@medusajs/types"
 import CartMismatchBanner from "@modules/layout/components/cart-mismatch-banner"
 import Footer from "@modules/layout/templates/footer"
 import Nav from "@modules/layout/templates/nav"
+import PwaInstallPrompt from "@modules/pwa/components/pwa-install-prompt"
 import FreeShippingPriceNudge from "@modules/shipping/components/free-shipping-price-nudge"
+import SiteAnalyticsTracker from "@modules/analytics/components/site-analytics-tracker"
 
 type PageLayoutProps = {
   children: React.ReactNode
@@ -54,6 +56,10 @@ export default async function PageLayout(props: PageLayoutProps) {
   return (
     <>
       <Nav />
+      <SiteAnalyticsTracker
+        customerId={customer?.id}
+        customerEmail={customer?.email}
+      />
       {customer && cart && (
         <CartMismatchBanner customer={customer} cart={cart} />
       )}
@@ -65,6 +71,7 @@ export default async function PageLayout(props: PageLayoutProps) {
           shippingOptions={shippingOptions}
         />
       )}
+      <PwaInstallPrompt />
       {props.children}
       <Footer />
     </>

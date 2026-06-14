@@ -10,10 +10,13 @@ export default function GoogleLoginButton() {
   const loginWithGoogle = () => {
     setLoading(true)
     const countryCode = params?.countryCode || "in"
+    const returnTo = `${window.location.pathname}${window.location.search}${window.location.hash}`
+    const query = new URLSearchParams({
+      countryCode,
+      returnTo,
+    })
 
-    window.location.href = `/api/auth/google/start?countryCode=${encodeURIComponent(
-      countryCode
-    )}`
+    window.location.href = `/api/auth/google/start?${query.toString()}`
   }
 
   return (

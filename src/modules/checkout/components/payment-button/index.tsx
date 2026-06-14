@@ -30,6 +30,29 @@ declare global {
 const CHECKOUT_ERROR_MESSAGE =
   "We could not place this order right now. Please confirm the payment and delivery details, then try again. If money was deducted, contact support with your phone number and cart details."
 
+const trackPaymentEvent = (
+  eventType: string,
+  metadata: Record<string, unknown>
+) => {
+  if (typeof window === "undefined") {
+    return
+  }
+
+  fetch("/api/analytics", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      event_type: eventType,
+      path: `${window.location.pathname}${window.location.search}`,
+      title: document.title,
+      metadata,
+    }),
+    keepalive: true,
+  }).catch(() => undefined)
+}
+
 const loadRazorpayScript = () =>
   new Promise<boolean>((resolve) => {
     if (typeof window === "undefined") {
@@ -156,6 +179,12 @@ const RazorpayPaymentButton = ({
   const handlePayment = async () => {
     setSubmitting(true)
     setErrorMessage(null)
+    trackPaymentEvent("payment_started", {
+      provider: "razorpay",
+      cart_id: cart.id,
+      amount,
+      currency,
+    })
 
     try {
       if (!session?.id || !session?.provider_id || !cart.payment_collection?.id) {
@@ -231,8 +260,20 @@ const RazorpayPaymentButton = ({
                   razorpay_signature,
                 },
               })
+              trackPaymentEvent("payment_authorized", {
+                provider: "razorpay",
+                cart_id: cart.id,
+                razorpay_order_id,
+              })
 
-              await placeOrder(cart.id)
+              const completedCart = await placeOrder(cart.id)
+
+              if (completedCart) {
+                throw new Error(
+                  "Payment was verified, but the order did not complete automatically. Please contact support before retrying payment."
+                )
+              }
+
               resolve()
             } catch (error) {
               reject(error)
@@ -240,12 +281,24 @@ const RazorpayPaymentButton = ({
           },
           modal: {
             ondismiss: () => {
+              trackPaymentEvent("payment_abandoned", {
+                provider: "razorpay",
+                cart_id: cart.id,
+              })
               reject(new Error("Payment was cancelled before completion."))
             },
           },
         })
 
         razorpay.on("payment.failed", (response: any) => {
+          trackPaymentEvent("payment_failed", {
+            provider: "razorpay",
+            cart_id: cart.id,
+            reason:
+              response?.error?.description ||
+              response?.error?.reason ||
+              "Razorpay payment failed.",
+          })
           reject(
             new Error(
               response?.error?.description ||
@@ -259,6 +312,11 @@ const RazorpayPaymentButton = ({
       })
     } catch (error: any) {
       console.error("Razorpay checkout failed", error)
+      trackPaymentEvent("checkout_error", {
+        provider: "razorpay",
+        cart_id: cart.id,
+        message: error?.message || CHECKOUT_ERROR_MESSAGE,
+      })
       setErrorMessage(error?.message || CHECKOUT_ERROR_MESSAGE)
       setSubmitting(false)
     }
@@ -300,6 +358,11 @@ const StripePaymentButton = ({
     await placeOrder()
       .catch((err) => {
         console.error("Place order failed", err)
+        trackPaymentEvent("checkout_error", {
+          provider: "stripe",
+          cart_id: cart.id,
+          message: err?.message || CHECKOUT_ERROR_MESSAGE,
+        })
         setErrorMessage(CHECKOUT_ERROR_MESSAGE)
       })
       .finally(() => {
@@ -319,6 +382,10 @@ const StripePaymentButton = ({
 
   const handlePayment = async () => {
     setSubmitting(true)
+    trackPaymentEvent("payment_started", {
+      provider: "stripe",
+      cart_id: cart.id,
+    })
 
     if (!stripe || !elements || !card || !cart) {
       setSubmitting(false)
@@ -349,6 +416,11 @@ const StripePaymentButton = ({
       })
       .then(({ error, paymentIntent }) => {
         if (error) {
+          trackPaymentEvent("payment_failed", {
+            provider: "stripe",
+            cart_id: cart.id,
+            message: error.message,
+          })
           const pi = error.payment_intent
 
           if (
@@ -410,6 +482,10 @@ const OfflinePaymentButton = ({
     await placeOrder()
       .catch((err) => {
         console.error("Place order failed", err)
+        trackPaymentEvent("checkout_error", {
+          provider: providerId || "offline",
+          message: err?.message || CHECKOUT_ERROR_MESSAGE,
+        })
         setErrorMessage(CHECKOUT_ERROR_MESSAGE)
       })
       .finally(() => {
@@ -419,6 +495,9 @@ const OfflinePaymentButton = ({
 
   const handlePayment = () => {
     setSubmitting(true)
+    trackPaymentEvent("payment_started", {
+      provider: providerId || "offline",
+    })
 
     onPaymentCompleted()
   }

@@ -18,7 +18,7 @@ const CartTemplate = ({
   return (
     <div className="py-4 pb-10 small:py-12">
       <div className="content-container" data-testid="cart-container">
-        <div className="brand-surface mb-4 px-4 py-5 small:mb-6 small:px-8 small:py-8">
+        <div className="mb-4 rounded-[18px] border border-[rgba(18,63,99,0.12)] bg-[rgba(255,252,248,0.88)] px-4 py-5 shadow-[0_16px_36px_rgba(15,49,70,0.07)] small:mb-6 small:px-8 small:py-8">
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
               <p className="brand-kicker">Your bag</p>
@@ -40,7 +40,7 @@ const CartTemplate = ({
         </div>
         {cart?.items?.length ? (
           <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_360px] xl:gap-6">
-            <div className="brand-card flex min-w-0 flex-col gap-y-5 px-3 py-4 small:px-6 small:py-6">
+            <div className="min-w-0 rounded-[18px] border border-[rgba(18,63,99,0.12)] bg-[rgba(255,252,248,0.86)] px-3 py-4 shadow-[0_14px_30px_rgba(15,49,70,0.06)] small:px-6 small:py-6">
               {!customer && (
                 <>
                   <SignInPrompt />
@@ -52,7 +52,7 @@ const CartTemplate = ({
             <div className="relative">
               <div className="flex flex-col gap-y-8 xl:sticky xl:top-28">
                 {cart && cart.region && (
-                  <div className="brand-card px-4 py-5 small:px-5 small:py-6">
+                  <div className="rounded-[18px] border border-[rgba(18,63,99,0.12)] bg-[rgba(255,252,248,0.9)] px-4 py-5 shadow-[0_14px_30px_rgba(15,49,70,0.06)] small:px-5 small:py-6">
                     <Summary cart={cart as any} />
                   </div>
                 )}

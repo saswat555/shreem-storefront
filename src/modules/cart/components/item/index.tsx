@@ -82,15 +82,15 @@ const Item = ({ item, type = "full", currencyCode }: ItemProps) => {
 
   return (
     <Table.Row
-      className="mb-3 grid w-full grid-cols-[84px_minmax(0,1fr)] gap-x-3 overflow-hidden rounded-[18px] border border-[rgba(18,63,99,0.12)] bg-white/76 p-3 shadow-[0_12px_26px_rgba(15,49,70,0.06)] small:mb-0 small:table-row small:rounded-none small:border-0 small:bg-transparent small:p-0 small:shadow-none"
+      className="mb-3 grid w-full grid-cols-[76px_minmax(0,1fr)] gap-x-3 overflow-hidden rounded-[16px] border border-[rgba(18,63,99,0.12)] bg-white/82 p-3 shadow-[0_12px_26px_rgba(15,49,70,0.06)] small:mb-0 small:table-row small:rounded-none small:border-0 small:bg-transparent small:p-0 small:shadow-none"
       data-testid="product-row"
     >
-      <Table.Cell className="col-start-1 row-span-2 block !pl-0 p-0 small:table-cell small:p-4 small:w-24">
+      <Table.Cell className="col-start-1 row-span-3 block !pl-0 p-0 small:table-cell small:p-4 small:w-24">
         <LocalizedClientLink
           href={`/products/${item.product_handle}`}
           className={clx("mb-0 flex small:mb-0", {
             "w-16": type === "preview",
-            "w-full small:w-24": type === "full",
+            "w-[76px] small:w-24": type === "full",
           })}
         >
           <Thumbnail
@@ -103,7 +103,7 @@ const Item = ({ item, type = "full", currencyCode }: ItemProps) => {
 
       <Table.Cell className="col-start-2 block px-0 py-0 text-left small:table-cell small:px-4 small:py-4">
         <Text
-          className="txt-medium-plus line-clamp-2 text-ui-fg-base"
+          className="txt-medium-plus line-clamp-2 break-words text-ui-fg-base"
           data-testid="product-title"
         >
           {item.product_title}
@@ -113,10 +113,10 @@ const Item = ({ item, type = "full", currencyCode }: ItemProps) => {
 
       {type === "full" && (
         <Table.Cell className="col-start-2 block px-0 pt-3 small:table-cell small:px-4 small:pt-4">
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2 small:gap-3">
             <DeleteButton id={item.id} data-testid="product-delete-button" />
             <div
-              className="inline-flex h-11 items-center rounded-full border border-[var(--shreem-border)] bg-[rgba(255,252,248,0.88)] px-1.5 shadow-[0_10px_24px_rgba(15,49,70,0.08)]"
+              className="inline-flex h-10 items-center rounded-full border border-[var(--shreem-border)] bg-[rgba(255,252,248,0.88)] px-1.5 shadow-[0_10px_24px_rgba(15,49,70,0.08)] small:h-11"
               data-testid="product-select-button"
             >
               <button

@@ -739,6 +739,9 @@ export async function POST(request: NextRequest) {
       },
       model: gemini.model,
       ...gemini.usage,
+      provider: gemini.provider,
+      attempts: gemini.attempts,
+      attempt_logs: gemini.attempt_logs,
       expert_recommended: true,
       tags: ["failed_ai_generation", "retryable"],
     })
@@ -800,6 +803,9 @@ export async function POST(request: NextRequest) {
     },
     model: gemini.model,
     ...gemini.usage,
+    provider: gemini.provider,
+    attempts: gemini.attempts,
+    attempt_logs: gemini.attempt_logs,
     expert_recommended: analysis.expert_call_recommended,
   })
   const credit = await consumeChargeableAstrologyCredit({

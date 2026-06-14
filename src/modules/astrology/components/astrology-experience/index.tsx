@@ -320,6 +320,8 @@ type AstrologyHistoryItem = {
   createdAt: string
   summary: string
   synced?: boolean
+  input?: Record<string, unknown>
+  raw?: Record<string, unknown>
   response?: PrashnaResult | KundliResult | MatchmakingResult | LostItemResult
 }
 
@@ -1179,7 +1181,7 @@ const PrashnaChartView = ({ result }: { result: PrashnaResult }) => {
               "This question is better reviewed with a human astrologer before acting."}
           </p>
           <LocalizedClientLink
-            href="/products/shreem-astrology-30-minute-call"
+            href="/products/shreem-expert-jyotish-consultation"
             className="mt-3 inline-flex w-full items-center justify-center rounded-full bg-[linear-gradient(135deg,#0d817e_0%,#123f63_52%,#6f211f_100%)] px-4 py-2.5 text-sm font-semibold text-white small:w-auto"
           >
             Book Sanjay Kumar Pandey
@@ -1841,7 +1843,11 @@ const RiskWatchList = ({
   return (
     <div className="rounded-[20px] border border-[rgba(111,33,31,0.16)] bg-[rgba(255,248,233,0.7)] px-4 py-4">
       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
-        Watch periods and prevention
+        Markesh, Badhakesh and bad period watch
+      </p>
+      <p className="mt-2 text-xs leading-5 text-[var(--shreem-muted)]">
+        Prevention-focused timing from Maraka lords, Badhakesh, dasha triggers,
+        and 6th/8th/12th house health signals. This is not a diagnosis.
       </p>
       <div className="mt-3 grid gap-3 md:grid-cols-2">
         {rows.map((item, index) => (
@@ -1884,7 +1890,7 @@ const HistoryPanel = ({
       </p>
     )}
     <div className="mt-3 grid gap-2">
-      {items.slice(0, 8).map((item) => (
+      {items.slice(0, 50).map((item) => (
         <button
           key={item.id}
           type="button"
@@ -1901,6 +1907,24 @@ const HistoryPanel = ({
           </div>
           <p className="mt-1 line-clamp-2 text-xs leading-5 text-[var(--shreem-muted)]">
             {item.summary}
+          </p>
+          {getHistoryDetailLines(item).length > 0 && (
+            <div className="mt-2 grid gap-1">
+              {getHistoryDetailLines(item)
+                .slice(0, 4)
+                .map((line) => (
+                  <p
+                    key={line}
+                    className="text-[0.68rem] leading-4 text-[var(--shreem-muted)]"
+                  >
+                    {line}
+                  </p>
+                ))}
+            </div>
+          )}
+          <p className="mt-2 text-[0.66rem] font-semibold uppercase tracking-[0.14em] text-[var(--shreem-gold-deep)]">
+            {formatHistoryDate(item.createdAt)}
+            {item.synced === false ? " · Local" : " · Saved"}
           </p>
         </button>
       ))}
@@ -2787,7 +2811,7 @@ const KundliResultView = ({
               "Gemstones, doshas, and pooja decisions should be confirmed by a human astrologer."}
           </p>
           <LocalizedClientLink
-            href="/products/shreem-astrology-30-minute-call"
+            href="/products/shreem-expert-jyotish-consultation"
             className="mt-3 inline-flex w-full items-center justify-center rounded-full bg-[linear-gradient(135deg,#0d817e_0%,#123f63_52%,#6f211f_100%)] px-4 py-2.5 text-sm font-semibold text-white small:w-auto"
           >
             Book Sanjay Kumar Pandey
@@ -3037,7 +3061,7 @@ const MatchmakingResultView = ({ result }: { result: MatchmakingResult }) => {
               "Marriage matching should be confirmed with a human astrologer before final decisions."}
           </p>
           <LocalizedClientLink
-            href="/products/shreem-astrology-30-minute-call"
+            href="/products/shreem-expert-jyotish-consultation"
             className="mt-3 inline-flex w-full items-center justify-center rounded-full bg-[linear-gradient(135deg,#0d817e_0%,#123f63_52%,#6f211f_100%)] px-4 py-2.5 text-sm font-semibold text-white small:w-auto"
           >
             Book Sanjay Kumar Pandey
@@ -3071,6 +3095,10 @@ const printKundliReport = (result: KundliResult) => {
   const profile = result.profile
   const dasha = chart.dasha
   const stoneCards = getStoneCards(result.stones)
+  const isiOS =
+    /iphone|ipad|ipod/i.test(window.navigator.userAgent) ||
+    (window.navigator.platform === "MacIntel" &&
+      window.navigator.maxTouchPoints > 1)
   const win = window.open("", "_blank", "width=900,height=1200")
 
   if (!win) {
@@ -3082,6 +3110,8 @@ const printKundliReport = (result: KundliResult) => {
 <html>
 <head>
   <title>Shreem Kundli Report</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <base href="${escapeHtml(window.location.origin)}" />
   <style>
     body{font-family:Georgia,'Times New Roman',serif;color:#0b2735;background:#fffaf1;margin:32px;line-height:1.55}
     h1{font-size:34px;margin:0 0 8px}
@@ -3093,11 +3123,21 @@ const printKundliReport = (result: KundliResult) => {
     th,td{border:1px solid #dbc99e;padding:9px;text-align:left;vertical-align:top;font-size:13px}
     th{color:#7a5412;background:#fff4d8;text-transform:uppercase;letter-spacing:.08em}
     ul{padding-left:20px}
-    @media print{button{display:none} body{margin:18px;background:white}}
+    .actions{position:sticky;top:0;z-index:2;display:flex;gap:10px;align-items:center;justify-content:center;background:#fffaf1;padding:10px;border-bottom:1px solid #dbc99e;margin:-32px -32px 22px}
+    button{border:0;border-radius:999px;background:#123f63;color:white;padding:10px 18px;font-weight:700}
+    .ios-note{font-size:12px;color:#516b75}
+    @media print{.actions{display:none} body{margin:18px;background:white}}
   </style>
 </head>
 <body>
-  <button onclick="window.print()">Save as PDF</button>
+  <div class="actions">
+    <button onclick="window.print()">Save as PDF</button>
+    ${
+      isiOS
+        ? '<span class="ios-note">iPhone/iPad: tap Save as PDF, then use Share to save or send.</span>'
+        : '<span class="ios-note">Choose Save as PDF in the print dialog.</span>'
+    }
+  </div>
   <div style="text-align: center; margin-bottom: 20px;"><img src="/logo.jpeg" alt="Shreem Logo" style="max-height: 80px;" /></div>
   <h1 style="text-align: center;">Shreem Kundli Report</h1>
   <p class="small">${escapeHtml(profile?.name || "Native")} · ${escapeHtml(profile?.birth_date)} ${escapeHtml(profile?.birth_time)} · ${escapeHtml(profile?.city)}</p>
@@ -3145,53 +3185,271 @@ const printKundliReport = (result: KundliResult) => {
 </html>`)
   win.document.close()
   win.focus()
-  setTimeout(() => win.print(), 300)
+
+  if (!isiOS) {
+    setTimeout(() => win.print(), 500)
+  }
 }
 
 const asRecord = (value: unknown): Record<string, unknown> =>
   value && typeof value === "object" ? (value as Record<string, unknown>) : {}
 
+
+const parseHistoryRecord = (value: unknown): Record<string, unknown> => {
+  if (typeof value === "string") {
+    try {
+      return asRecord(JSON.parse(value))
+    } catch {
+      return {}
+    }
+  }
+
+  return asRecord(value)
+}
+
+const parseHistoryValue = (value: unknown): unknown => {
+  if (typeof value === "string") {
+    try {
+      return JSON.parse(value)
+    } catch {
+      return value
+    }
+  }
+
+  return value
+}
+
+const pickHistoryRecord = (
+  source: Record<string, unknown>,
+  keys: string[]
+): Record<string, unknown> => {
+  for (const key of keys) {
+    const record = parseHistoryRecord(source[key])
+
+    if (Object.keys(record).length) {
+      return record
+    }
+  }
+
+  return {}
+}
+
+const pickHistoryValue = (
+  source: Record<string, unknown>,
+  keys: string[]
+): unknown => {
+  for (const key of keys) {
+    const value = parseHistoryValue(source[key])
+
+    if (value !== undefined && value !== null && value !== "") {
+      return value
+    }
+  }
+
+  return undefined
+}
+
+const historyText = (...values: unknown[]) => {
+  for (const value of values) {
+    if (typeof value === "string" && value.trim()) {
+      return value.trim()
+    }
+
+    if (typeof value === "number" && Number.isFinite(value)) {
+      return String(value)
+    }
+  }
+
+  return ""
+}
+
+const historyQuestionArray = (...values: unknown[]) => {
+  for (const value of values) {
+    const parsed = parseHistoryValue(value)
+
+    if (Array.isArray(parsed)) {
+      const questions = parsed
+        .map((item) => historyText(item))
+        .filter(Boolean)
+        .slice(0, 3)
+
+      if (questions.length) {
+        return [questions[0] || "", questions[1] || "", questions[2] || ""]
+      }
+    }
+
+    if (typeof parsed === "string" && parsed.trim()) {
+      return [parsed.trim(), "", ""]
+    }
+  }
+
+  return ["", "", ""]
+}
+
+const getHistoryResponseRecord = (item: AstrologyHistoryItem) =>
+  parseHistoryRecord(item.response)
+
+const getHistoryInputRecord = (item: AstrologyHistoryItem) =>
+  parseHistoryRecord(item.input)
+
+const getKundliHistoryProfile = (item: AstrologyHistoryItem) => {
+  const response = getHistoryResponseRecord(item)
+  const profile = parseHistoryRecord(response.profile)
+  const input = getHistoryInputRecord(item)
+
+  return Object.keys(profile).length ? profile : input
+}
+
+const formatHistoryDate = (value: string) => {
+  const date = new Date(value)
+
+  if (Number.isNaN(date.getTime())) {
+    return value
+  }
+
+  return date.toLocaleString("en-IN", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  })
+}
+
+const getHistoryDetailLines = (item: AstrologyHistoryItem) => {
+  const input = getHistoryInputRecord(item)
+  const response = getHistoryResponseRecord(item)
+
+  if (item.type === "Kundli") {
+    const profile = getKundliHistoryProfile(item)
+    const questions = historyQuestionArray(
+      profile.sub_questions,
+      profile.subQuestions,
+      input.subQuestions,
+      input.sub_questions
+    ).filter(Boolean)
+
+    return [
+      historyText(profile.name, input.name) ? `Name: ${historyText(profile.name, input.name)}` : "",
+      historyText(profile.birth_date, input.birthDate, input.birth_date)
+        ? `DOB: ${historyText(profile.birth_date, input.birthDate, input.birth_date)} ${historyText(
+            profile.birth_time,
+            input.birthTime,
+            input.birth_time
+          )}`
+        : "",
+      historyText(profile.city, input.city, input.cityId)
+        ? `Place: ${historyText(profile.city, input.city, input.cityId)}`
+        : "",
+      questions.length ? `Question: ${questions[0]}` : "",
+    ].filter(Boolean)
+  }
+
+  if (item.type === "Prashna") {
+    return [
+      historyText(input.question, response.question) ? `Question: ${historyText(input.question, response.question)}` : "",
+      historyText(input.cityId, input.city) ? `Place: ${historyText(input.cityId, input.city)}` : "",
+    ].filter(Boolean)
+  }
+
+  if (item.type === "Lost item") {
+    return [
+      historyText(input.itemName, input.itemType) ? `Item: ${historyText(input.itemName, input.itemType)}` : "",
+      historyText(input.lastSeenPlace) ? `Last seen: ${historyText(input.lastSeenPlace)}` : "",
+    ].filter(Boolean)
+  }
+
+  return []
+}
+
 const normalizeUsageHistory = (item: unknown): AstrologyHistoryItem | null => {
   const source = asRecord(item)
-  const input = asRecord(source.input)
-  const response = asRecord(source.response)
-  const profile = asRecord(response.profile)
-  const tool = String(source.tool || "astrology")
-  const type: AstrologyHistoryItem["type"] = tool.includes("matchmaking")
+  const input = pickHistoryRecord(source, [
+    "input",
+    "request",
+    "request_payload",
+    "input_payload",
+    "payload",
+  ])
+  const metadata = pickHistoryRecord(source, ["metadata"])
+  const metadataInput = pickHistoryRecord(metadata, ["input", "request_payload"])
+  const finalInput = Object.keys(input).length ? input : metadataInput
+
+  const responseValue =
+    pickHistoryValue(source, [
+      "response",
+      "result",
+      "output",
+      "response_payload",
+      "data",
+    ]) || source.response
+
+  const response = parseHistoryRecord(responseValue)
+  const profile = parseHistoryRecord(response.profile)
+  const tool = String(source.tool || source.tool_name || source.type || "astrology")
+  const normalizedTool = tool.toLowerCase()
+
+  const type: AstrologyHistoryItem["type"] = normalizedTool.includes("matchmaking")
     ? "Matchmaking"
-    : tool.includes("kundli")
+    : normalizedTool.includes("kundli")
     ? "Kundli"
-    : tool.includes("lost_item")
+    : normalizedTool.includes("lost_item") || normalizedTool.includes("lost-item")
     ? "Lost item"
     : "Prashna"
+
   const title =
     type === "Matchmaking"
-      ? `${String(asRecord(asRecord(response.girl).profile).name || "Girl")} + ${String(
-          asRecord(asRecord(response.boy).profile).name || "Boy"
+      ? `${historyText(
+          asRecord(asRecord(response.girl).profile).name,
+          asRecord(asRecord(finalInput.girl).profile).name,
+          "Girl"
+        )} + ${historyText(
+          asRecord(asRecord(response.boy).profile).name,
+          asRecord(asRecord(finalInput.boy).profile).name,
+          "Boy"
         )}`
       : type === "Kundli"
-      ? `${String(profile.name || input.name || "Generated")} Kundli`
+      ? `${historyText(profile.name, finalInput.name, "Generated")} Kundli`
       : type === "Lost item"
-      ? `Lost ${String(input.itemName || input.itemType || "item")}`
-      : String(input.question || "Prashna session")
+      ? `Lost ${historyText(finalInput.itemName, finalInput.itemType, "item")}`
+      : historyText(finalInput.question, response.question, "Prashna session")
+
+  const responseAnalysis = asRecord(response.analysis)
+  const subQuestionAnswers = Array.isArray(responseAnalysis.sub_question_answers)
+    ? responseAnalysis.sub_question_answers
+    : []
+  const predictionTable = Array.isArray(responseAnalysis.prediction_table)
+    ? responseAnalysis.prediction_table
+    : []
+
   const summary =
-    String(
-      response.answer ||
-        asRecord(response.analysis).summary ||
-        asRecord(response.analysis).decision_reason ||
-        ""
-    ) ||
-    String(response.chart_summary || "Saved astrology session")
-  const createdAt = String(source.created_at || new Date().toISOString())
+    historyText(
+      response.answer,
+      subQuestionAnswers.length
+        ? asRecord(subQuestionAnswers[0]).answer
+        : "",
+      responseAnalysis.summary,
+      responseAnalysis.decision_reason,
+      predictionTable.length ? asRecord(predictionTable[0]).prediction : "",
+      response.chart_summary,
+      "Saved astrology session"
+    )
+
+  const createdAt = historyText(
+    source.created_at,
+    source.createdAt,
+    source.created,
+    source.updated_at,
+    new Date().toISOString()
+  )
 
   return {
-    id: String(source.id || `${tool}-${createdAt}-${title}`),
+    id: historyText(source.id, source.usage_id, `${tool}-${createdAt}-${title}`),
     type,
     title,
     createdAt,
     summary,
     synced: true,
-    response: source.response as
+    input: finalInput,
+    raw: source,
+    response: responseValue as
       | PrashnaResult
       | KundliResult
       | MatchmakingResult
@@ -3203,14 +3461,19 @@ const normalizeUsageHistory = (item: unknown): AstrologyHistoryItem | null => {
 const mergeHistory = (items: AstrologyHistoryItem[]) => {
   const seen = new Set<string>()
 
-  return items.filter((item) => {
-    if (seen.has(item.id)) {
-      return false
-    }
+  return items
+    .filter((item) => {
+      if (seen.has(item.id)) {
+        return false
+      }
 
-    seen.add(item.id)
-    return true
-  })
+      seen.add(item.id)
+      return true
+    })
+    .sort(
+      (left, right) =>
+        new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime()
+    )
 }
 
 export default function AstrologyExperience({
@@ -3420,7 +3683,7 @@ export default function AstrologyExperience({
           : []
 
         if (remoteItems.length) {
-          setHistory(mergeHistory(remoteItems).slice(0, 12))
+          setHistory(mergeHistory(remoteItems).slice(0, 50))
         }
       })
       .catch(() => null)
@@ -3435,7 +3698,7 @@ export default function AstrologyExperience({
         ...item,
         synced: !options.persistLocal,
       }
-      const next = mergeHistory([nextItem, ...current]).slice(0, 12)
+      const next = mergeHistory([nextItem, ...current]).slice(0, 50)
 
       return next
     })
@@ -3638,6 +3901,11 @@ export default function AstrologyExperience({
             result.analysis?.summary ||
             result.detected_yogas?.[0] ||
             "Birth chart generated",
+          input: {
+            ...kundliForm,
+            language,
+            panchangSystemId,
+          },
           response: result,
         }, {
           persistLocal: !result.usage_synced,
@@ -3737,34 +4005,66 @@ export default function AstrologyExperience({
 
     if (item.type === "Kundli") {
       const result = item.response as KundliResult
-      const profile = result?.profile
+      const profile = getKundliHistoryProfile(item)
+      const input = getHistoryInputRecord(item)
+      const responseRecord = getHistoryResponseRecord(item)
 
-      setKundliResult(result)
-      if (profile) {
-        const restoredCityId = findCityIdFromLabel(profile.city)
-        const restoredPanchangId = profile.panchang_system_id
-
-        setKundliForm((current) => ({
-          ...current,
-          name: profile.name || current.name,
-          gender: profile.gender || current.gender,
-          birthDate: profile.birth_date || current.birthDate,
-          birthTime: profile.birth_time || current.birthTime,
-          cityId: restoredCityId || current.cityId,
-          subQuestions:
-            Array.isArray(profile.sub_questions) &&
-            profile.sub_questions.some(Boolean)
-              ? [
-                  profile.sub_questions[0] || "",
-                  profile.sub_questions[1] || "",
-                  profile.sub_questions[2] || "",
-                ]
-              : current.subQuestions,
-        }))
-        if (restoredPanchangId) {
-          setPanchangSystemId(restoredPanchangId)
-        }
+      if (responseRecord.chart || responseRecord.analysis || responseRecord.profile) {
+        setKundliResult(result)
+      } else {
+        setKundliResult(null)
       }
+
+      const restoredCityId =
+        historyText(input.cityId) ||
+        findCityIdFromLabel(historyText(profile.city, input.city))
+      const restoredPanchangId = historyText(
+        profile.panchang_system_id,
+        input.panchangSystemId,
+        input.panchang_system_id
+      )
+      const restoredLanguage = historyText(profile.language, input.language)
+      const restoredQuestions = historyQuestionArray(
+        profile.sub_questions,
+        profile.subQuestions,
+        input.subQuestions,
+        input.sub_questions
+      )
+
+      setKundliForm((current) => ({
+        ...current,
+        name: historyText(profile.name, input.name, current.name),
+        gender: historyText(profile.gender, input.gender, current.gender),
+        birthDate: historyText(
+          profile.birth_date,
+          input.birthDate,
+          input.birth_date,
+          current.birthDate
+        ),
+        birthTime: historyText(
+          profile.birth_time,
+          input.birthTime,
+          input.birth_time,
+          current.birthTime
+        ),
+        cityId: restoredCityId || current.cityId,
+        subQuestions: restoredQuestions.some(Boolean)
+          ? restoredQuestions
+          : current.subQuestions,
+      }))
+
+      if (restoredPanchangId) {
+        setPanchangSystemId(restoredPanchangId)
+      }
+
+      if (
+        restoredLanguage === "english" ||
+        restoredLanguage === "hindi" ||
+        restoredLanguage === "hinglish"
+      ) {
+        setLanguage(restoredLanguage)
+      }
+
       setActiveTab("kundli")
       return
     }

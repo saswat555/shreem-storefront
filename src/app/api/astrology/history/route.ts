@@ -13,7 +13,7 @@ export async function GET() {
     )
   }
 
-  const history = await listAiUsage({ limit: 12, toolPrefix: "astrology" })
+  const history = await listAiUsage({ limit: 50, toolPrefix: "astrology" })
 
   return NextResponse.json({
     items: history.items,

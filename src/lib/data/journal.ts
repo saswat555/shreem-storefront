@@ -48,6 +48,11 @@ const normalizePost = (post: StoreJournalPost): ShreemJournalPost | null => {
             ],
           },
         ],
+    relatedLinks: Array.isArray(post.relatedLinks)
+      ? post.relatedLinks
+      : Array.isArray((post as any).related_links)
+      ? (post as any).related_links
+      : [],
   }
 }
 

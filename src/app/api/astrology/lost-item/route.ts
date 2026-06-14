@@ -448,6 +448,9 @@ export async function POST(request: NextRequest) {
     },
     model: gemini.model,
     ...gemini.usage,
+    provider: gemini.provider,
+    attempts: gemini.attempts,
+    attempt_logs: gemini.attempt_logs,
     expert_recommended: false,
     tags: gemini.ok ? ["nashta_vastu", "lochan"] : ["failed_ai_generation", "retryable"],
   })

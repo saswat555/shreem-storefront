@@ -122,6 +122,30 @@ export default async function BlogArticlePage(props: Props) {
           ))}
         </div>
 
+        {Boolean(post.relatedLinks?.length) && (
+          <div className="mx-auto mt-10 max-w-[48rem] rounded-[24px] border border-[rgba(13,129,126,0.18)] bg-[rgba(240,248,246,0.78)] px-5 py-6 small:px-6">
+            <p className="brand-kicker">Related Shreem pages</p>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              {post.relatedLinks?.slice(0, 4).map((link) => (
+                <LocalizedClientLink
+                  key={`${link.href}-${link.label}`}
+                  href={link.href}
+                  className="rounded-[18px] border border-[var(--shreem-border)] bg-white/76 px-4 py-4 transition hover:border-[rgba(13,129,126,0.34)]"
+                >
+                  <span className="block text-sm font-semibold text-[var(--shreem-ink)]">
+                    {link.label}
+                  </span>
+                  {link.reason && (
+                    <span className="mt-2 block text-xs leading-5 text-[var(--shreem-muted)]">
+                      {link.reason}
+                    </span>
+                  )}
+                </LocalizedClientLink>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div className="mx-auto mt-10 max-w-[48rem] rounded-[28px] border border-[rgba(212,161,38,0.24)] bg-[linear-gradient(135deg,rgba(255,248,233,0.95),rgba(245,239,224,0.88))] px-5 py-6 shadow-[0_18px_40px_rgba(156,105,18,0.08)] small:px-6">
           <p className="brand-kicker">Continue with Shreem</p>
           <h2 className="mt-3 text-[2rem] leading-[1.04] text-[var(--shreem-ink)]">

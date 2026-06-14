@@ -208,6 +208,9 @@ export async function POST(request: NextRequest) {
         },
         model: gemini.model,
         ...gemini.usage,
+        provider: gemini.provider,
+        attempts: gemini.attempts,
+        attempt_logs: gemini.attempt_logs,
         expert_recommended: result.needs_email,
       })
     : { synced: false }

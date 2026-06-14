@@ -29,13 +29,29 @@ export type GeminiGenerateResult = {
   parsed: any
   text: string
   model: string
+  provider?: "gemini" | "ollama"
   usage: GeminiUsage
   status?: number
   statusText?: string
   error?: string
   timedOut?: boolean
   attempts?: number
+  attempt_logs?: GeminiAttemptLog[]
   queuedMs?: number
+}
+
+export type GeminiAttemptLog = {
+  provider: "gemini" | "ollama"
+  model: string
+  attempt: number
+  status?: number
+  statusText?: string
+  ok: boolean
+  error?: string
+  timedOut?: boolean
+  invalidJson?: boolean
+  durationMs: number
+  usage?: GeminiUsage
 }
 
 const DEFAULT_TIMEOUT_MS = 90_000
@@ -126,6 +142,31 @@ const sleep = (ms: number) =>
   new Promise((resolve) => {
     setTimeout(resolve, ms)
   })
+
+const splitCsv = (value?: string) =>
+  String(value || "")
+    .split(",")
+    .map((item) => item.trim().replace(/^models\//, ""))
+    .filter(Boolean)
+
+const getGeminiModelFallbacks = (primaryModel: string) => {
+  const configured = splitCsv(
+    process.env.ASTROLOGY_AI_MODEL_FALLBACKS ||
+      process.env.GEMINI_MODEL_FALLBACKS
+  )
+  const defaults = configured.length
+    ? configured
+    : [primaryModel, "gemini-2.5-flash-lite", "gemini-2.0-flash"]
+
+  return Array.from(new Set([primaryModel, ...defaults]))
+}
+
+const canUseOllamaForFrontendAi = () =>
+  Boolean(process.env.OLLAMA_URL) &&
+  process.env.ALLOW_OLLAMA_FOR_ASTROLOGY === "true"
+
+const getBackoffMs = (attempt: number, modelIndex: number) =>
+  Math.min(6000, 650 * attempt + 850 * modelIndex + Math.floor(Math.random() * 350))
 
 const shouldRetryGemini = ({
   status,
@@ -316,7 +357,7 @@ const attemptJsonRepair = async ({
   }
 
   const ollamaUrl = process.env.OLLAMA_URL
-  const isOllama = Boolean(ollamaUrl)
+  const isOllama = canUseOllamaForFrontendAi()
   const actualModel = isOllama ? (process.env.OLLAMA_MODEL || "deepseek-r1:1.5b") : model
 
   const controller = new AbortController()
@@ -433,6 +474,7 @@ const attemptJsonRepair = async ({
     parsed,
     text: repairedText,
     model: actualModel,
+    provider: isOllama ? "ollama" : "gemini",
     usage: mergeGeminiUsage(
       usage,
       normalizeGeminiUsage(rawUsage, actualModel)
@@ -464,221 +506,301 @@ export const generateGeminiJson = async ({
   const releaseSlot = await waitForGeminiSlot()
   const queuedMs = Date.now() - queuedAt
   let lastResult: GeminiGenerateResult | null = null
+  const attemptLogs: GeminiAttemptLog[] = []
 
   const ollamaUrl = process.env.OLLAMA_URL
-  const isOllama = Boolean(ollamaUrl)
+  const isOllama = canUseOllamaForFrontendAi()
   const actualModel = isOllama ? (process.env.OLLAMA_MODEL || "deepseek-r1:1.5b") : model
+  const provider: "gemini" | "ollama" = isOllama ? "ollama" : "gemini"
+  const modelsToTry = isOllama ? [actualModel] : getGeminiModelFallbacks(model)
+  let totalAttempts = 0
 
   try {
-    for (let attempt = 1; attempt <= attempts; attempt += 1) {
-      const controller = new AbortController()
-      const timeout = setTimeout(() => controller.abort(), timeoutMs)
-      let fetchError: unknown = null
+    for (let modelIndex = 0; modelIndex < modelsToTry.length; modelIndex += 1) {
+      const currentModel = modelsToTry[modelIndex]
 
-      let response: Response | null = null
+      for (let attempt = 1; attempt <= attempts; attempt += 1) {
+        totalAttempts += 1
+        const startedAt = Date.now()
+        const controller = new AbortController()
+        const timeout = setTimeout(() => controller.abort(), timeoutMs)
+        let fetchError: unknown = null
+        let response: Response | null = null
 
-      if (isOllama) {
-        const fullPromptText = requestParts.map(p => "text" in p ? p.text : "").join("\n")
-        response = await fetch(`${ollamaUrl}/api/generate`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          signal: controller.signal,
-          body: JSON.stringify({
-            model: actualModel,
-            prompt: fullPromptText,
-            stream: false,
-            format: "json",
-            options: {
-              temperature,
-              num_predict: limitTokens,
-              num_ctx: Math.max(8192, limitTokens + 1024 + Math.ceil(fullPromptText.length / 3)),
-            },
-          }),
-        }).catch((error) => {
-          fetchError = error
-          return null
-        })
-      } else {
-        response = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(
-            actualModel
-          )}:generateContent`,
-          {
+        if (isOllama) {
+          const fullPromptText = requestParts
+            .map((part) => ("text" in part ? part.text : ""))
+            .join("\n")
+
+          response = await fetch(`${ollamaUrl}/api/generate`, {
             method: "POST",
             headers: {
-              "x-goog-api-key": apiKey,
               "Content-Type": "application/json",
             },
             signal: controller.signal,
             body: JSON.stringify({
-              contents: [
-                {
-                  role: "user",
-                  parts: requestParts,
-                },
-              ],
-              generationConfig: {
+              model: currentModel,
+              prompt: fullPromptText,
+              stream: false,
+              format: "json",
+              options: {
                 temperature,
-                maxOutputTokens: limitTokens,
-                responseMimeType: "application/json",
-                responseSchema,
+                num_predict: limitTokens,
+                num_ctx: Math.max(
+                  8192,
+                  limitTokens + 1024 + Math.ceil(fullPromptText.length / 3)
+                ),
               },
             }),
-          }
-        ).catch((error) => {
-          fetchError = error
-          return null
-        })
-      }
-
-      clearTimeout(timeout)
-
-      if (!response || !response.ok) {
-        let errorDetails = ""
-
-        if (response) {
-          try {
-            errorDetails = await response.text()
-          } catch {
-            errorDetails = "Could not read error response body"
-          }
+          }).catch((error) => {
+            fetchError = error
+            return null
+          })
+        } else {
+          response = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(
+              currentModel
+            )}:generateContent`,
+            {
+              method: "POST",
+              headers: {
+                "x-goog-api-key": apiKey,
+                "Content-Type": "application/json",
+              },
+              signal: controller.signal,
+              body: JSON.stringify({
+                contents: [
+                  {
+                    role: "user",
+                    parts: requestParts,
+                  },
+                ],
+                generationConfig: {
+                  temperature,
+                  maxOutputTokens: limitTokens,
+                  responseMimeType: "application/json",
+                  responseSchema,
+                },
+              }),
+            }
+          ).catch((error) => {
+            fetchError = error
+            return null
+          })
         }
 
-        const timedOut =
-          fetchError instanceof Error && fetchError.name === "AbortError"
-        const errorMessage =
-          fetchError instanceof Error
-            ? fetchError.message
-            : errorDetails || `No response from ${isOllama ? "Ollama" : "Gemini"}`
+        clearTimeout(timeout)
 
-        lastResult = {
-          ok: false,
-          parsed: null,
-          text: "",
-          model: actualModel,
-          usage: emptyGeminiUsage(),
-          status: response?.status,
-          statusText: response?.statusText,
-          error: errorMessage,
-          timedOut,
-          attempts: attempt,
-          queuedMs,
-        }
+        if (!response || !response.ok) {
+          let errorDetails = ""
 
-        console.error(`[${label}] Gemini generation failed`, {
-          attempt,
-          attempts,
-          queuedMs,
-          status: response?.status,
-          statusText: response?.statusText,
-          error: errorMessage,
-        })
+          if (response) {
+            try {
+              errorDetails = await response.text()
+            } catch {
+              errorDetails = "Could not read error response body"
+            }
+          }
 
-        if (
-          attempt < attempts &&
-          shouldRetryGemini({
+          const timedOut =
+            fetchError instanceof Error && fetchError.name === "AbortError"
+          const errorMessage =
+            fetchError instanceof Error
+              ? fetchError.message
+              : errorDetails || `No response from ${isOllama ? "Ollama" : "Gemini"}`
+          const retryable = shouldRetryGemini({
             status: response?.status,
             timedOut,
             networkError: !response,
           })
-        ) {
-          await sleep(700 * attempt)
-          continue
-        }
 
-        return lastResult
-      }
-
-      const data = await response.json()
-
-      let text = ""
-      let rawUsage: any = null
-
-      if (isOllama) {
-        text = data.response || ""
-        rawUsage = {
-          promptTokenCount: data.prompt_eval_count || 0,
-          candidatesTokenCount: data.eval_count || 0,
-        }
-      } else {
-        text = data.candidates?.[0]?.content?.parts
-          ?.map((part: { text?: string }) => part.text || "")
-          .join("")
-          .trim() || ""
-        rawUsage = data.usageMetadata
-      }
-
-      const parsed = safeParseJson(text)
-
-      if (!parsed) {
-        const usage = normalizeGeminiUsage(rawUsage, actualModel)
-        const repaired = await attemptJsonRepair({
-          apiKey,
-          model: actualModel,
-          text: text || "",
-          responseSchema,
-          timeoutMs: Math.min(timeoutMs, 45_000),
-          queuedMs,
-          label,
-          usage,
-        })
-
-        if (repaired) {
-          console.warn(`[${label}] ${isOllama ? "Ollama" : "Gemini"} JSON was repaired after truncation`, {
+          attemptLogs.push({
+            provider,
+            model: currentModel,
             attempt,
-            model: actualModel,
-            queuedMs,
+            status: response?.status,
+            statusText: response?.statusText,
+            ok: false,
+            error: errorMessage,
+            timedOut,
+            durationMs: Date.now() - startedAt,
+            usage: emptyGeminiUsage(),
           })
-          return {
-            ...repaired,
-            attempts: attempt,
+
+          lastResult = {
+            ok: false,
+            parsed: null,
+            text: "",
+            model: currentModel,
+            provider,
+            usage: emptyGeminiUsage(),
+            status: response?.status,
+            statusText: response?.statusText,
+            error: errorMessage,
+            timedOut,
+            attempts: totalAttempts,
+            attempt_logs: attemptLogs,
+            queuedMs,
           }
+
+          console.error(`[${label}] Gemini generation failed`, {
+            attempt,
+            attempts,
+            model: currentModel,
+            modelIndex,
+            queuedMs,
+            status: response?.status,
+            statusText: response?.statusText,
+            retryable,
+            error: errorMessage,
+          })
+
+          if (retryable && (attempt < attempts || modelIndex < modelsToTry.length - 1)) {
+            await sleep(getBackoffMs(attempt, modelIndex))
+            continue
+          }
+
+          return lastResult
         }
 
-        lastResult = {
-          ok: false,
-          parsed: null,
+        const data = await response.json()
+
+        let text = ""
+        let rawUsage: any = null
+
+        if (isOllama) {
+          text = data.response || ""
+          rawUsage = {
+            promptTokenCount: data.prompt_eval_count || 0,
+            candidatesTokenCount: data.eval_count || 0,
+          }
+        } else {
+          text = data.candidates?.[0]?.content?.parts
+            ?.map((part: { text?: string }) => part.text || "")
+            .join("")
+            .trim() || ""
+          rawUsage = data.usageMetadata
+        }
+
+        const usage = normalizeGeminiUsage(rawUsage, currentModel)
+        const parsed = safeParseJson(text)
+
+        if (!parsed) {
+          const repaired = await attemptJsonRepair({
+            apiKey,
+            model: currentModel,
+            text: text || "",
+            responseSchema,
+            timeoutMs: Math.min(timeoutMs, 45_000),
+            queuedMs,
+            label,
+            usage,
+          })
+
+          if (repaired) {
+            const repairedLog: GeminiAttemptLog = {
+              provider,
+              model: currentModel,
+              attempt,
+              status: response.status,
+              statusText: response.statusText,
+              ok: true,
+              invalidJson: true,
+              durationMs: Date.now() - startedAt,
+              usage: repaired.usage,
+            }
+            const logs = [...attemptLogs, repairedLog]
+
+            console.warn(`[${label}] ${isOllama ? "Ollama" : "Gemini"} JSON was repaired after truncation`, {
+              attempt,
+              model: currentModel,
+              queuedMs,
+            })
+
+            return {
+              ...repaired,
+              model: currentModel,
+              provider,
+              attempts: totalAttempts,
+              attempt_logs: logs,
+            }
+          }
+
+          const retryable = shouldRetryGemini({
+            status: response.status,
+            invalidJson: true,
+          })
+
+          attemptLogs.push({
+            provider,
+            model: currentModel,
+            attempt,
+            status: response.status,
+            statusText: response.statusText,
+            ok: false,
+            error: "invalid_json",
+            invalidJson: true,
+            durationMs: Date.now() - startedAt,
+            usage,
+          })
+
+          lastResult = {
+            ok: false,
+            parsed: null,
+            text: text || "",
+            model: currentModel,
+            provider,
+            usage,
+            status: response.status,
+            statusText: response.statusText,
+            error: "invalid_json",
+            attempts: totalAttempts,
+            attempt_logs: attemptLogs,
+            queuedMs,
+          }
+
+          console.error(`[${label}] ${isOllama ? "Ollama" : "Gemini"} returned invalid JSON`, {
+            attempt,
+            attempts,
+            model: currentModel,
+            modelIndex,
+            queuedMs,
+            retryable,
+            textPreview: (text || "").slice(0, 500),
+          })
+
+          if (retryable && (attempt < attempts || modelIndex < modelsToTry.length - 1)) {
+            await sleep(getBackoffMs(attempt, modelIndex))
+            continue
+          }
+
+          return lastResult
+        }
+
+        const successLog: GeminiAttemptLog = {
+          provider,
+          model: currentModel,
+          attempt,
+          status: response.status,
+          statusText: response.statusText,
+          ok: true,
+          durationMs: Date.now() - startedAt,
+          usage,
+        }
+
+        return {
+          ok: true,
+          parsed,
           text: text || "",
-          model: actualModel,
+          model: currentModel,
+          provider,
           usage,
           status: response.status,
           statusText: response.statusText,
-          error: "invalid_json",
-          attempts: attempt,
+          attempts: totalAttempts,
+          attempt_logs: [...attemptLogs, successLog],
           queuedMs,
         }
-
-        console.error(`[${label}] ${isOllama ? "Ollama" : "Gemini"} returned invalid JSON`, {
-          attempt,
-          attempts,
-          model: actualModel,
-          queuedMs,
-          textPreview: (text || "").slice(0, 500),
-        })
-
-        if (
-          attempt < attempts &&
-          shouldRetryGemini({ status: response.status, invalidJson: true })
-        ) {
-          await sleep(700 * attempt)
-          continue
-        }
-
-        return lastResult
-      }
-
-      return {
-        ok: true,
-        parsed,
-        text: text || "",
-        model: actualModel,
-        usage: normalizeGeminiUsage(rawUsage, actualModel),
-        status: response.status,
-        statusText: response.statusText,
-        attempts: attempt,
-        queuedMs,
       }
     }
   } finally {
@@ -691,9 +813,11 @@ export const generateGeminiJson = async ({
       parsed: null,
       text: "",
       model: actualModel,
+      provider,
       usage: emptyGeminiUsage(),
       error: `No response from ${isOllama ? "Ollama" : "Gemini"}`,
-      attempts,
+      attempts: totalAttempts || attempts,
+      attempt_logs: attemptLogs,
       queuedMs,
     }
   )

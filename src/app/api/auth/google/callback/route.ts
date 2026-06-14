@@ -26,11 +26,59 @@ const buildHomeUrl = (countryCode: string) =>
 const buildAccountUrl = (countryCode: string, error: string) =>
   `${publicSiteUrl}/${countryCode || "in"}/account?google_error=${encodeURIComponent(error)}`
 
+const sanitizeCountryCode = (value: string | null) =>
+  (value || "in").replace(/[^a-z]/gi, "").toLowerCase().slice(0, 4) || "in"
+
+const sanitizeReturnTo = (value: string | undefined, countryCode: string) => {
+  if (!value || !value.startsWith("/") || value.startsWith("//")) {
+    return buildHomeUrl(countryCode)
+  }
+
+  try {
+    const parsed = new URL(value, publicSiteUrl)
+
+    if (parsed.origin !== publicSiteUrl) {
+      return buildHomeUrl(countryCode)
+    }
+
+    const allowedPrefix = `/${countryCode}`
+
+    if (
+      parsed.pathname !== allowedPrefix &&
+      !parsed.pathname.startsWith(`${allowedPrefix}/`)
+    ) {
+      return buildHomeUrl(countryCode)
+    }
+
+    return `${publicSiteUrl}${parsed.pathname}${parsed.search}${parsed.hash}`
+  } catch {
+    return buildHomeUrl(countryCode)
+  }
+}
+
+const clearOAuthCookies = (response: NextResponse) => {
+  for (const name of [
+    "shreem_google_oauth_state",
+    "shreem_google_oauth_return_to",
+  ]) {
+    response.cookies.set(name, "", {
+      path: "/",
+      maxAge: -1,
+    })
+  }
+
+  return response
+}
+
 export async function GET(req: NextRequest) {
-  const countryCode = req.nextUrl.searchParams.get("countryCode") || "in"
+  const countryCode = sanitizeCountryCode(req.nextUrl.searchParams.get("countryCode"))
   const code = req.nextUrl.searchParams.get("code") || ""
   const returnedState = req.nextUrl.searchParams.get("state") || ""
   const storedState = req.cookies.get("shreem_google_oauth_state")?.value || ""
+  const returnTo = sanitizeReturnTo(
+    req.cookies.get("shreem_google_oauth_return_to")?.value,
+    countryCode
+  )
 
   if (!code) {
     return NextResponse.redirect(buildAccountUrl(countryCode, "missing_code"))
@@ -71,14 +119,7 @@ export async function GET(req: NextRequest) {
 
     await setAuthToken(body.token)
 
-    const response = NextResponse.redirect(buildHomeUrl(countryCode))
-
-    response.cookies.set("shreem_google_oauth_state", "", {
-      path: "/",
-      maxAge: -1,
-    })
-
-    return response
+    return clearOAuthCookies(NextResponse.redirect(returnTo))
   } catch (error: any) {
     console.error("[google-oauth-api-callback] failed", {
       message: error?.message,

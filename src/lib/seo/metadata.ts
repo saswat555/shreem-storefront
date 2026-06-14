@@ -44,6 +44,17 @@ export function buildRootMetadata(): Metadata {
   return {
     metadataBase: new URL(baseUrl),
     applicationName: SITE_NAME,
+    manifest: "/manifest.webmanifest",
+    appleWebApp: {
+      capable: true,
+      title: "Shreem",
+      statusBarStyle: "default",
+    },
+    formatDetection: {
+      telephone: true,
+      address: true,
+      email: true,
+    },
     title: {
       default: DEFAULT_TITLE,
       template: "%s | Shreem",
@@ -54,7 +65,7 @@ export function buildRootMetadata(): Metadata {
         { url: "/logo.jpeg", type: "image/jpeg", sizes: "1024x1024" },
       ],
       shortcut: [{ url: "/icon.jpg", type: "image/jpeg" }],
-      apple: [{ url: "/apple-icon.jpg", type: "image/jpeg", sizes: "180x180" }],
+      apple: [{ url: "/icon.jpg", type: "image/jpeg", sizes: "512x512" }],
     },
     description: DEFAULT_DESCRIPTION,
     keywords: DEFAULT_KEYWORDS,
