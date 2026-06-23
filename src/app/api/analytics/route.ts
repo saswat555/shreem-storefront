@@ -15,6 +15,50 @@ const publishableKey =
   process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_API_KEY ||
   "pk_14ea1cd12a8ee731019d8a32c74a3501b5c17e13d9d804ece7a931a194ed0208"
 
+const GEO_HEADERS = [
+  "cf-ipcountry",
+  "cf-region",
+  "cf-region-code",
+  "cf-ipcity",
+  "cf-city",
+  "cf-postal-code",
+  "cf-timezone",
+  "cf-iplatitude",
+  "cf-iplongitude",
+  "cf-latitude",
+  "cf-longitude",
+  "cf-ray",
+  "x-vercel-ip-country",
+  "x-vercel-ip-country-region",
+  "x-vercel-ip-city",
+  "x-vercel-ip-postal-code",
+  "x-vercel-ip-timezone",
+  "x-vercel-ip-latitude",
+  "x-vercel-ip-longitude",
+]
+
+const getForwardedHeaders = (request: NextRequest) => {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    "x-publishable-api-key": publishableKey,
+    "user-agent": request.headers.get("user-agent") || "",
+    "x-forwarded-for":
+      request.headers.get("cf-connecting-ip") ||
+      request.headers.get("x-forwarded-for") ||
+      "",
+  }
+
+  for (const key of GEO_HEADERS) {
+    const value = request.headers.get(key)
+
+    if (value) {
+      headers[key] = value
+    }
+  }
+
+  return headers
+}
+
 export async function POST(request: NextRequest) {
   const payload = await request.json().catch(() => null)
 
@@ -28,15 +72,7 @@ export async function POST(request: NextRequest) {
   const customer = await retrieveCustomer().catch(() => null)
   const response = await fetch(`${backendUrl}/store/analytics`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-publishable-api-key": publishableKey,
-      "user-agent": request.headers.get("user-agent") || "",
-      "x-forwarded-for":
-        request.headers.get("cf-connecting-ip") ||
-        request.headers.get("x-forwarded-for") ||
-        "",
-    },
+    headers: getForwardedHeaders(request),
     body: JSON.stringify({
       ...payload,
       customer_id: customer?.id || payload.customer_id || null,

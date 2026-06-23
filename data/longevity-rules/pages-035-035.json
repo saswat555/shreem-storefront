@@ -1,0 +1,27 @@
+{
+  "pages": [
+    62,
+    63
+  ],
+  "page_summary": "Pages 62 and 63 present Ashtaka Varga tables for the Moon and Mars, respectively. These tables detail the benefic points contributed by various planets and the Lagna to each Rashi, serving as foundational data for astrological analysis, including longevity assessments.",
+  "rules": [
+    {
+      "id": "moon-ashtakavarga-calculation",
+      "page": 62,
+      "category": "method",
+      "condition": "When computing the Moon's Ashtaka Varga (Chandra Ashtakavarga).",
+      "effect": "Defines the benefic points (bindus) contributed by Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn, and Lagna to each Rashi, relative to the Moon's position in the chart.",
+      "implementation": "Software should use the table on page 62 to assign benefic points for each Rashi based on the Moon's placement. The total points for each Rashi and the total contributions from each planet/Lagna should be calculated as per the table's structure.",
+      "confidence": "high"
+    },
+    {
+      "id": "mars-ashtakavarga-calculation",
+      "page": 63,
+      "category": "method",
+      "condition": "When computing the Mars's Ashtaka Varga (Mangala Ashtakavarga).",
+      "effect": "Defines the benefic points (bindus) contributed by Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn, and Lagna to each Rashi, relative to the Mars's position in the chart.",
+      "implementation": "Software should use the table on page 63 to assign benefic points for each Rashi based on the Mars's placement. The total points for each Rashi and the total contributions from each planet/Lagna should be calculated as per the table's structure.",
+      "confidence": "high"
+    }
+  ]
+}

@@ -1,0 +1,63 @@
+{
+  "pages": [
+    96,
+    97
+  ],
+  "page_summary": "These pages detail several methods for calculating an individual's longevity in Jyotish. They describe two approaches to Nakshatrayu based on the Moon's position and birth constellation, the Kendrayu method considering Rahu or Mars in kendra houses, the Kendra-Trikona Span method using planetary placements in kendra and trikona houses, and the initial steps for Kalidasa's Nakshatra Ayurdaya.",
+  "rules": [
+    {
+      "id": "nakshatrayu-balance-period",
+      "page": 96,
+      "category": "method",
+      "condition": "Moon's longitude within a nakshatra, its extent, and the balance period yet to be covered.",
+      "effect": "Calculates a specific duration in years, months, days, and ghatis, representing a component of the individual's lifespan.",
+      "implementation": "Software should calculate the remaining portion of the Moon's current nakshatra based on its longitude and convert this balance period (in ghatis/vighatis) into years, months, and days. This value contributes to the overall longevity assessment.",
+      "confidence": "high"
+    },
+    {
+      "id": "nakshatrayu-alternative-method",
+      "page": 96,
+      "category": "method",
+      "condition": "Balance ghatis and vighatis of the birth constellation.",
+      "effect": "Calculates a specific duration in days, convertible to years, months, and days, representing a component of the individual's lifespan.",
+      "implementation": "Software should take the balance ghatis and vighatis of the birth nakshatra, multiply this value by 60, then divide by 12. The result is a duration in days, which should be converted to years, months, and days for longevity assessment.",
+      "confidence": "high"
+    },
+    {
+      "id": "kendrayu-calculation",
+      "page": 96,
+      "category": "method",
+      "condition": "Rahu or Mars occupying kendra houses (1, 4, 7, 10).",
+      "effect": "Calculates a longevity span based on the rasi numbers of occupied kendras, with deductions for specific planetary placements.",
+      "implementation": "Software should identify the rasi numbers of the kendra houses (1, 4, 7, 10). If Rahu or Mars occupies any of these, deduct the rasi number of that occupied house from the total of the four kendra rasi numbers. Multiply the resulting balance by 3 to determine a longevity span in years.",
+      "confidence": "high"
+    },
+    {
+      "id": "kendra-trikona-span",
+      "page": 97,
+      "category": "method",
+      "condition": "Planets occupying kendra houses (1, 4, 7, 10) and trikona houses (5, 9).",
+      "effect": "Calculates a longevity span based on the rasi numbers of occupied kendra and trikona houses.",
+      "implementation": "Software should identify the rasi numbers of kendra and trikona houses occupied by planets. Sum these rasi numbers. Add 6 to this total. Multiply the new total by 12, then divide by 10 to determine a longevity span in years.",
+      "confidence": "high"
+    },
+    {
+      "id": "nakshatra-ayurdaya-kalidasa-steps",
+      "page": 97,
+      "category": "method",
+      "condition": "Planets' positions in specific nakshatras and padas.",
+      "effect": "Each planet contributes a term of life based on its position.",
+      "implementation": "For each planet, determine its nakshatra and pada. Then, count the number of nakshatras crossed from Ashwini nakshatra (including Ashwini and the planet's current nakshatra). This count is a step in calculating the planet's contribution to longevity.",
+      "confidence": "high"
+    },
+    {
+      "id": "incomplete-example-caution",
+      "page": 97,
+      "category": "caution",
+      "condition": "An example calculation is provided without a clear preceding rule or full context.",
+      "effect": "Potential for misinterpretation or incorrect application if the full rule is not available.",
+      "implementation": "Software development should ensure that all rules are fully defined and unambiguous before implementation. Examples should clarify, not introduce new, undefined conditions.",
+      "confidence": "high"
+    }
+  ]
+}

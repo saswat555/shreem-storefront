@@ -1,0 +1,116 @@
+{
+  "pages": [
+    50
+  ],
+  "page_summary": "This section details specific reductions to planetary Ayurdaya contributions based on astrological conditions like enemy sign placement, combustion, and malefic affliction to the Lagna. It also outlines a method for calculating planetary Ayurdaya based on planetary longitude relative to its exaltation point, with examples for various planets.",
+  "rules": [
+    {
+      "id": "ayurdaya-reduction-enemy-sign",
+      "page": 50,
+      "category": "longevity_class",
+      "condition": "A planet is posited in the house of its natural enemy.",
+      "effect": "The planet's Ayurdaya contribution is reduced by one-third.",
+      "implementation": "For planets not Mars and not retrograde, apply a 33.33% reduction to their calculated Ayurdaya contribution if they are in an enemy sign.",
+      "confidence": "high"
+    },
+    {
+      "id": "ayurdaya-reduction-enemy-sign-exemption-mars",
+      "page": 50,
+      "category": "longevity_class",
+      "condition": "Mars is posited in the house of its natural enemy.",
+      "effect": "Mars's Ayurdaya contribution is not reduced.",
+      "implementation": "Do not apply the enemy sign reduction to Mars.",
+      "confidence": "high"
+    },
+    {
+      "id": "ayurdaya-reduction-enemy-sign-exemption-retrograde",
+      "page": 50,
+      "category": "longevity_class",
+      "condition": "A planet in retrograde motion is posited in the house of its natural enemy.",
+      "effect": "The planet's Ayurdaya contribution is not reduced.",
+      "implementation": "Do not apply the enemy sign reduction to any retrograde planet.",
+      "confidence": "high"
+    },
+    {
+      "id": "ayurdaya-reduction-combustion",
+      "page": 50,
+      "category": "longevity_class",
+      "condition": "A planet is combust.",
+      "effect": "The planet's Ayurdaya contribution is reduced by half.",
+      "implementation": "For planets not Saturn and not Venus, apply a 50% reduction to their calculated Ayurdaya contribution if they are combust.",
+      "confidence": "high"
+    },
+    {
+      "id": "ayurdaya-reduction-combustion-exemption-saturn-venus",
+      "page": 50,
+      "category": "longevity_class",
+      "condition": "Saturn or Venus is combust.",
+      "effect": "Saturn's or Venus's Ayurdaya contribution is not reduced.",
+      "implementation": "Do not apply the combustion reduction to Saturn or Venus.",
+      "confidence": "high"
+    },
+    {
+      "id": "ayurdaya-reduction-lagna-affliction",
+      "page": 50,
+      "category": "longevity_class",
+      "condition": "Lagna is afflicted by a malefic planet's presence.",
+      "effect": "A reduction in Ayurdaya contribution is applied.",
+      "implementation": "Identify malefic planets in Lagna. If conditions for exemption are not met, apply an Ayurdaya reduction. The specific quantum of reduction should be determined by Pindayu rules.",
+      "confidence": "medium"
+    },
+    {
+      "id": "ayurdaya-reduction-lagna-affliction-exemption-lagnesh",
+      "page": 50,
+      "category": "longevity_class",
+      "condition": "The malefic planet occupying the Lagna is also the Lagnesh (Lagna lord).",
+      "effect": "No Ayurdaya reduction is applied.",
+      "implementation": "If a malefic in Lagna is the Lagna lord, do not apply the Lagna affliction reduction.",
+      "confidence": "high"
+    },
+    {
+      "id": "ayurdaya-reduction-lagna-affliction-multiple-malefics",
+      "page": 50,
+      "category": "longevity_class",
+      "condition": "There are multiple malefic planets in the Lagna.",
+      "effect": "The malefic nearest the cusp receives the reduction.",
+      "implementation": "When multiple malefics are in Lagna, prioritize the one closest to the cusp for applying the Lagna affliction reduction.",
+      "confidence": "high"
+    },
+    {
+      "id": "ayurdaya-reduction-lagna-affliction-exemption-rahu-ketu-alone",
+      "page": 50,
+      "category": "longevity_class",
+      "condition": "Rahu or Ketu alone are posited in the Lagna.",
+      "effect": "No Ayurdaya reduction is applied.",
+      "implementation": "If only Rahu or Ketu is in Lagna, do not apply the Lagna affliction reduction.",
+      "confidence": "high"
+    },
+    {
+      "id": "ayurdaya-reduction-lagna-affliction-exemption-benefic-aspect",
+      "page": 50,
+      "category": "longevity_class",
+      "condition": "The malefic planet in Lagna is aspected by a benefic planet.",
+      "effect": "No Ayurdaya reduction is applied.",
+      "implementation": "If a malefic in Lagna receives a benefic aspect, do not apply the Lagna affliction reduction.",
+      "confidence": "high"
+    },
+    {
+      "id": "ayurdaya-reduction-multiple-rules-precedence",
+      "page": 50,
+      "category": "method",
+      "condition": "The same planet is subject to more than one Ayurdaya reduction rule.",
+      "effect": "Only the reduction requiring the highest value is applied.",
+      "implementation": "For any planet, calculate all applicable Ayurdaya reductions and apply only the single largest reduction.",
+      "confidence": "high"
+    },
+    {
+      "id": "ayurdaya-calculation-method-general",
+      "page": 50,
+      "category": "method",
+      "condition": "Calculating a planet's Ayurdaya contribution based on its longitude.",
+      "effect": "Ayurdaya is calculated from planet's distance to exaltation.",
+      "implementation": "Implement the Ayurdaya calculation method: (1) Determine the difference between planet's longitude and its exaltation point (e.g., Moon: 1-3-0, Mars: 9-28-0, Mercury: 5-15-0, Jupiter: 3-5-0, Venus: 11-27-0). (2) If this difference is less than 6 Rasis, use it directly. (3) If it's 6 Rasis or more, subtract the difference from 12 Rasis. (4) Multiply the resulting value by the planet's specific multiplier (Moon x 10, Mars x 7, Mercury x 17, Jupiter x 16, Venus x 20) to obtain days, then convert to years, months, and days.",
+      "confidence": "high"
+    }
+  ]
+}

@@ -369,7 +369,7 @@ export default function PrakritiGuide({ products, model }: PrakritiGuideProps) {
         <div className="relative z-[1] flex flex-col gap-4 xsmall:flex-row xsmall:items-center xsmall:justify-between">
           <div className="flex min-w-0 items-center gap-3">
             <div className="relative h-16 w-16 shrink-0 rounded-[18px] border border-white/10 bg-white/8">
-              <Image src="/gauri.png" alt="" fill sizes="64px" className="object-contain p-1" />
+              <Image src="/gauri.jpg" alt="" fill sizes="64px" className="object-contain p-1" />
             </div>
             <div className="min-w-0">
               <p className="brand-kicker text-[#e8c364]">{careToolName}</p>
@@ -383,7 +383,7 @@ export default function PrakritiGuide({ products, model }: PrakritiGuideProps) {
               {model}
             </span>
             <div className="relative h-14 w-14 shrink-0 rounded-[18px] border border-white/10 bg-white/8">
-              <Image src="/mayur.png" alt="" fill sizes="56px" className="object-contain p-1" />
+              <Image src="/mayur.jpg" alt="" fill sizes="56px" className="object-contain p-1" />
             </div>
           </div>
         </div>

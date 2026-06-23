@@ -1,0 +1,81 @@
+{
+  "pages": [
+    134,
+    135
+  ],
+  "page_summary": "These pages discuss the historical context and challenges of Jyotish longevity prediction. They highlight that many traditional methods have not consistently yielded accurate results and advise caution against over-reliance on purely mathematical calculations. The concept of 'Yogajayu' (life span from planetary combinations) is introduced, alongside 'Gandarishthas' as critical life indicators. Mathematical methods are presented as supplementary tools, conditional in their application, and secondary to broader astrological analysis, with a specific rule for applying the Bhinnayu method.",
+  "rules": [
+    {
+      "id": "P134-C1",
+      "page": 134,
+      "category": "caution",
+      "condition": "Attempting to determine life span solely through mathematical calculations.",
+      "effect": "Results may not align with actual outcomes.",
+      "implementation": "Avoid definitive life span predictions from mathematical methods.",
+      "confidence": "high"
+    },
+    {
+      "id": "P134-M1",
+      "page": 134,
+      "category": "method",
+      "condition": "Assessing the span of life.",
+      "effect": "The concept of Yogajayu, based on planetary combinations, is used.",
+      "implementation": "When discussing life span indicators, refer to 'Yogajayu' as a holistic assessment.",
+      "confidence": "high"
+    },
+    {
+      "id": "P134-C2",
+      "page": 134,
+      "category": "caution",
+      "condition": "Identifying critical periods related to life continuance.",
+      "effect": "Gandarishthas are points of reference for potentially challenging timings.",
+      "implementation": "Flag periods indicated by Gandarishthas as requiring careful consideration for well-being.",
+      "confidence": "high"
+    },
+    {
+      "id": "P135-L1",
+      "page": 135,
+      "category": "longevity_class",
+      "condition": "Assessing factors influencing life span.",
+      "effect": "Analysis of 'arishtas' (afflictions) and 'arishta bhangas' (cancellation of afflictions) is a primary step.",
+      "implementation": "Prioritize identifying and analyzing 'arishtas' and their cancellations for vitality assessments.",
+      "confidence": "high"
+    },
+    {
+      "id": "P135-M1",
+      "page": 135,
+      "category": "method",
+      "condition": "Applying mathematical methods for life span assessment.",
+      "effect": "These methods supplement insights from 'yogajayu' analysis.",
+      "implementation": "Integrate mathematical methods as secondary verification tools.",
+      "confidence": "high"
+    },
+    {
+      "id": "P135-M2",
+      "page": 135,
+      "category": "method",
+      "condition": "Utilizing mathematical methods for life span assessment.",
+      "effect": "Application is conditional, yielding life span assessment.",
+      "implementation": "Apply methods only when astrological conditions are met.",
+      "confidence": "high"
+    },
+    {
+      "id": "P135-M3",
+      "page": 135,
+      "category": "method",
+      "condition": "Interpreting the role of mathematical longevity methods.",
+      "effect": "They function as supporting factors.",
+      "implementation": "Present results as contributing factors to vitality assessment.",
+      "confidence": "high"
+    },
+    {
+      "id": "P135-M4",
+      "page": 135,
+      "category": "method",
+      "condition": "10th house contains both malefic and benefic planets.",
+      "effect": "The Bhinnayu method is the appropriate technique for life span assessment.",
+      "implementation": "Trigger the Bhinnayu method for vitality assessment when this configuration is present.",
+      "confidence": "high"
+    }
+  ]
+}

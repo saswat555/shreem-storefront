@@ -45,6 +45,7 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   images: {
+    minimumCacheTTL: 31536000,
     remotePatterns: [
       {
         protocol: "http",
@@ -97,6 +98,99 @@ const nextConfig = {
           ]
         : []),
     ],
+  },
+  async headers() {
+    const securityHeaders = [
+      {
+        key: "Strict-Transport-Security",
+        value: "max-age=31536000; includeSubDomains; preload",
+      },
+      {
+        key: "X-Frame-Options",
+        value: "DENY",
+      },
+      {
+        key: "X-Content-Type-Options",
+        value: "nosniff",
+      },
+      {
+        key: "Referrer-Policy",
+        value: "strict-origin-when-cross-origin",
+      },
+      {
+        key: "Cross-Origin-Opener-Policy",
+        value: "same-origin",
+      },
+      {
+        key: "Permissions-Policy",
+        value:
+          "camera=(), microphone=(), geolocation=(self), payment=(self), browsing-topics=()",
+      },
+      {
+        key: "Content-Security-Policy",
+        value: [
+          "default-src 'self'",
+          "base-uri 'self'",
+          "object-src 'none'",
+          "frame-ancestors 'none'",
+          "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://checkout.razorpay.com https://*.razorpay.com https://accounts.google.com https://www.googletagmanager.com https://www.google-analytics.com https://static.cloudflareinsights.com",
+          "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+          "font-src 'self' data: https://fonts.gstatic.com",
+          "img-src 'self' data: blob: https:",
+          "media-src 'self' data: blob: https:",
+          "connect-src 'self' https://shreemfarms.in https://www.shreemfarms.in https://*.razorpay.com https://api.razorpay.com https://accounts.google.com https://www.google-analytics.com https://region1.google-analytics.com https://static.cloudflareinsights.com",
+          "frame-src 'self' https://checkout.razorpay.com https://*.razorpay.com https://accounts.google.com",
+          "worker-src 'self' blob:",
+          "form-action 'self' https://api.razorpay.com https://*.razorpay.com",
+          "upgrade-insecure-requests",
+        ].join("; "),
+      },
+    ]
+
+    const longCacheHeaders = [
+      {
+        key: "Cache-Control",
+        value: "public, max-age=31536000, immutable",
+      },
+    ]
+
+    return [
+      {
+        source: "/:path*",
+        headers: securityHeaders,
+      },
+      {
+        source: "/_next/image",
+        headers: longCacheHeaders,
+      },
+      {
+        source: "/shreem-scenes/:path*",
+        headers: longCacheHeaders,
+      },
+      {
+        source: "/:asset(gauri|mayur|logo).:ext(jpg|jpeg|png)",
+        headers: longCacheHeaders,
+      },
+      {
+        source: "/favicon.ico",
+        headers: longCacheHeaders,
+      },
+    ]
+  },
+  async redirects() {
+    return [
+      {
+        source: "/:path*",
+        has: [
+          {
+            type: "host",
+            value: "shreemfarms.in",
+          },
+        ],
+        destination: "https://www.shreemfarms.in/:path*",
+        permanent: true,
+      },
+    ]
   },
 }
 

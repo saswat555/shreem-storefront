@@ -14,31 +14,31 @@ export const astrologyProductCatalog: Omit<
     title: "Bilona Ghee",
     handle: "ghee",
     product_url: "/products/ghee",
-    image_url: "/shreem-scenes/bilona-process.png",
+    image_url: "/shreem-scenes/bilona-process.jpg",
   },
   {
     title: "Neem Dhoop Batti",
     handle: "organic-neem-dhoob",
     product_url: "/products/organic-neem-dhoob",
-    image_url: "/shreem-scenes/neem-dhoop.png",
+    image_url: "/shreem-scenes/neem-dhoop.jpg",
   },
   {
     title: "Cow Dung Cakes",
     handle: "cowdung-cake",
     product_url: "/products/cowdung-cake",
-    image_url: "/shreem-scenes/postive-energy.png",
+    image_url: "/shreem-scenes/postive-energy.jpg",
   },
   {
     title: "Jeevamrut",
     handle: "shreem-vermicompost",
     product_url: "/products/shreem-vermicompost",
-    image_url: "/shreem-scenes/hero-scene.png",
+    image_url: "/shreem-scenes/hero-scene.jpg",
   },
   {
     title: "30 min astrology consultation",
     handle: "shreem-expert-jyotish-consultation",
     product_url: "/products/shreem-expert-jyotish-consultation",
-    image_url: "/mayur.png",
+    image_url: "/mayur.jpg",
   },
 ]
 

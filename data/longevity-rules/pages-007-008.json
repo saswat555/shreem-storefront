@@ -1,0 +1,147 @@
+{
+  "pages": [
+    7,
+    8
+  ],
+  "page_summary": {
+    "7": "This page introduces various Jyotish longevity classifications like Arishta and Alpayu, highlighting the unique considerations for childhood. It outlines numerous mathematical and traditional methods for calculating life duration, including Ashtakavarga, Badrayan's, Jaimini, Pindayurdaya, and a novel approach that considers specific houses.",
+    "8": "This page emphasizes the critical importance of accurate birth time for all astrological predictions, including longevity. It details methods for birth time rectification, such as verifying past life events and utilizing Krishnamurti Paddhati (K.P.) with Ruling Planets. It also cautions that traditional methods may require careful application in modern contexts due to changing life stresses."
+  },
+  "rules": [
+    {
+      "id": "longevity-class-types",
+      "page": 7,
+      "category": "longevity_class",
+      "condition": "N/A",
+      "effect": "Defines different periods of life based on inherent chart indications.",
+      "implementation": "Software should recognize Sadyo-arishta, Arishta, and Yogarishta as core longevity categories for classification.",
+      "confidence": "high"
+    },
+    {
+      "id": "childhood-period-sensitivity",
+      "page": 7,
+      "category": "longevity_class",
+      "condition": "Age up to approximately 12 years (with minor adjustments).",
+      "effect": "Life prospects are more influenced by external circumstances than by planetary effects.",
+      "implementation": "Software should flag this age range as requiring careful interpretation, emphasizing external factors over purely astrological ones.",
+      "confidence": "high"
+    },
+    {
+      "id": "early-life-contextual-factors",
+      "page": 7,
+      "category": "method",
+      "condition": "Analyzing early life indications.",
+      "effect": "Provides essential context for astrological interpretation.",
+      "implementation": "Software could incorporate Desh (country), Kala (period), and Patra (person) as contextual inputs for early life analysis.",
+      "confidence": "medium"
+    },
+    {
+      "id": "overall-longevity-classification",
+      "page": 7,
+      "category": "longevity_class",
+      "condition": "Evaluation of planetary and house strength.",
+      "effect": "Determines the overall longevity classification of the chart.",
+      "implementation": "Software should calculate and display classifications like Alpayu (short), Madhyamayu (middle), and Poornayu (full) based on defined rules for planetary and house strength.",
+      "confidence": "high"
+    },
+    {
+      "id": "comprehensive-chart-analysis-factors",
+      "page": 7,
+      "category": "method",
+      "condition": "Performing comprehensive longevity analysis.",
+      "effect": "Provides a holistic view of factors influencing life duration.",
+      "implementation": "Software should integrate elements like good/bad planets/houses, nodes, yogas, divisional charts (drekkanas, navamsas), Bhavadhavam, transit, Pada rasis, Upgrahas, Tara dasa, Spashta Deha, Spashta Mrityu, and Spashta Jeeva into its longevity modules.",
+      "confidence": "high"
+    },
+    {
+      "id": "mathematical-longevity-methods",
+      "page": 7,
+      "category": "method",
+      "condition": "Calculating precise longevity duration.",
+      "effect": "Provides a quantitative estimate of life span.",
+      "implementation": "Software should implement mathematical methods such as the Ashtakavarga system (including Ekadhipatya, Trikona Sodhanas, Mandal Sodhana, Rasi and Graha Gunakaras, Samudaya Ashtakavarga).",
+      "confidence": "high"
+    },
+    {
+      "id": "dasha-system-integration",
+      "page": 7,
+      "category": "dasha_timing",
+      "condition": "Applying Ashtakavarga for longevity assessment.",
+      "effect": "Enhances the accuracy of Dasha timing for life events.",
+      "implementation": "Software should integrate Ashtakavarga calculations with Dasha period analysis.",
+      "confidence": "high"
+    },
+    {
+      "id": "traditional-longevity-systems",
+      "page": 7,
+      "category": "method",
+      "condition": "Calculating longevity.",
+      "effect": "Offers various established approaches to determine life duration.",
+      "implementation": "Software should implement systems like Badrayan's horary, Rasmikayu, Bharanas and Haranas, Nakshatrayu, Gauri Jataka, Jaimini, Pindayurdaya, and Amskayurdaya.",
+      "confidence": "high"
+    },
+    {
+      "id": "novel-longevity-factors",
+      "page": 7,
+      "category": "method",
+      "condition": "Applying a specific, non-classical longevity method.",
+      "effect": "Provides an alternative approach to assess life factors.",
+      "implementation": "Software could offer this method, considering Lagna (native), 3rd house (prowess), 8th house (self), and 10th house (career, life transitions), clearly labeling its origin as a novel approach.",
+      "confidence": "medium"
+    },
+    {
+      "id": "modern-context-caution",
+      "page": 8,
+      "category": "caution",
+      "condition": "Interpreting longevity predictions in contemporary contexts.",
+      "effect": "Traditional methods may be less accurate due to modern life's increased stresses and changed circumstances, requiring extra caution in judgment.",
+      "implementation": "Software should include disclaimers about the contextual nature of predictions and the potential impact of modern life on traditional interpretations.",
+      "confidence": "high"
+    },
+    {
+      "id": "accurate-birth-time-requirement",
+      "page": 8,
+      "category": "method",
+      "condition": "Performing any astrological analysis, especially longevity calculations.",
+      "effect": "Ensures the reliability of chart interpretations and predictions.",
+      "implementation": "Software should emphasize the importance of accurate birth time and potentially offer rectification tools or guidance.",
+      "confidence": "high"
+    },
+    {
+      "id": "chart-data-precision",
+      "page": 8,
+      "category": "method",
+      "condition": "Preparing a birth chart for analysis.",
+      "effect": "Ensures foundational data accuracy for reliable predictions.",
+      "implementation": "Software must calculate and display house cusps and planetary longitudes (degrees, minutes, seconds) precisely.",
+      "confidence": "high"
+    },
+    {
+      "id": "past-event-verification-rectification",
+      "page": 8,
+      "category": "method",
+      "condition": "Verifying chart accuracy or rectifying birth time.",
+      "effect": "Confirms the chart's reliability for future predictions if past events align with chart indications.",
+      "implementation": "Software could offer a feature to log past events and compare them with chart timings as a verification step.",
+      "confidence": "high"
+    },
+    {
+      "id": "kp-rectification-method",
+      "page": 8,
+      "category": "method",
+      "condition": "Rectifying birth time.",
+      "effect": "Provides a specific methodology for birth time correction.",
+      "implementation": "Software should implement Krishnamurti Paddhati (K.P.) principles, including the use of Ruling Planets, for rectification.",
+      "confidence": "high"
+    },
+    {
+      "id": "ruling-planets-determination",
+      "page": 8,
+      "category": "method",
+      "condition": "Applying K.P. principles for rectification or timing.",
+      "effect": "Used for precise timing of events and chart correction.",
+      "implementation": "Software should calculate and display Ruling Planets based on the current moment or a specified event time.",
+      "confidence": "high"
+    }
+  ]
+}

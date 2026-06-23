@@ -1,6 +1,5 @@
 "use client"
 
-import { clx } from "@medusajs/ui"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 
 export function Pagination({
@@ -35,15 +34,12 @@ export function Pagination({
   ) => (
     <button
       key={p}
-      className={clx(
+      className={[
         "flex h-9 w-9 shrink-0 items-center justify-center rounded-full border text-sm font-medium small:h-11 small:w-11",
-        {
-          "border-[rgba(113,86,57,0.2)] bg-[var(--shreem-accent-dark)] text-white":
-            isCurrent,
-          "border-[rgba(113,86,57,0.12)] bg-white/70 text-[var(--shreem-muted)] hover:border-[rgba(113,86,57,0.2)] hover:text-[var(--shreem-ink)]":
-            !isCurrent,
-        }
-      )}
+        isCurrent
+          ? "border-[rgba(113,86,57,0.2)] bg-[var(--shreem-accent-dark)] text-white"
+          : "border-[rgba(113,86,57,0.12)] bg-white/70 text-[var(--shreem-muted)] hover:border-[rgba(113,86,57,0.2)] hover:text-[var(--shreem-ink)]",
+      ].join(" ")}
       disabled={isCurrent}
       onClick={() => handlePageChange(p)}
     >

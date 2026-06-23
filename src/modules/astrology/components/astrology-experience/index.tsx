@@ -15,9 +15,10 @@ import {
   type PrashnaHouse,
   type PrashnaPlanet,
 } from "@lib/util/astrology"
+import { updateCustomer } from "@lib/data/customer"
 import LogoLoader from "@modules/common/components/logo-loader"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
-import { type CSSProperties, useEffect, useMemo, useState } from "react"
+import { type CSSProperties, useEffect, useMemo, useState, useTransition } from "react"
 
 type PrashnaResult = {
   chart?: PrashnaChart
@@ -29,6 +30,8 @@ type PrashnaResult = {
     question: string
     answer: string
     chart_reason: string
+    timing?: string
+    action?: string
   }[]
   expert_call_recommended?: boolean
   expert_call_reason?: string
@@ -70,6 +73,7 @@ type HindiCalendarMonth = {
 
 type KundliAnalysis = {
   summary?: string
+  opening_profile?: string[]
   person_information?: string
   temperament?: string
   behavioral_traits?: string[]
@@ -80,6 +84,29 @@ type KundliAnalysis = {
   health_caution?: string
   health_indicators?: string[]
   current_period_analysis?: string
+  deterministic_review?: {
+    area: string
+    deterministic_basis_used: string
+    missing_or_weak_point: string
+    final_decision: string
+    needs_more_bphs: boolean
+  }[]
+  dasha_decision_tree?: {
+    period: string
+    prevailing_factor: string
+    score: number
+    decision_rule: string
+    expected_outcome: string
+  }[]
+  house_outcomes?: {
+    house: number
+    theme: string
+    prevailing_impact: string
+    user_meaning?: string
+    outcome: string
+    practical_use?: string
+    evidence: string
+  }[]
   dasha_predictions?: {
     period: string
     chart_basis: string
@@ -115,6 +142,8 @@ type KundliAnalysis = {
     question: string
     answer: string
     chart_reason: string
+    timing?: string
+    action?: string
   }[]
   special_cases?: string[]
   upaay?: string[]
@@ -145,6 +174,77 @@ type KundliAnalysis = {
   expert_call_reason?: string
 }
 
+type DashaTimelinePeriod = {
+  lord: string
+  level: "mahadasha" | "antardasha" | "pratyantar" | "sookshma" | "prana"
+  startIso: string
+  endIso: string
+  startLabel: string
+  endLabel: string
+  durationYears: number
+  depth?: number
+  parentPath?: string
+  role?: string
+  score?: number
+  focus?: string
+}
+
+type KundliDashaTimeline = {
+  range?: string
+  mahadashas?: DashaTimelinePeriod[]
+  lifetime_antardashas?: DashaTimelinePeriod[]
+  current_antardashas?: DashaTimelinePeriod[]
+  current_pratyantars?: DashaTimelinePeriod[]
+  current_sookshmas?: DashaTimelinePeriod[]
+  current_pranas?: DashaTimelinePeriod[]
+}
+
+type KundliCriticalPeriodAnalysis = {
+  maraka_lords?: string[]
+  badhaka_house?: number
+  badhakesh?: string
+  active_triggers?: string[]
+  watch_periods?: {
+    period: string
+    lord: string
+    role: string
+    window: string
+    score?: number
+    confidence?: "low" | "medium" | "high"
+    caution: string
+  }[]
+  exact_timing_windows?: {
+    period: string
+    lord: string
+    role: string
+    window: string
+    score: number
+    confidence: "low" | "medium" | "high"
+    basis: string
+    avoid?: string
+    do?: string
+  }[]
+  retrospective_timing_windows?: {
+    period: string
+    lord: string
+    role: string
+    window: string
+    score: number
+    confidence: "low" | "medium" | "high"
+    basis: string
+    avoid?: string
+    do?: string
+  }[]
+  medical_watchlist?: {
+    condition: string
+    severity: "low" | "medium" | "high"
+    chart_basis: string
+    dasha_trigger: string
+    prevention: string
+  }[]
+  safety_note?: string
+}
+
 type KundliResult = {
   profile?: {
     name?: string
@@ -159,6 +259,37 @@ type KundliResult = {
     usage_units?: number
   }
   chart?: PrashnaChart
+  dasha_timeline?: KundliDashaTimeline
+  critical_period_analysis?: KundliCriticalPeriodAnalysis
+  longevity_assessment?: {
+    classification: "strong vitality support" | "mixed/medium support" | "requires expert review"
+    confidence: "medium" | "low"
+    score: number
+    protective_factors: string[]
+    pressure_factors: string[]
+    maraka_factors: string[]
+    safety_note: string
+    rule_proofs: {
+      id: string
+      source: string
+      chapter: string
+      rule: string
+      chart_fact: string
+      application: string
+      score: number
+      polarity: "protective" | "pressure" | "method"
+    }[]
+  }
+  bphs_rule_proofs?: {
+    id: string
+    source: string
+    chapter: string
+    rule: string
+    chart_fact: string
+    application: string
+    strength: "strong" | "medium" | "supporting"
+    area: string
+  }[]
   detected_yogas?: string[]
   stones?: {
     trinal?: {
@@ -325,6 +456,22 @@ type AstrologyHistoryItem = {
   response?: PrashnaResult | KundliResult | MatchmakingResult | LostItemResult
 }
 
+type SavedKundliProfile = {
+  id: string
+  name: string
+  gender?: string
+  birthDate: string
+  birthTime: string
+  cityId: string
+  cityLabel?: string
+  panchangSystemId?: string
+  language?: AstrologyLanguage
+  subQuestions?: string[]
+  savedAt: string
+  updatedAt: string
+  lastResult?: KundliResult
+}
+
 type AstrologyTab =
   | "muhurth"
   | "calendar"
@@ -452,8 +599,11 @@ const astrologyTabs: { id: AstrologyTab; label: string; description: string }[] 
 ]
 
 const HISTORY_KEY = "shreem_astrology_history_v1"
+const SAVED_KUNDLI_KEY = "shreem_saved_kundlis_v1"
 const LANGUAGE_KEY = "shreem_site_language_v1"
 const THEME_KEY = "shreem_astrology_theme_v1"
+const LOCAL_HISTORY_LIMIT = 12
+const LOCAL_SAVED_KUNDLI_LIMIT = 24
 
 type AstrologyTheme = "day" | "night"
 
@@ -485,6 +635,14 @@ const emptyMatchPerson = () => ({
   birthTime: "",
   cityId: "rewa",
 })
+
+const getCurrentLocalTimeString = () => {
+  const now = new Date()
+
+  return `${String(now.getHours()).padStart(2, "0")}:${String(
+    now.getMinutes()
+  ).padStart(2, "0")}`
+}
 
 const normalizeCitySearch = (value: string) =>
   value
@@ -708,7 +866,7 @@ const SlotCard = ({ slot }: { slot: MuhurtaSlot }) => (
     <div className="flex items-start justify-between gap-3">
       <div>
         <p className="text-sm font-semibold">{slot.name}</p>
-        <p className="mt-1 text-xs font-medium uppercase tracking-[0.14em] opacity-70">
+        <p className="mt-1 text-xs font-medium uppercase tracking-[0.06em] small:tracking-[0.14em] opacity-70">
           Slot {slot.index}
         </p>
       </div>
@@ -728,7 +886,9 @@ const SlotCard = ({ slot }: { slot: MuhurtaSlot }) => (
 )
 
 const formatDegree = (value?: number) =>
-  typeof value === "number" ? `${value.toFixed(2)} deg` : "Not available"
+  typeof value === "number" && Number.isFinite(value)
+    ? `${value.toFixed(2)} deg`
+    : ""
 
 const ChartMiniCard = ({
   label,
@@ -786,7 +946,8 @@ const PlanetCard = ({ planet }: { planet: PrashnaPlanet }) => (
       </span>
     </div>
     <p className="mt-3 text-sm leading-6 text-[var(--shreem-muted)]">
-      {planet.sign} {formatDegree(planet.signDegree)}
+      {planet.sign}
+      {formatDegree(planet.signDegree) ? ` ${formatDegree(planet.signDegree)}` : ""}
     </p>
     <p className="text-xs leading-5 text-[var(--shreem-muted)]">
       {planet.nakshatra} pada {planet.pada}
@@ -813,7 +974,7 @@ const PlanetCard = ({ planet }: { planet: PrashnaPlanet }) => (
 const HouseCard = ({ house }: { house: PrashnaHouse }) => (
   <div className="min-w-0 rounded-[16px] border border-[var(--shreem-border)] bg-white/58 px-3 py-3">
     <div className="flex items-center justify-between gap-2">
-      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--shreem-gold-deep)]">
+      <p className="text-xs font-semibold uppercase tracking-[0.06em] small:tracking-[0.14em] text-[var(--shreem-gold-deep)]">
         House {house.house}
       </p>
       <span className="rounded-full bg-[rgba(13,129,126,0.08)] px-2 py-0.5 text-[0.68rem] font-semibold text-[var(--shreem-ink)]">
@@ -878,7 +1039,7 @@ const DashaCard = ({ chart }: { chart: PrashnaChart }) => {
             key={label}
             className="rounded-[18px] border border-[rgba(212,161,38,0.2)] bg-white/72 px-3 py-3"
           >
-            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-[var(--shreem-gold-deep)]">
+            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.06em] small:tracking-[0.14em] text-[var(--shreem-gold-deep)]">
               {label}
             </p>
             <p className="mt-2 text-base font-semibold text-[var(--shreem-ink)]">
@@ -894,142 +1055,243 @@ const DashaCard = ({ chart }: { chart: PrashnaChart }) => {
   )
 }
 
-const PlanetTable = ({ chart }: { chart: PrashnaChart }) => (
-  <div className="overflow-hidden rounded-[22px] border border-[var(--shreem-border)] bg-white/64">
-    <div className="overflow-x-auto">
-      <table className="w-full min-w-[680px] text-left text-xs">
-        <thead className="bg-[rgba(255,248,233,0.9)] text-[var(--shreem-gold-deep)]">
-          <tr>
-            {["Graha", "Sign", "Degree", "House", "Nakshatra", "Motion"].map(
-              (heading) => (
-                <th
-                  key={heading}
-                  className="px-3 py-3 font-semibold uppercase tracking-[0.14em]"
-                >
-                  {heading}
-                </th>
-              )
-            )}
-          </tr>
-        </thead>
-        <tbody>
-          {chart.planets.map((planet) => (
-            <tr
-              key={planet.key}
-              className="border-t border-[var(--shreem-border)] text-[var(--shreem-muted)]"
-            >
-              <td className="px-3 py-3 font-semibold text-[var(--shreem-ink)]">
-                {planet.name}
-              </td>
-              <td className="px-3 py-3">{planet.sign}</td>
-              <td className="px-3 py-3">{formatDegree(planet.signDegree)}</td>
-              <td className="px-3 py-3">{formatHousePosition(planet)}</td>
-              <td className="px-3 py-3">
-                {planet.nakshatra} pada {planet.pada}
-              </td>
-              <td className="px-3 py-3">
-                {planet.retrograde ? "Retrograde" : "Direct"}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  </div>
-)
-
-const HouseTable = ({ chart }: { chart: PrashnaChart }) => (
-  <div className="overflow-hidden rounded-[22px] border border-[var(--shreem-border)] bg-white/64">
-    <div className="overflow-x-auto">
-      <table className="w-full min-w-[720px] text-left text-xs">
-        <thead className="bg-[rgba(240,248,246,0.86)] text-[var(--shreem-gold-deep)]">
-          <tr>
-            {["House", "Sign", "Bhava madhya", "Lord", "Planets", "Theme"].map((heading) => (
-              <th
-                key={heading}
-                className="px-3 py-3 font-semibold uppercase tracking-[0.14em]"
-              >
-                {heading}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {chart.houses.map((house) => {
-            const planets = getHousePlanets(chart, house.house)
-
-            return (
-              <tr
-                key={house.house}
-                className="border-t border-[var(--shreem-border)] text-[var(--shreem-muted)]"
-              >
-                <td className="px-3 py-3 font-semibold text-[var(--shreem-ink)]">
-                  {house.house}
-                </td>
-                <td className="px-3 py-3">{house.sign}</td>
-                <td className="px-3 py-3">
-                  {typeof house.cuspDegree === "number" && house.cuspSign
-                    ? `${house.cuspSign} ${formatDegree(house.cuspDegree)}`
-                    : "-"}
-                </td>
-                <td className="px-3 py-3">{house.signLord}</td>
-                <td className="px-3 py-3">
-                  {planets.length
-                    ? planets.map((planet) => planet.name).join(", ")
-                    : "-"}
-                </td>
-                <td className="px-3 py-3">{house.theme}</td>
-              </tr>
-            )
-          })}
-        </tbody>
-      </table>
-    </div>
-  </div>
-)
-
-const PredictionTable = ({
-  rows,
+const DashaTimelineTable = ({
+  timeline,
 }: {
-  rows?: KundliAnalysis["prediction_table"]
+  timeline?: KundliDashaTimeline
 }) => {
-  if (!rows?.length) {
+  if (!timeline) {
+    return null
+  }
+
+  const groups: Array<[string, DashaTimelinePeriod[] | undefined, string]> = [
+    [
+      "Full life Mahadasha map",
+      timeline.mahadashas,
+      timeline.range || "Long-range Vimshottari context around the birth timeline.",
+    ],
+    [
+      "Current Antardasha branch",
+      timeline.current_antardashas,
+      "Sub-periods inside the active Mahadasha. This is the most useful layer for current planning.",
+    ],
+    [
+      "Current Pratyantar branch",
+      timeline.current_pratyantars,
+      "Shorter trigger layer inside the active Antardasha. Use for near-term action, not fear.",
+    ],
+  ]
+
+  const visibleGroups = groups.filter(([, rows]) => rows?.length)
+
+  if (!visibleGroups.length) {
     return null
   }
 
   return (
-    <div className="overflow-hidden rounded-[22px] border border-[rgba(13,129,126,0.16)] bg-[rgba(240,248,246,0.72)]">
-      <div className="px-4 py-4">
+    <div className="rounded-[20px] border border-[var(--shreem-border)] bg-white/70 px-4 py-4">
+      <div>
         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
-          Prediction table
+          Life dasha timing map
+        </p>
+        <p className="mt-2 text-xs leading-5 text-[var(--shreem-muted)]">
+          Vimshottari timing from Moon nakshatra balance. The first table covers
+          the full Mahadasha life arc; the smaller current branch tables explain
+          the present operating period.
         </p>
       </div>
+      {!!timeline.mahadashas?.length && (
+        <div className="mt-4 grid gap-2 small:grid-cols-2 medium:grid-cols-3">
+          {timeline.mahadashas.map((period, index) => {
+            const now = new Date()
+            const status =
+              now >= new Date(period.startIso) && now < new Date(period.endIso)
+                ? "Current"
+                : new Date(period.endIso) < now
+                  ? "Past"
+                  : "Future"
+
+            return (
+              <article
+                key={`life-md-${period.lord}-${period.startIso}-${index}`}
+                className={`rounded-[16px] border px-3 py-3 ${
+                  status === "Current"
+                    ? "border-[rgba(13,129,126,0.34)] bg-[rgba(240,248,246,0.9)]"
+                    : "border-[var(--shreem-border)] bg-white/70"
+                }`}
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <p className="text-sm font-semibold text-[var(--shreem-ink)]">
+                    {period.lord} Mahadasha
+                  </p>
+                  <span className="rounded-full bg-white/80 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--shreem-muted)]">
+                    {status}
+                  </span>
+                </div>
+                <p className="mt-2 text-xs leading-5 text-[var(--shreem-muted)]">
+                  {period.startLabel} to {period.endLabel}
+                </p>
+                <p className="mt-1 text-xs leading-5 text-[var(--shreem-muted)]">
+                  Approx {Number(period.durationYears).toFixed(1)} years
+                </p>
+              </article>
+            )
+          })}
+        </div>
+      )}
+      <div className="mt-4 grid gap-4">
+        {visibleGroups.map(([title, rows, note]) => (
+          <div key={title} className="grid gap-2">
+            <div className="flex flex-col gap-1 small:flex-row small:items-end small:justify-between">
+              <p className="text-sm font-semibold text-[var(--shreem-ink)]">
+                {title}
+              </p>
+              <p className="text-xs leading-5 text-[var(--shreem-muted)]">
+                {note}
+              </p>
+            </div>
+            <div className="overflow-hidden rounded-[16px] border border-[var(--shreem-border)]">
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-0 small:min-w-[620px] text-left text-xs">
+                  <thead className="bg-[rgba(255,248,233,0.9)] text-[var(--shreem-gold-deep)]">
+                    <tr>
+                      {["Period", "Lord", "From", "To", "Years"].map((head) => (
+                        <th
+                          key={head}
+                          className="px-3 py-2 font-semibold uppercase tracking-[0.05em] small:tracking-[0.12em]"
+                        >
+                          {head}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[var(--shreem-border)] bg-white/78">
+                    {(rows || []).map((row, index) => (
+                      <tr key={`${title}-${row.lord}-${row.startIso}-${index}`}>
+                        <td className="break-words px-3 py-2 font-medium text-[var(--shreem-ink)]">
+                          {row.parentPath ? `${row.parentPath}/` : ""}
+                          {row.level}
+                        </td>
+                        <td className="break-words px-3 py-2 text-[var(--shreem-muted)]">
+                          {row.lord}
+                        </td>
+                        <td className="break-words px-3 py-2 text-[var(--shreem-muted)]">
+                          {row.startLabel}
+                        </td>
+                        <td className="break-words px-3 py-2 text-[var(--shreem-muted)]">
+                          {row.endLabel}
+                        </td>
+                        <td className="break-words px-3 py-2 text-[var(--shreem-muted)]">
+                          {Number(row.durationYears).toFixed(
+                            row.durationYears < 0.1 ? 4 : 2
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+      {!!timeline.lifetime_antardashas?.length && (
+        <details className="mt-4 overflow-hidden rounded-[16px] border border-[var(--shreem-border)] bg-white/78">
+          <summary className="cursor-pointer px-4 py-3 text-sm font-semibold text-[var(--shreem-ink)]">
+            Full-life Antardasha map ({timeline.lifetime_antardashas.length} periods)
+          </summary>
+          <p className="border-t border-[var(--shreem-border)] px-4 py-3 text-xs leading-5 text-[var(--shreem-muted)]">
+            Open this technical table when checking an event across the whole life. The current branch above remains the practical planning view.
+          </p>
+          <div className="overflow-x-auto border-t border-[var(--shreem-border)]">
+            <table className="w-full min-w-0 small:min-w-[620px] text-left text-xs">
+              <thead className="bg-[rgba(255,248,233,0.9)] text-[var(--shreem-gold-deep)]">
+                <tr>{["Mahadasha", "Antardasha", "From", "To"].map((head) => <th key={head} className="px-3 py-2 font-semibold uppercase tracking-[0.05em] small:tracking-[0.12em]">{head}</th>)}</tr>
+              </thead>
+              <tbody className="divide-y divide-[var(--shreem-border)]">
+                {timeline.lifetime_antardashas.map((row, index) => (
+                  <tr key={`life-ad-${row.parentPath}-${row.lord}-${row.startIso}-${index}`}>
+                    <td className="break-words px-3 py-2 text-[var(--shreem-muted)]">{row.parentPath}</td>
+                    <td className="break-words px-3 py-2 font-medium text-[var(--shreem-ink)]">{row.lord}</td>
+                    <td className="break-words px-3 py-2 text-[var(--shreem-muted)]">{row.startLabel}</td>
+                    <td className="break-words px-3 py-2 text-[var(--shreem-muted)]">{row.endLabel}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </details>
+      )}
+    </div>
+  )
+}
+
+const PlanetTable = ({ chart }: { chart: PrashnaChart }) => {
+  const showDegree = chart.planets.some((planet) => formatDegree(planet.signDegree))
+  const showBhavaImpact = chart.planets.some(
+    (planet) =>
+      typeof planet.bhavaImpactPercent === "number" ||
+      (planet.rashiHouse && planet.bhavaHouse && planet.rashiHouse !== planet.bhavaHouse)
+  )
+
+  return (
+    <div className="overflow-hidden rounded-[22px] border border-[var(--shreem-border)] bg-white/64">
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[760px] text-left text-xs">
-          <thead className="bg-white/66 text-[var(--shreem-gold-deep)]">
+        <table className="w-full min-w-0 small:min-w-[680px] text-left text-xs">
+          <thead className="bg-[rgba(255,248,233,0.9)] text-[var(--shreem-gold-deep)]">
             <tr>
-              {["Area", "Chart basis", "Prediction", "Advice"].map((heading) => (
-                <th
-                  key={heading}
-                  className="px-3 py-3 font-semibold uppercase tracking-[0.14em]"
-                >
-                  {heading}
-                </th>
-              ))}
+              {[
+                "Graha",
+                "Sign",
+                showDegree ? "Degree" : "",
+                "House",
+                showBhavaImpact ? "Bhava impact" : "",
+                "Nakshatra",
+                "Motion",
+              ]
+                .filter(Boolean)
+                .map((heading) => (
+                  <th
+                    key={heading}
+                    className="px-3 py-3 font-semibold uppercase tracking-[0.06em] small:tracking-[0.14em]"
+                  >
+                    {heading}
+                  </th>
+                ))}
             </tr>
           </thead>
           <tbody>
-            {rows.map((row, index) => (
+            {chart.planets.map((planet) => (
               <tr
-                key={`${row.area}-${index}`}
+                key={planet.key}
                 className="border-t border-[var(--shreem-border)] text-[var(--shreem-muted)]"
               >
-                <td className="px-3 py-3 font-semibold text-[var(--shreem-ink)]">
-                  {row.area}
+                <td className="break-words px-3 py-3 font-semibold text-[var(--shreem-ink)]">
+                  {planet.name}
                 </td>
-                <td className="px-3 py-3">{row.chart_basis}</td>
-                <td className="px-3 py-3">{row.prediction}</td>
-                <td className="px-3 py-3">{row.advice}</td>
+                <td className="break-words px-3 py-3">{planet.sign}</td>
+                {showDegree && (
+                  <td className="break-words px-3 py-3">
+                    {formatDegree(planet.signDegree) || "Degree unavailable"}
+                  </td>
+                )}
+                <td className="break-words px-3 py-3">{formatHousePosition(planet)}</td>
+                {showBhavaImpact && (
+                  <td className="break-words px-3 py-3">
+                    {planet.rashiHouse && planet.bhavaHouse && planet.rashiHouse !== planet.bhavaHouse
+                      ? `Rashi H${planet.rashiHouse} to Bhava H${planet.bhavaHouse}`
+                      : "Same house"}
+                    {typeof planet.bhavaImpactPercent === "number"
+                      ? ` · ${planet.bhavaImpactPercent}% ${planet.bhavaImpactState || "impact"}`
+                      : ""}
+                  </td>
+                )}
+                <td className="break-words px-3 py-3">
+                  {planet.nakshatra} pada {planet.pada}
+                </td>
+                <td className="break-words px-3 py-3">
+                  {planet.retrograde ? "Retrograde" : "Direct"}
+                </td>
               </tr>
             ))}
           </tbody>
@@ -1039,8 +1301,568 @@ const PredictionTable = ({
   )
 }
 
+const HouseTable = ({ chart }: { chart: PrashnaChart }) => {
+  const showCusp = chart.houses.some(
+    (house) => typeof house.cuspDegree === "number" && house.cuspSign
+  )
+
+  return (
+    <div className="overflow-hidden rounded-[22px] border border-[var(--shreem-border)] bg-white/64">
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-0 small:min-w-[720px] text-left text-xs">
+          <thead className="bg-[rgba(240,248,246,0.86)] text-[var(--shreem-gold-deep)]">
+            <tr>
+              {["House", "Sign", showCusp ? "Bhava madhya" : "", "Lord", "Planets", "Drishti received", "Theme"]
+                .filter(Boolean)
+                .map((heading) => (
+                  <th
+                    key={heading}
+                    className="px-3 py-3 font-semibold uppercase tracking-[0.06em] small:tracking-[0.14em]"
+                  >
+                    {heading}
+                  </th>
+                ))}
+            </tr>
+          </thead>
+          <tbody>
+            {chart.houses.map((house) => {
+              const planets = getHousePlanets(chart, house.house)
+              const synthesis = chart.houseSynthesis?.find(
+                (item) => item.house === house.house
+              )
+              const aspects = synthesis?.aspectsReceived || house.aspectsReceived || []
+
+              return (
+                <tr
+                  key={house.house}
+                  className="border-t border-[var(--shreem-border)] text-[var(--shreem-muted)]"
+                >
+                  <td className="break-words px-3 py-3 font-semibold text-[var(--shreem-ink)]">
+                    {house.house}
+                  </td>
+                  <td className="break-words px-3 py-3">{house.sign}</td>
+                  {showCusp && (
+                    <td className="break-words px-3 py-3">
+                      {typeof house.cuspDegree === "number" && house.cuspSign
+                        ? `${house.cuspSign} ${formatDegree(house.cuspDegree)}`
+                        : "Not calculated for this house"}
+                    </td>
+                  )}
+                  <td className="break-words px-3 py-3">{house.signLord}</td>
+                  <td className="break-words px-3 py-3">
+                    {planets.length
+                      ? planets.map((planet) => planet.name).join(", ")
+                      : "None"}
+                  </td>
+                  <td className="break-words px-3 py-3">
+                    {aspects.length
+                      ? aspects
+                          .slice(0, 4)
+                          .map(
+                            (aspect) =>
+                              `${aspect.fromPlanet} ${aspect.aspectType}`
+                          )
+                          .join(", ")
+                      : "None"}
+                  </td>
+                  <td className="break-words px-3 py-3">{house.theme}</td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
+const GrahaProofGrid = ({ chart }: { chart: PrashnaChart }) => (
+  <section className="rounded-[22px] border border-[rgba(212,161,38,0.22)] bg-[rgba(255,248,233,0.62)] px-4 py-4">
+    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
+      Graha proof
+    </p>
+    <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
+      Each graha card shows placement, nakshatra, motion, Bhava Chalit shift,
+      and the houses it aspects. This is easier to read than a raw graha table.
+    </p>
+    <div className="mt-4 grid gap-3 md:grid-cols-2">
+      {chart.planets.map((planet) => {
+        const aspects = planet.aspects || []
+        const rashiHouse = planet.rashiHouse || planet.house
+        const bhavaHouse = planet.bhavaHouse || planet.house
+
+        return (
+          <article
+            key={`graha-proof-${planet.key}`}
+            className="min-w-0 rounded-[18px] border border-[var(--shreem-border)] bg-white/76 px-4 py-4"
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-[var(--shreem-ink)]">
+                  {planet.name}
+                </p>
+                <p className="mt-1 text-xs leading-5 text-[var(--shreem-muted)]">
+                  {planet.sign}
+                  {formatDegree(planet.signDegree)
+                    ? ` ${formatDegree(planet.signDegree)}`
+                    : ""}{" "}
+                  · {planet.nakshatra} pada {planet.pada}
+                  {planet.retrograde ? " · retrograde" : " · direct"}
+                </p>
+              </div>
+              <span className="shrink-0 rounded-full bg-[rgba(13,129,126,0.08)] px-2.5 py-1 text-xs font-semibold text-[var(--shreem-accent-dark)]">
+                H{planet.house}
+              </span>
+            </div>
+            <div className="mt-3 grid gap-2 text-xs leading-5 text-[var(--shreem-muted)]">
+              <p>
+                <span className="font-semibold text-[var(--shreem-ink)]">
+                  House effect:
+                </span>{" "}
+                {formatHousePosition(planet)}
+              </p>
+              {rashiHouse !== bhavaHouse && (
+                <p className="rounded-[14px] bg-[rgba(255,248,233,0.86)] px-3 py-2">
+                  Bhava Chalit shifts this graha from Rashi H{rashiHouse} to
+                  Bhava H{bhavaHouse}
+                  {typeof planet.bhavaImpactPercent === "number"
+                    ? ` with ${planet.bhavaImpactPercent}% ${planet.bhavaImpactState || "measured"} impact`
+                    : ""}
+                  .
+                </p>
+              )}
+              <p>
+                <span className="font-semibold text-[var(--shreem-ink)]">
+                  Drishti given:
+                </span>{" "}
+                {aspects.length
+                  ? aspects
+                      .slice(0, 4)
+                      .map(
+                        (aspect) =>
+                          `H${aspect.toHouse} ${aspect.toSign} (${aspect.aspectType})`
+                      )
+                      .join(", ")
+                  : "No listed special drishti."}
+              </p>
+              {planet.houseNote && (
+                <p className="rounded-[14px] bg-[rgba(240,248,246,0.72)] px-3 py-2">
+                  {compactKundliText(planet.houseNote, 220)}
+                </p>
+              )}
+            </div>
+          </article>
+        )
+      })}
+    </div>
+  </section>
+)
+
+const AspectAuditTable = ({ chart }: { chart: PrashnaChart }) => {
+  const aspects = chart.aspects || []
+
+  if (!aspects.length) {
+    return (
+      <p className="rounded-[16px] border border-[var(--shreem-border)] bg-white/64 px-4 py-3 text-xs leading-5 text-[var(--shreem-muted)]">
+        No Parashari drishti rows were produced for this chart.
+      </p>
+    )
+  }
+
+  return (
+    <div className="overflow-hidden rounded-[22px] border border-[var(--shreem-border)] bg-white/64">
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-0 small:min-w-[760px] text-left text-xs">
+          <thead className="bg-[rgba(255,248,233,0.9)] text-[var(--shreem-gold-deep)]">
+            <tr>
+              {["From", "To", "Drishti", "Theme", "Interpretation"].map(
+                (heading) => (
+                  <th
+                    key={heading}
+                    className="px-3 py-3 font-semibold uppercase tracking-[0.06em] small:tracking-[0.14em]"
+                  >
+                    {heading}
+                  </th>
+                )
+              )}
+            </tr>
+          </thead>
+          <tbody>
+            {aspects.map((aspect, index) => (
+              <tr
+                key={`${aspect.fromPlanet}-${aspect.toHouse}-${index}`}
+                className="border-t border-[var(--shreem-border)] text-[var(--shreem-muted)]"
+              >
+                <td className="break-words px-3 py-3 font-semibold text-[var(--shreem-ink)]">
+                  {aspect.fromPlanet} · H{aspect.fromHouse} {aspect.fromSign}
+                </td>
+                <td className="break-words px-3 py-3">
+                  H{aspect.toHouse} {aspect.toSign}
+                </td>
+                <td className="break-words px-3 py-3">
+                  {aspect.aspectType} · {aspect.strength}
+                </td>
+                <td className="break-words px-3 py-3">{aspect.theme}</td>
+                <td className="break-words px-3 py-3">
+                  {aspect.interpretation}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
+const HouseSynthesisAuditTable = ({ chart }: { chart: PrashnaChart }) => {
+  const rows = chart.houseSynthesis || []
+
+  if (!rows.length) {
+    return (
+      <p className="rounded-[16px] border border-[var(--shreem-border)] bg-white/64 px-4 py-3 text-xs leading-5 text-[var(--shreem-muted)]">
+        House synthesis audit was not produced for this chart.
+      </p>
+    )
+  }
+
+  return (
+    <div className="overflow-hidden rounded-[22px] border border-[var(--shreem-border)] bg-white/64">
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-0 small:min-w-[820px] text-left text-xs">
+          <thead className="bg-[rgba(240,248,246,0.86)] text-[var(--shreem-gold-deep)]">
+            <tr>
+              {["House", "Sign/Lord", "Planets", "Drishti received", "Synthesis"].map(
+                (heading) => (
+                  <th
+                    key={heading}
+                    className="px-3 py-3 font-semibold uppercase tracking-[0.06em] small:tracking-[0.14em]"
+                  >
+                    {heading}
+                  </th>
+                )
+              )}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row) => (
+              <tr
+                key={`house-synthesis-audit-${row.house}`}
+                className="border-t border-[var(--shreem-border)] text-[var(--shreem-muted)]"
+              >
+                <td className="break-words px-3 py-3 font-semibold text-[var(--shreem-ink)]">
+                  H{row.house} · {row.theme}
+                </td>
+                <td className="break-words px-3 py-3">
+                  {row.sign} · lord {row.signLord}
+                </td>
+                <td className="break-words px-3 py-3">
+                  {row.planetsPlaced.length
+                    ? row.planetsPlaced.join(", ")
+                    : "No planet placed"}
+                </td>
+                <td className="break-words px-3 py-3">
+                  {row.aspectsReceived.length
+                    ? row.aspectsReceived
+                        .map(
+                          (aspect) =>
+                            `${aspect.fromPlanet} ${aspect.aspectType}`
+                        )
+                        .join(", ")
+                    : "None"}
+                </td>
+                <td className="break-words px-3 py-3">{row.synthesis}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
+const BphsRuleProofList = ({
+  proofs,
+}: {
+  proofs?: KundliResult["bphs_rule_proofs"]
+}) => {
+  if (!proofs?.length) {
+    return null
+  }
+
+  return (
+    <section className="rounded-[22px] border border-[rgba(111,33,31,0.16)] bg-[rgba(255,248,233,0.68)] px-4 py-4">
+      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
+        BPHS rule proof
+      </p>
+      <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
+        Deterministic rule matches from Brihat Parashara Hora Shastra. These are
+        calculated before AI text generation, so astrologers can verify the
+        exact shastra rule, chart fact, and application.
+      </p>
+      <div className="mt-4 grid gap-3">
+        {proofs.slice(0, 18).map((proof, index) => (
+          <article
+            key={`${proof.id}-${index}`}
+            className="rounded-[18px] border border-[var(--shreem-border)] bg-white/76 px-4 py-4"
+          >
+            <div className="flex flex-col gap-2 small:flex-row small:items-start small:justify-between">
+              <div>
+                <p className="text-sm font-semibold text-[var(--shreem-ink)]">
+                  {proof.chapter}
+                </p>
+                <p className="mt-1 text-xs font-semibold uppercase tracking-[0.08em] text-[var(--shreem-gold-deep)]">
+                  {proof.area} · {proof.strength}
+                </p>
+              </div>
+              <span className="rounded-full bg-[rgba(13,129,126,0.08)] px-3 py-1 text-xs font-semibold text-[var(--shreem-accent-dark)]">
+                {proof.source}
+              </span>
+            </div>
+            <div className="mt-3 grid gap-2 text-xs leading-5 text-[var(--shreem-muted)]">
+              <p>
+                <span className="font-semibold text-[var(--shreem-ink)]">
+                  Rule:
+                </span>{" "}
+                {proof.rule}
+              </p>
+              <p className="rounded-[14px] bg-[rgba(240,248,246,0.72)] px-3 py-2">
+                <span className="font-semibold text-[var(--shreem-ink)]">
+                  Chart fact:
+                </span>{" "}
+                {proof.chart_fact}
+              </p>
+              <p className="rounded-[14px] bg-[rgba(255,252,248,0.86)] px-3 py-2">
+                <span className="font-semibold text-[var(--shreem-ink)]">
+                  Application:
+                </span>{" "}
+                {proof.application}
+              </p>
+            </div>
+          </article>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+const LongevityAssessmentCard = ({
+  assessment,
+}: {
+  assessment?: KundliResult["longevity_assessment"]
+}) => {
+  if (!assessment) {
+    return null
+  }
+
+  const factorGroups = [
+    {
+      label: "Protective factors",
+      values: assessment.protective_factors,
+      tone: "text-[var(--shreem-accent-dark)]",
+    },
+    {
+      label: "Pressure factors",
+      values: assessment.pressure_factors,
+      tone: "text-[var(--shreem-maroon)]",
+    },
+    {
+      label: "Maraka audit",
+      values: assessment.maraka_factors,
+      tone: "text-[var(--shreem-muted)]",
+    },
+  ]
+
+  return (
+    <section className="rounded-[22px] border border-[rgba(111,33,31,0.16)] bg-[rgba(255,248,233,0.72)] px-4 py-4">
+      <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
+            Longevity rule audit
+          </p>
+          <h4 className="mt-2 text-lg font-semibold text-[var(--shreem-ink)]">
+            {assessment.classification}
+          </h4>
+          <p className="mt-1 text-sm leading-6 text-[var(--shreem-muted)]">
+            Score {assessment.score} · confidence {assessment.confidence}. This
+            is classical vitality evidence for astrologer review, not a death
+            date or medical prediction.
+          </p>
+        </div>
+        <span className="rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-[var(--shreem-ink)]">
+          BPHS Ch. 43-44
+        </span>
+      </div>
+
+      <div className="mt-4 grid gap-3 lg:grid-cols-3">
+        {factorGroups.map((group) => (
+          <div
+            key={group.label}
+            className="rounded-[16px] border border-[var(--shreem-border)] bg-white/78 px-3 py-3"
+          >
+            <p className={`text-xs font-semibold uppercase tracking-[0.08em] ${group.tone}`}>
+              {group.label}
+            </p>
+            <ul className="mt-2 grid gap-2 text-xs leading-5 text-[var(--shreem-muted)]">
+              {group.values?.length ? (
+                group.values.slice(0, 4).map((value, index) => (
+                  <li key={`${group.label}-${index}`}>{value}</li>
+                ))
+              ) : (
+                <li>No strong factor isolated.</li>
+              )}
+            </ul>
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-4 grid gap-3">
+        {assessment.rule_proofs.slice(0, 5).map((proof) => (
+          <article
+            key={proof.id}
+            className="rounded-[16px] border border-[var(--shreem-border)] bg-white/80 px-3 py-3 text-xs leading-5 text-[var(--shreem-muted)]"
+          >
+            <p className="font-semibold text-[var(--shreem-ink)]">
+              {proof.chapter} · {proof.polarity} · score {proof.score}
+            </p>
+            <p className="mt-2">
+              <span className="font-semibold text-[var(--shreem-ink)]">Rule:</span>{" "}
+              {proof.rule}
+            </p>
+            <p className="mt-2 rounded-[12px] bg-[rgba(240,248,246,0.72)] px-3 py-2">
+              <span className="font-semibold text-[var(--shreem-ink)]">
+                Chart fact:
+              </span>{" "}
+              {proof.chart_fact}
+            </p>
+            <p className="mt-2">
+              <span className="font-semibold text-[var(--shreem-ink)]">
+                Application:
+              </span>{" "}
+              {proof.application}
+            </p>
+          </article>
+        ))}
+      </div>
+
+      <p className="mt-3 text-xs leading-5 text-[var(--shreem-muted)]">
+        {assessment.safety_note}
+      </p>
+    </section>
+  )
+}
+
+const AstrologerAuditTables = ({ chart }: { chart: PrashnaChart }) => (
+  <section className="rounded-[22px] border border-[rgba(18,63,99,0.14)] bg-[rgba(255,252,248,0.78)] px-4 py-4">
+    <div>
+      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
+        Astrologer audit tables
+      </p>
+      <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
+        Technical verification layer for astrologers: house placement, graha
+        placement, Bhava Chalit movement, received drishti, and synthesized
+        house judgement. Columns that cannot be calculated for the selected
+        system are hidden instead of shown blank.
+      </p>
+    </div>
+    <div className="mt-4 grid gap-4">
+      <div>
+        <p className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--shreem-gold-deep)]">
+          House audit
+        </p>
+        <HouseTable chart={chart} />
+      </div>
+      <div>
+        <p className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--shreem-gold-deep)]">
+          Graha audit
+        </p>
+        <PlanetTable chart={chart} />
+      </div>
+      <div>
+        <p className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--shreem-gold-deep)]">
+          Drishti audit
+        </p>
+        <AspectAuditTable chart={chart} />
+      </div>
+      <div>
+        <p className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--shreem-gold-deep)]">
+          House synthesis audit
+        </p>
+        <HouseSynthesisAuditTable chart={chart} />
+      </div>
+    </div>
+  </section>
+)
+
+const PredictionTable = ({
+  rows,
+  hasQuestionAnswers = false,
+}: {
+  rows?: KundliAnalysis["prediction_table"]
+  hasQuestionAnswers?: boolean
+}) => {
+  const visibleRows = (rows || []).filter((row) => {
+    const text = `${row.area || ""} ${row.chart_basis || ""} ${row.prediction || ""}`.toLowerCase()
+
+    return (
+      !/(markesh|maraka|badhakesh|bad period|danger window|death|cancer|diabetes|thyroid|arthritis|bp disease)/.test(
+        text
+      ) && !isTemplatePredictionRow(row, hasQuestionAnswers)
+    )
+  })
+
+  if (!visibleRows.length) {
+    return null
+  }
+
+  return (
+    <div className="rounded-[22px] border border-[rgba(13,129,126,0.16)] bg-[rgba(240,248,246,0.72)] px-4 py-4">
+      <div className="px-4 py-4">
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
+          Prediction proof cards
+        </p>
+        <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
+          Each card gives the useful prediction first. The proof line is kept
+          compact so this section stays readable instead of becoming an internal
+          audit table.
+        </p>
+      </div>
+      <div className="grid gap-3 md:grid-cols-2">
+        {visibleRows.map((row, index) => (
+          <article
+            key={`${row.area}-${index}`}
+            className="rounded-[18px] border border-[var(--shreem-border)] bg-white/70 px-4 py-4"
+          >
+            <p className="text-sm font-semibold text-[var(--shreem-ink)]">
+              {row.area}
+            </p>
+            <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
+              {row.prediction}
+            </p>
+            {row.advice && (
+              <p className="mt-3 rounded-[14px] bg-[rgba(255,248,233,0.74)] px-3 py-2 text-xs leading-5 text-[var(--shreem-muted)]">
+                {row.advice}
+              </p>
+            )}
+            {row.chart_basis && (
+              <p className="mt-3 text-xs leading-5 text-[var(--shreem-muted)]">
+                <span className="font-semibold text-[var(--shreem-ink)]">
+                  Why:
+                </span>{" "}
+                {compactKundliText(row.chart_basis, 260)}
+              </p>
+            )}
+          </article>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 const PrashnaChartView = ({ result }: { result: PrashnaResult }) => {
   const chart = result.chart
+  const [guideOpen, setGuideOpen] = useState(false)
+  const [activeSection, setActiveSection] = useState("prashna-answer")
 
   if (!chart) {
     return null
@@ -1048,6 +1870,18 @@ const PrashnaChartView = ({ result }: { result: PrashnaResult }) => {
 
   return (
     <div className="grid gap-4 relative">
+      <ResultAnchorNav
+        items={[
+          { id: "prashna-answer", label: "Answer" },
+          { id: "prashna-chart", label: "Chart" },
+          { id: "prashna-factors", label: "Factors" },
+          { id: "prashna-timing", label: "Timing" },
+        ]}
+        activeId={activeSection}
+        onSelect={setActiveSection}
+        onOpenInfo={() => setGuideOpen(true)}
+      />
+      <KundliGuideModal open={guideOpen} onClose={() => setGuideOpen(false)} />
       <div className="flex justify-center mb-4">
         <LogoLoader compact label="Shreem Prashna Kundli" />
       </div>
@@ -1087,15 +1921,32 @@ const PrashnaChartView = ({ result }: { result: PrashnaResult }) => {
         />
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-2">
+      <div
+        id="prashna-chart"
+        className={
+          activeSection === "prashna-chart"
+            ? "grid gap-4 scroll-mt-28 xl:grid-cols-2"
+            : "hidden"
+        }
+      >
         <NorthIndianChart chart={chart} mode="lagna" title="Prashna Rashi chart" />
         <NorthIndianChart chart={chart} mode="bhava" title="Prashna Bhava Chalit" />
       </div>
 
-      <BhavaChalitSummary chart={chart} />
+      {activeSection === "prashna-chart" && <BhavaChalitSummary chart={chart} />}
 
       {result.answer && (
-        <div className="grid gap-3">
+        <div
+          id="prashna-answer"
+          className={
+            activeSection === "prashna-answer"
+              ? "overflow-hidden rounded-[22px] border border-[var(--shreem-border)] bg-white/66 scroll-mt-28"
+              : "hidden"
+          }
+        >
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-0 small:min-w-[680px] text-left text-sm">
+              <tbody>
           {[
             ["Answer", result.answer],
             ["Chart summary", result.chart_summary],
@@ -1106,23 +1957,27 @@ const PrashnaChartView = ({ result }: { result: PrashnaResult }) => {
             ["Next step", result.next_step],
           ].map(([label, value]) =>
             value ? (
-              <div
+              <tr
                 key={label}
-                className="rounded-[18px] border border-[var(--shreem-border)] bg-white/66 px-4 py-4"
+                className="border-t border-[var(--shreem-border)] first:border-t-0"
               >
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
+                <th className="break-words w-[180px] bg-[rgba(255,248,233,0.72)] px-4 py-4 align-top text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
                   {label}
-                </p>
-                <p className="mt-2 break-words text-sm leading-7 text-[var(--shreem-muted)]">
+                </th>
+                <td className="break-words break-words px-4 py-4 leading-7 text-[var(--shreem-muted)]">
                   {value}
-                </p>
-              </div>
+                </td>
+              </tr>
             ) : null
           )}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
-      {Boolean(result.sub_question_answers?.length) && (
+      {activeSection === "prashna-answer" &&
+        Boolean(result.sub_question_answers?.length) && (
         <div className="rounded-[20px] border border-[var(--shreem-border)] bg-white/60 px-4 py-4">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
             Question-wise Prashna answer
@@ -1148,8 +2003,9 @@ const PrashnaChartView = ({ result }: { result: PrashnaResult }) => {
         </div>
       )}
 
-      {Boolean(result.key_chart_factors?.length || chart.prashnaFactors.length) && (
-        <div className="rounded-[20px] border border-[var(--shreem-border)] bg-white/60 px-4 py-4">
+      {activeSection === "prashna-factors" &&
+        Boolean(result.key_chart_factors?.length || chart.prashnaFactors.length) && (
+        <div id="prashna-factors" className="rounded-[20px] border border-[var(--shreem-border)] bg-white/60 px-4 py-4 scroll-mt-28">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
             Key chart factors
           </p>
@@ -1169,9 +2025,11 @@ const PrashnaChartView = ({ result }: { result: PrashnaResult }) => {
         </div>
       )}
 
-      <BookCitationList items={result.book_citations} />
+      {activeSection === "prashna-factors" && (
+        <BookCitationList items={result.book_citations} />
+      )}
 
-      {result.expert_call_recommended && (
+      {activeSection === "prashna-answer" && result.expert_call_recommended && (
         <div className="rounded-[20px] border border-[rgba(212,161,38,0.32)] bg-[rgba(255,248,233,0.84)] px-4 py-4">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
             Expert review suggested
@@ -1189,7 +2047,7 @@ const PrashnaChartView = ({ result }: { result: PrashnaResult }) => {
         </div>
       )}
 
-      {chart.planets.length > 0 && (
+      {activeSection === "prashna-factors" && chart.planets.length > 0 && (
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
             Graha positions
@@ -1202,7 +2060,7 @@ const PrashnaChartView = ({ result }: { result: PrashnaResult }) => {
         </div>
       )}
 
-      {chart.houses.length > 0 && (
+      {activeSection === "prashna-factors" && chart.houses.length > 0 && (
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
             {chart.houseSystem?.label || "House chart"}
@@ -1215,7 +2073,14 @@ const PrashnaChartView = ({ result }: { result: PrashnaResult }) => {
         </div>
       )}
 
-      <p className="rounded-[18px] border border-[var(--shreem-border)] bg-white/52 px-4 py-3 text-xs leading-5 text-[var(--shreem-muted)]">
+      <p
+        id="prashna-timing"
+        className={
+          activeSection === "prashna-timing"
+            ? "rounded-[18px] border border-[var(--shreem-border)] bg-white/52 px-4 py-3 text-xs leading-5 text-[var(--shreem-muted)] scroll-mt-28"
+            : "hidden"
+        }
+      >
         {chart.accuracyNote}
       </p>
 
@@ -1396,39 +2261,33 @@ const PLANET_SHORT: Record<string, string> = {
   Ketu: "Ke",
 }
 
-const northIndianHouseSlots: Record<
-  number,
-  {
-    x: number
-    y: number
-    signX: number
-    signY: number
-    anchor?: "start" | "middle" | "end"
-  }
-> = {
-  1: { x: 70, y: 22, signX: 70, signY: 37 },
-  2: { x: 40, y: 14, signX: 47, signY: 29 },
-  3: { x: 24, y: 35, signX: 38, signY: 44 },
-  4: { x: 19, y: 50, signX: 31, signY: 60 },
-  5: { x: 25, y: 72, signX: 38, signY: 65 },
-  6: { x: 40, y: 87, signX: 47, signY: 77 },
-  7: { x: 70, y: 82, signX: 70, signY: 67 },
-  8: { x: 100, y: 87, signX: 93, signY: 77 },
-  9: { x: 115, y: 72, signX: 102, signY: 65 },
-  10: { x: 121, y: 50, signX: 109, signY: 60 },
-  11: { x: 116, y: 35, signX: 102, signY: 44 },
-  12: { x: 100, y: 14, signX: 93, signY: 29 },
+const splitPlanetLabels = (labels: string[]) => {
+  if (!labels.length) return []
+  if (labels.length <= 2) return [labels.join(" ")]
+  if (labels.length <= 4) return [labels.slice(0, 2).join(" "), labels.slice(2).join(" ")]
+  return [
+    labels.slice(0, 2).join(" "),
+    labels.slice(2, 4).join(" "),
+    labels.slice(4).join(" "),
+  ]
 }
 
-const splitPlanetLabels = (labels: string[]) => {
-  if (labels.length <= 3) {
-    return [labels.join(" ")]
-  }
-
-  return [
-    labels.slice(0, Math.ceil(labels.length / 2)).join(" "),
-    labels.slice(Math.ceil(labels.length / 2)).join(" "),
-  ]
+const northIndianHouseCenters: Record<
+  number,
+  { x: number; y: number; width: number; align?: "start" | "middle" | "end" }
+> = {
+  1: { x: 300, y: 104, width: 118 },
+  2: { x: 212, y: 74, width: 128 },
+  3: { x: 96, y: 116, width: 118 },
+  4: { x: 83, y: 224, width: 112 },
+  5: { x: 96, y: 306, width: 118 },
+  6: { x: 218, y: 374, width: 128 },
+  7: { x: 300, y: 318, width: 118 },
+  8: { x: 382, y: 374, width: 128 },
+  9: { x: 504, y: 306, width: 118 },
+  10: { x: 517, y: 224, width: 112 },
+  11: { x: 504, y: 116, width: 118 },
+  12: { x: 388, y: 74, width: 128 },
 }
 
 const buildChartCells = (
@@ -1464,6 +2323,115 @@ const buildChartCells = (
   })
 }
 
+const escapeChartText = (value?: string | number) =>
+  String(value ?? "").replace(/[&<>"']/g, (char) => {
+    const entities: Record<string, string> = {
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#039;",
+    }
+
+    return entities[char] || char
+  })
+
+const getChartPlanetLines = (
+  cell: ReturnType<typeof buildChartCells>[number]
+) => {
+  const labels = [
+    ...(cell.marker
+      ? [
+          cell.marker === "Lagna"
+            ? "Asc"
+            : cell.marker === "Bhava"
+            ? "Bh"
+            : "Ch",
+        ]
+      : []),
+    ...cell.planets.map(
+      (planet) => PLANET_SHORT[planet.name] || planet.name.slice(0, 2)
+    ),
+  ]
+
+  return labels.length ? splitPlanetLabels(labels).slice(0, 3) : []
+}
+
+const getChartTextAnchor = (house: number) =>
+  northIndianHouseCenters[house]?.align || "middle"
+
+const getChartTextX = (house: number) => {
+  const slot = northIndianHouseCenters[house]
+
+  if (!slot) return 300
+  if (slot.align === "start") return slot.x - slot.width / 2
+  if (slot.align === "end") return slot.x + slot.width / 2
+  return slot.x
+}
+
+const buildNorthIndianChartSvg = ({
+  chart,
+  mode = "lagna",
+  title,
+}: {
+  chart: PrashnaChart
+  mode?: "lagna" | "moon" | "bhava"
+  title: string
+}) => {
+  const cells = buildChartCells(chart, mode)
+
+  return `<svg viewBox="0 0 600 420" role="img" aria-label="${escapeChartText(
+    title
+  )}" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <style>
+        .chart-line{stroke:#111827;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+        .chart-soft{stroke:#c9b989;stroke-width:1;stroke-linecap:round}
+        .label-bg{fill:#fffdf8;opacity:.92}
+        .house-sign{fill:#7b5618;font:700 13px Arial,sans-serif;letter-spacing:.02em}
+        .planet-text{fill:#123f63;font:800 16px Arial,sans-serif}
+      </style>
+    </defs>
+    <rect x="18" y="18" width="564" height="384" rx="10" fill="#fffdf8" stroke="#111827" stroke-width="3.2" />
+    <path class="chart-line" d="M18 18 L582 402 M582 18 L18 402" fill="none" />
+    <path class="chart-line" d="M300 18 L582 210 L300 402 L18 210 Z" fill="none" />
+    <path class="chart-soft" d="M300 18 L300 402 M18 210 L582 210" fill="none" opacity=".16" />
+    ${cells
+      .map((cell) => {
+        const slot = northIndianHouseCenters[cell.house]
+        const signNumber = SIGN_NUMBERS[cell.sign] || ""
+        const planetLines = getChartPlanetLines(cell)
+        const anchor = getChartTextAnchor(cell.house)
+        const x = getChartTextX(cell.house)
+        const signY = slot.y - (planetLines.length ? 14 : 0)
+        const planetStartY = slot.y + (planetLines.length > 2 ? 3 : 8)
+        const bgX =
+          anchor === "start" ? x - 6 : anchor === "end" ? x - 92 : x - 48
+        const bgHeight = 24 + planetLines.length * 20
+
+        return `<g>
+          <rect class="label-bg" x="${bgX}" y="${signY - 17}" width="98" height="${bgHeight}" rx="8" />
+          <text class="house-sign" x="${x}" y="${signY}" text-anchor="${anchor}">${escapeChartText(
+            `H${cell.house} R${signNumber}`
+          )}</text>
+          ${
+            planetLines.length
+              ? planetLines
+                  .map(
+                    (line, index) =>
+                      `<text class="planet-text" x="${x}" y="${
+                        planetStartY + index * 22
+                      }" text-anchor="${anchor}">${escapeChartText(line)}</text>`
+                  )
+                  .join("")
+              : ""
+          }
+        </g>`
+      })
+      .join("")}
+  </svg>`
+}
+
 const NorthIndianChart = ({
   chart,
   mode = "lagna",
@@ -1477,7 +2445,7 @@ const NorthIndianChart = ({
     return null
   }
 
-  const cells = buildChartCells(chart, mode)
+  const chartSvg = buildNorthIndianChartSvg({ chart, mode, title })
 
   return (
     <div className="rounded-[22px] border border-[rgba(212,161,38,0.28)] bg-[rgba(255,252,248,0.86)] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_18px_40px_rgba(11,39,53,0.08)]">
@@ -1490,88 +2458,10 @@ const NorthIndianChart = ({
         </p>
       </div>
       <div className="relative mx-auto aspect-[7/5] w-full max-w-[520px] overflow-hidden rounded-[14px] bg-white shadow-[inset_0_0_0_1px_rgba(156,105,18,0.08)]">
-        <svg
+        <div
           className="absolute inset-0 h-full w-full"
-          viewBox="0 0 140 100"
-          role="img"
-          aria-label={`${title} in North Indian style`}
-        >
-          <rect
-            x="3"
-            y="3"
-            width="134"
-            height="94"
-            fill="white"
-            stroke="#111827"
-            strokeWidth="1.25"
-          />
-          <path
-            d="M3 3 L137 97 M137 3 L3 97"
-            fill="none"
-            stroke="#111827"
-            strokeWidth="1.15"
-          />
-          <path
-            d="M70 3 L137 50 L70 97 L3 50 Z"
-            fill="none"
-            stroke="#111827"
-            strokeWidth="1.15"
-          />
-
-          {cells.map((cell) => {
-            const slot = northIndianHouseSlots[cell.house]
-            const planetLabels = splitPlanetLabels([
-              ...(cell.marker
-                ? [
-                    cell.marker === "Lagna"
-                      ? "Asc"
-                      : cell.marker === "Bhava"
-                      ? "Bh"
-                      : "Ch",
-                  ]
-                : []),
-              ...cell.planets.map(
-                (planet) => PLANET_SHORT[planet.name] || planet.name.slice(0, 2)
-              ),
-            ])
-
-            return (
-              <g key={`${mode}-${cell.house}-${cell.sign}`}>
-                {planetLabels.map((line, index) => (
-                  <text
-                    key={`${cell.house}-${line}-${index}`}
-                    x={slot.x}
-                    y={slot.y + index * 5.4}
-                    textAnchor={slot.anchor || "middle"}
-                    dominantBaseline="middle"
-                    fill="#123f63"
-                    stroke="white"
-                    strokeWidth="0.55"
-                    paintOrder="stroke"
-                    fontSize="4.2"
-                    fontWeight="700"
-                  >
-                    {line}
-                  </text>
-                ))}
-                <text
-                  x={slot.signX}
-                  y={slot.signY}
-                  textAnchor="middle"
-                  dominantBaseline="middle"
-                  fill="#9c6912"
-                  stroke="white"
-                  strokeWidth="0.7"
-                  paintOrder="stroke"
-                  fontSize="4.4"
-                  fontWeight="800"
-                >
-                  {SIGN_NUMBERS[cell.sign]}
-                </text>
-              </g>
-            )
-          })}
-        </svg>
+          dangerouslySetInnerHTML={{ __html: chartSvg }}
+        />
       </div>
     </div>
   )
@@ -1657,25 +2547,25 @@ const PlanetEffectList = ({
         Planet effects
       </p>
       <div className="mt-3 overflow-x-auto">
-        <table className="w-full text-left text-xs border-collapse min-w-[600px]">
+        <table className="w-full text-left text-xs border-collapse min-w-0 small:min-w-[600px]">
           <thead>
             <tr className="border-b border-[var(--shreem-border)] text-[var(--shreem-muted)]">
-              <th className="py-2 pr-3 font-semibold w-1/6">Planet</th>
-              <th className="py-2 px-3 font-semibold w-1/4">Effect</th>
-              <th className="py-2 px-3 font-semibold w-1/4">Timing</th>
-              <th className="py-2 pl-3 font-semibold w-1/3">Advice</th>
+              <th className="break-words py-2 pr-3 font-semibold w-1/6">Planet</th>
+              <th className="break-words py-2 px-3 font-semibold w-1/4">Effect</th>
+              <th className="break-words py-2 px-3 font-semibold w-1/4">Timing</th>
+              <th className="break-words py-2 pl-3 font-semibold w-1/3">Advice</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-[var(--shreem-border)] text-[var(--shreem-ink)]">
             {rows.map((item, index) => (
               <tr key={`${item.planet}-${index}`} className="group hover:bg-white/40 transition-colors">
-                <td className="py-3 pr-3 align-top">
+                <td className="break-words py-3 pr-3 align-top">
                   <span className="font-semibold block">{item.planet}</span>
                   <span className="text-[0.66rem] text-[var(--shreem-muted)] block mt-1 leading-snug">
                     {item.placement}
                   </span>
                 </td>
-                <td className="py-3 px-3 align-top">
+                <td className="break-words py-3 px-3 align-top">
                   <p className="leading-5">{item.effect}</p>
                   {item.life_area && (
                     <p className="mt-1 text-[10px] text-[var(--shreem-muted)]">
@@ -1688,10 +2578,10 @@ const PlanetEffectList = ({
                     </p>
                   )}
                 </td>
-                <td className="py-3 px-3 align-top leading-5 text-[var(--shreem-muted)]">
+                <td className="break-words py-3 px-3 align-top leading-5 text-[var(--shreem-muted)]">
                   {item.activation_period || "-"}
                 </td>
-                <td className="py-3 pl-3 align-top leading-5 text-[var(--shreem-muted)]">
+                <td className="break-words py-3 pl-3 align-top leading-5 text-[var(--shreem-muted)]">
                   {item.advice || "-"}
                 </td>
               </tr>
@@ -1727,16 +2617,16 @@ const DashaPredictionList = ({
               {item.period}
             </p>
             <p className="mt-2 text-xs leading-5 text-[var(--shreem-muted)]">
-              Chart basis: {item.chart_basis}
+              Evidence: {safeKundliText(item.chart_basis, "")}
             </p>
             <p className="mt-2 text-xs leading-5 text-[var(--shreem-muted)]">
-              BPHS basis: {item.classical_basis}
+              BPHS: {safeKundliText(item.classical_basis, "")}
             </p>
             <p className="mt-2 text-sm leading-6 text-[var(--shreem-ink)]">
-              {item.prediction}
+              {safeKundliText(item.prediction, "")}
             </p>
             <p className="mt-2 rounded-[14px] bg-[rgba(255,248,233,0.78)] px-3 py-2 text-xs leading-5 text-[var(--shreem-muted)]">
-              {item.action}
+              {safeKundliText(item.action, "")}
             </p>
           </div>
         ))}
@@ -1755,7 +2645,7 @@ const SubQuestionAnswersList = ({
   }
 
   return (
-    <div className="rounded-[20px] border border-[var(--shreem-border)] bg-[rgba(255,249,235,0.7)] px-4 py-4">
+    <div className="mt-4 rounded-[20px] border border-[var(--shreem-border)] bg-[rgba(255,249,235,0.7)] px-4 py-4">
       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
         Your specific questions answered
       </p>
@@ -1769,16 +2659,28 @@ const SubQuestionAnswersList = ({
               Q: {item.question}
             </p>
             <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
-              {item.answer}
+              {safeKundliText(item.answer, "", "This question needs a fresh AI interpretation.")}
             </p>
-            <div className="mt-3 rounded-[12px] bg-[rgba(13,129,126,0.06)] px-3 py-2">
-              <p className="text-[11px] font-semibold text-[var(--shreem-ink)] uppercase tracking-wide">
-                Chart Context
-              </p>
-              <p className="mt-1 text-xs leading-5 text-[var(--shreem-muted)]">
-                {item.chart_reason}
-              </p>
-            </div>
+            {item.timing && (
+              <div className="mt-3 rounded-[12px] bg-[rgba(255,211,105,0.16)] px-3 py-2">
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--shreem-gold-deep)]">
+                  Timing
+                </p>
+                <p className="mt-1 text-xs leading-5 text-[var(--shreem-muted)]">
+                  {safeKundliText(item.timing, "")}
+                </p>
+              </div>
+            )}
+            {item.action && (
+              <div className="mt-3 rounded-[12px] bg-[rgba(13,129,126,0.08)] px-3 py-2">
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--shreem-ink)]">
+                  Suggested action / upaay
+                </p>
+                <p className="mt-1 text-xs leading-5 text-[var(--shreem-muted)]">
+                  {safeKundliText(item.action, "")}
+                </p>
+              </div>
+            )}
           </div>
         ))}
       </div>
@@ -1810,19 +2712,19 @@ const SpecialCaseReadingList = ({
               {item.case_name}
             </p>
             <p className="mt-2 text-xs leading-5 text-[var(--shreem-muted)]">
-              Chart basis: {item.chart_basis}
+              Evidence: {safeKundliText(item.chart_basis, "")}
             </p>
             <p className="mt-2 text-xs leading-5 text-[var(--shreem-muted)]">
-              BPHS basis: {item.classical_basis}
+              BPHS: {safeKundliText(item.classical_basis, "")}
             </p>
             <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
-              {item.combined_effect}
+              {safeKundliText(item.combined_effect, "")}
             </p>
             <p className="mt-2 rounded-[14px] bg-[rgba(13,129,126,0.08)] px-3 py-2 text-xs leading-5 text-[var(--shreem-muted)]">
-              Timing: {item.timing}
+              Timing: {safeKundliText(item.timing, "")}
             </p>
             <p className="mt-2 rounded-[14px] bg-[rgba(255,248,233,0.74)] px-3 py-2 text-xs leading-5 text-[var(--shreem-muted)]">
-              Solution: {item.solution}
+              Solution: {safeKundliText(item.solution, "")}
             </p>
           </div>
         ))}
@@ -1874,63 +2776,624 @@ const RiskWatchList = ({
   )
 }
 
+const CriticalTimingWindowList = ({
+  analysis,
+}: {
+  analysis?: KundliCriticalPeriodAnalysis
+}) => {
+  const rawRows = analysis?.exact_timing_windows?.length
+    ? analysis.exact_timing_windows
+    : analysis?.watch_periods || []
+  const rows = rawRows.filter((row) => {
+    const score = "score" in row ? Number(row.score || 0) : 0
+    return row.confidence === "high" && score >= 24
+  })
+  const retrospectiveRows = (analysis?.retrospective_timing_windows || []).filter(
+    (row) => row.confidence === "high" && Number(row.score || 0) >= 24
+  )
+
+  if (!analysis) {
+    return (
+      <section className="rounded-[22px] border border-[rgba(111,33,31,0.16)] bg-[rgba(255,248,233,0.76)] px-4 py-4">
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
+          Next 30 years Markesh prevention windows
+        </p>
+        <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
+          This saved report does not include the newer Markesh scan data.
+          Regenerate the Kundli once to calculate the next-30-year prevention
+          windows and technical Maraka/Badhaka audit.
+        </p>
+      </section>
+    )
+  }
+
+  if (!rows.length && !retrospectiveRows.length) {
+    return (
+      <section className="rounded-[22px] border border-[rgba(111,33,31,0.16)] bg-[rgba(255,248,233,0.76)] px-4 py-4">
+        <div className="flex flex-col gap-2 small:flex-row small:items-end small:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
+              Lifetime Markesh prevention windows
+            </p>
+            <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
+              The system scanned birth-to-current history and the next 30 years
+              of Vimshottari timing, but no high-confidence Markesh prevention window met the display
+              threshold. This is good: weak or loose combinations are hidden so
+              the reading does not create fear. The technical audit is still
+              available in Chart Proof.
+            </p>
+          </div>
+          {analysis.badhakesh && (
+            <span className="rounded-full bg-white/78 px-3 py-1 text-xs font-semibold text-[var(--shreem-ink)]">
+              Badhakesh: {analysis.badhakesh}
+            </span>
+          )}
+        </div>
+      </section>
+    )
+  }
+
+  return (
+    <section className="rounded-[22px] border border-[rgba(111,33,31,0.16)] bg-[rgba(255,248,233,0.76)] px-4 py-4">
+      <div className="flex flex-col gap-2 small:flex-row small:items-end small:justify-between">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
+            Lifetime Markesh prevention windows
+          </p>
+          <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
+            Past windows help compare the rule engine with lived experience; future windows support prevention planning. The list shows short Sookshma/Pratyantar prevention windows
+            only when Maraka, Badhaka, dusthana, node and Mars/Saturn pressure
+            repeat together. Use these dates for discipline, careful travel,
+            routine checks and expert review, never as fatalistic prediction.
+          </p>
+        </div>
+        {analysis?.badhakesh && (
+          <span className="rounded-full bg-white/78 px-3 py-1 text-xs font-semibold text-[var(--shreem-ink)]">
+            Badhakesh: {analysis.badhakesh}
+          </span>
+        )}
+      </div>
+      {!!retrospectiveRows.length && (
+        <div className="mt-4">
+          <p className="text-sm font-semibold text-[var(--shreem-ink)]">
+            Strongest windows from birth to today
+          </p>
+          <p className="mt-1 text-xs leading-5 text-[var(--shreem-muted)]">
+            These are retrospective rule matches, not claims that a specific event certainly happened.
+          </p>
+          <div className="mt-3 grid gap-3 md:grid-cols-2">
+            {retrospectiveRows.slice(0, 4).map((row, index) => (
+              <article key={`past-${row.period}-${row.window}-${index}`} className="rounded-[18px] border border-[var(--shreem-border)] bg-white/78 px-4 py-4">
+                <p className="text-sm font-semibold text-[var(--shreem-ink)]">{row.period}</p>
+                <p className="mt-1 text-xs leading-5 text-[var(--shreem-muted)]">{row.role}</p>
+                <p className="mt-3 rounded-[14px] bg-[rgba(240,248,246,0.76)] px-3 py-2 text-sm font-semibold leading-6 text-[var(--shreem-ink)]">{row.window}</p>
+                <p className="mt-2 text-xs leading-5 text-[var(--shreem-muted)]">Score {row.score} · {row.basis}</p>
+                {row.avoid && <p className="mt-2 text-xs leading-5 text-[var(--shreem-muted)]"><span className="font-semibold text-[var(--shreem-ink)]">Avoid:</span> {row.avoid}</p>}
+                {row.do && <p className="mt-1 text-xs leading-5 text-[var(--shreem-muted)]"><span className="font-semibold text-[var(--shreem-ink)]">Preventive action:</span> {row.do}</p>}
+              </article>
+            ))}
+          </div>
+        </div>
+      )}
+      <p className="mt-5 text-sm font-semibold text-[var(--shreem-ink)]">
+        Strongest windows from today through the next 30 years
+      </p>
+      <p className="mt-4 rounded-[14px] bg-white/72 px-3 py-2 text-xs leading-5 text-[var(--shreem-muted)]">
+        Showing {Math.min(rows.length, 8)} strongest windows from {rawRows.length} scanned
+        candidates. Weak, duplicate, or single-factor windows are hidden to avoid noise.
+      </p>
+      <div className="mt-4 grid gap-3 md:grid-cols-2">
+        {rows.slice(0, 8).map((row, index) => (
+          <article
+            key={`${row.period}-${row.window}-${index}`}
+            className="rounded-[18px] border border-[var(--shreem-border)] bg-white/78 px-4 py-4"
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-sm font-semibold text-[var(--shreem-ink)]">
+                  {row.period}
+                </p>
+                <p className="mt-1 text-xs leading-5 text-[var(--shreem-muted)]">
+                  {row.role}
+                </p>
+              </div>
+              <span className="rounded-full bg-[rgba(13,129,126,0.08)] px-2.5 py-1 text-xs font-semibold text-[var(--shreem-accent-dark)]">
+                {row.confidence || "watch"}
+              </span>
+            </div>
+            <p className="mt-3 rounded-[14px] bg-[rgba(240,248,246,0.76)] px-3 py-2 text-sm font-semibold leading-6 text-[var(--shreem-ink)]">
+              {row.window}
+            </p>
+            <p className="mt-2 text-xs leading-5 text-[var(--shreem-muted)]">
+              Score: {"score" in row && typeof row.score === "number" ? row.score : "-"}
+            </p>
+            <p className="mt-2 text-xs leading-5 text-[var(--shreem-muted)]">
+              {"basis" in row ? row.basis : row.caution}
+            </p>
+            {"avoid" in row && row.avoid && (
+              <p className="mt-2 text-xs leading-5 text-[var(--shreem-muted)]"><span className="font-semibold text-[var(--shreem-ink)]">Avoid:</span> {row.avoid}</p>
+            )}
+            {"do" in row && row.do && (
+              <p className="mt-1 text-xs leading-5 text-[var(--shreem-muted)]"><span className="font-semibold text-[var(--shreem-ink)]">Preventive action:</span> {row.do}</p>
+            )}
+          </article>
+        ))}
+      </div>
+      {analysis?.safety_note && (
+        <p className="mt-3 rounded-[14px] bg-white/70 px-3 py-2 text-xs leading-5 text-[var(--shreem-muted)]">
+          {analysis.safety_note}
+        </p>
+      )}
+    </section>
+  )
+}
+
+const CustomerMarkeshTimeline = ({
+  analysis,
+}: {
+  analysis?: KundliCriticalPeriodAnalysis
+}) => {
+  if (!analysis) {
+    return (
+      <section className="rounded-[20px] border border-[var(--shreem-border)] bg-white/66 px-4 py-4">
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
+          Lifetime prevention calendar
+        </p>
+        <p className="mt-2 text-sm leading-7 text-[var(--shreem-muted)]">
+          This older saved reading does not contain the lifetime timing scan.
+          Generate it again once to add the birth-to-today review and the next
+          30 years of carefully filtered prevention dates.
+        </p>
+      </section>
+    )
+  }
+
+  const groups = [
+    {
+      title: "Birth to today",
+      description:
+        "Past dates help you compare the timing calculation with events you remember.",
+      rows: (analysis.retrospective_timing_windows || []).filter(
+        (row) => row.confidence === "high" && Number(row.score || 0) >= 24
+      ),
+    },
+    {
+      title: "Today to the next 30 years",
+      description:
+        "Future dates are reminders for extra discipline, routine checks and careful decisions.",
+      rows: (analysis.exact_timing_windows || []).filter(
+        (row) => row.confidence === "high" && Number(row.score || 0) >= 24
+      ),
+    },
+  ]
+
+  return (
+    <section className="rounded-[20px] border border-[var(--shreem-border)] bg-white/66 px-4 py-4">
+      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
+        Lifetime prevention calendar
+      </p>
+      <h3 className="mt-2 text-xl font-semibold text-[var(--shreem-ink)]">
+        Strong Markesh watch periods across life
+      </h3>
+      <p className="mt-2 text-sm leading-7 text-[var(--shreem-muted)]">
+        Only the strongest repeated combinations are shown. These dates do not
+        predict death, disease or a certain harmful event. They are practical
+        reminders to avoid unnecessary risk and look after health and routine.
+      </p>
+      <div className="mt-4 grid gap-4 lg:grid-cols-2">
+        {groups.map((group) => (
+          <div
+            key={group.title}
+            className="rounded-[18px] border border-[var(--shreem-border)] bg-white/78 px-4 py-4"
+          >
+            <p className="text-sm font-semibold text-[var(--shreem-ink)]">
+              {group.title}
+            </p>
+            <p className="mt-1 text-xs leading-5 text-[var(--shreem-muted)]">
+              {group.description}
+            </p>
+            <div className="mt-3 grid gap-3">
+              {group.rows.slice(0, 6).map((row, index) => (
+                <article
+                  key={`${group.title}-${row.window}-${index}`}
+                  className="rounded-[14px] bg-[rgba(255,248,233,0.72)] px-3 py-3"
+                >
+                  <p className="text-sm font-semibold text-[var(--shreem-ink)]">
+                    {row.window}
+                  </p>
+                  <p className="mt-1 text-xs leading-5 text-[var(--shreem-muted)]">
+                    {row.period} creates a stronger-than-usual caution period.
+                  </p>
+                  {row.avoid && (
+                    <p className="mt-2 text-xs leading-5 text-[var(--shreem-muted)]">
+                      <span className="font-semibold text-[var(--shreem-ink)]">Avoid:</span>{" "}
+                      {row.avoid}
+                    </p>
+                  )}
+                  {row.do && (
+                    <p className="mt-1 text-xs leading-5 text-[var(--shreem-muted)]">
+                      <span className="font-semibold text-[var(--shreem-ink)]">Do:</span>{" "}
+                      {row.do}
+                    </p>
+                  )}
+                </article>
+              ))}
+              {!group.rows.length && (
+                <p className="rounded-[14px] bg-[rgba(240,248,246,0.72)] px-3 py-3 text-xs leading-5 text-[var(--shreem-muted)]">
+                  No period in this range met the strict display threshold.
+                  Weaker combinations are intentionally hidden.
+                </p>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+const MarakaBadhakaAuditCard = ({
+  analysis,
+}: {
+  analysis?: KundliCriticalPeriodAnalysis
+}) => {
+  if (!analysis) {
+    return null
+  }
+
+  const facts = [
+    {
+      label: "Maraka lords",
+      value: analysis.maraka_lords?.filter(Boolean).join(", ") || "Not calculated",
+    },
+    {
+      label: "Badhaka house",
+      value: analysis.badhaka_house ? `House ${analysis.badhaka_house}` : "Not calculated",
+    },
+    {
+      label: "Badhakesh",
+      value: analysis.badhakesh || "Not calculated",
+    },
+    {
+      label: "Current technical triggers",
+      value:
+        analysis.active_triggers?.filter(Boolean).slice(0, 4).join("; ") ||
+        "No strong active trigger shown",
+    },
+  ]
+
+  return (
+    <section className="rounded-[20px] border border-[var(--shreem-border)] bg-white/68 px-4 py-4">
+      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
+        Technical Maraka/Badhaka audit
+      </p>
+      <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
+        This is chart proof for astrologer review only. The reading does not show
+        deterministic event dates from this layer unless stricter validation is
+        added.
+      </p>
+      <div className="mt-4 grid gap-3 md:grid-cols-2">
+        {facts.map((fact) => (
+          <div
+            key={fact.label}
+            className="rounded-[16px] border border-[var(--shreem-border)] bg-white/78 px-3 py-3"
+          >
+            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--shreem-gold-deep)]">
+              {fact.label}
+            </p>
+            <p className="mt-1 text-sm font-semibold leading-6 text-[var(--shreem-ink)]">
+              {fact.value}
+            </p>
+          </div>
+        ))}
+      </div>
+      {analysis.safety_note && (
+        <p className="mt-3 rounded-[14px] bg-[rgba(240,248,246,0.74)] px-3 py-2 text-xs leading-5 text-[var(--shreem-muted)]">
+          {analysis.safety_note}
+        </p>
+      )}
+    </section>
+  )
+}
+
 const HistoryPanel = ({
   items,
   onSelect,
 }: {
   items: AstrologyHistoryItem[]
   onSelect: (item: AstrologyHistoryItem) => void
-}) => (
-  <div className="brand-card px-4 py-4">
-    <p className="brand-kicker">Recent history</p>
-    {!items.length && (
-      <p className="mt-3 text-sm leading-6 text-[var(--shreem-muted)]">
-        Your last Prashna, Lost item, Kundli, and matchmaking sessions will
-        appear here after you run them.
-      </p>
-    )}
-    <div className="mt-3 grid gap-2">
-      {items.slice(0, 50).map((item) => (
-        <button
-          key={item.id}
-          type="button"
-          onClick={() => onSelect(item)}
-          className="rounded-[16px] border border-[var(--shreem-border)] bg-white/62 px-3 py-3 text-left transition hover:border-[rgba(13,129,126,0.32)]"
-        >
-          <div className="flex items-center justify-between gap-3">
-            <p className="text-sm font-semibold text-[var(--shreem-ink)]">
-              {item.title}
+}) => {
+  const pageSize = 3
+  const [page, setPage] = useState(0)
+  const totalPages = Math.max(1, Math.ceil(items.length / pageSize))
+  const safePage = Math.min(page, totalPages - 1)
+  const visibleItems = items.slice(
+    safePage * pageSize,
+    safePage * pageSize + pageSize
+  )
+
+  useEffect(() => {
+    if (page > totalPages - 1) {
+      setPage(Math.max(0, totalPages - 1))
+    }
+  }, [page, totalPages])
+
+  return (
+    <div className="brand-card px-4 py-4">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="brand-kicker">Recent history</p>
+          {items.length > 0 && (
+            <p className="mt-2 text-xs leading-5 text-[var(--shreem-muted)]">
+              Showing {safePage * pageSize + 1}-
+              {Math.min((safePage + 1) * pageSize, items.length)} of{" "}
+              {items.length}. Use the controls below to browse older readings.
             </p>
-            <span className="rounded-full bg-[rgba(13,129,126,0.08)] px-2 py-0.5 text-[0.66rem] font-semibold text-[var(--shreem-ink)]">
-              {item.type}
-            </span>
-          </div>
-          <p className="mt-1 line-clamp-2 text-xs leading-5 text-[var(--shreem-muted)]">
-            {item.summary}
-          </p>
-          {getHistoryDetailLines(item).length > 0 && (
-            <div className="mt-2 grid gap-1">
-              {getHistoryDetailLines(item)
-                .slice(0, 4)
-                .map((line) => (
-                  <p
-                    key={line}
-                    className="text-[0.68rem] leading-4 text-[var(--shreem-muted)]"
-                  >
-                    {line}
-                  </p>
-                ))}
-            </div>
           )}
-          <p className="mt-2 text-[0.66rem] font-semibold uppercase tracking-[0.14em] text-[var(--shreem-gold-deep)]">
-            {formatHistoryDate(item.createdAt)}
-            {item.synced === false ? " · Local" : " · Saved"}
-          </p>
-        </button>
-      ))}
+        </div>
+        {items.length > 3 && (
+          <span className="rounded-full bg-white/70 px-2.5 py-1 text-[0.66rem] font-semibold text-[var(--shreem-ink)]">
+            Page {safePage + 1}/{totalPages}
+          </span>
+        )}
+      </div>
+      {!items.length && (
+        <p className="mt-3 text-sm leading-6 text-[var(--shreem-muted)]">
+          Your last Prashna, Lost item, Kundli, and matchmaking sessions will
+          appear here after you run them.
+        </p>
+      )}
+      <div className="mt-3 grid gap-2">
+        {visibleItems.map((item) => (
+          <button
+            key={item.id}
+            type="button"
+            onClick={() => onSelect(item)}
+            className="rounded-[16px] border border-[var(--shreem-border)] bg-white/62 px-3 py-3 text-left transition hover:border-[rgba(13,129,126,0.32)]"
+          >
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-sm font-semibold text-[var(--shreem-ink)]">
+                {item.title}
+              </p>
+              <span className="rounded-full bg-[rgba(13,129,126,0.08)] px-2 py-0.5 text-[0.66rem] font-semibold text-[var(--shreem-ink)]">
+                {item.type}
+              </span>
+            </div>
+            <p className="mt-1 text-xs leading-5 text-[var(--shreem-muted)]">
+              {item.summary}
+            </p>
+            {getHistoryDetailLines(item).length > 0 && (
+              <div className="mt-2 grid gap-1">
+                {getHistoryDetailLines(item)
+                  .slice(0, 4)
+                  .map((line) => (
+                    <p
+                      key={line}
+                      className="text-[0.68rem] leading-4 text-[var(--shreem-muted)]"
+                    >
+                      {line}
+                    </p>
+                  ))}
+              </div>
+            )}
+            <p className="mt-2 text-[0.66rem] font-semibold uppercase tracking-[0.06em] small:tracking-[0.14em] text-[var(--shreem-gold-deep)]">
+              {formatHistoryDate(item.createdAt)}
+              {item.synced === false ? " · Local" : " · Saved"}
+            </p>
+          </button>
+        ))}
+      </div>
+      {items.length > pageSize && (
+        <div className="mt-3 grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={() => setPage(Math.max(0, safePage - 1))}
+            disabled={safePage === 0}
+            className="rounded-full border border-[var(--shreem-border)] bg-white px-3 py-2 text-xs font-semibold text-[var(--shreem-ink)] disabled:cursor-not-allowed disabled:opacity-45"
+          >
+            Previous
+          </button>
+          <button
+            type="button"
+            onClick={() => setPage(Math.min(totalPages - 1, safePage + 1))}
+            disabled={safePage >= totalPages - 1}
+            className="rounded-full border border-[rgba(13,129,126,0.22)] bg-white px-3 py-2 text-xs font-semibold text-[var(--shreem-accent-dark)] disabled:cursor-not-allowed disabled:opacity-45"
+          >
+            Next
+          </button>
+        </div>
+      )}
     </div>
-  </div>
-)
+  )
+}
+
+const SavedKundliPanel = ({
+  profiles,
+  message,
+  syncing,
+  onUse,
+  onOpen,
+  onGenerate,
+  onRemove,
+}: {
+  profiles: SavedKundliProfile[]
+  message?: string
+  syncing?: boolean
+  onUse: (profile: SavedKundliProfile) => void
+  onOpen: (profile: SavedKundliProfile) => void
+  onGenerate: (profile: SavedKundliProfile) => void
+  onRemove: (profile: SavedKundliProfile) => void
+}) => {
+  const [open, setOpen] = useState(false)
+  const [page, setPage] = useState(0)
+  const pageSize = 5
+  const totalPages = Math.max(1, Math.ceil(profiles.length / pageSize))
+  const safePage = Math.min(page, totalPages - 1)
+  const visibleProfiles = profiles.slice(
+    safePage * pageSize,
+    safePage * pageSize + pageSize
+  )
+
+  const closeAfter = (action: () => void, shouldClose = true) => {
+    action()
+    if (shouldClose) {
+      setOpen(false)
+    }
+  }
+
+  return (
+    <div className="brand-card px-4 py-4">
+      <div className="flex flex-col gap-3 small:flex-row small:items-start small:justify-between">
+        <div>
+          <p className="brand-kicker">Saved Kundlis</p>
+          <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
+            {profiles.length
+              ? `${profiles.length} saved profile${profiles.length === 1 ? "" : "s"}. Open the library when you need one.`
+              : "Save family birth details once, then reopen them from a clean library."}
+          </p>
+        </div>
+        <div className="flex shrink-0 items-center gap-2">
+          {syncing && (
+            <span className="rounded-full bg-[rgba(13,129,126,0.08)] px-2 py-1 text-[0.65rem] font-semibold text-[var(--shreem-accent-dark)]">
+              Syncing
+            </span>
+          )}
+          <button
+            type="button"
+            onClick={() => setOpen(true)}
+            className="rounded-full border border-[rgba(13,129,126,0.22)] bg-white px-4 py-2 text-xs font-semibold text-[var(--shreem-accent-dark)]"
+          >
+            Manage saved Kundlis
+          </button>
+        </div>
+      </div>
+      {message && (
+        <p className="mt-3 rounded-[14px] bg-[rgba(13,129,126,0.08)] px-3 py-2 text-xs font-semibold text-[var(--shreem-accent-dark)]">
+          {message}
+        </p>
+      )}
+
+      {open && (
+        <div className="fixed inset-0 z-[80] flex items-end justify-center bg-[rgba(7,18,32,0.58)] px-3 py-3 backdrop-blur-sm small:items-center">
+          <div className="max-h-[88vh] w-full max-w-3xl overflow-hidden rounded-[28px] border border-[var(--shreem-border)] bg-[var(--shreem-surface)] shadow-[0_28px_80px_rgba(7,18,32,0.24)]">
+            <div className="flex items-start justify-between gap-3 border-b border-[var(--shreem-border)] px-5 py-4">
+              <div>
+                <p className="brand-kicker">Kundli library</p>
+                <h3 className="mt-2 text-2xl leading-tight text-[var(--shreem-ink)]">
+                  Saved family charts
+                </h3>
+                <p className="mt-1 text-sm leading-6 text-[var(--shreem-muted)]">
+                  Use details without spending AI, open a saved chart, or
+                  regenerate only when you need a fresh reading.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                className="rounded-full border border-[var(--shreem-border)] bg-white px-3 py-2 text-xs font-semibold text-[var(--shreem-ink)]"
+              >
+                Close
+              </button>
+            </div>
+
+            <div className="max-h-[58vh] overflow-y-auto px-4 py-4 small:px-5">
+              {profiles.length ? (
+                <div className="grid gap-3">
+                  {visibleProfiles.map((profile) => (
+                    <div
+                      key={profile.id}
+                      className="rounded-[20px] border border-[var(--shreem-border)] bg-white/72 px-3 py-3"
+                    >
+                      <div className="flex flex-col gap-2 small:flex-row small:items-start small:justify-between">
+                        <div className="min-w-0">
+                          <p className="break-words text-sm font-semibold text-[var(--shreem-ink)]">
+                            {profile.name || "Saved Kundli"}
+                          </p>
+                          <p className="mt-1 break-words text-xs leading-5 text-[var(--shreem-muted)]">
+                            {profile.birthDate || "Date"} ·{" "}
+                            {profile.birthTime || "Time"} ·{" "}
+                            {profile.cityLabel || cityLabel(getCityById(profile.cityId))}
+                          </p>
+                        </div>
+                        {profile.lastResult?.chart && (
+                          <span className="w-fit shrink-0 rounded-full bg-[rgba(245,199,96,0.18)] px-2 py-1 text-[0.65rem] font-semibold text-[var(--shreem-gold-deep)]">
+                            Chart saved
+                          </span>
+                        )}
+                      </div>
+                      <div className="mt-3 grid grid-cols-2 gap-2 small:grid-cols-4">
+                        <button
+                          type="button"
+                          onClick={() => closeAfter(() => onUse(profile))}
+                          className="rounded-full border border-[rgba(13,129,126,0.18)] bg-white px-3 py-2 text-xs font-semibold text-[var(--shreem-accent-dark)]"
+                        >
+                          Use details
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => closeAfter(() => onOpen(profile))}
+                          disabled={!profile.lastResult?.chart}
+                          className="rounded-full border border-[rgba(18,63,99,0.16)] bg-white px-3 py-2 text-xs font-semibold text-[var(--shreem-ink)] disabled:cursor-not-allowed disabled:opacity-45"
+                        >
+                          Open chart
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => closeAfter(() => onGenerate(profile))}
+                          className="rounded-full bg-[linear-gradient(135deg,#0d817e_0%,#123f63_72%)] px-3 py-2 text-xs font-semibold text-white"
+                        >
+                          Generate AI
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => closeAfter(() => onRemove(profile), false)}
+                          className="rounded-full border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="rounded-[18px] border border-dashed border-[rgba(13,129,126,0.2)] bg-white/64 px-4 py-4 text-sm leading-6 text-[var(--shreem-muted)]">
+                  No saved Kundlis yet. Fill birth details and save them before
+                  or after generating a chart.
+                </p>
+              )}
+            </div>
+
+            {profiles.length > pageSize && (
+              <div className="flex items-center justify-between gap-3 border-t border-[var(--shreem-border)] px-5 py-4 text-sm text-[var(--shreem-muted)]">
+                <span>
+                  Page {safePage + 1} of {totalPages}
+                </span>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setPage(Math.max(0, safePage - 1))}
+                    disabled={safePage === 0}
+                    className="rounded-full border border-[var(--shreem-border)] bg-white px-3 py-2 text-xs font-semibold text-[var(--shreem-ink)] disabled:cursor-not-allowed disabled:opacity-45"
+                  >
+                    Previous
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPage(Math.min(totalPages - 1, safePage + 1))}
+                    disabled={safePage >= totalPages - 1}
+                    className="rounded-full border border-[rgba(13,129,126,0.22)] bg-white px-3 py-2 text-xs font-semibold text-[var(--shreem-accent-dark)] disabled:cursor-not-allowed disabled:opacity-45"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
 
 const AstralGrahaPanel = () => (
   <div className="astrology-star-map relative overflow-hidden rounded-[28px] border border-[rgba(245,199,96,0.28)] px-4 py-4 text-white shadow-[0_28px_70px_rgba(10,30,48,0.24)] small:px-5 small:py-5">
@@ -2087,6 +3550,236 @@ const getStoneCards = (stones?: KundliResult["stones"]) => {
 const cleanKundliText = (value?: string | null) =>
   typeof value === "string" ? value.trim() : ""
 
+const KUNDLI_SCAFFOLD_PATTERNS = [
+  /no direct planet placed/i,
+  /no direct graha sits/i,
+  /no major parashari/i,
+  /no major drishti/i,
+  /in plain language/i,
+  /result comes mainly/i,
+  /controls .* for this native/i,
+  /for this native it is/i,
+  /means results come through/i,
+  /modifies the final result/i,
+  /direct occupation/i,
+  /external graha modification/i,
+  /currently activating this house/i,
+  /final impact:/i,
+  /placed graha/i,
+  /so the lord placement/i,
+  /this house is not directly/i,
+  /judge by/i,
+  /judgement method/i,
+  /should be read/i,
+  /refer to/i,
+  /use this house as/i,
+  /the reading must combine/i,
+  /do not record past life events/i,
+]
+
+const looksIncompleteKundliText = (value?: string | null) => {
+  const text = cleanKundliText(value).replace(/\s+/g, " ")
+
+  if (!text) {
+    return true
+  }
+
+  if (text.length < 28) {
+    return false
+  }
+
+  if (KUNDLI_SCAFFOLD_PATTERNS.some((pattern) => pattern.test(text))) {
+    return true
+  }
+
+  if (/[.!?।)]$/.test(text)) {
+    return false
+  }
+
+  return /\b(Sp|d|ac|activ|activate|lordsh|deliv|thro|hou|curr|sho|pl|or|and|with|from|by|in)$/i.test(text) ||
+    text.length > 160
+}
+
+const safeKundliText = (
+  preferred?: string | null,
+  fallback?: string | null,
+  empty = ""
+) => {
+  const primary = fullKundliText(preferred)
+
+  if (primary && !looksIncompleteKundliText(primary)) {
+    return primary
+  }
+
+  const secondary = fullKundliText(fallback)
+
+  if (secondary && !looksIncompleteKundliText(secondary)) {
+    return secondary
+  }
+
+  return empty
+}
+
+const HOUSE_USER_MEANINGS: Record<number, { meaning: string; action: string }> = {
+  1: {
+    meaning: "Identity, confidence and health need disciplined routines, calm decisions and steady self-belief.",
+    action: "Protect sleep, body rhythm and speech; avoid impulsive reactions.",
+  },
+  2: {
+    meaning: "Money, family values and speech improve when savings, food habits and communication stay controlled.",
+    action: "Keep accounts clean, speak carefully and avoid emotional spending.",
+  },
+  3: {
+    meaning: "Growth comes through courage, marketing, writing, skills and consistent daily effort.",
+    action: "Build one visible skill channel and use communication without haste.",
+  },
+  4: {
+    meaning: "Home, property, vehicles and emotional peace improve through stability and practical family decisions.",
+    action: "Avoid rushed property/home decisions and keep domestic routines peaceful.",
+  },
+  5: {
+    meaning: "Learning, creativity, children and mantra practice work best with patience and focused study.",
+    action: "Strengthen education, mantra and creative discipline; avoid risky speculation.",
+  },
+  6: {
+    meaning: "Obstacles, debt, disputes and health routines can be managed through discipline and service.",
+    action: "Keep fitness, paperwork, debt control and conflict handling clean.",
+  },
+  7: {
+    meaning: "Marriage, customers and agreements need fairness, clarity and patience before commitment.",
+    action: "Write expectations clearly and avoid ego or hurried promises.",
+  },
+  8: {
+    meaning: "Sudden change, secrets, research and vulnerability need prevention, documentation and expert guidance.",
+    action: "Avoid risky shortcuts; keep insurance, records and health checks disciplined.",
+  },
+  9: {
+    meaning: "Fortune grows through teachers, fatherly blessings, dharma, learning and long-distance opportunity.",
+    action: "Respect mentors, continue study and avoid rejecting guidance out of pride.",
+  },
+  10: {
+    meaning: "Career and public reputation improve through consistent output, responsibility and visible work.",
+    action: "Choose measurable work goals and show progress every week.",
+  },
+  11: {
+    meaning: "Gains come through networks, repeat customers, elder support and practical income systems.",
+    action: "Track sales, referrals and collections instead of relying only on hope.",
+  },
+  12: {
+    meaning: "Expenses, sleep, isolation and foreign links need boundaries and spiritual grounding.",
+    action: "Control leaks in money/time, improve sleep and keep a simple spiritual routine.",
+  },
+}
+
+const HOUSE_LIFE_LINKS: Record<number, string> = {
+  1: "identity, confidence and physical vitality",
+  2: "family, savings, food and speech",
+  3: "skills, communication, courage and enterprise",
+  4: "home, property, education and emotional security",
+  5: "learning, children, creativity and judgement",
+  6: "service, competition, debt and health routine",
+  7: "marriage, customers, contracts and public dealing",
+  8: "shared assets, research, vulnerability and sudden change",
+  9: "teachers, dharma, higher learning and long travel",
+  10: "career, authority, status and visible work",
+  11: "income, networks, audience and fulfilment",
+  12: "expenses, sleep, foreign links and spiritual retreat",
+}
+
+const getHouseEvidence = (
+  row?: NonNullable<KundliAnalysis["house_outcomes"]>[number]
+) => {
+  const evidence = cleanKundliText(row?.evidence)
+  const lordMatch = evidence.match(
+    /Lord:\s*([A-Za-z]+)(?:\s+in\s+bhava\s+(\d+))?(?:,\s*([^;]+))?/i
+  )
+  const placedMatch = evidence.match(/Placed:\s*([^;]+)/i)
+  const drishtiMatch = evidence.match(/Drishti:\s*([^;]+)/i)
+  const toPlanets = (value?: string) =>
+    value && !/^none$/i.test(value.trim())
+      ? value.split(",").map((item) => item.trim()).filter(Boolean)
+      : []
+
+  return {
+    lord: lordMatch?.[1] || "",
+    lordHouse: Number(lordMatch?.[2] || 0),
+    dignity: lordMatch?.[3]?.trim() || "",
+    placed: toPlanets(placedMatch?.[1]),
+    drishti: toPlanets(drishtiMatch?.[1]),
+  }
+}
+
+const getHouseCustomerMeaning = (
+  row?: NonNullable<KundliAnalysis["house_outcomes"]>[number]
+) => {
+  const suppliedMeaning = cleanKundliText(row?.user_meaning)
+  if (suppliedMeaning) {
+    return suppliedMeaning
+  }
+
+  const base = row?.house ? HOUSE_USER_MEANINGS[row.house] : undefined
+  const impact = cleanKundliText(row?.prevailing_impact).toLowerCase()
+  const evidence = getHouseEvidence(row)
+  const activeMatch = cleanKundliText(row?.prevailing_impact).match(
+    /\b(Sun|Moon|Mars|Mercury|Jupiter|Venus|Saturn|Rahu|Ketu)\s+dasha/i
+  )
+  const lordLink = evidence.lord && evidence.lordHouse
+    ? `${evidence.lord} ties the result to ${HOUSE_LIFE_LINKS[evidence.lordHouse] || `house ${evidence.lordHouse}`}${evidence.dignity ? ` and is ${evidence.dignity}` : ""}.`
+    : ""
+  const directSignal = evidence.placed.length
+    ? `${evidence.placed.join(" and ")} make this a direct lived theme.`
+    : ""
+  const supportiveDrishti = evidence.drishti.filter((planet) =>
+    /Jupiter|Venus|Mercury|Moon/i.test(planet)
+  )
+  const pressureDrishti = evidence.drishti.filter((planet) =>
+    /Saturn|Mars|Rahu|Ketu|Sun/i.test(planet)
+  )
+  const drishtiSignal = supportiveDrishti.length && pressureDrishti.length
+    ? "Received drishti is mixed, so opportunity comes with correction."
+    : supportiveDrishti.length
+    ? `Support from ${supportiveDrishti.join(" and ")} improves delivery.`
+    : pressureDrishti.length
+    ? `Pressure from ${pressureDrishti.join(" and ")} requires patience and control.`
+    : ""
+  const quality = impact.includes("active and usable") ||
+    impact.includes("supportive")
+    ? `${activeMatch?.[1] || "Current"} timing makes this a usable growth area now.`
+    : impact.includes("pressure") ||
+      impact.includes("discipline") ||
+      impact.includes("needs")
+    ? `${activeMatch?.[1] || "Current"} timing activates it, but progress needs correction rather than force.`
+    : "This is a background area now; timing and conduct matter more than force."
+  const deterministic = base
+    ? [base.meaning, lordLink, directSignal, drishtiSignal, quality]
+        .filter(Boolean)
+        .join(" ")
+    : ""
+  const meaning = safeKundliText(deterministic, "", base?.meaning || "")
+
+  return meaning || base?.meaning || "This house needs expert review with the full chart."
+}
+
+const getHouseCustomerAction = (
+  row?: NonNullable<KundliAnalysis["house_outcomes"]>[number]
+) => {
+  const suppliedAction = cleanKundliText(row?.practical_use)
+  if (suppliedAction) {
+    return suppliedAction
+  }
+
+  const base = row?.house ? HOUSE_USER_MEANINGS[row.house] : undefined
+  const impact = cleanKundliText(row?.prevailing_impact).toLowerCase()
+  const timingAdvice =
+    impact.includes("active")
+      ? "Use the current period carefully instead of postponing everything."
+      : "Prepare the foundation now and act more strongly when timing supports it."
+  const deterministic = base ? `${base.action} ${timingAdvice}` : ""
+  const action = safeKundliText(deterministic, "", base?.action || "")
+
+  return action || base?.action || "Keep this area disciplined and review timing before major decisions."
+}
+
 const compactKundliText = (value?: string | null, maxLength = 240) => {
   const cleaned = cleanKundliText(value).replace(/\s+/g, " ")
 
@@ -2094,10 +3787,26 @@ const compactKundliText = (value?: string | null, maxLength = 240) => {
     return ""
   }
 
-  return cleaned.length > maxLength
-    ? `${cleaned.slice(0, maxLength - 1).trim()}…`
-    : cleaned
+  if (cleaned.length <= maxLength) {
+    return cleaned
+  }
+
+  const slice = cleaned.slice(0, Math.max(20, maxLength - 1)).trim()
+  const sentenceCut = Math.max(
+    slice.lastIndexOf("."),
+    slice.lastIndexOf("।"),
+    slice.lastIndexOf("!"),
+    slice.lastIndexOf("?")
+  )
+  const wordCut = slice.lastIndexOf(" ")
+  const cutAt = sentenceCut > maxLength * 0.45 ? sentenceCut + 1 : wordCut
+  const shortened = slice.slice(0, cutAt > 20 ? cutAt : slice.length).trim()
+
+  return `${shortened}…`
 }
+
+const fullKundliText = (value?: string | null) =>
+  cleanKundliText(value).replace(/\s+/g, " ")
 
 const normalizeKundliText = (value?: string | null) =>
   cleanKundliText(value)
@@ -2119,6 +3828,41 @@ const uniqueByText = <T,>(items: T[], getText: (item: T) => string) => {
     seen.add(key)
     return true
   })
+}
+
+const isTemplatePredictionRow = (
+  row?: NonNullable<KundliAnalysis["prediction_table"]>[number] | null,
+  hasQuestionAnswers = false
+) => {
+  const text = normalizeKundliText(
+    `${row?.area || ""} ${row?.prediction || ""} ${row?.advice || ""} ${row?.chart_basis || ""}`
+  )
+
+  if (!text) {
+    return true
+  }
+
+  if (hasQuestionAnswers && /user question/.test(text)) {
+    return true
+  }
+
+  return [
+    /this row explains/,
+    /is judged through/,
+    /must be judged together/,
+    /depends on speech and savings/,
+    /health is shown as prevention only/,
+    /remedy quality depends/,
+    /career direction comes from/,
+    /money is judged by/,
+    /business is read through/,
+    /marriage and partnership are judged/,
+    /read the promise from the houses first/,
+    /use gochar only as a trigger/,
+    /watch .* periods for timing/,
+    /make big decisions only after checking/,
+    /start with conduct daan mantra seva/,
+  ].some((pattern) => pattern.test(text))
 }
 
 const getKundliQuestions = (result: KundliResult) =>
@@ -2146,58 +3890,130 @@ const findPredictionRow = (result: KundliResult, terms: string[]) => {
 }
 
 const getFocusedPredictionRows = (result: KundliResult) => {
-  const rows = result.analysis?.prediction_table || []
+  const hasQuestionAnswers = Boolean(result.analysis?.sub_question_answers?.length)
+  const reviewedRows = (result.analysis?.deterministic_review || []).map((row) => ({
+    area: row.area,
+    chart_basis: row.deterministic_basis_used,
+    prediction: row.final_decision,
+    advice: row.missing_or_weak_point,
+  }))
+  const sourceRows = [
+    ...(result.analysis?.prediction_table || []),
+    ...reviewedRows,
+  ].filter(
+    (row) =>
+      cleanKundliText(row.area) &&
+      cleanKundliText(row.prediction) &&
+      !/user question/i.test(row.area)
+  )
+  const qualityRows = sourceRows.filter(
+    (row) => !isTemplatePredictionRow(row, hasQuestionAnswers)
+  )
+  // Older saved readings and an occasional strict quality pass can classify
+  // every otherwise complete life-area row as scaffolding. Keep the generated
+  // conclusions visible instead of rendering an empty customer tab.
+  const rows = qualityRows.length ? qualityRows : sourceRows
 
-  const priorityTerms = [
-    "current dasha",
-    "current period",
-    "career",
-    "professional",
-    "work",
-    "money",
-    "wealth",
-    "finance",
-    "business",
-    "entrepreneurship",
-    "health",
-    "mental",
-    "relationship",
-    "marriage",
-    "family",
-    "home",
-    "property",
-    "foreign",
-    "spiritual",
-    "education",
-    "skill",
-    "next 30",
-    "next 3",
-    "next 12",
-    "remedy",
-  ]
+  const categories = [
+    ["career", ["career", "profession", "work", "business", "entrepreneur"]],
+    ["wealth", ["wealth", "money", "finance", "income", "gains"]],
+    ["relationship", ["marriage", "relationship", "spouse", "partner"]],
+    ["education", ["education", "learning", "creativity", "children", "skill"]],
+    ["home", ["home", "property", "family", "mother", "vehicle"]],
+    ["wellbeing", ["health", "routine", "foreign", "spiritual", "sleep"]],
+  ] as const
+  const uniqueRows = uniqueByText(rows, (row) => `${row.area} ${row.prediction}`)
+  const selected = categories.flatMap(([, terms]) => {
+    const candidates = uniqueRows.filter((row) => {
+      const area = normalizeKundliText(row.area)
+      return terms.some((term) => area.includes(term))
+    })
 
-  const scoreRow = (row: NonNullable<KundliAnalysis["prediction_table"]>[number]) => {
-    const area = normalizeKundliText(row.area)
-    const joined = `${area} ${normalizeKundliText(row.prediction)}`
-    const index = priorityTerms.findIndex((term) => joined.includes(term))
+    return candidates
+      .sort((left, right) => {
+        const leftArea = normalizeKundliText(left.area)
+        const rightArea = normalizeKundliText(right.area)
+        const leftExact = terms.some((term) => leftArea === term) ? 1 : 0
+        const rightExact = terms.some((term) => rightArea === term) ? 1 : 0
+        return rightExact - leftExact
+      })
+      .slice(0, 1)
+  })
 
-    return index === -1 ? 999 : index
+  const focused = uniqueByText(selected, (row) => `${row.area} ${row.prediction}`).slice(0, 6)
+
+  if (focused.length) {
+    return focused
   }
 
-  return uniqueByText(rows, (row) => `${row.area} ${row.prediction}`)
-    .sort((a, b) => scoreRow(a) - scoreRow(b))
-    .slice(0, 8)
+  if (rows.length) {
+    return uniqueByText(rows, (row) => `${row.area} ${row.prediction}`).slice(0, 6)
+  }
+
+  const analysisFallback = [
+    ["Career and business", result.analysis?.career_direction],
+    ["Marriage and relationships", result.analysis?.relationship_pattern],
+    ["Health and routine", result.analysis?.health_caution],
+    ["Current life direction", result.analysis?.current_period_analysis],
+    ["Overall life pattern", result.analysis?.summary],
+  ]
+    .filter((row): row is [string, string] => Boolean(cleanKundliText(row[1])))
+    .map(([area, prediction]) => ({
+      area,
+      prediction: fullKundliText(prediction),
+      advice: "Use this conclusion together with the Timing and Remedies tabs for practical decisions.",
+      chart_basis: "",
+    }))
+
+  if (analysisFallback.length) {
+    return uniqueByText(analysisFallback, (row) => `${row.area} ${row.prediction}`).slice(0, 6)
+  }
+
+  const houseFallbacks = [
+    ["Career and business", [10, 11]],
+    ["Money and savings", [2, 11]],
+    ["Marriage and relationships", [7]],
+    ["Education and judgement", [5]],
+    ["Home and family", [4]],
+    ["Health and daily routine", [1, 6, 12]],
+  ] as const
+
+  return houseFallbacks
+    .map(([area, houses]) => {
+      const houseRow = (result.analysis?.house_outcomes || []).find((row) =>
+        houses.includes(row.house as never)
+      )
+
+      if (!houseRow) return null
+
+      return {
+        area,
+        prediction: getHouseCustomerMeaning(houseRow),
+        advice: getHouseCustomerAction(houseRow),
+        chart_basis: "",
+      }
+    })
+    .filter((row): row is NonNullable<typeof row> => Boolean(row))
 }
 
 const getKundliDirectAnswer = (result: KundliResult) => {
   const analysis = result.analysis
+  const questions = getKundliQuestions(result)
   const questionAnswer = cleanKundliText(analysis?.sub_question_answers?.[0]?.answer)
 
   if (questionAnswer) {
     return questionAnswer
   }
 
-  const questions = getKundliQuestions(result)
+  if (!questions.length) {
+    return (
+      cleanKundliText(analysis?.summary) ||
+      cleanKundliText(analysis?.person_information) ||
+      cleanKundliText(analysis?.current_period_analysis) ||
+      cleanKundliText(result.message)
+    )
+  }
+
   const questionTokens = questions
     .join(" ")
     .toLowerCase()
@@ -2249,10 +4065,15 @@ const getKundliDirectAnswer = (result: KundliResult) => {
 
 const getKundliDirectReason = (result: KundliResult) => {
   const analysis = result.analysis
+  const questions = getKundliQuestions(result)
   const questionReason = cleanKundliText(analysis?.sub_question_answers?.[0]?.chart_reason)
 
   if (questionReason) {
     return questionReason
+  }
+
+  if (!questions.length) {
+    return cleanKundliText(analysis?.current_period_analysis)
   }
 
   const row =
@@ -2290,11 +4111,17 @@ const getKundliDashaWindow = (chart?: PrashnaChart) => {
 const KundliAnswerFirstCard = ({ result }: { result: KundliResult }) => {
   const question = getKundliQuestionText(result)
   const directAnswer = getKundliDirectAnswer(result)
-  const directReason = getKundliDirectReason(result)
-  const dashaText = getKundliDashaText(result.chart)
-  const dashaWindow = getKundliDashaWindow(result.chart)
+  const questionRows = result.analysis?.sub_question_answers || []
+  const openingProfile = (result.analysis?.opening_profile || [])
+    .map((paragraph) => cleanKundliText(paragraph))
+    .filter(Boolean)
+    .slice(0, 2)
 
-  if (!directAnswer && !directReason && !dashaText) {
+  if (!question) {
+    return null
+  }
+
+  if (!directAnswer && !questionRows.length) {
     return null
   }
 
@@ -2315,51 +4142,498 @@ const KundliAnswerFirstCard = ({ result }: { result: KundliResult }) => {
         </h3>
       )}
 
-      {directAnswer && (
+      {!!openingProfile.length && (
+        <div className="mt-4 rounded-[18px] border border-[rgba(212,161,38,0.24)] bg-white/82 px-4 py-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
+            Who you are and where you can thrive
+          </p>
+          <div className="mt-3 grid gap-3 text-sm leading-7 text-[var(--shreem-ink)]">
+            {openingProfile.map((paragraph, index) => (
+              <p key={`opening-profile-${index}`}>{paragraph}</p>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <SubQuestionAnswersList rows={questionRows} />
+
+      {directAnswer && questionRows.length === 0 && (
         <div className="mt-4 rounded-[18px] border border-white/80 bg-white/78 px-4 py-4">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
-            Direct reading
+            Direct answer
           </p>
           <p className="mt-2 text-base leading-7 text-[var(--shreem-ink)]">
-            {directAnswer}
+            {safeKundliText(directAnswer, "")}
           </p>
         </div>
       )}
 
-      <div className="mt-4 grid gap-3 small:grid-cols-2">
-        {dashaText && (
-          <div className="rounded-[18px] border border-[rgba(212,161,38,0.24)] bg-white/78 px-4 py-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
-              Current dasha
-            </p>
-            <p className="mt-2 text-sm font-semibold leading-6 text-[var(--shreem-ink)]">
-              {dashaText}
-            </p>
-            {dashaWindow && (
-              <p className="mt-1 text-xs leading-5 text-[var(--shreem-muted)]">
-                {dashaWindow}
-              </p>
-            )}
-          </div>
-        )}
+    </section>
+  )
+}
 
-        {directReason && (
-          <div className="rounded-[18px] border border-[var(--shreem-border)] bg-white/78 px-4 py-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
-              Chart basis
-            </p>
-            <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
-              {directReason}
-            </p>
+const ResultAnchorNav = ({
+  items,
+  onOpenInfo,
+  activeId,
+  onSelect,
+}: {
+  items: { id: string; label: string }[]
+  onOpenInfo: () => void
+  activeId?: string
+  onSelect?: (id: string) => void
+}) => (
+  <nav className="sticky top-2 z-20 rounded-[18px] border border-[var(--shreem-border)] bg-white/94 px-3 py-3 shadow-sm backdrop-blur">
+    <div className="flex items-center justify-between gap-3">
+      <p className="shrink-0 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
+        Contents
+      </p>
+      <button
+        type="button"
+        onClick={onOpenInfo}
+        className="shrink-0 rounded-full border border-[rgba(13,129,126,0.22)] px-3 py-1.5 text-xs font-semibold text-[var(--shreem-accent-dark)]"
+      >
+        Kundli guide
+      </button>
+    </div>
+    <div className="mt-3 grid grid-cols-2 gap-2 small:grid-cols-3 medium:grid-cols-6">
+      {items.map((item) => (
+        <button
+          key={item.id}
+          type="button"
+          onClick={() => {
+            if (onSelect) {
+              onSelect(item.id)
+              return
+            }
+
+            document.getElementById(item.id)?.scrollIntoView({
+              behavior: "smooth",
+              block: "start",
+            })
+          }}
+          className={`min-h-10 w-full rounded-full border px-2 py-2 text-center text-[0.72rem] font-semibold leading-tight transition small:px-3 small:text-xs ${
+            item.id === "kundli-proof"
+              ? "col-span-2 small:col-span-3 medium:col-span-1 "
+              : ""
+          }${
+            activeId === item.id
+              ? "border-[rgba(13,129,126,0.42)] bg-[var(--shreem-accent-dark)] text-white shadow-sm"
+              : "border-[var(--shreem-border)] bg-[rgba(255,248,233,0.64)] text-[var(--shreem-ink)] hover:border-[rgba(13,129,126,0.3)]"
+          }`}
+        >
+          {item.label}
+        </button>
+      ))}
+    </div>
+  </nav>
+)
+
+const KundliGuideModal = ({
+  open,
+  onClose,
+}: {
+  open: boolean
+  onClose: () => void
+}) => {
+  if (!open) {
+    return null
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-stretch justify-center bg-[rgba(2,8,23,0.72)] p-0 backdrop-blur-sm small:items-center small:p-5">
+      <div className="flex h-[100dvh] w-full max-w-6xl flex-col overflow-hidden border border-[rgba(212,161,38,0.34)] bg-[#fffaf0] text-[#123f63] shadow-2xl small:h-[92dvh] small:rounded-[20px]">
+        <div className="flex shrink-0 items-start justify-between gap-4 border-b border-[rgba(18,63,99,0.14)] bg-[#fffaf0] px-4 py-4 small:px-7 small:py-5">
+          <div>
+            <p className="brand-kicker">Kundli guide</p>
+            <h3 className="mt-2 text-2xl font-semibold text-[var(--shreem-ink)]">
+              How to read this chart
+            </h3>
           </div>
-        )}
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-full border border-[var(--shreem-border)] px-3 py-1.5 text-sm font-semibold text-[var(--shreem-ink)]"
+          >
+            Close
+          </button>
+        </div>
+        <div className="grid min-h-0 flex-1 gap-4 overflow-y-auto px-4 py-5 text-sm leading-7 text-[#334155] small:px-7 small:py-6">
+          <div className="rounded-[18px] border border-[rgba(13,129,126,0.2)] bg-white px-4 py-4">
+            <p className="text-sm font-semibold text-[#123f63]">Read in this order</p>
+            <ol className="mt-2 list-decimal space-y-2 pl-5">
+              <li>Direct answer appears only when you asked a question. It should answer each question separately.</li>
+              <li>Predictions gives the practical life areas: life path, career, money, business, marriage, family, education, reputation, health, foreign/spiritual and remedies.</li>
+              <li>Timing shows Vimshottari dasha, the full Mahadasha life map, current nested periods and Markesh prevention windows.</li>
+              <li>Houses shows which house impact is actually prevailing after lordship, placement, occupants and Bhava Chalit delivery.</li>
+              <li>For Astrologers is the final technical audit: Lagna, Bhava Chalit, Chandra chart, drishti, yogas, rule evidence and timing calculations.</li>
+            </ol>
+          </div>
+
+          <div className="grid gap-3 md:grid-cols-2">
+            <div className="rounded-[18px] border border-[var(--shreem-border)] bg-white px-4 py-4">
+              <p className="text-sm font-semibold text-[#123f63]">Chart layers</p>
+              <p className="mt-2">Lagna shows body, direction and how life is experienced. Moon/Rashi shows mind, emotions and dasha starting point. Bhava Chalit shows where a planet practically delivers results in lived events.</p>
+              <p className="mt-2">If Rashi and Bhava differ, both matter: Rashi gives the graha condition and yoga; Bhava Chalit shows the real house where results manifest.</p>
+            </div>
+            <div className="rounded-[18px] border border-[var(--shreem-border)] bg-white px-4 py-4">
+              <p className="text-sm font-semibold text-[#123f63]">Timing rules</p>
+              <p className="mt-2">Mahadasha is the background, Antardasha selects the active life area, and Pratyantar often triggers the event. Gochar is only a trigger; it should not override natal promise and active dasha.</p>
+              <p className="mt-2">Markesh windows are prevention periods, not death or disease predictions. Use them for caution, medical screening when needed, safer travel and expert review.</p>
+            </div>
+          </div>
+
+          <div className="rounded-[18px] border border-[var(--shreem-border)] bg-white px-4 py-4">
+            <p className="text-sm font-semibold text-[#123f63]">House cheat sheet</p>
+            <div className="mt-3 grid gap-2 text-xs leading-5 small:grid-cols-2 md:grid-cols-3">
+              {[
+                "1: body, identity, confidence, life direction",
+                "2: family, speech, savings, food, values",
+                "3: courage, skills, communication, siblings, sales",
+                "4: home, mother, land, vehicles, emotional base",
+                "5: intelligence, children, mantra, creativity, judgement",
+                "6: service, competition, debt, routine, illness prevention",
+                "7: spouse, customers, contracts, public dealing",
+                "8: sudden change, longevity audit, hidden matters, shared assets",
+                "9: dharma, father/guru, fortune, higher learning, long travel",
+                "10: career, authority, karma, status, visible work",
+                "11: gains, network, fulfilment, elder support",
+                "12: sleep, expenses, isolation, foreign links, moksha",
+              ].map((item) => (
+                <span key={item} className="rounded-[12px] bg-[#fff7df] px-3 py-2 text-[#334155]">
+                  {item}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          <div className="grid gap-3 md:grid-cols-2">
+            <div className="rounded-[18px] border border-[var(--shreem-border)] bg-white px-4 py-4">
+              <p className="text-sm font-semibold text-[#123f63]">Graha and drishti</p>
+              <p className="mt-2">Sun shows authority and soul direction; Moon mind and comfort; Mars action and heat; Mercury logic and trade; Jupiter wisdom and expansion; Venus harmony and enjoyment; Saturn duty and delay; Rahu hunger and unusual growth; Ketu detachment and spiritual cut.</p>
+              <p className="mt-2">Parashari drishti is used: all planets aspect 7th, Mars also 4th and 8th, Jupiter also 5th and 9th, Saturn also 3rd and 10th.</p>
+            </div>
+            <div className="rounded-[18px] border border-[var(--shreem-border)] bg-white px-4 py-4">
+              <p className="text-sm font-semibold text-[#123f63]">Remedies and safety</p>
+              <p className="mt-2">Good remedies start with conduct: discipline, truthfulness, daan, seva, mantra, worship, cleanliness, sleep and food control. Stones and major pooja should be confirmed by an expert because strengthening the wrong graha can worsen the problem.</p>
+              <p className="mt-2">Health rows are prevention signals, never diagnosis. For symptoms, emergencies or medical decisions, consult a qualified doctor.</p>
+            </div>
+          </div>
+
+          <div className="grid gap-3 md:grid-cols-2">
+            <div className="rounded-[18px] border border-[var(--shreem-border)] bg-white px-4 py-4">
+              <p className="text-sm font-semibold text-[#123f63]">Positive, mixed and caution results</p>
+              <p className="mt-2">A positive result means several chart factors support the same outcome. Mixed means opportunity exists but comes with delay, effort or a trade-off. Caution means prevention and measured decisions matter more than speed.</p>
+              <p className="mt-2">No single planet or yoga should be read alone. The final interpretation combines the house, its lord, dignity, occupants, aspects, dasha and supporting transit.</p>
+            </div>
+            <div className="rounded-[18px] border border-[var(--shreem-border)] bg-white px-4 py-4">
+              <p className="text-sm font-semibold text-[#123f63]">Confidence and verification</p>
+              <p className="mt-2">Exact birth time matters because even a small difference can change Lagna degree, Bhava Chalit delivery and fine timing. Verify the time before acting on marriage, gemstone, health-watch or major financial guidance.</p>
+              <p className="mt-2">Use past timing dates as a reality check. If the strongest periods do not resemble lived events, ask an astrologer to review birth-time accuracy before relying on future windows.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+const AstrologerProofWarningModal = ({
+  open,
+  onConfirm,
+  onClose,
+}: {
+  open: boolean
+  onConfirm: () => void
+  onClose: () => void
+}) => {
+  if (!open) return null
+
+  return (
+    <div className="fixed inset-0 z-50 grid place-items-center bg-[rgba(2,8,23,0.76)] px-4 py-6 backdrop-blur-sm">
+      <div className="w-full max-w-lg rounded-[20px] border border-[rgba(212,161,38,0.4)] bg-[#fffaf0] px-5 py-5 shadow-2xl small:px-7 small:py-7">
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8a6510]">
+          Advanced Jyotish material
+        </p>
+        <h3 className="mt-2 text-xl font-semibold text-[#123f63]">
+          This section needs skilled interpretation
+        </h3>
+        <p className="mt-3 text-sm leading-7 text-[#475569]">
+          It contains raw chart calculations, dasha branches, Maraka and
+          Badhaka scoring, BPHS evidence, drishti and rule audits. Scores and
+          isolated combinations are not final predictions and can be
+          misleading without weighing the complete chart.
+        </p>
+        <p className="mt-2 text-sm leading-7 text-[#475569]">
+          Markesh and health-watch data is preventive astrology only. It must
+          not be read as certainty of illness, death or harm.
+        </p>
+        <div className="mt-5 grid gap-2 small:grid-cols-2">
+          <button type="button" onClick={onClose} className="min-h-11 rounded-full border border-[rgba(18,63,99,0.2)] px-4 text-sm font-semibold text-[#123f63]">
+            Back to reading
+          </button>
+          <button type="button" onClick={onConfirm} className="min-h-11 rounded-full bg-[#123f63] px-4 text-sm font-semibold text-white">
+            Open technical proof
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+const DashaDecisionTreeTable = ({
+  rows,
+}: {
+  rows?: KundliAnalysis["dasha_decision_tree"]
+}) => {
+  if (!rows?.length) {
+    return null
+  }
+
+  return (
+    <section className="overflow-hidden rounded-[22px] border border-[rgba(13,129,126,0.18)] bg-[rgba(240,248,246,0.72)]">
+      <div className="px-4 py-4">
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
+          Dasha decision tree
+        </p>
+        <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
+          Active Mahadasha, Antardasha and Pratyantar are pinned first. The
+          remaining rows compare the current Mahadasha branch and current
+          Antardasha branch, so you can see which sub-periods are supportive,
+          mixed or caution-heavy.
+        </p>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-0 small:min-w-[820px] text-left text-xs">
+          <thead className="bg-white/70 text-[var(--shreem-gold-deep)]">
+            <tr>
+              {["Period", "Prevailing factor", "Score", "Outcome"].map((heading) => (
+                <th key={heading} className="px-3 py-3 font-semibold uppercase tracking-[0.06em] small:tracking-[0.14em]">
+                  {heading}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row, index) => (
+              <tr key={`${row.period}-${index}`} className="border-t border-[var(--shreem-border)] text-[var(--shreem-muted)]">
+                <td className="break-words px-3 py-3 font-semibold text-[var(--shreem-ink)]">{row.period}</td>
+                <td className="break-words px-3 py-3">{row.prevailing_factor}</td>
+                <td className="break-words px-3 py-3">{row.score}</td>
+                <td className="break-words px-3 py-3">{row.expected_outcome}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </section>
   )
 }
 
+const HouseNarrativeGuide = ({
+  chart,
+  rows,
+}: {
+  chart: PrashnaChart
+  rows?: KundliAnalysis["house_outcomes"]
+}) => {
+  const houseRows = rows || []
+  const activeDasha = chart.dasha
+    ? `${chart.dasha.mahadasha.lord} Mahadasha, ${chart.dasha.antardasha.lord} Antardasha, ${chart.dasha.pratyantar.lord} Pratyantar`
+    : "current dasha unavailable"
+  const activePlanets = chart.dasha
+    ? [
+        chart.dasha.mahadasha.lord,
+        chart.dasha.antardasha.lord,
+        chart.dasha.pratyantar.lord,
+      ]
+    : []
+  const activeHouseNumbers = Array.from(
+    new Set(
+      activePlanets
+        .map((planetName) => chart.planets.find((planet) => planet.name === planetName))
+        .flatMap((planet) => [
+          planet?.bhavaHouse || planet?.house,
+          planet?.rashiHouse,
+        ])
+        .filter((house): house is number => typeof house === "number")
+    )
+  )
+  const activeHouseText = activeHouseNumbers.length
+    ? activeHouseNumbers
+        .map((house) => `H${house} ${HOUSE_THEMES[house - 1] || "life area"}`)
+        .join(", ")
+    : "no active house focus calculated"
+  const pressureRows = houseRows
+    .filter((row) =>
+      /pressure|mixed|delay|caution|risk|weak|dusthana|manage/i.test(
+        `${row.prevailing_impact} ${row.user_meaning} ${row.practical_use}`
+      )
+    )
+    .slice(0, 3)
+  const supportRows = houseRows
+    .filter((row) =>
+      /support|growth|strong|benefic|favour|usable|clear/i.test(
+        `${row.prevailing_impact} ${row.user_meaning} ${row.practical_use}`
+      )
+    )
+    .slice(0, 3)
+
+  return (
+    <section className="rounded-[22px] border border-[rgba(13,129,126,0.16)] bg-[rgba(240,248,246,0.72)] px-4 py-4">
+      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
+        House summary
+      </p>
+      <div className="mt-3 grid gap-3 text-sm leading-6 text-[var(--shreem-muted)] md:grid-cols-2">
+        <div className="rounded-[16px] bg-white/72 px-3 py-3">
+          <p className="font-semibold text-[var(--shreem-ink)]">Current focus</p>
+          <p className="mt-1">
+            {activeDasha} is currently highlighting {activeHouseText}, so these
+            life areas need the most attention now.
+          </p>
+        </div>
+        <div className="rounded-[16px] bg-white/72 px-3 py-3">
+          <p className="font-semibold text-[var(--shreem-ink)]">Overall use</p>
+          <p className="mt-1">
+            Use the supportive houses for growth and the pressure houses for
+            discipline, repair and prevention. The detailed proof is kept lower
+            on the page for astrologer review.
+          </p>
+        </div>
+      </div>
+      <div className="mt-3 grid gap-3 md:grid-cols-2">
+        <div className="rounded-[16px] bg-white/72 px-3 py-3">
+          <p className="text-sm font-semibold text-[var(--shreem-ink)]">
+            Supportive houses to use
+          </p>
+          <div className="mt-2 grid gap-2">
+            {(supportRows.length ? supportRows : houseRows.slice(0, 3)).map((row) => (
+              <p key={`support-house-${row.house}`} className="text-xs leading-5 text-[var(--shreem-muted)]">
+                <span className="font-semibold text-[var(--shreem-ink)]">
+                  H{row.house}:
+                </span>{" "}
+                {compactKundliText(
+                  getHouseCustomerMeaning(row),
+                  190
+                )}
+              </p>
+            ))}
+          </div>
+        </div>
+        <div className="rounded-[16px] bg-white/72 px-3 py-3">
+          <p className="text-sm font-semibold text-[var(--shreem-ink)]">
+            Houses needing discipline
+          </p>
+          <div className="mt-2 grid gap-2">
+            {(pressureRows.length ? pressureRows : houseRows.slice(-3)).map((row) => (
+              <p key={`pressure-house-${row.house}`} className="text-xs leading-5 text-[var(--shreem-muted)]">
+                <span className="font-semibold text-[var(--shreem-ink)]">
+                  H{row.house}:
+                </span>{" "}
+                {compactKundliText(
+                  getHouseCustomerAction(row),
+                  190
+                )}
+              </p>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+const HouseOutcomeTable = ({
+  rows,
+}: {
+  rows?: KundliAnalysis["house_outcomes"]
+}) => {
+  if (!rows?.length) {
+    return null
+  }
+
+  return (
+    <section className="overflow-hidden rounded-[22px] border border-[var(--shreem-border)] bg-white/66">
+      <div className="px-4 py-4">
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
+          House outcomes
+        </p>
+      </div>
+      <div className="grid gap-3 px-3 pb-4 small:hidden">
+        {rows.map((row) => (
+          <article
+            key={`house-mobile-${row.house}`}
+            className="rounded-[16px] border border-[var(--shreem-border)] bg-white/78 px-3 py-3"
+          >
+            <div className="flex items-start gap-3">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--shreem-accent-dark)] text-xs font-semibold text-white">
+                H{row.house}
+              </span>
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-[var(--shreem-ink)]">
+                  {row.theme}
+                </p>
+                <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
+                  {getHouseCustomerMeaning(row)}
+                </p>
+                <p className="mt-2 border-t border-[var(--shreem-border)] pt-2 text-xs leading-5 text-[var(--shreem-ink)]">
+                  <span className="font-semibold">Action: </span>
+                  {getHouseCustomerAction(row)}
+                </p>
+              </div>
+            </div>
+          </article>
+        ))}
+      </div>
+      <div className="hidden overflow-x-auto small:block">
+        <table className="w-full min-w-0 small:min-w-[860px] text-left text-xs">
+          <thead className="bg-[rgba(255,248,233,0.88)] text-[var(--shreem-gold-deep)]">
+            <tr>
+              {["House", "Theme", "Final meaning", "What to do"].map((heading) => (
+                <th key={heading} className="px-3 py-3 font-semibold uppercase tracking-[0.06em] small:tracking-[0.14em]">
+                  {heading}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row) => (
+              <tr key={row.house} className="border-t border-[var(--shreem-border)] text-[var(--shreem-muted)]">
+                <td className="break-words px-3 py-3 font-semibold text-[var(--shreem-ink)]">H{row.house}</td>
+                <td className="break-words px-3 py-3">{row.theme}</td>
+                <td className="break-words px-3 py-3">
+                  {getHouseCustomerMeaning(row)}
+                </td>
+                <td className="break-words px-3 py-3">
+                  {getHouseCustomerAction(row)}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  )
+}
+
+const BackToTopButton = () => (
+  <button
+    type="button"
+    onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+    className="fixed bottom-5 right-4 z-30 rounded-full border border-[rgba(13,129,126,0.24)] bg-white/92 px-4 py-2 text-xs font-semibold text-[var(--shreem-accent-dark)] shadow-lg backdrop-blur"
+  >
+    Top
+  </button>
+)
+
 const FocusedPredictionCards = ({ result }: { result: KundliResult }) => {
-  const directAnswer = normalizeKundliText(getKundliDirectAnswer(result))
+  const hasSpecificAnswers = Boolean(
+    getKundliQuestions(result).length &&
+      result.analysis?.sub_question_answers?.length
+  )
+  const directAnswer = hasSpecificAnswers
+    ? normalizeKundliText(getKundliDirectAnswer(result))
+    : ""
   const rows = getFocusedPredictionRows(result)
     .filter((row) => {
       const area = normalizeKundliText(row.area)
@@ -2368,7 +4642,7 @@ const FocusedPredictionCards = ({ result }: { result: KundliResult }) => {
       return (
         !area.includes("user question") &&
         !area.includes("question") &&
-        prediction !== directAnswer
+        (!directAnswer || prediction !== directAnswer)
       )
     })
     .slice(0, 10)
@@ -2380,7 +4654,7 @@ const FocusedPredictionCards = ({ result }: { result: KundliResult }) => {
   return (
     <section className="rounded-[22px] border border-[rgba(13,129,126,0.16)] bg-[rgba(240,248,246,0.72)] px-4 py-4">
       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
-        Detailed life guidance
+        Your six key life predictions
       </p>
       <div className="mt-3 grid gap-3 md:grid-cols-2">
         {rows.map((row, index) => (
@@ -2397,11 +4671,6 @@ const FocusedPredictionCards = ({ result }: { result: KundliResult }) => {
             <p className="mt-2 rounded-[14px] bg-[rgba(255,248,233,0.74)] px-3 py-2 text-xs leading-5 text-[var(--shreem-muted)]">
               {row.advice}
             </p>
-            {row.chart_basis && (
-              <p className="mt-2 text-xs leading-5 text-[var(--shreem-muted)]">
-                Basis: {compactKundliText(row.chart_basis, 180)}
-              </p>
-            )}
           </article>
         ))}
       </div>
@@ -2442,7 +4711,7 @@ const CompactSpecialCaseSummary = ({ result }: { result: KundliResult }) => {
   return (
     <section className="rounded-[20px] border border-[var(--shreem-border)] bg-white/60 px-4 py-4">
       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
-        Special cases checked
+        Active special combinations
       </p>
       <div className="mt-3 grid gap-2">
         {uniqueRows.map((item, index) => (
@@ -2466,17 +4735,169 @@ const CompactSpecialCaseSummary = ({ result }: { result: KundliResult }) => {
   )
 }
 
-const GrahaDrishtiCard = ({ chart }: { chart?: PrashnaChart }) => {
+const GrahaDrishtiCard = ({
+  chart,
+  outcomes,
+}: {
+  chart?: PrashnaChart
+  outcomes?: KundliAnalysis["house_outcomes"]
+}) => {
   const aspects = chart?.aspects || []
   const houseSynthesis = chart?.houseSynthesis || []
+  const outcomeByHouse = new Map((outcomes || []).map((row) => [row.house, row]))
 
   if (!aspects.length && !houseSynthesis.length) {
     return null
   }
 
-  const keyHouses = houseSynthesis
-    .filter((house) => [1, 2, 5, 7, 9, 10, 11].includes(house.house))
-    .slice(0, 7)
+  const keyHouseNumbers = Array.from(
+    new Set([
+      ...(chart?.houses || []).map((house) => house.house),
+      ...houseSynthesis.map((house) => house.house),
+      ...(outcomes || []).map((row) => row.house),
+    ])
+  ).sort((left, right) => left - right)
+  const keyHouses = keyHouseNumbers
+    .map(
+      (houseNumber) =>
+        houseSynthesis.find((house) => house.house === houseNumber) ||
+        chart?.houses?.find((house) => house.house === houseNumber)
+    )
+    .filter(
+      (
+        house
+      ): house is NonNullable<(typeof houseSynthesis)[number] | NonNullable<typeof chart>["houses"][number]> =>
+        Boolean(house)
+    )
+  const getAspectImpact = (aspect: (typeof aspects)[number]) => {
+    const supportivePlanets = ["Jupiter", "Venus", "Mercury"]
+    const pressurePlanets = ["Mars", "Saturn", "Rahu", "Ketu"]
+    const pressureHouses = [6, 8, 12]
+    const polarity =
+      aspect.polarity ||
+      (supportivePlanets.includes(aspect.fromPlanet) &&
+      !pressureHouses.includes(aspect.toHouse)
+        ? "supportive"
+        : pressurePlanets.includes(aspect.fromPlanet) ||
+          pressureHouses.includes(aspect.toHouse)
+        ? "challenging"
+        : "mixed")
+    const label =
+      polarity === "supportive"
+        ? "Positive impact"
+        : polarity === "challenging"
+        ? "Challenging impact"
+        : "Mixed impact"
+    const badgeClass =
+      polarity === "supportive"
+        ? "bg-[rgba(13,129,126,0.12)] text-[var(--shreem-accent-dark)]"
+        : polarity === "challenging"
+        ? "bg-[rgba(185,74,64,0.10)] text-[#9d332b]"
+        : "bg-[rgba(245,199,96,0.18)] text-[var(--shreem-gold-deep)]"
+    const positive =
+      aspect.positiveEffect ||
+      (aspect.fromPlanet === "Jupiter"
+        ? `${aspect.theme} gets wisdom, protection, guidance and growth.`
+        : aspect.fromPlanet === "Venus"
+        ? `${aspect.theme} gets harmony, relationship support, comfort and refinement.`
+        : aspect.fromPlanet === "Mercury"
+        ? `${aspect.theme} gets planning, communication, business logic and skill support.`
+        : aspect.fromPlanet === "Moon"
+        ? `${aspect.theme} gets emotional attention, public sensitivity and family involvement.`
+        : aspect.fromPlanet === "Sun"
+        ? `${aspect.theme} gets authority, confidence, visibility and leadership push.`
+        : aspect.fromPlanet === "Mars"
+        ? `${aspect.theme} gets courage, speed, technical drive and competitive force.`
+        : aspect.fromPlanet === "Saturn"
+        ? `${aspect.theme} gets discipline, endurance, responsibility and long-term structure.`
+        : aspect.fromPlanet === "Rahu"
+        ? `${aspect.theme} gets ambition, unusual opportunity, digital/foreign pull and hunger for growth.`
+        : `${aspect.theme} gets detachment, simplification, spiritual correction and sharp discrimination.`)
+    const negative =
+      aspect.negativeEffect ||
+      (aspect.fromPlanet === "Jupiter"
+        ? `${aspect.theme} can become excessive or over-optimistic if practical limits are ignored.`
+        : aspect.fromPlanet === "Venus"
+        ? `${aspect.theme} can become indulgent or relationship-dependent if boundaries are weak.`
+        : aspect.fromPlanet === "Mercury"
+        ? `${aspect.theme} can become overthinking, scattered decisions or nervous speech.`
+        : aspect.fromPlanet === "Moon"
+        ? `${aspect.theme} can fluctuate with mood, family pressure and emotional reactions.`
+        : aspect.fromPlanet === "Sun"
+        ? `${aspect.theme} can bring ego clash, authority pressure or impatience.`
+        : aspect.fromPlanet === "Mars"
+        ? `${aspect.theme} can bring haste, conflict, heat, sharp speech or sudden breaks.`
+        : aspect.fromPlanet === "Saturn"
+        ? `${aspect.theme} can bring delay, heaviness, duty pressure or slow results before maturity.`
+        : aspect.fromPlanet === "Rahu"
+        ? `${aspect.theme} can become restless, obsessive, unconventional or unstable.`
+        : `${aspect.theme} can feel detached, irregular, isolating or hard to understand until simplified.`)
+
+    return { polarity, label, badgeClass, positive, negative }
+  }
+  const getHouseImpact = (
+    outcome?: NonNullable<KundliAnalysis["house_outcomes"]>[number]
+  ) => {
+    const text = `${outcome?.prevailing_impact || ""} ${outcome?.outcome || ""}`.toLowerCase()
+    const polarity = /active and usable|supportive|benefic|growth|progress|improve/.test(text)
+      ? "supportive"
+      : /pressure|needs discipline|challenging|delay|caution|risk|weak|dusthana/.test(text)
+      ? "challenging"
+      : "mixed"
+    const label =
+      polarity === "supportive"
+        ? "Overall positive"
+        : polarity === "challenging"
+        ? "Overall challenging"
+        : "Overall mixed"
+    const badgeClass =
+      polarity === "supportive"
+        ? "bg-[rgba(13,129,126,0.12)] text-[var(--shreem-accent-dark)]"
+        : polarity === "challenging"
+        ? "bg-[rgba(185,74,64,0.10)] text-[#9d332b]"
+        : "bg-[rgba(245,199,96,0.18)] text-[var(--shreem-gold-deep)]"
+
+    return { polarity, label, badgeClass }
+  }
+  const getHouseConclusion = (
+    house: NonNullable<(typeof keyHouses)[number]>,
+    outcome?: NonNullable<KundliAnalysis["house_outcomes"]>[number]
+  ) => {
+    const impact = getHouseImpact(outcome)
+    const aspectsReceived = house.aspectsReceived || []
+    const supporters = aspectsReceived
+      .filter((aspect) => getAspectImpact(aspect).polarity === "supportive")
+      .map((aspect) => aspect.fromPlanet)
+    const challengers = aspectsReceived
+      .filter((aspect) => getAspectImpact(aspect).polarity === "challenging")
+      .map((aspect) => aspect.fromPlanet)
+    const placed = house.planetsPlaced?.length
+      ? house.planetsPlaced.join(", ")
+      : "no direct planet"
+    const interpretedMeaning = getHouseCustomerMeaning(outcome)
+    const interpretedAction = getHouseCustomerAction(outcome)
+    const net = interpretedMeaning ||
+      (impact.polarity === "supportive"
+        ? `${house.theme} is a usable strength area.`
+        : impact.polarity === "challenging"
+        ? `${house.theme} needs discipline before results become smooth.`
+        : `${house.theme} gives mixed results and depends strongly on timing.`)
+    const why = [
+      `Lord ${house.signLord}; ${placed} placed.`,
+      supporters.length ? `Support from ${supporters.slice(0, 3).join(", ")}.` : "",
+      challengers.length ? `Pressure from ${challengers.slice(0, 3).join(", ")}.` : "",
+    ]
+      .filter(Boolean)
+      .join(" ")
+    const action = interpretedAction ||
+      (impact.polarity === "supportive"
+        ? "Use this area actively, but keep promises realistic."
+        : impact.polarity === "challenging"
+        ? "Slow down, keep routine, avoid ego/conflict, and use mantra-daan discipline."
+        : "Act after checking dasha timing and keep a balanced plan.")
+
+    return { net, why, action }
+  }
 
   return (
     <section className="rounded-[24px] border border-[rgba(212,161,38,0.24)] bg-[rgba(255,248,233,0.78)] px-4 py-5 small:px-6">
@@ -2487,44 +4908,89 @@ const GrahaDrishtiCard = ({ chart }: { chart?: PrashnaChart }) => {
         Planet aspects and combined house impact
       </h3>
       <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
-        This section is calculated deterministically before AI interpretation, so the reading does not miss major Parashari drishti.
+        Final house impact is shown first. Individual aspect cards remain as proof for astrologers.
       </p>
 
-      <div className="mt-4 grid gap-3 small:grid-cols-2">
-        {aspects.slice(0, 12).map((aspect, index) => (
-          <article
-            key={`${aspect.fromPlanet}-${aspect.toHouse}-${index}`}
-            className="rounded-[18px] border border-[var(--shreem-border)] bg-white/72 px-3 py-3"
-          >
-            <p className="text-sm font-semibold text-[var(--shreem-ink)]">
-              {aspect.fromPlanet} → House {aspect.toHouse}
-            </p>
-            <p className="mt-1 text-xs uppercase tracking-[0.12em] text-[var(--shreem-gold-deep)]">
-              {aspect.aspectType} drishti · {aspect.toSign}
-            </p>
-            <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
-              {compactKundliText(aspect.interpretation, 180)}
-            </p>
-          </article>
-        ))}
-      </div>
-
       {!!keyHouses.length && (
-        <div className="mt-4 grid gap-3">
-          {keyHouses.map((house) => (
-            <article
-              key={`house-synthesis-${house.house}`}
-              className="rounded-[18px] border border-white/80 bg-white/70 px-4 py-3"
-            >
-              <p className="text-sm font-semibold text-[var(--shreem-ink)]">
-                House {house.house}: {house.theme}
-              </p>
-              <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
-                {compactKundliText(house.synthesis, 260)}
-              </p>
-            </article>
-          ))}
+        <div className="mt-4 grid gap-3 small:grid-cols-2">
+          {keyHouses.map((house) => {
+            const outcome = outcomeByHouse.get(house.house)
+            const impact = getHouseImpact(outcome)
+
+            return (
+              <article
+                key={`house-synthesis-${house.house}`}
+                className="rounded-[18px] border border-white/80 bg-white/70 px-4 py-3"
+              >
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <p className="text-sm font-semibold text-[var(--shreem-ink)]">
+                    House {house.house}: {house.theme}
+                  </p>
+                  <span
+                    className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${impact.badgeClass}`}
+                  >
+                    {impact.label}
+                  </span>
+                </div>
+                <p className="mt-2 text-sm leading-6 text-[var(--shreem-ink)]">
+                  {getHouseConclusion(house, outcome).net}
+                </p>
+                <p className="mt-2 text-xs leading-5 text-[var(--shreem-muted)]">
+                  {getHouseConclusion(house, outcome).why}
+                </p>
+                <p className="mt-2 rounded-[14px] bg-[rgba(13,129,126,0.08)] px-3 py-2 text-xs leading-5 text-[var(--shreem-muted)]">
+                  {getHouseConclusion(house, outcome).action}
+                </p>
+              </article>
+            )
+          })}
         </div>
+      )}
+
+      {!!aspects.length && (
+        <details className="mt-4 rounded-[18px] border border-[var(--shreem-border)] bg-white/68 px-4 py-3">
+          <summary className="cursor-pointer text-sm font-semibold text-[var(--shreem-ink)]">
+            Show individual drishti proof
+          </summary>
+          <div className="mt-3 grid gap-3 small:grid-cols-2">
+            {aspects.slice(0, 12).map((aspect, index) => {
+              const impact = getAspectImpact(aspect)
+
+              return (
+                <article
+                  key={`${aspect.fromPlanet}-${aspect.toHouse}-${index}`}
+                  className="rounded-[16px] border border-[var(--shreem-border)] bg-white/72 px-3 py-3"
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <p className="text-sm font-semibold text-[var(--shreem-ink)]">
+                      {aspect.fromPlanet} → House {aspect.toHouse}
+                    </p>
+                    <span
+                      className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${impact.badgeClass}`}
+                    >
+                      {impact.label}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-xs uppercase tracking-[0.05em] small:tracking-[0.12em] text-[var(--shreem-gold-deep)]">
+                    {aspect.aspectType} drishti · {aspect.toSign}
+                  </p>
+                  <div className="mt-2 grid gap-2 text-sm leading-6">
+                    <p className="rounded-[12px] bg-[rgba(13,129,126,0.08)] px-3 py-2 text-[var(--shreem-ink)]">
+                      <span className="font-semibold">Effect: </span>
+                      {compactKundliText(impact.positive, 150)}
+                    </p>
+                    <p className="rounded-[12px] bg-[rgba(185,74,64,0.08)] px-3 py-2 text-[var(--shreem-muted)]">
+                      <span className="font-semibold text-[var(--shreem-ink)]">
+                        Caution:
+                      </span>{" "}
+                      {compactKundliText(impact.negative, 150)}
+                    </p>
+                  </div>
+                </article>
+              )
+            })}
+          </div>
+        </details>
       )}
     </section>
   )
@@ -2535,7 +5001,14 @@ const CompactDashaPredictionList = ({
 }: {
   rows?: KundliAnalysis["dasha_predictions"]
 }) => {
-  const uniqueRows = uniqueByText(rows || [], (row) => `${row.period} ${row.prediction}`).slice(0, 3)
+  const uniqueRows = uniqueByText(rows || [], (row) => `${row.period} ${row.prediction}`)
+    .filter(
+      (row) =>
+        !/period gives results through its house placement|treat this period as active for the themes shown|keep decisions practical, strengthen the period lord/i.test(
+          `${row.prediction} ${row.action}`
+        )
+    )
+    .slice(0, 3)
 
   if (!uniqueRows.length) {
     return null
@@ -2556,10 +5029,10 @@ const CompactDashaPredictionList = ({
               {item.period}
             </p>
             <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
-              {compactKundliText(item.prediction, 260)}
+              {fullKundliText(item.prediction)}
             </p>
             <p className="mt-2 rounded-[14px] bg-[rgba(255,248,233,0.74)] px-3 py-2 text-xs leading-5 text-[var(--shreem-muted)]">
-              {compactKundliText(item.action, 180)}
+              {fullKundliText(item.action)}
             </p>
           </article>
         ))}
@@ -2594,7 +5067,7 @@ const CompactInsightList = ({
             key={`${title}-${index}`}
             className="rounded-[14px] bg-white/70 px-3 py-2 text-xs leading-5 text-[var(--shreem-muted)]"
           >
-            {compactKundliText(item, 180)}
+            {fullKundliText(item)}
           </p>
         ))}
       </div>
@@ -2613,12 +5086,26 @@ const KundliResultView = ({
   const stoneCards = getStoneCards(result.stones)
   const requestedUnits = result.usage_units || result.profile?.usage_units || 1
   const isInterruptedReading = Boolean(result.message)
+  const hasQuestionAnswers = Boolean(
+    getKundliQuestions(result).length &&
+      result.analysis?.sub_question_answers?.length
+  )
+  const [guideOpen, setGuideOpen] = useState(false)
+  const [astrologerNoticeOpen, setAstrologerNoticeOpen] = useState(false)
+  const [activeSection, setActiveSection] = useState(
+    hasQuestionAnswers ? "kundli-answer" : "kundli-predictions"
+  )
+
+  useEffect(() => {
+    if (!hasQuestionAnswers && activeSection === "kundli-answer") {
+      setActiveSection("kundli-predictions")
+    }
+  }, [activeSection, hasQuestionAnswers])
 
   if (!chart) {
     return null
   }
 
-  const hasQuestionAnswers = Boolean(result.analysis?.sub_question_answers?.length)
   const showGeneralText =
     !hasQuestionAnswers &&
     Boolean(
@@ -2628,9 +5115,38 @@ const KundliResultView = ({
         result.analysis?.health_caution ||
         result.analysis?.current_period_analysis
     )
+  const tocItems = [
+    ...(hasQuestionAnswers ? [{ id: "kundli-answer", label: "Answer" }] : []),
+    { id: "kundli-timing", label: "Timing" },
+    { id: "kundli-predictions", label: "Predictions" },
+    { id: "kundli-houses", label: "Houses" },
+    { id: "kundli-remedies", label: "Remedies" },
+    { id: "kundli-proof", label: "For Astrologers" },
+  ]
 
   return (
     <div className="grid gap-4 relative">
+      <ResultAnchorNav
+        items={tocItems}
+        activeId={activeSection}
+        onSelect={(sectionId) => {
+          if (sectionId === "kundli-proof") {
+            setAstrologerNoticeOpen(true)
+            return
+          }
+          setActiveSection(sectionId)
+        }}
+        onOpenInfo={() => setGuideOpen(true)}
+      />
+      <KundliGuideModal open={guideOpen} onClose={() => setGuideOpen(false)} />
+      <AstrologerProofWarningModal
+        open={astrologerNoticeOpen}
+        onClose={() => setAstrologerNoticeOpen(false)}
+        onConfirm={() => {
+          setActiveSection("kundli-proof")
+          setAstrologerNoticeOpen(false)
+        }}
+      />
       <div className="rounded-[20px] border border-[var(--shreem-border)] bg-white/62 px-4 py-3">
         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
           {isInterruptedReading ? "Kundli not completed" : "Kundli reading"}
@@ -2644,21 +5160,49 @@ const KundliResultView = ({
         </p>
       </div>
 
-      <KundliAnswerFirstCard result={result} />
+      {hasQuestionAnswers && (
+        <div
+          id="kundli-answer"
+          className={activeSection === "kundli-answer" ? "scroll-mt-28" : "hidden"}
+        >
+          <KundliAnswerFirstCard result={result} />
+        </div>
+      )}
 
-      <FocusedPredictionCards result={result} />
+      <div
+        id="kundli-predictions"
+        className={
+          activeSection === "kundli-predictions"
+            ? "grid gap-4 scroll-mt-28"
+            : "hidden"
+        }
+      >
+        <FocusedPredictionCards result={result} />
+      </div>
 
-      <DashaCard chart={chart} />
+      <div
+        id="kundli-timing"
+        className={
+          activeSection === "kundli-timing"
+            ? "grid gap-4 scroll-mt-28"
+            : "hidden"
+        }
+      >
+        {result.analysis?.current_period_analysis && (
+          <section className="rounded-[20px] border border-[var(--shreem-border)] bg-white/66 px-4 py-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
+              What the current period means
+            </p>
+            <p className="mt-2 text-sm leading-7 text-[var(--shreem-muted)]">
+              {result.analysis.current_period_analysis}
+            </p>
+          </section>
+        )}
+        <CompactDashaPredictionList rows={result.analysis?.dasha_predictions} />
+        <CustomerMarkeshTimeline analysis={result.critical_period_analysis} />
+      </div>
 
-      <GrahaDrishtiCard chart={chart} />
-
-      <CompactDashaPredictionList rows={result.analysis?.dasha_predictions} />
-
-      <RiskWatchList rows={result.analysis?.risk_watch} />
-
-      <CompactSpecialCaseSummary result={result} />
-
-      {showGeneralText && (
+      {activeSection === "kundli-predictions" && showGeneralText && (
         <section className="grid gap-3">
           {[
             ["Summary", result.analysis?.summary],
@@ -2684,61 +5228,56 @@ const KundliResultView = ({
         </section>
       )}
 
-      <div className="grid gap-3 xl:grid-cols-2">
-        <CompactInsightList
-          title="Likely issues"
-          items={result.analysis?.likely_challenges}
-        />
-        <CompactInsightList
-          title="Practical solutions"
-          items={result.analysis?.practical_solutions}
-        />
-        <CompactInsightList
-          title="Health watchlist"
-          items={result.analysis?.health_indicators || result.health_indicators}
-        />
-        <CompactInsightList
-          title="Strengths"
-          items={result.analysis?.strengths}
-        />
-      </div>
-
+      <div
+        id="kundli-remedies"
+        className={
+          activeSection === "kundli-remedies"
+            ? "grid gap-4 scroll-mt-28"
+            : "hidden"
+        }
+      >
       {Boolean(result.analysis?.targeted_remedies?.length) && (
         <div className="rounded-[20px] border border-[var(--shreem-border)] bg-white/60 px-4 py-4">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
-            Targeted remedies
+            Pooja, daan, mantra and stone guidance
           </p>
-          <div className="mt-3 grid gap-3">
+          <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
+            Remedies are selected from active graha, Lagna lord, detected dosha
+            and health-watch signals. Each row should include worship, mantra,
+            daan/seva, conduct correction, and gemstone caution where relevant.
+            For strong pooja, gemstone or dosha decisions, take expert review
+            before starting.
+          </p>
+          <div className="mt-4 grid gap-3 md:grid-cols-2">
             {uniqueByText(result.analysis?.targeted_remedies || [], (item) => `${item.pain_point} ${item.mantra_or_pooja}`)
-              .slice(0, 4)
+              .slice(0, 6)
               .map((item, index) => (
-                <div
+                <article
                   key={`${item.pain_point}-${index}`}
-                  className="rounded-[16px] border border-[var(--shreem-border)] bg-white/72 px-3 py-3"
+                  className="rounded-[18px] border border-[var(--shreem-border)] bg-white/76 px-4 py-4"
                 >
                   <p className="text-sm font-semibold leading-6 text-[var(--shreem-ink)]">
                     {item.pain_point}
                   </p>
-                  <p className="mt-2 text-xs leading-5 text-[var(--shreem-muted)]">
-                    {compactKundliText(item.chart_basis, 180)}
-                  </p>
-                  <p className="mt-2 rounded-[14px] bg-[rgba(255,248,233,0.74)] px-3 py-2 text-xs leading-5 text-[var(--shreem-muted)]">
-                    {compactKundliText(item.mantra_or_pooja, 180)}
+                  <p className="mt-2 rounded-[14px] bg-[rgba(255,248,233,0.82)] px-3 py-2 text-sm leading-6 text-[var(--shreem-ink)]">
+                    <span className="font-semibold">Pooja/mantra:</span>{" "}
+                    {compactKundliText(item.mantra_or_pooja, 300)}
                   </p>
                   <p className="mt-2 text-xs leading-5 text-[var(--shreem-muted)]">
-                    {compactKundliText(item.daily_practice, 180)}
+                    <span className="font-semibold text-[var(--shreem-ink)]">
+                      Daan, conduct and stone caution:
+                    </span>{" "}
+                    {compactKundliText(item.daily_practice, 360)}
                   </p>
-                </div>
+                </article>
               ))}
           </div>
         </div>
       )}
 
-      {Boolean(result.analysis?.upaay?.length) && (
-        <CompactInsightList title="Upaay" items={result.analysis?.upaay} limit={5} />
-      )}
+      </div>
 
-      {(stoneCards?.length || 0) > 0 && (
+      {activeSection === "kundli-remedies" && (stoneCards?.length || 0) > 0 && (
         <section className="grid gap-3 small:grid-cols-3">
           {(stoneCards || []).slice(0, 3).map((stone, index) => (
             <div
@@ -2751,25 +5290,24 @@ const KundliResultView = ({
               <p className="mt-2 text-base font-semibold text-[var(--shreem-ink)]">
                 {stone?.primary}
               </p>
-              <p className="mt-1 text-xs leading-5 text-[var(--shreem-muted)]">
-                {compactKundliText(
-                  stone?.chart_basis ||
-                    `${stone?.sign || ""} sign, lord ${stone?.lord || ""}. ${stone?.caution || ""}`,
-                  160
-                )}
-              </p>
+              {stone?.caution && (
+                <p className="mt-1 text-xs leading-5 text-[var(--shreem-muted)]">
+                  {compactKundliText(stone.caution, 160)}
+                </p>
+              )}
             </div>
           ))}
         </section>
       )}
 
-      {result.stones?.caution && (
+      {activeSection === "kundli-remedies" && result.stones?.caution && (
         <p className="rounded-[16px] border border-[rgba(212,161,38,0.26)] bg-[rgba(255,248,233,0.74)] px-4 py-3 text-xs leading-5 text-[var(--shreem-muted)]">
           {compactKundliText(result.stones.caution, 220)}
         </p>
       )}
 
-      {Boolean(result.analysis?.shreem_product_suggestions?.length) && (
+      {activeSection === "kundli-remedies" &&
+        Boolean(result.analysis?.shreem_product_suggestions?.length) && (
         <div className="rounded-[20px] border border-[rgba(13,129,126,0.16)] bg-[rgba(240,248,246,0.74)] px-4 py-4">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
             Helpful support for your remedy
@@ -2782,7 +5320,7 @@ const KundliResultView = ({
                 className="grid grid-cols-[84px_minmax(0,1fr)] gap-3 rounded-[16px] border border-[var(--shreem-border)] bg-white/70 p-3 transition hover:border-[rgba(13,129,126,0.32)]"
               >
                 <img
-                  src={item.image_url || "/shreem-scenes/hero-scene.png"}
+                  src={item.image_url || "/shreem-scenes/hero-scene.jpg"}
                   alt=""
                   className="h-[84px] w-[84px] rounded-[12px] object-cover"
                   loading="lazy"
@@ -2801,7 +5339,8 @@ const KundliResultView = ({
         </div>
       )}
 
-      {result.analysis?.expert_call_recommended && (
+      {activeSection === "kundli-remedies" &&
+        result.analysis?.expert_call_recommended && (
         <div className="rounded-[20px] border border-[rgba(212,161,38,0.32)] bg-[rgba(255,248,233,0.84)] px-4 py-4">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
             Expert review suggested
@@ -2819,19 +5358,53 @@ const KundliResultView = ({
         </div>
       )}
 
-      <BookCitationList items={result.analysis?.book_citations} />
 
-      <section className="grid gap-4">
+      <section
+        id="kundli-houses"
+        className={
+          activeSection === "kundli-houses"
+            ? "grid gap-4 scroll-mt-28"
+            : "hidden"
+        }
+      >
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
-            Chart proof
+            Life area interpretation
           </p>
           <h3 className="mt-2 text-xl font-semibold text-[var(--shreem-ink)]">
-            Calculated chart and tables
+            What each house means for you
           </h3>
+          <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
+            These are the final combined conclusions after lordship, placements,
+            drishti, dasha and proven special combinations are weighed together.
+          </p>
         </div>
+        <HouseOutcomeTable rows={result.analysis?.house_outcomes} />
+      </section>
 
-        <div className="grid gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(280px,0.65fr)]">
+      <section
+        id="kundli-proof"
+        className={
+          activeSection === "kundli-proof"
+            ? "grid gap-4 scroll-mt-28"
+            : "hidden"
+        }
+      >
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
+            For astrologers
+          </p>
+          <h3 className="mt-2 text-xl font-semibold text-[var(--shreem-ink)]">
+            Complete calculated chart and audit trail
+          </h3>
+          <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
+            This tab preserves the technical calculation, rule evidence and
+            timing audit behind the customer interpretation.
+          </p>
+        </div>
+        <div
+          className="grid gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(280px,0.65fr)]"
+        >
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
             <NorthIndianChart chart={chart} mode="lagna" title="Lagna chart" />
             <NorthIndianChart chart={chart} mode="bhava" title="Bhava Chalit chart" />
@@ -2857,23 +5430,89 @@ const KundliResultView = ({
         </div>
 
         <BhavaChalitSummary chart={chart} />
-
-        <div className="grid gap-4">
-          <div>
-            <p className="mb-3 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
-              House information
+        <DashaCard chart={chart} />
+        <DashaTimelineTable timeline={result.dasha_timeline} />
+        <DashaDecisionTreeTable rows={result.analysis?.dasha_decision_tree} />
+        <CriticalTimingWindowList analysis={result.critical_period_analysis} />
+        <RiskWatchList rows={result.analysis?.risk_watch} />
+        <LongevityAssessmentCard assessment={result.longevity_assessment} />
+        <MarakaBadhakaAuditCard analysis={result.critical_period_analysis} />
+        <PredictionTable
+          rows={result.analysis?.prediction_table}
+          hasQuestionAnswers={hasQuestionAnswers}
+        />
+        {Boolean(result.analysis?.sub_question_answers?.length) && (
+          <section className="rounded-[20px] border border-[var(--shreem-border)] bg-white/66 px-4 py-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
+              Question evidence audit
             </p>
-            <HouseTable chart={chart} />
-          </div>
-          <div>
-            <p className="mb-3 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
-              Graha table
+            <div className="mt-3 grid gap-2">
+              {result.analysis?.sub_question_answers?.map((item, index) => (
+                <div key={`question-proof-${index}`} className="rounded-[14px] bg-white/76 px-3 py-3 text-xs leading-5 text-[var(--shreem-muted)]">
+                  <p className="font-semibold text-[var(--shreem-ink)]">Q{index + 1}: {item.question}</p>
+                  <p className="mt-1">{item.chart_reason}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+        <CompactSpecialCaseSummary result={result} />
+        <SpecialCaseReadingList rows={result.analysis?.special_case_readings} />
+        <GrahaDrishtiCard chart={chart} outcomes={result.analysis?.house_outcomes} />
+        {Boolean(result.analysis?.house_outcomes?.length) && (
+          <section className="rounded-[20px] border border-[var(--shreem-border)] bg-white/66 px-4 py-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
+              House evidence audit
             </p>
-            <PlanetTable chart={chart} />
-          </div>
-        </div>
-
+            <div className="mt-3 grid gap-2">
+              {result.analysis?.house_outcomes?.map((item) => (
+                <details key={`house-proof-${item.house}`} className="rounded-[14px] bg-white/76 px-3 py-2 text-xs leading-5 text-[var(--shreem-muted)]">
+                  <summary className="cursor-pointer font-semibold text-[var(--shreem-ink)]">
+                    H{item.house}: {item.theme}
+                  </summary>
+                  <p className="mt-2"><strong>Calculated outcome:</strong> {item.outcome}</p>
+                  <p className="mt-1"><strong>Evidence:</strong> {item.evidence}</p>
+                </details>
+              ))}
+            </div>
+          </section>
+        )}
+        <GrahaProofGrid chart={chart} />
         <PlanetEffectList chart={chart} effects={result.analysis?.planet_effects} />
+        <BphsRuleProofList proofs={result.bphs_rule_proofs} />
+        <AstrologerAuditTables chart={chart} />
+        <BookCitationList items={result.analysis?.book_citations} />
+        <CompactInsightList title="Generated upaay audit" items={result.analysis?.upaay} limit={8} />
+        {Boolean(result.analysis?.targeted_remedies?.length) && (
+          <section className="rounded-[20px] border border-[var(--shreem-border)] bg-white/66 px-4 py-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
+              Remedy selection proof
+            </p>
+            <div className="mt-3 grid gap-2">
+              {result.analysis?.targeted_remedies?.map((item, index) => (
+                <p key={`remedy-proof-${index}`} className="rounded-[14px] bg-white/76 px-3 py-2 text-xs leading-5 text-[var(--shreem-muted)]">
+                  <span className="font-semibold text-[var(--shreem-ink)]">{item.pain_point}:</span>{" "}
+                  {item.chart_basis}
+                </p>
+              ))}
+            </div>
+          </section>
+        )}
+        {Boolean(stoneCards?.length) && (
+          <section className="rounded-[20px] border border-[var(--shreem-border)] bg-white/66 px-4 py-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
+              Gemstone selection proof
+            </p>
+            <div className="mt-3 grid gap-2">
+              {stoneCards?.map((stone, index) => (
+                <p key={`stone-proof-${index}`} className="rounded-[14px] bg-white/76 px-3 py-2 text-xs leading-5 text-[var(--shreem-muted)]">
+                  <span className="font-semibold text-[var(--shreem-ink)]">{stone?.label}: {stone?.primary}</span>{" "}
+                  {stone?.chart_basis} {stone?.caution}
+                </p>
+              ))}
+            </div>
+          </section>
+        )}
       </section>
 
       <button
@@ -2887,6 +5526,7 @@ const KundliResultView = ({
       <p className="mt-4 text-center text-xs text-[var(--shreem-muted)]">
         Disclaimer: All insights are AI-generated based on astrological principles.
       </p>
+      <BackToTopButton />
     </div>
   )
 }
@@ -3003,24 +5643,24 @@ const MatchmakingResultView = ({ result }: { result: MatchmakingResult }) => {
 
       <div className="overflow-hidden rounded-[20px] border border-[var(--shreem-border)] bg-white/70">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[620px] text-left text-sm">
-            <thead className="bg-[rgba(255,248,233,0.92)] text-xs uppercase tracking-[0.14em] text-[var(--shreem-gold-deep)]">
+          <table className="w-full min-w-0 small:min-w-[620px] text-left text-sm">
+            <thead className="bg-[rgba(255,248,233,0.92)] text-xs uppercase tracking-[0.06em] small:tracking-[0.14em] text-[var(--shreem-gold-deep)]">
               <tr>
-                <th className="px-4 py-3">Koota</th>
-                <th className="px-4 py-3">Score</th>
-                <th className="px-4 py-3">Reason</th>
+                <th className="break-words px-4 py-3">Koota</th>
+                <th className="break-words px-4 py-3">Score</th>
+                <th className="break-words px-4 py-3">Reason</th>
               </tr>
             </thead>
             <tbody>
               {(result.compatibility?.scores || []).map((score) => (
                 <tr key={score.name} className="border-t border-[var(--shreem-border)]">
-                  <td className="px-4 py-3 font-semibold text-[var(--shreem-ink)]">
+                  <td className="break-words px-4 py-3 font-semibold text-[var(--shreem-ink)]">
                     {score.name}
                   </td>
-                  <td className="px-4 py-3 text-[var(--shreem-muted)]">
+                  <td className="break-words px-4 py-3 text-[var(--shreem-muted)]">
                     {score.score}/{score.max}
                   </td>
-                  <td className="px-4 py-3 text-[var(--shreem-muted)]">
+                  <td className="break-words px-4 py-3 text-[var(--shreem-muted)]">
                     {score.reason}
                   </td>
                 </tr>
@@ -3094,7 +5734,26 @@ const printKundliReport = (result: KundliResult) => {
   const analysis = result.analysis
   const profile = result.profile
   const dasha = chart.dasha
+  const dashaTimeline = result.dasha_timeline
   const stoneCards = getStoneCards(result.stones)
+  const printHouseOutcomeByHouse = new Map(
+    (analysis?.house_outcomes || []).map((row) => [row.house, row])
+  )
+  const lagnaChartSvg = buildNorthIndianChartSvg({
+    chart,
+    mode: "lagna",
+    title: "Lagna chart",
+  })
+  const bhavaChartSvg = buildNorthIndianChartSvg({
+    chart,
+    mode: "bhava",
+    title: "Bhava Chalit chart",
+  })
+  const moonChartSvg = buildNorthIndianChartSvg({
+    chart,
+    mode: "moon",
+    title: "Chandra chart",
+  })
   const isiOS =
     /iphone|ipad|ipod/i.test(window.navigator.userAgent) ||
     (window.navigator.platform === "MacIntel" &&
@@ -3105,6 +5764,32 @@ const printKundliReport = (result: KundliResult) => {
     window.print()
     return
   }
+
+      const dashaTimelineHtml = dashaTimeline
+    ? [
+        ["Mahadasha context", dashaTimeline.mahadashas],
+        ["Full-life Antardasha map", dashaTimeline.lifetime_antardashas],
+        ["Current Antardasha", dashaTimeline.current_antardashas],
+        ["Current Pratyantar", dashaTimeline.current_pratyantars],
+        ["Current Sookshma", dashaTimeline.current_sookshmas],
+        ["Current Prana", dashaTimeline.current_pranas],
+      ]
+        .filter(([, rows]) => Array.isArray(rows) && rows.length)
+        .map(
+          ([title, rows]) =>
+            `<h3>${escapeHtml(String(title))}</h3><table><thead><tr><th>Period</th><th>Lord</th><th>From</th><th>To</th></tr></thead><tbody>${(rows as DashaTimelinePeriod[])
+              .map(
+                (row) =>
+                  `<tr><td>${escapeHtml(
+                    `${row.parentPath ? `${row.parentPath}/` : ""}${row.level}`
+                  )}</td><td>${escapeHtml(row.lord)}</td><td>${escapeHtml(
+                    row.startLabel
+                  )}</td><td>${escapeHtml(row.endLabel)}</td></tr>`
+              )
+              .join("")}</tbody></table>`
+        )
+        .join("")
+    : ""
 
   win.document.write(`<!doctype html>
 <html>
@@ -3119,6 +5804,10 @@ const printKundliReport = (result: KundliResult) => {
     .card{border:1px solid #dbc99e;border-radius:18px;padding:18px;margin:14px 0;background:#fff}
     .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
     .small{font-size:13px;color:#516b75}
+    .chart-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:16px 0}
+    .chart-card{border:1px solid #dbc99e;border-radius:18px;padding:10px;background:#fff;break-inside:avoid}
+    .chart-card h3{font-size:13px;margin:0 0 8px;color:#7a5412;text-transform:uppercase;letter-spacing:.08em}
+    .chart-card svg{width:100%;height:auto;display:block}
     table{width:100%;border-collapse:collapse;background:#fff;margin:14px 0}
     th,td{border:1px solid #dbc99e;padding:9px;text-align:left;vertical-align:top;font-size:13px}
     th{color:#7a5412;background:#fff4d8;text-transform:uppercase;letter-spacing:.08em}
@@ -3126,7 +5815,8 @@ const printKundliReport = (result: KundliResult) => {
     .actions{position:sticky;top:0;z-index:2;display:flex;gap:10px;align-items:center;justify-content:center;background:#fffaf1;padding:10px;border-bottom:1px solid #dbc99e;margin:-32px -32px 22px}
     button{border:0;border-radius:999px;background:#123f63;color:white;padding:10px 18px;font-weight:700}
     .ios-note{font-size:12px;color:#516b75}
-    @media print{.actions{display:none} body{margin:18px;background:white}}
+    @media (max-width:800px){.chart-grid{grid-template-columns:1fr}}
+    @media print{.actions{display:none} body{margin:18px;background:white}.chart-grid{grid-template-columns:repeat(3,1fr)}}
   </style>
 </head>
 <body>
@@ -3145,20 +5835,32 @@ const printKundliReport = (result: KundliResult) => {
     <div class="card"><strong>Lagna</strong><br/>${escapeHtml(chart.ascendant)} ${escapeHtml(chart.ascendantDegree)} deg<br/><span class="small">${escapeHtml(chart.ascendantNakshatra)} pada ${escapeHtml(chart.ascendantPada)}</span></div>
     <div class="card"><strong>Rashi</strong><br/>${escapeHtml(chart.moonSign)} ${escapeHtml(chart.moonDegree)} deg<br/><span class="small">${escapeHtml(chart.nakshatra)} pada ${escapeHtml(chart.nakshatraPada)}</span></div>
   </div>
+  <h2>Calculated Charts</h2>
+  <div class="chart-grid">
+    <div class="chart-card"><h3>Lagna chart</h3>${lagnaChartSvg}</div>
+    <div class="chart-card"><h3>Bhava Chalit chart</h3>${bhavaChartSvg}</div>
+    <div class="chart-card"><h3>Chandra chart</h3>${moonChartSvg}</div>
+  </div>
   <h2>Vimshottari Dasha</h2>
   <div class="card"><p><strong>Mahadasha:</strong> ${escapeHtml(dasha?.mahadasha.lord)} (${escapeHtml(dasha?.mahadasha.startLabel)} - ${escapeHtml(dasha?.mahadasha.endLabel)})</p><p><strong>Antardasha:</strong> ${escapeHtml(dasha?.antardasha.lord)} (${escapeHtml(dasha?.antardasha.startLabel)} - ${escapeHtml(dasha?.antardasha.endLabel)})</p><p><strong>Pratyantar:</strong> ${escapeHtml(dasha?.pratyantar.lord)} (${escapeHtml(dasha?.pratyantar.startLabel)} - ${escapeHtml(dasha?.pratyantar.endLabel)})</p><p class="small">${escapeHtml(dasha?.note)}</p></div>
+  ${dashaTimelineHtml}
   <h2>Graha Positions</h2>
   <table><thead><tr><th>Graha</th><th>Sign</th><th>Degree</th><th>House</th><th>Nakshatra</th></tr></thead><tbody>${chart.planets.map((planet) => `<tr><td>${escapeHtml(planet.name)}</td><td>${escapeHtml(planet.sign)}</td><td>${escapeHtml(planet.signDegree)} deg</td><td>${escapeHtml(formatHousePosition(planet))}</td><td>${escapeHtml(planet.nakshatra)} pada ${escapeHtml(planet.pada)}${planet.retrograde ? " (retrograde)" : ""}</td></tr>`).join("")}</tbody></table>
   <h2>House Information</h2>
   <table><thead><tr><th>House</th><th>Sign</th><th>Lord</th><th>Planets</th><th>Theme</th></tr></thead><tbody>${chart.houses.map((house) => `<tr><td>${escapeHtml(house.house)}</td><td>${escapeHtml(house.sign)}</td><td>${escapeHtml(house.signLord)}</td><td>${escapeHtml(getHousePlanets(chart, house.house).map((planet) => planet.name).join(", ") || "-")}</td><td>${escapeHtml(house.theme)}</td></tr>`).join("")}</tbody></table>
   <h2>Graha Drishti</h2>
   <table><thead><tr><th>From</th><th>To House</th><th>Type</th><th>Impact</th></tr></thead><tbody>${(chart.aspects || []).map((aspect) => `<tr><td>${escapeHtml(aspect.fromPlanet)} from H${escapeHtml(aspect.fromHouse)}</td><td>H${escapeHtml(aspect.toHouse)} ${escapeHtml(aspect.toSign)}</td><td>${escapeHtml(aspect.aspectType)}</td><td>${escapeHtml(aspect.interpretation)}</td></tr>`).join("")}</tbody></table>
-  <h2>House-wise Combined Synthesis</h2>
-  <table><thead><tr><th>House</th><th>Theme</th><th>Planets</th><th>Drishti From</th><th>Synthesis</th></tr></thead><tbody>${(chart.houseSynthesis || []).map((house) => `<tr><td>${escapeHtml(house.house)}</td><td>${escapeHtml(house.theme)}</td><td>${escapeHtml((house.planetsPlaced || []).join(", ") || "-")}</td><td>${escapeHtml((house.aspectsReceived || []).map((aspect) => aspect.fromPlanet).join(", ") || "-")}</td><td>${escapeHtml(house.synthesis)}</td></tr>`).join("")}</tbody></table>
-  <h2>Prediction Table</h2>
-  <table><thead><tr><th>Area</th><th>Chart Basis</th><th>Prediction</th><th>Advice</th></tr></thead><tbody>${(analysis?.prediction_table || []).map((row) => `<tr><td>${escapeHtml(row.area)}</td><td>${escapeHtml(row.chart_basis)}</td><td>${escapeHtml(row.prediction)}</td><td>${escapeHtml(row.advice)}</td></tr>`).join("")}</tbody></table>
+  <h2>House-wise Results</h2>
+  <table><thead><tr><th>House</th><th>Theme</th><th>Final meaning</th><th>What to do</th></tr></thead><tbody>${chart.houses.map((house) => {
+    const row = printHouseOutcomeByHouse.get(house.house)
+    return `<tr><td>${escapeHtml(house.house)}</td><td>${escapeHtml(house.theme)}</td><td>${escapeHtml(getHouseCustomerMeaning(row))}</td><td>${escapeHtml(getHouseCustomerAction(row))}</td></tr>`
+  }).join("")}</tbody></table>
+  <h2>Life Guidance</h2>
+  <table><thead><tr><th>Area</th><th>Chart Basis</th><th>Conclusion</th><th>Action</th></tr></thead><tbody>${(analysis?.prediction_table || []).filter((row) => !isTemplatePredictionRow(row, Boolean(analysis?.sub_question_answers?.length))).map((row) => `<tr><td>${escapeHtml(row.area)}</td><td>${escapeHtml(row.chart_basis)}</td><td>${escapeHtml(row.prediction)}</td><td>${escapeHtml(row.advice)}</td></tr>`).join("")}</tbody></table>
   <h2>Analysis</h2>
+  ${(analysis?.opening_profile || []).length ? `<h2>Who You Are and Where You Can Thrive</h2><div class="card">${(analysis?.opening_profile || []).map((paragraph) => `<p>${escapeHtml(paragraph)}</p>`).join("")}</div>` : ""}
   <div class="card"><p>${escapeHtml(analysis?.summary)}</p><p>${escapeHtml(analysis?.person_information)}</p><p>${escapeHtml(analysis?.temperament)}</p><p>${escapeHtml(analysis?.career_direction)}</p><p>${escapeHtml(analysis?.relationship_pattern)}</p><p><strong>Health caution:</strong> ${escapeHtml(analysis?.health_caution)}</p><p>${escapeHtml(analysis?.current_period_analysis)}</p><p>${escapeHtml(analysis?.spiritual_guidance)}</p></div>
+  ${((result.critical_period_analysis?.retrospective_timing_windows || []).length || (result.critical_period_analysis?.exact_timing_windows || []).length) ? `<h2>Lifetime Markesh Prevention Windows</h2><div class="card"><p class="small">Only high-confidence multi-factor windows are shown. These are prevention periods, not guaranteed events.</p>${[["Birth to today", result.critical_period_analysis?.retrospective_timing_windows || []], ["Today to next 30 years", result.critical_period_analysis?.exact_timing_windows || []]].map(([label, rows]) => `<h3>${escapeHtml(String(label))}</h3><ul>${(rows as NonNullable<KundliCriticalPeriodAnalysis["exact_timing_windows"]>).filter((row) => row.confidence === "high" && row.score >= 24).map((row) => `<li><strong>${escapeHtml(row.window)} · ${escapeHtml(row.period)}</strong><br/>${escapeHtml(row.role)}<br/><span class="small">Avoid: ${escapeHtml(row.avoid)}<br/>Preventive action: ${escapeHtml(row.do)}</span></li>`).join("") || "<li>No high-confidence window met the display threshold.</li>"}</ul>`).join("")}</div>` : ""}
   <h2>Health Watchlist</h2>
   <div class="card"><ul>${(analysis?.health_indicators || result.health_indicators || []).map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul></div>
   <h2>Traits, Issues, and Solutions</h2>
@@ -3170,8 +5872,8 @@ const printKundliReport = (result: KundliResult) => {
     <p><strong>Issue analysis:</strong> ${(analysis?.issue_analysis || []).map(escapeHtml).join(", ")}</p>
     <p><strong>Practical solutions:</strong> ${(analysis?.practical_solutions || []).map(escapeHtml).join(", ")}</p>
   </div>
-  <h2>Chart Questions</h2>
-  <div class="card"><p><strong>Direct answer:</strong> ${escapeHtml(analysis?.sub_question_answers?.[0]?.answer || "")}</p></div>
+  ${(profile?.sub_questions || []).length ? `<h2>Your Questions</h2><div class="card"><ol>${(profile?.sub_questions || []).map((question) => `<li>${escapeHtml(question)}</li>`).join("")}</ol></div>` : ""}
+  ${(analysis?.sub_question_answers || []).length ? `<h2>Focused Answers</h2>${(analysis?.sub_question_answers || []).map((row, index) => `<div class="card"><p><strong>Q${index + 1}: ${escapeHtml(row.question)}</strong></p><p>${escapeHtml(row.answer)}</p>${row.timing ? `<p><strong>Timing:</strong> ${escapeHtml(row.timing)}</p>` : ""}${row.action ? `<p><strong>Action:</strong> ${escapeHtml(row.action)}</p>` : ""}<p class="small"><strong>Chart basis:</strong> ${escapeHtml(row.chart_reason)}</p></div>`).join("")}` : ""}
   <h2>Special Cases Checked</h2>
   <div class="card"><ul>${(analysis?.special_cases || result.detected_yogas || []).map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul></div>
   <h2>Upaay</h2>
@@ -3233,6 +5935,148 @@ const pickHistoryRecord = (
 
   return {}
 }
+
+const isStorageQuotaError = (error: unknown) =>
+  error instanceof DOMException &&
+  (error.name === "QuotaExceededError" ||
+    error.name === "NS_ERROR_DOM_QUOTA_REACHED" ||
+    error.code === 22 ||
+    error.code === 1014)
+
+const safeSetLocalStorage = (key: string, value: string, fallbackValue = "") => {
+  try {
+    window.localStorage.setItem(key, value)
+    return true
+  } catch (error) {
+    if (!isStorageQuotaError(error)) {
+      return false
+    }
+
+    try {
+      window.localStorage.removeItem(HISTORY_KEY)
+      window.localStorage.removeItem(SAVED_KUNDLI_KEY)
+      window.localStorage.setItem(key, fallbackValue || value)
+      return true
+    } catch {
+      try {
+        window.localStorage.removeItem(key)
+      } catch {
+        // Ignore storage cleanup failure.
+      }
+      return false
+    }
+  }
+}
+
+const compactLocalText = (value: unknown, max = 1200) =>
+  typeof value === "string" ? value.slice(0, max) : ""
+
+const compactLocalAnalysis = (analysis?: KundliAnalysis): KundliAnalysis | undefined => {
+  if (!analysis) {
+    return undefined
+  }
+
+  return {
+    summary: compactLocalText(analysis.summary, 1800),
+    opening_profile: (analysis.opening_profile || []).slice(0, 2).map((paragraph) =>
+      compactLocalText(paragraph, 1200)
+    ),
+    career_direction: compactLocalText(analysis.career_direction, 1400),
+    relationship_pattern: compactLocalText(analysis.relationship_pattern, 1400),
+    health_caution: compactLocalText(analysis.health_caution, 1200),
+    current_period_analysis: compactLocalText(analysis.current_period_analysis, 1600),
+    prediction_table: (analysis.prediction_table || []).slice(0, 10).map((row) => ({
+      area: compactLocalText(row.area, 120),
+      chart_basis: compactLocalText(row.chart_basis, 700),
+      prediction: compactLocalText(row.prediction, 900),
+      advice: compactLocalText(row.advice, 500),
+    })),
+    sub_question_answers: (analysis.sub_question_answers || []).slice(0, 3).map((row) => ({
+      question: compactLocalText(row.question, 500),
+      answer: compactLocalText(row.answer, 1400),
+      chart_reason: compactLocalText(row.chart_reason, 900),
+      timing: compactLocalText(row.timing, 400),
+      action: compactLocalText(row.action, 700),
+    })),
+    dasha_predictions: (analysis.dasha_predictions || []).slice(0, 3).map((row) => ({
+      period: compactLocalText(row.period, 160),
+      chart_basis: compactLocalText(row.chart_basis, 700),
+      classical_basis: compactLocalText(row.classical_basis, 500),
+      prediction: compactLocalText(row.prediction, 900),
+      action: compactLocalText(row.action, 500),
+    })),
+    house_outcomes: (analysis.house_outcomes || []).slice(0, 12).map((row) => ({
+      house: row.house,
+      theme: compactLocalText(row.theme, 160),
+      prevailing_impact: compactLocalText(row.prevailing_impact, 400),
+      user_meaning: compactLocalText(row.user_meaning, 700),
+      outcome: compactLocalText(row.outcome, 700),
+      practical_use: compactLocalText(row.practical_use, 500),
+      evidence: compactLocalText(row.evidence, 400),
+    })),
+    targeted_remedies: (analysis.targeted_remedies || []).slice(0, 6).map((row) => ({
+      pain_point: compactLocalText(row.pain_point, 160),
+      chart_basis: compactLocalText(row.chart_basis, 700),
+      mantra_or_pooja: compactLocalText(row.mantra_or_pooja, 900),
+      daily_practice: compactLocalText(row.daily_practice, 900),
+    })),
+    special_case_readings: (analysis.special_case_readings || []).slice(0, 5).map((row) => ({
+      case_name: compactLocalText(row.case_name, 220),
+      chart_basis: compactLocalText(row.chart_basis, 600),
+      classical_basis: compactLocalText(row.classical_basis, 500),
+      combined_effect: compactLocalText(row.combined_effect, 700),
+      timing: compactLocalText(row.timing, 300),
+      solution: compactLocalText(row.solution, 700),
+    })),
+    expert_call_recommended: Boolean(analysis.expert_call_recommended),
+    expert_call_reason: compactLocalText(analysis.expert_call_reason, 700),
+  }
+}
+
+const compactLocalKundliResult = (result?: KundliResult): KundliResult | undefined => {
+  if (!result) {
+    return undefined
+  }
+
+  return {
+    profile: result.profile,
+    chart: result.chart,
+    detected_yogas: result.detected_yogas?.slice(0, 12),
+    stones: result.stones,
+    health_indicators: result.health_indicators?.slice(0, 8),
+    targeted_remedy_seeds: result.targeted_remedy_seeds?.slice(0, 6),
+    analysis: compactLocalAnalysis(result.analysis),
+    analysis_mode: result.analysis_mode,
+    usage_units: result.usage_units,
+    usage_synced: result.usage_synced,
+  }
+}
+
+const compactLocalHistoryItem = (
+  item: AstrologyHistoryItem
+): AstrologyHistoryItem => {
+  const response =
+    item.type === "Kundli"
+      ? compactLocalKundliResult(item.response as KundliResult)
+      : item.response
+
+  return {
+    ...item,
+    summary: compactLocalText(item.summary, 900),
+    response,
+    raw: undefined,
+  }
+}
+
+const serializeLocalHistory = (items: AstrologyHistoryItem[]) =>
+  JSON.stringify(items.slice(0, LOCAL_HISTORY_LIMIT).map(compactLocalHistoryItem))
+
+const serializeLocalSavedKundlis = (profiles: SavedKundliProfile[]) =>
+  JSON.stringify(
+    profiles
+      .slice(0, LOCAL_SAVED_KUNDLI_LIMIT)
+      .map(({ lastResult, ...profile }) => profile)
+  )
 
 const pickHistoryValue = (
   source: Record<string, unknown>,
@@ -3298,6 +6142,157 @@ const getKundliHistoryProfile = (item: AstrologyHistoryItem) => {
   const input = getHistoryInputRecord(item)
 
   return Object.keys(profile).length ? profile : input
+}
+
+const buildKundliSummary = (result?: KundliResult | null) =>
+  historyText(
+    result?.analysis?.sub_question_answers?.[0]?.answer,
+    result?.analysis?.prediction_table?.[0]?.prediction,
+    result?.analysis?.summary,
+    result?.message,
+    result?.detected_yogas?.[0],
+    result?.chart ? "Birth chart saved for future viewing." : "Birth details saved."
+  )
+
+const normalizeSavedKundliProfile = (
+  item: unknown,
+  index = 0
+): SavedKundliProfile | null => {
+  const source = asRecord(item)
+  const legacyPlace = historyText(source.birth_place, source.birthPlace)
+  const profileRecord = parseHistoryRecord(source.profile)
+  const result = parseHistoryRecord(source.lastResult).chart
+    ? (source.lastResult as KundliResult)
+    : parseHistoryRecord(source.response).chart
+    ? (source.response as KundliResult)
+    : undefined
+  const resultProfile = parseHistoryRecord(result?.profile)
+  const name = historyText(
+    source.name,
+    profileRecord.name,
+    resultProfile.name,
+    `Family Kundli ${index + 1}`
+  )
+  const birthDate = historyText(
+    source.birthDate,
+    source.birth_date,
+    profileRecord.birth_date,
+    resultProfile.birth_date
+  )
+  const birthTime = historyText(
+    source.birthTime,
+    source.birth_time,
+    profileRecord.birth_time,
+    resultProfile.birth_time
+  )
+  const cityId = historyText(
+    source.cityId,
+    source.city_id,
+    profileRecord.cityId,
+    profileRecord.city_id,
+    findCityIdFromLabel(historyText(source.cityLabel, legacyPlace, resultProfile.city))
+  )
+  const now = new Date().toISOString()
+  const questions = historyQuestionArray(
+    source.subQuestions,
+    source.sub_questions,
+    profileRecord.sub_questions,
+    resultProfile.sub_questions
+  )
+
+  if (!name && !birthDate && !birthTime) {
+    return null
+  }
+
+  return {
+    id: historyText(
+      source.id,
+      `${name || "kundli"}-${birthDate || "date"}-${birthTime || "time"}-${cityId || "city"}`
+    ),
+    name,
+    gender: historyText(source.gender, profileRecord.gender, resultProfile.gender),
+    birthDate,
+    birthTime,
+    cityId: cityId || "rewa",
+    cityLabel: historyText(
+      source.cityLabel,
+      source.city_label,
+      legacyPlace,
+      resultProfile.city,
+      cityLabel(getCityById(cityId || "rewa"))
+    ),
+    panchangSystemId: historyText(
+      source.panchangSystemId,
+      source.panchang_system_id,
+      profileRecord.panchangSystemId,
+      profileRecord.panchang_system_id,
+      resultProfile.panchang_system_id
+    ),
+    language: (
+      ["english", "hindi", "hinglish"].includes(
+        historyText(source.language, profileRecord.language, resultProfile.language)
+      )
+        ? historyText(source.language, profileRecord.language, resultProfile.language)
+        : undefined
+    ) as AstrologyLanguage | undefined,
+    subQuestions: questions,
+    savedAt: historyText(source.savedAt, source.saved_at, source.createdAt, now),
+    updatedAt: historyText(source.updatedAt, source.updated_at, now),
+    lastResult: result,
+  }
+}
+
+const normalizeSavedKundliProfiles = (...sources: unknown[]) => {
+  const byKey = new Map<string, SavedKundliProfile>()
+
+  sources
+    .flatMap((source) => (Array.isArray(source) ? source : []))
+    .map((item, index) => normalizeSavedKundliProfile(item, index))
+    .filter(Boolean)
+    .forEach((item) => {
+      const profile = item as SavedKundliProfile
+      const key = `${profile.name.toLowerCase()}-${profile.birthDate}-${profile.birthTime}-${profile.cityId}`
+      const existing = byKey.get(key)
+
+      byKey.set(key, {
+        ...(existing || profile),
+        ...profile,
+        savedAt: existing?.savedAt || profile.savedAt,
+        lastResult: profile.lastResult?.chart
+          ? profile.lastResult
+          : existing?.lastResult,
+      })
+    })
+
+  return Array.from(byKey.values()).sort(
+    (left, right) =>
+      new Date(right.updatedAt).getTime() - new Date(left.updatedAt).getTime()
+  )
+}
+
+const parseLocalHistory = (value: string | null): AstrologyHistoryItem[] => {
+  if (!value) {
+    return []
+  }
+
+  try {
+    const parsed = JSON.parse(value)
+    return Array.isArray(parsed)
+      ? parsed
+          .map((item) => {
+            const record = asRecord(item)
+
+            if (record.type && record.title && record.createdAt) {
+              return record as AstrologyHistoryItem
+            }
+
+            return normalizeUsageHistory(item)
+          })
+          .filter((item): item is AstrologyHistoryItem => Boolean(item))
+      : []
+  } catch {
+    return []
+  }
 }
 
 const formatHistoryDate = (value: string) => {
@@ -3429,6 +6424,9 @@ const normalizeUsageHistory = (item: unknown): AstrologyHistoryItem | null => {
       responseAnalysis.decision_reason,
       predictionTable.length ? asRecord(predictionTable[0]).prediction : "",
       response.chart_summary,
+      String(response.message || "").includes("Full response was too large")
+        ? ""
+        : response.message,
       "Saved astrology session"
     )
 
@@ -3479,9 +6477,11 @@ const mergeHistory = (items: AstrologyHistoryItem[]) => {
 export default function AstrologyExperience({
   customerEmail,
   customerName,
+  customerMetadata,
 }: {
   customerEmail: string
   customerName?: string
+  customerMetadata?: Record<string, unknown>
 }) {
   const [activeTab, setActiveTab] = useState<AstrologyTab>("muhurth")
   const [astrologyTheme, setAstrologyTheme] = useState<AstrologyTheme>("day")
@@ -3491,6 +6491,8 @@ export default function AstrologyExperience({
   const [cityId, setCityId] = useState("rewa")
   const [date, setDate] = useState(() => getTodayDateString())
   const [question, setQuestion] = useState("")
+  const [prashnaDate, setPrashnaDate] = useState(() => getTodayDateString())
+  const [prashnaTime, setPrashnaTime] = useState(() => getCurrentLocalTimeString())
   const [prashna, setPrashna] = useState<PrashnaResult | null>(null)
   const [loadingPrashna, setLoadingPrashna] = useState(false)
   const [lostItemForm, setLostItemForm] = useState({
@@ -3514,6 +6516,12 @@ export default function AstrologyExperience({
   const [loadingCalendar, setLoadingCalendar] = useState(true)
   const [loadingCalendarMonth, setLoadingCalendarMonth] = useState(true)
   const [history, setHistory] = useState<AstrologyHistoryItem[]>([])
+  const [savedKundlis, setSavedKundlis] = useState<SavedKundliProfile[]>([])
+  const [savedKundliMessage, setSavedKundliMessage] = useState("")
+  const [savedMetadata, setSavedMetadata] = useState<Record<string, unknown>>(
+    customerMetadata || {}
+  )
+  const [syncingSavedKundlis, startSavedKundliSync] = useTransition()
   const [aiWallet, setAiWallet] = useState<AiWallet | null>(null)
   const [aiQuota, setAiQuota] = useState<AiQuota | null>(null)
   const [aiPacks, setAiPacks] = useState<AiCreditPack[]>([])
@@ -3579,7 +6587,7 @@ export default function AstrologyExperience({
       "astrology-day-mode",
       astrologyTheme === "day"
     )
-    window.localStorage.setItem(THEME_KEY, astrologyTheme)
+    safeSetLocalStorage(THEME_KEY, astrologyTheme, astrologyTheme)
 
     return () => {
       document.body.classList.remove("astrology-night-mode")
@@ -3592,7 +6600,7 @@ export default function AstrologyExperience({
       return
     }
 
-    window.localStorage.setItem(LANGUAGE_KEY, language)
+    safeSetLocalStorage(LANGUAGE_KEY, language, language)
     document.documentElement.lang =
       language === "hindi" ? "hi" : language === "hinglish" ? "hi-Latn" : "en"
   }, [language, languageReady])
@@ -3670,8 +6678,33 @@ export default function AstrologyExperience({
   }, [])
 
   useEffect(() => {
-    window.localStorage.removeItem(HISTORY_KEY)
-    setHistory([])
+    const localHistory = parseLocalHistory(window.localStorage.getItem(HISTORY_KEY))
+
+    if (localHistory.length) {
+      setHistory(mergeHistory(localHistory).slice(0, 50))
+    }
+
+    const localSaved = (() => {
+      try {
+        return JSON.parse(window.localStorage.getItem(SAVED_KUNDLI_KEY) || "[]")
+      } catch {
+        return []
+      }
+    })()
+    const metadataSaved = normalizeSavedKundliProfiles(
+      customerMetadata?.saved_kundlis,
+      customerMetadata?.family_members,
+      localSaved
+    )
+
+    if (metadataSaved.length) {
+      setSavedKundlis(metadataSaved)
+      safeSetLocalStorage(
+        SAVED_KUNDLI_KEY,
+        serializeLocalSavedKundlis(metadataSaved),
+        "[]"
+      )
+    }
 
     fetch("/api/astrology/history", { cache: "no-store" })
       .then((response) => (response.ok ? response.json() : null))
@@ -3683,11 +6716,13 @@ export default function AstrologyExperience({
           : []
 
         if (remoteItems.length) {
-          setHistory(mergeHistory(remoteItems).slice(0, 50))
+          setHistory((current) =>
+            mergeHistory([...remoteItems, ...current]).slice(0, 50)
+          )
         }
       })
       .catch(() => null)
-  }, [])
+  }, [customerMetadata])
 
   const rememberHistory = (
     item: AstrologyHistoryItem,
@@ -3699,9 +6734,186 @@ export default function AstrologyExperience({
         synced: !options.persistLocal,
       }
       const next = mergeHistory([nextItem, ...current]).slice(0, 50)
+      const localItems = next.filter((historyItem) => historyItem.synced === false)
+
+      safeSetLocalStorage(HISTORY_KEY, serializeLocalHistory(localItems), "[]")
 
       return next
     })
+  }
+
+  const syncSavedKundlis = (
+    nextProfiles: SavedKundliProfile[],
+    message = "Saved Kundli library updated."
+  ) => {
+    setSavedKundlis(nextProfiles)
+    setSavedKundliMessage(message)
+    safeSetLocalStorage(
+      SAVED_KUNDLI_KEY,
+      serializeLocalSavedKundlis(nextProfiles),
+      "[]"
+    )
+
+    const compactProfiles = nextProfiles.map(({ lastResult, ...profile }) => ({
+      ...profile,
+      has_saved_chart: Boolean(lastResult?.chart),
+    }))
+    const legacyMembers = nextProfiles.map((profile) => ({
+      id: profile.id,
+      name: profile.name,
+      birth_date: profile.birthDate,
+      birth_time: profile.birthTime,
+      birth_place: profile.cityLabel || cityLabel(getCityById(profile.cityId)),
+    }))
+
+    startSavedKundliSync(async () => {
+      try {
+        const nextMetadata = {
+          ...(savedMetadata || {}),
+          saved_kundlis: compactProfiles,
+          family_members: legacyMembers,
+        }
+        await updateCustomer({ metadata: nextMetadata } as any)
+        setSavedMetadata(nextMetadata)
+      } catch {
+        setSavedKundliMessage(
+          "Saved on this device. Account sync will retry the next time you save."
+        )
+      }
+    })
+  }
+
+  const profileToKundliForm = (profile: SavedKundliProfile) => ({
+    name: profile.name,
+    gender: profile.gender || "",
+    birthDate: profile.birthDate,
+    birthTime: profile.birthTime,
+    cityId: profile.cityId || "rewa",
+    subQuestions:
+      profile.subQuestions?.length === 3
+        ? profile.subQuestions
+        : [profile.subQuestions?.[0] || "", profile.subQuestions?.[1] || "", profile.subQuestions?.[2] || ""],
+  })
+
+  const saveKundliProfile = (
+    result?: KundliResult | null,
+    options: { quiet?: boolean; form?: typeof kundliForm } = {}
+  ) => {
+    const sourceForm = options.form || kundliForm
+    const resultProfile = result?.profile || {}
+    const formName = historyText(resultProfile.name, sourceForm.name)
+    const formBirthDate = historyText(resultProfile.birth_date, sourceForm.birthDate)
+    const formBirthTime = historyText(resultProfile.birth_time, sourceForm.birthTime)
+    const formCityId =
+      findCityIdFromLabel(historyText(resultProfile.city)) ||
+      sourceForm.cityId ||
+      "rewa"
+
+    if (!formName || !formBirthDate || !formBirthTime) {
+      setSavedKundliMessage("Add name, birth date and birth time before saving.")
+      return null
+    }
+
+    const now = new Date().toISOString()
+    const id = `${formName}-${formBirthDate}-${formBirthTime}-${formCityId}`
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "")
+    const nextProfile: SavedKundliProfile = {
+      id,
+      name: formName,
+      gender: historyText(resultProfile.gender, sourceForm.gender),
+      birthDate: formBirthDate,
+      birthTime: formBirthTime,
+      cityId: formCityId,
+      cityLabel: historyText(resultProfile.city, cityLabel(getCityById(formCityId))),
+      panchangSystemId: historyText(
+        resultProfile.panchang_system_id,
+        panchangSystemId
+      ),
+      language,
+      subQuestions: sourceForm.subQuestions,
+      savedAt:
+        savedKundlis.find((profile) => profile.id === id)?.savedAt || now,
+      updatedAt: now,
+      lastResult: result?.chart
+        ? result
+        : savedKundlis.find((profile) => profile.id === id)?.lastResult,
+    }
+    const nextProfiles = [
+      nextProfile,
+      ...savedKundlis.filter((profile) => profile.id !== id),
+    ].slice(0, 40)
+
+    syncSavedKundlis(
+      nextProfiles,
+      options.quiet
+        ? "Kundli auto-saved for future viewing."
+        : result?.chart
+        ? "Kundli saved. You can reopen this chart without AI."
+        : "Birth details saved. Generate AI when you want the full reading."
+    )
+
+    if (nextProfile.lastResult?.chart) {
+      rememberHistory(
+        {
+          id: `kundli-${id}`,
+          type: "Kundli",
+          title: `${nextProfile.name} Kundli`,
+          createdAt: now,
+          summary: buildKundliSummary(nextProfile.lastResult),
+          input: {
+            ...sourceForm,
+            cityId: formCityId,
+            language,
+            panchangSystemId,
+          },
+          response: nextProfile.lastResult,
+        },
+        { persistLocal: true }
+      )
+    }
+
+    return nextProfile
+  }
+
+  const applySavedKundliProfile = (profile: SavedKundliProfile) => {
+    setKundliForm(profileToKundliForm(profile))
+
+    if (profile.panchangSystemId) {
+      setPanchangSystemId(profile.panchangSystemId)
+    }
+
+    if (profile.language) {
+      setLanguage(profile.language)
+    }
+
+    setSavedKundliMessage(`${profile.name} details loaded.`)
+  }
+
+  const openSavedKundliProfile = (profile: SavedKundliProfile) => {
+    applySavedKundliProfile(profile)
+
+    if (profile.lastResult?.chart) {
+      setKundliResult(profile.lastResult)
+      setActiveTab("kundli")
+      setSavedKundliMessage(`${profile.name} chart opened without AI usage.`)
+      return
+    }
+
+    setSavedKundliMessage("This profile has details saved. Generate once to save the chart.")
+  }
+
+  const removeSavedKundliProfile = (profile: SavedKundliProfile) => {
+    syncSavedKundlis(
+      savedKundlis.filter((item) => item.id !== profile.id),
+      `${profile.name} removed from saved Kundlis.`
+    )
+  }
+
+  const generateSavedKundliProfile = (profile: SavedKundliProfile) => {
+    applySavedKundliProfile(profile)
+    generateKundli(profileToKundliForm(profile))
   }
 
   const askPrashna = async () => {
@@ -3720,6 +6932,8 @@ export default function AstrologyExperience({
       body: JSON.stringify({
         question,
         cityId,
+        questionDate: prashnaDate,
+        questionTime: prashnaTime,
         language,
         panchangSystemId,
       }),
@@ -3758,6 +6972,14 @@ export default function AstrologyExperience({
         title: question.trim().slice(0, 56),
         createdAt: new Date().toISOString(),
         summary: result.answer,
+        input: {
+          question,
+          cityId,
+          questionDate: prashnaDate,
+          questionTime: prashnaTime,
+          language,
+          panchangSystemId,
+        },
         response: result,
       }, {
         persistLocal: !result.usage_synced,
@@ -3836,24 +7058,40 @@ export default function AstrologyExperience({
     refreshWallet()
   }
 
-  const generateKundli = async () => {
+  const generateKundli = async (
+    overrideForm?: typeof kundliForm
+  ) => {
     if (loadingKundli) {
       return
+    }
+
+    const requestForm = overrideForm || kundliForm
+
+    if (overrideForm) {
+      setKundliForm(overrideForm)
     }
 
     setLoadingKundli(true)
     setKundliProgress(0)
     setKundliResult(null)
 
+    let displayedProgress = 0
     const progressInterval = setInterval(() => {
-      setKundliProgress((prev) => {
-        if (prev < 30) return prev + 2
-        if (prev < 60) return prev + 1
-        if (prev < 85) return prev + 0.5
-        if (prev < 95) return prev + 0.2
-        return prev
-      })
-    }, 1000)
+      displayedProgress = Math.min(94, displayedProgress + 1)
+      setKundliProgress(displayedProgress)
+    }, 800)
+
+    const finishProgress = async () => {
+      clearInterval(progressInterval)
+      const start = displayedProgress
+      const steps = 16
+
+      for (let step = 1; step <= steps; step += 1) {
+        await new Promise((resolve) => window.setTimeout(resolve, 45))
+        displayedProgress = start + ((100 - start) * step) / steps
+        setKundliProgress(displayedProgress)
+      }
+    }
 
     try {
       const response = await fetch("/api/astrology/kundli", {
@@ -3862,7 +7100,7 @@ export default function AstrologyExperience({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          ...kundliForm,
+          ...requestForm,
           language,
           panchangSystemId,
         }),
@@ -3875,6 +7113,7 @@ export default function AstrologyExperience({
           message: "Kundli AI could not generate the chart right now.",
         } satisfies KundliResult)
 
+      await finishProgress()
       setKundliResult(result)
 
       if (result.wallet) {
@@ -3887,22 +7126,15 @@ export default function AstrologyExperience({
         setAiPacks(result.packs)
       }
 
-      setKundliProgress(100)
-
       if (result.chart && (result.analysis?.summary || result.analysis?.prediction_table?.length) && !result.message) {
         rememberHistory({
           id: `kundli-${Date.now()}`,
           type: "Kundli",
-          title: `${result.profile?.name || kundliForm.name || "Generated"} Kundli`,
+          title: `${result.profile?.name || requestForm.name || "Generated"} Kundli`,
           createdAt: new Date().toISOString(),
-          summary:
-            result.analysis?.sub_question_answers?.[0]?.answer ||
-            result.analysis?.prediction_table?.[0]?.prediction ||
-            result.analysis?.summary ||
-            result.detected_yogas?.[0] ||
-            "Birth chart generated",
+          summary: buildKundliSummary(result),
           input: {
-            ...kundliForm,
+            ...requestForm,
             language,
             panchangSystemId,
           },
@@ -3910,6 +7142,10 @@ export default function AstrologyExperience({
         }, {
           persistLocal: !result.usage_synced,
         })
+      }
+
+      if (result.chart) {
+        saveKundliProfile(result, { quiet: true, form: requestForm })
       }
 
       refreshWallet()
@@ -4009,7 +7245,7 @@ export default function AstrologyExperience({
       const input = getHistoryInputRecord(item)
       const responseRecord = getHistoryResponseRecord(item)
 
-      if (responseRecord.chart || responseRecord.analysis || responseRecord.profile) {
+      if (responseRecord.chart && responseRecord.analysis) {
         setKundliResult(result)
       } else {
         setKundliResult(null)
@@ -4069,6 +7305,45 @@ export default function AstrologyExperience({
       return
     }
 
+    const input = getHistoryInputRecord(item)
+    const restoredQuestion = historyText(input.question)
+    const restoredCityId = historyText(input.cityId)
+    const restoredQuestionDate = historyText(input.questionDate, input.question_date)
+    const restoredQuestionTime = historyText(input.questionTime, input.question_time)
+    const restoredPanchangId = historyText(
+      input.panchangSystemId,
+      input.panchang_system_id
+    )
+    const restoredLanguage = historyText(input.language)
+
+    if (restoredQuestion) {
+      setQuestion(restoredQuestion)
+    }
+
+    if (restoredCityId) {
+      setCityId(restoredCityId)
+    }
+
+    if (restoredQuestionDate) {
+      setPrashnaDate(restoredQuestionDate)
+    }
+
+    if (restoredQuestionTime) {
+      setPrashnaTime(restoredQuestionTime)
+    }
+
+    if (restoredPanchangId) {
+      setPanchangSystemId(restoredPanchangId)
+    }
+
+    if (
+      restoredLanguage === "english" ||
+      restoredLanguage === "hindi" ||
+      restoredLanguage === "hinglish"
+    ) {
+      setLanguage(restoredLanguage)
+    }
+
     setPrashna(item.response as PrashnaResult)
     setActiveTab("prashna")
   }
@@ -4110,7 +7385,7 @@ export default function AstrologyExperience({
             }`}
           >
             <span className="block text-sm font-semibold">{option.label}</span>
-            <span className="mt-1 block text-[0.68rem] leading-4 min-[420px]:line-clamp-2">
+            <span className="mt-1 block text-[0.68rem] leading-4">
               {option.detail}
             </span>
           </button>
@@ -4261,7 +7536,7 @@ export default function AstrologyExperience({
           </div>
         </div>
 
-        <div className="mt-4 grid grid-cols-7 gap-1 text-center text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-[var(--shreem-gold-deep)]">
+        <div className="mt-4 grid grid-cols-7 gap-1 text-center text-[0.68rem] font-semibold uppercase tracking-[0.05em] small:tracking-[0.12em] text-[var(--shreem-gold-deep)]">
           {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
             <span key={day} className="py-1">
               {day}
@@ -4298,7 +7573,7 @@ export default function AstrologyExperience({
                       {getCompactWeekday(details?.weekday)}
                     </span>
                   </span>
-                  <span className="mt-2 line-clamp-2 block min-h-[2rem] text-[0.64rem] font-semibold leading-4 text-[var(--shreem-ink)]">
+                  <span className="mt-2 block min-h-[2rem] text-[0.64rem] font-semibold leading-4 text-[var(--shreem-ink)]">
                     {loadingCalendarMonth
                       ? "Loading"
                       : getCompactTithi(details?.tithi)}
@@ -4655,13 +7930,37 @@ export default function AstrologyExperience({
                 Ask the question exactly as it arises.
               </h2>
               <p className="mt-4 text-sm leading-7 text-[var(--shreem-muted)] small:text-base">
-                The chart is generated for the exact moment you ask, using the
-                selected city. The AI reads the calculated Vedic factors and
-                keeps chart facts separate from interpretation. If your question
-                has parts, they are answered as first, second, and third.
+                The chart is generated for the question moment and selected
+                city. It defaults to now, but you can change the time if the
+                question clearly arose earlier. If your question has parts, they
+                are answered as first, second, and third.
               </p>
               <div className="mt-5">
                 <LocationDateControls showDate={false} />
+              </div>
+              <div className="mt-3 grid gap-3 rounded-[20px] border border-[var(--shreem-border)] bg-white/52 px-4 py-4 small:grid-cols-2">
+                <label className="grid gap-2">
+                  <span className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--shreem-gold-deep)]">
+                    Question date
+                  </span>
+                  <input
+                    type="date"
+                    value={prashnaDate}
+                    onChange={(event) => setPrashnaDate(event.target.value)}
+                    className="h-12 rounded-[16px] border border-[var(--shreem-border)] bg-white/80 px-3 text-sm text-[var(--shreem-ink)] outline-none"
+                  />
+                </label>
+                <label className="grid gap-2">
+                  <span className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--shreem-gold-deep)]">
+                    Question time
+                  </span>
+                  <input
+                    type="time"
+                    value={prashnaTime}
+                    onChange={(event) => setPrashnaTime(event.target.value)}
+                    className="h-12 rounded-[16px] border border-[var(--shreem-border)] bg-white/80 px-3 text-sm text-[var(--shreem-ink)] outline-none"
+                  />
+                </label>
               </div>
               <div className="mt-5 rounded-[20px] border border-[var(--shreem-border)] bg-white/52 px-4 py-4">
                 <LanguageControls />
@@ -4674,7 +7973,12 @@ export default function AstrologyExperience({
               />
               <button
                 type="button"
-                disabled={loadingPrashna || question.trim().length < 8}
+                disabled={
+                  loadingPrashna ||
+                  question.trim().length < 8 ||
+                  !prashnaDate ||
+                  !prashnaTime
+                }
                 onClick={askPrashna}
                 className="mt-4 w-full rounded-full border-0 bg-[linear-gradient(135deg,#0d817e_0%,#123f63_52%,#6f211f_100%)] px-5 py-3 text-sm font-semibold text-white shadow-[0_18px_34px_rgba(18,63,99,0.26)] disabled:cursor-not-allowed disabled:opacity-45 small:w-auto"
               >
@@ -5056,18 +8360,28 @@ export default function AstrologyExperience({
                     ))}
                   </div>
                 </div>
-                <button
-                  type="button"
-                  disabled={
-                    loadingKundli ||
-                    !kundliForm.birthDate ||
-                    !kundliForm.birthTime
-                  }
-                  onClick={generateKundli}
-                  className="mt-2 w-full rounded-full border-0 bg-[linear-gradient(135deg,#0d817e_0%,#123f63_52%,#6f211f_100%)] px-5 py-3 text-sm font-semibold text-white shadow-[0_18px_34px_rgba(18,63,99,0.26)] disabled:cursor-not-allowed disabled:opacity-45"
-                >
-                  {loadingKundli ? "Generating Kundli..." : "Generate Kundli"}
-                </button>
+                <div className="mt-2 grid gap-2 small:grid-cols-[0.72fr_1fr]">
+                  <button
+                    type="button"
+                    disabled={!kundliForm.name || !kundliForm.birthDate || !kundliForm.birthTime}
+                    onClick={() => saveKundliProfile(null)}
+                    className="w-full rounded-full border border-[rgba(13,129,126,0.22)] bg-white px-5 py-3 text-sm font-semibold text-[var(--shreem-accent-dark)] disabled:cursor-not-allowed disabled:opacity-45"
+                  >
+                    Save details
+                  </button>
+                  <button
+                    type="button"
+                    disabled={
+                      loadingKundli ||
+                      !kundliForm.birthDate ||
+                      !kundliForm.birthTime
+                    }
+                    onClick={() => generateKundli()}
+                    className="w-full rounded-full border-0 bg-[linear-gradient(135deg,#0d817e_0%,#123f63_52%,#6f211f_100%)] px-5 py-3 text-sm font-semibold text-white shadow-[0_18px_34px_rgba(18,63,99,0.26)] disabled:cursor-not-allowed disabled:opacity-45"
+                  >
+                    {loadingKundli ? "Generating Kundli..." : "Generate Kundli"}
+                  </button>
+                </div>
                 <p className="text-xs leading-5 text-[var(--shreem-muted)]">
                   The generated stone indicators are general. Wear gemstones or
                   start major remedies only after expert review.
@@ -5076,6 +8390,15 @@ export default function AstrologyExperience({
             </div>
 
             <div className="grid gap-4">
+              <SavedKundliPanel
+                profiles={savedKundlis}
+                message={savedKundliMessage}
+                syncing={syncingSavedKundlis}
+                onUse={applySavedKundliProfile}
+                onOpen={openSavedKundliProfile}
+                onGenerate={generateSavedKundliProfile}
+                onRemove={removeSavedKundliProfile}
+              />
               <div className="brand-card px-4 py-5 small:px-6">
                 <p className="brand-kicker">Generated chart</p>
                 {loadingKundli && (
@@ -5114,7 +8437,7 @@ export default function AstrologyExperience({
                     {kundliResult.retryable && (
                       <button
                         type="button"
-                        onClick={generateKundli}
+                        onClick={() => generateKundli()}
                         disabled={
                           loadingKundli ||
                           !kundliForm.birthDate ||
@@ -5129,6 +8452,15 @@ export default function AstrologyExperience({
                 )}
                 {kundliResult?.chart && (
                   <div className="mt-4">
+                    <div className="mb-3 flex flex-col gap-2 small:flex-row small:items-center small:justify-end">
+                      <button
+                        type="button"
+                        onClick={() => saveKundliProfile(kundliResult)}
+                        className="rounded-full border border-[rgba(13,129,126,0.22)] bg-white px-4 py-2 text-xs font-semibold text-[var(--shreem-accent-dark)]"
+                      >
+                        Save this Kundli
+                      </button>
+                    </div>
                     <KundliResultView
                       result={kundliResult}
                       onPrint={() => printKundliReport(kundliResult)}

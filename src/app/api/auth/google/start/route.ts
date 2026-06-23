@@ -6,6 +6,12 @@ export const dynamic = "force-dynamic"
 const publicSiteUrl = (
   process.env.NEXT_PUBLIC_SITE_URL ||
   process.env.SITE_URL ||
+  "https://www.shreemfarms.in"
+).replace(/\/+$/, "")
+
+const googleOAuthRedirectBaseUrl = (
+  process.env.GOOGLE_OAUTH_REDIRECT_BASE_URL ||
+  process.env.NEXT_PUBLIC_GOOGLE_OAUTH_REDIRECT_BASE_URL ||
   "https://shreemfarms.in"
 ).replace(/\/+$/, "")
 
@@ -44,7 +50,7 @@ const sanitizeReturnTo = (value: string | null, countryCode: string) => {
 export async function GET(req: NextRequest) {
   const countryCode = sanitizeCountryCode(req.nextUrl.searchParams.get("countryCode"))
   const returnTo = sanitizeReturnTo(req.nextUrl.searchParams.get("returnTo"), countryCode)
-  const redirectUri = `${publicSiteUrl}/${countryCode}/auth/google/callback`
+  const redirectUri = `${googleOAuthRedirectBaseUrl}/${countryCode}/auth/google/callback`
   const state = crypto.randomBytes(32).toString("hex")
 
   const authUrl = new URL("https://accounts.google.com/o/oauth2/v2/auth")

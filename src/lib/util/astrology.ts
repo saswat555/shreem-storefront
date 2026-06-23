@@ -199,6 +199,9 @@ export type GrahaAspect = {
   toSign: string
   aspectType: "7th" | "special" | "node-special"
   strength: "full"
+  polarity?: "supportive" | "challenging" | "mixed"
+  positiveEffect?: string
+  negativeEffect?: string
   theme: string
   interpretation: string
 }
@@ -255,7 +258,7 @@ export type PrashnaHouse = {
 
 export type DashaPeriod = {
   lord: string
-  level: "mahadasha" | "antardasha" | "pratyantar"
+  level: "mahadasha" | "antardasha" | "pratyantar" | "sookshma" | "prana"
   startIso: string
   endIso: string
   startLabel: string

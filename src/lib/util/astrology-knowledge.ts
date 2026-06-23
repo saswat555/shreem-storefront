@@ -44,6 +44,73 @@ export type RetrievedAstrologyPassage = {
   score: number
 }
 
+export type AstrologyKnowledgeIntent =
+  | "career"
+  | "wealth"
+  | "health"
+  | "relationship"
+  | "dasha"
+  | "remedy"
+  | "yoga"
+  | "markesh"
+
+const INTENT_EVIDENCE_TERMS: Record<AstrologyKnowledgeIntent, string[]> = {
+  career: ["career", "profession", "karma", "karm", "tenth", "10th", "authority", "work", "livelihood", "राज", "कर्म"],
+  wealth: ["wealth", "money", "income", "second", "2nd", "eleventh", "11th", "dhana", "labh", "gain", "finance", "धन", "लाभ"],
+  health: ["health", "disease", "sixth", "6th", "eighth", "8th", "twelfth", "12th", "ari", "randhr", "vyaya", "रोग"],
+  relationship: ["marriage", "wife", "spouse", "seventh", "7th", "yuvati", "venus", "relationship", "विवाह"],
+  dasha: ["dasha", "vimshottari", "period", "mahadasha", "antardasha", "pratyantar", "दशा"],
+  remedy: ["remedy", "mantra", "worship", "donation", "daan", "shanti", "pooja", "उपाय", "मंत्र", "दान"],
+  yoga: ["yoga", "raja", "dhan", "gajakesari", "neecha", "combination", "योग"],
+  markesh: ["maraka", "markesh", "second", "2nd", "seventh", "7th", "longevity", "death", "मारक"],
+}
+
+const INTENT_QUERY_EXPANSION: Record<AstrologyKnowledgeIntent, string> = {
+  career: "career profession karma karm bhava tenth house authority work livelihood",
+  wealth: "wealth dhan second house eleventh house labh gains income finance",
+  health: "health disease ari randhra vyaya sixth eighth twelfth dusthana prevention",
+  relationship: "marriage spouse wife yuvati seventh house venus jupiter relationship",
+  dasha: "vimshottari dasha mahadasha antardasha pratyantar period results",
+  remedy: "remedy mantra pooja daan shanti worship graha peace",
+  yoga: "yoga raja yoga dhana yoga gajakesari neechabhanga planetary combination",
+  markesh: "maraka markesh second seventh house longevity prevention dasha",
+}
+
+// Chapter gating is the precision boundary. Semantic similarity ranks passages
+// only after the passage belongs to a BPHS chapter that can govern the intent.
+const INTENT_CHAPTERS: Record<AstrologyKnowledgeIntent, Set<number>> = {
+  career: new Set([11, 14, 20, 21, 22, 24, 26, 27, 32, 34, 39, 40]),
+  wealth: new Set([11, 13, 16, 20, 21, 22, 24, 32, 34, 41, 42]),
+  health: new Set([9, 10, 11, 12, 17, 19, 23, 24, 26, 27, 43, 44]),
+  relationship: new Set([11, 13, 16, 18, 19, 23, 24, 30, 32, 80]),
+  dasha: new Set(Array.from({ length: 18 }, (_, index) => 46 + index)),
+  remedy: new Set([10, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96]),
+  yoga: new Set([34, 35, 36, 37, 38, 39, 40, 41, 42, 75, 79, 83]),
+  markesh: new Set([17, 19, 43, 44, 46, 47, 48, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 71]),
+}
+
+const INTENT_PRIMARY_CHAPTERS: Record<AstrologyKnowledgeIntent, Set<number>> = {
+  career: new Set([14, 20, 21, 22, 39, 40]),
+  wealth: new Set([13, 22, 41, 42]),
+  health: new Set([12, 17, 19, 23, 43, 44]),
+  relationship: new Set([18, 30, 80]),
+  dasha: new Set([46, 47, 48, 51, 61, 62, 63]),
+  remedy: new Set([10, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96]),
+  yoga: new Set([34, 35, 36, 37, 38, 39, 40, 41, 42]),
+  markesh: new Set([43, 44, 71]),
+}
+
+const INTENT_HOUSES: Record<AstrologyKnowledgeIntent, number[]> = {
+  career: [1, 3, 6, 9, 10, 11],
+  wealth: [2, 5, 8, 9, 11, 12],
+  health: [1, 6, 8, 12],
+  relationship: [2, 5, 7, 8, 11, 12],
+  dasha: [],
+  remedy: [1, 6, 8, 9, 12],
+  yoga: [1, 4, 5, 7, 9, 10, 11],
+  markesh: [2, 7, 8, 12],
+}
+
 const rag = bphsRagArtifact as BphsRagArtifact
 const VECTOR_SIZE = rag.vectorizer.vectorSize
 
@@ -112,6 +179,25 @@ const tokenize = (value: string) =>
   normalizeText(value)
     .split(" ")
     .filter((token) => token.length > 2 && !STOP_WORDS.has(token))
+
+export const getAstrologyIntentEvidenceScore = (
+  intent: AstrologyKnowledgeIntent | undefined,
+  passage: { text?: string; keywords?: string[]; chapterTitle?: string }
+) => {
+  if (!intent) {
+    return 1
+  }
+
+  const haystack = normalizeText(
+    `${passage.chapterTitle || ""} ${passage.keywords?.join(" ") || ""} ${
+      passage.text || ""
+    }`
+  )
+
+  return INTENT_EVIDENCE_TERMS[intent].filter((term) =>
+    haystack.includes(normalizeText(term))
+  ).length
+}
 
 const SEMANTIC_EXPANSIONS: [RegExp, string][] = [
   [
@@ -193,10 +279,25 @@ const vectorizeQuery = (value: string) => {
 const cosineSimilarity = (left: number[], right: number[]) =>
   left.reduce((sum, item, index) => sum + item * (right[index] || 0), 0)
 
-const chartSearchText = (chart?: PrashnaChart) => {
+const chartSearchText = (
+  chart?: PrashnaChart,
+  intent?: AstrologyKnowledgeIntent
+) => {
   if (!chart) {
     return ""
   }
+
+  const relevantHouses = intent ? INTENT_HOUSES[intent] : []
+  const houseRows = relevantHouses.length
+    ? chart.houses.filter((house) => relevantHouses.includes(house.house))
+    : []
+  const relevantPlanets = new Set<string>()
+  houseRows.forEach((house) => relevantPlanets.add(house.signLord))
+  chart.planets.forEach((planet) => {
+    if (relevantHouses.includes(planet.bhavaHouse || planet.house)) {
+      relevantPlanets.add(planet.name)
+    }
+  })
 
   return [
     `lagna ${chart.ascendant}`,
@@ -205,6 +306,7 @@ const chartSearchText = (chart?: PrashnaChart) => {
       chart.dasha?.antardasha?.lord || ""
     } ${chart.dasha?.pratyantar?.lord || ""}`,
     chart.planets
+      .filter((planet) => !intent || relevantPlanets.has(planet.name))
       .map(
         (planet) =>
           `${planet.name} ${planet.sign} house ${planet.house} rashi house ${
@@ -212,7 +314,7 @@ const chartSearchText = (chart?: PrashnaChart) => {
           } bhava house ${planet.bhavaHouse || planet.house} ${planet.nakshatra}`
       )
       .join(" "),
-    chart.houses
+    houseRows
       .map(
         (house) =>
           `house ${house.house} ${house.sign} ${house.signLord} ${house.theme}`
@@ -571,15 +673,6 @@ const selectDiverseAstrologyPassages = (
   passages: RetrievedAstrologyPassage[],
   max: number
 ) => {
-  const isLifeArea =
-    /career|profession|karma|tenth|10th|wealth|money|income|second|2nd|eleventh|11th|health|disease|sixth|6th|eighth|8th|twelfth|12th|marriage|relationship|seventh|7th/.test(
-      normalizedQuery
-    )
-
-  if (!isLifeArea) {
-    return passages.slice(0, max)
-  }
-
   const chapterLimit = 1
   const selected: RetrievedAstrologyPassage[] = []
   const chapterCounts = new Map<number, number>()
@@ -634,18 +727,21 @@ export const retrieveAstrologyKnowledge = ({
   detectedCases = [],
   min = 3,
   max = 8,
+  intent,
 }: {
   query: string
   chart?: PrashnaChart
   detectedCases?: string[]
   min?: number
   max?: number
+  intent?: AstrologyKnowledgeIntent
 }): RetrievedAstrologyPassage[] => {
   const boundedMin = Math.min(Math.max(min, 1), 10)
   const boundedMax = Math.min(Math.max(max, boundedMin), 10)
   const searchText = [
     query,
-    chartSearchText(chart),
+    intent ? INTENT_QUERY_EXPANSION[intent] : "",
+    chartSearchText(chart, intent),
     detectedCases.join(" "),
   ].join(" ")
   const expandedSearchText = expandSemanticQuery(searchText)
@@ -671,8 +767,20 @@ export const retrieveAstrologyKnowledge = ({
         specialCaseBoost(normalizedSearch, chunk) +
         topicRelevanceBoost(normalizedSearch, chunk) +
         genericDashaDominancePenalty(normalizedSearch, chunk) +
-        exactTopicGatePenalty(normalizedSearch, chunk),
+        exactTopicGatePenalty(normalizedSearch, chunk) +
+        (intent
+          ? Math.min(getAstrologyIntentEvidenceScore(intent, chunk) * 0.35, 1.4)
+          : 0) +
+        (intent && INTENT_PRIMARY_CHAPTERS[intent].has(chunk.chapterNumber)
+          ? 1.2
+          : 0),
+      intentEvidence: getAstrologyIntentEvidenceScore(intent, chunk),
     }))
+    .filter(
+      (chunk) =>
+        !intent ||
+        (chunk.intentEvidence > 0 && INTENT_CHAPTERS[intent].has(chunk.chapterNumber))
+    )
     .sort((left, right) => right.score - left.score)
 
   return selectDiverseAstrologyPassages(

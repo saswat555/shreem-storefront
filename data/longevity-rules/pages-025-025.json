@@ -1,0 +1,246 @@
+{
+  "pages": [
+    42,
+    43
+  ],
+  "page_summary": {
+    "42": "This page outlines specific planetary placements and yogas related to longevity assessment and conditions indicating potential for sudden or unusual life transitions. It also introduces a method for dividing the zodiac for longevity analysis and mentions specific Dasha lords associated with critical periods.",
+    "43": "This page details the 'Tara' classification system for Dasha periods, linking specific Tara types (Vipat, Pratyari, Vedha) to periods of vulnerability based on the overall longevity assessment (Alpayu, Madhyamayu, Deerghayu). It also discusses the impact of Maraka planets, their affliction, and the mitigating effects of benefic influences, along with timing considerations for challenging Dasha periods."
+  },
+  "rules": [
+    {
+      "id": "longevity-exalted-8th",
+      "page": 42,
+      "category": "longevity_class",
+      "condition": "A planet is exalted in the 8th house.",
+      "effect": "Indicates a favorable factor for overall life span assessment.",
+      "implementation": "Include this as a positive indicator in the general longevity assessment module.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-8th-navamsa-strong",
+      "page": 42,
+      "category": "longevity_class",
+      "condition": "A planet in the 8th house is in its exaltation sign or a friendly sign in Navamsa.",
+      "effect": "Indicates a favorable factor for overall life span assessment.",
+      "implementation": "Include this as a positive indicator in the general longevity assessment module, considering Navamsa strength.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-8th-vargottama",
+      "page": 42,
+      "category": "longevity_class",
+      "condition": "A planet in the 8th house is Vargottama.",
+      "effect": "Indicates a favorable factor for overall life span assessment.",
+      "implementation": "Include this as a positive indicator in the general longevity assessment module, noting Vargottama strength.",
+      "confidence": "high"
+    },
+    {
+      "id": "maraka-lagna-8th-lord-conjunct",
+      "page": 42,
+      "category": "maraka",
+      "condition": "Lagna lord conjunct 8th lord with multiple other planets; OR 8th lord in 8th house with multiple other planets.",
+      "effect": "Indicates a potential for significant life challenges or group-related adverse events.",
+      "implementation": "Flag this combination as a high-impact configuration. Require careful analysis of other chart factors before generating any interpretation. Avoid direct predictions.",
+      "confidence": "high"
+    },
+    {
+      "id": "maraka-mars-10th-saturn-4th",
+      "page": 42,
+      "category": "maraka",
+      "condition": "Mars occupies the 10th house and Saturn occupies the 4th house.",
+      "effect": "Indicates a potential for sudden, impactful events or abrupt changes.",
+      "implementation": "Note this as a specific combination associated with abrupt changes or challenges. Integrate into event prediction modules.",
+      "confidence": "high"
+    },
+    {
+      "id": "maraka-saturn-mars-rahu-8th",
+      "page": 42,
+      "category": "maraka",
+      "condition": "Saturn, Mars, and Rahu occupy the 8th house.",
+      "effect": "Indicates a potential for sudden, impactful events or abrupt changes.",
+      "implementation": "Note this as a specific combination associated with abrupt changes or challenges. Integrate into event prediction modules.",
+      "confidence": "high"
+    },
+    {
+      "id": "maraka-mars-6-12-saturn-8-moon-6-8-12",
+      "page": 42,
+      "category": "maraka",
+      "condition": "Mars in 6th or 12th house, Saturn in 8th house, and Moon in 6th, 8th, or 12th house.",
+      "effect": "Indicates a potential for significant life challenges or unusual circumstances.",
+      "implementation": "Flag this combination as a high-impact configuration requiring careful analysis of other chart factors. Avoid direct predictions.",
+      "confidence": "high"
+    },
+    {
+      "id": "method-zodiac-division-longevity",
+      "page": 42,
+      "category": "method",
+      "condition": "N/A (describes a method for longevity assessment).",
+      "effect": "A method for assessing longevity by dividing the zodiac into three parts (Lagna to 4th, 5th to 8th, 9th to 12th houses). A weak or malefic planet in any of these parts without benefic influence can indicate challenges during its period.",
+      "implementation": "Implement a module to identify planets in these three segments and assess their strength and benefic/malefic influences. Use this for Dasha period analysis, flagging potential challenging periods.",
+      "confidence": "high"
+    },
+    {
+      "id": "method-rasi-sandhi-impact",
+      "page": 42,
+      "category": "method",
+      "condition": "A planet is in Rasi Sandhi.",
+      "effect": "Indicates potential for health issues, sorrow, or pain during its period.",
+      "implementation": "Identify planets in Rasi Sandhi and flag them for potential health or emotional challenges during their Dasha periods.",
+      "confidence": "high"
+    },
+    {
+      "id": "caution-rasi-sandhi-retrograde",
+      "page": 42,
+      "category": "caution",
+      "condition": "A planet in Rasi Sandhi is also retrograde and at the last degree of the sign at birth.",
+      "effect": "The adverse effects of Rasi Sandhi may be more pronounced under these specific conditions.",
+      "implementation": "Refine the Rasi Sandhi rule to consider retrograde motion and exact degree for a more nuanced assessment of potential challenges.",
+      "confidence": "medium"
+    },
+    {
+      "id": "dasha-timing-jataka-parijat-critical-dashas",
+      "page": 42,
+      "category": "dasha_timing",
+      "condition": "The 5th Dasha lord from birth is Mars, OR 6th is Jupiter, OR 4th is Saturn, OR 7th is Rahu.",
+      "effect": "These specific Dasha lords are associated with significant life transitions or challenges.",
+      "implementation": "Identify these specific Dasha lords in the sequence from birth and flag their periods for potential high-impact events or critical phases.",
+      "confidence": "high"
+    },
+    {
+      "id": "method-tara-dasa-system",
+      "page": 42,
+      "category": "method",
+      "condition": "N/A (describes the Vimsottari Dasha system).",
+      "effect": "The first Vimsottari Dasha from birth is called Tara Dasa. The Vimsottari system comprises nine Dasas, each associated with a Tara.",
+      "implementation": "Ensure the Vimsottari Dasha system is correctly implemented, including the concept of Tara Dasas and their sequence.",
+      "confidence": "high"
+    },
+    {
+      "id": "method-tara-classification-names",
+      "page": 43,
+      "category": "method",
+      "condition": "N/A (describes a classification system for Dasha periods).",
+      "effect": "Dasha periods are classified into nine types (Janma, Sampati, Vipat, Kshema, Pratyari, Sadhaka, Vedha, Mitra, Ati-mitra) based on their nature, indicating different types of results.",
+      "implementation": "Implement the nine Tara classifications for Dasha periods to categorize their general nature.",
+      "confidence": "high"
+    },
+    {
+      "id": "method-tara-classification-interpretations",
+      "page": 43,
+      "category": "method",
+      "condition": "N/A (provides interpretations for Tara classifications).",
+      "effect": "Provides interpretations for the nine Tara classifications: 1. Birth star, 2. Prosperity, 3. Danger, 4. Favourable, 5. Inimical, 6. Helpful, 7. Obstruction, 8. Friendly, 9. Very friendly.",
+      "implementation": "Use these interpretations to label or describe the nature of each Dasha period within the software's interpretive output.",
+      "confidence": "high"
+    },
+    {
+      "id": "dasha-timing-alpayu-vipat-star",
+      "page": 43,
+      "category": "dasha_timing",
+      "condition": "A chart indicates Alpayu (short span of life) AND the current Dasha is of a Vipat star.",
+      "effect": "Indicates a period of significant challenge or vulnerability.",
+      "implementation": "If a chart's overall longevity assessment points to Alpayu, flag Vipat Dasha periods as high-risk for adverse events or critical transitions.",
+      "confidence": "high"
+    },
+    {
+      "id": "dasha-timing-madhyamayu-pratyari-star",
+      "page": 43,
+      "category": "dasha_timing",
+      "condition": "A chart indicates Madhyamayu (medium span of life) AND the current Dasha is of a Pratyari star.",
+      "effect": "Indicates a period of significant challenge or vulnerability.",
+      "implementation": "If a chart's overall longevity assessment points to Madhyamayu, flag Pratyari Dasha periods as high-risk for adverse events or critical transitions.",
+      "confidence": "high"
+    },
+    {
+      "id": "dasha-timing-deerghayu-vedha-star",
+      "page": 43,
+      "category": "dasha_timing",
+      "condition": "A chart indicates Deerghayu (long span of life) AND the current Dasha is of a Vedha star.",
+      "effect": "Indicates a period of significant challenge or vulnerability, even for those with generally favorable longevity.",
+      "implementation": "If a chart's overall longevity assessment points to Deerghayu, flag Vedha Dasha periods as high-risk for adverse events or critical transitions.",
+      "confidence": "high"
+    },
+    {
+      "id": "maraka-afflicted-evil-star-lords",
+      "page": 43,
+      "category": "maraka",
+      "condition": "Lords of 'evil stars' (Vipat, Pratyari, Vedha) are combust, afflicted, or in debility.",
+      "effect": "These planets are more potent in indicating periods of significant challenge or vulnerability.",
+      "implementation": "Enhance the risk assessment for Dasha periods of Vipat, Pratyari, or Vedha lords if they are combust, afflicted, or debilitated, indicating a higher potential for adverse events.",
+      "confidence": "high"
+    },
+    {
+      "id": "mitigation-benefic-influences",
+      "page": 43,
+      "category": "mitigation",
+      "condition": "Benefic influences from other planets are present.",
+      "effect": "The adverse impact of Maraka planets or challenging Dasha periods is reduced.",
+      "implementation": "Incorporate a mechanism to assess benefic influences (aspects, conjunctions, strength) on Maraka planets or Dasha lords to moderate their predicted impact and reduce the severity of flagged challenges.",
+      "confidence": "high"
+    },
+    {
+      "id": "dasha-timing-saturn-strong-maraka",
+      "page": 43,
+      "category": "dasha_timing",
+      "condition": "Saturn is identified as a strong Maraka planet.",
+      "effect": "Indicates a period of significant life transition or challenge during Saturn's 19-year Dasha.",
+      "implementation": "If Saturn is identified as a strong Maraka, flag its Dasha period as a high-impact phase requiring careful attention to potential challenges.",
+      "confidence": "high"
+    },
+    {
+      "id": "dasha-timing-ordinary-maraka-early",
+      "page": 43,
+      "category": "dasha_timing",
+      "condition": "An 'ordinary' planet becomes a Maraka.",
+      "effect": "The period of significant challenge or transition may occur early in the Dasha of an 'ordinary' Maraka planet.",
+      "implementation": "For 'ordinary' Maraka planets, note that their Dasha's initial phase may be particularly impactful for challenges or transitions.",
+      "confidence": "medium"
+    },
+    {
+      "id": "dasha-timing-cruel-maraka-late",
+      "page": 43,
+      "category": "dasha_timing",
+      "condition": "A 'cruel' planet becomes a Maraka.",
+      "effect": "The period of significant challenge or transition may occur towards the end of the Dasha of a 'cruel' Maraka planet.",
+      "implementation": "For 'cruel' Maraka planets, note that their Dasha's final phase may be particularly impactful for challenges or transitions.",
+      "confidence": "medium"
+    },
+    {
+      "id": "caution-janma-nakshatra-moon",
+      "page": 43,
+      "category": "caution",
+      "condition": "N/A (illustrates Janma Nakshatra determination).",
+      "effect": "Janma Nakshatra is determined by the Moon's position at birth.",
+      "implementation": "Ensure Janma Nakshatra calculation is accurately based on the Moon's position in the chart.",
+      "confidence": "high"
+    },
+    {
+      "id": "caution-jupiter-saturn-dasha-interaction",
+      "page": 43,
+      "category": "caution",
+      "condition": "Jupiter is the Dasha lord at birth.",
+      "effect": "Saturn's Dasha may be considered helpful in this specific context.",
+      "implementation": "Note this specific interaction between Jupiter's birth Dasha and Saturn's Dasha for nuanced interpretation, potentially moderating Saturn's typical Maraka effects.",
+      "confidence": "low"
+    },
+    {
+      "id": "caution-modern-astrology-adjustments",
+      "page": 43,
+      "category": "caution",
+      "condition": "N/A (commentary on astrological practice).",
+      "effect": "Acknowledges that modern interpretations may adjust classical rules for practicality and reasonableness.",
+      "implementation": "Remind developers that classical texts may require careful interpretation and contextualization for modern software, and that strict literal application may not always be appropriate.",
+      "confidence": "high"
+    },
+    {
+      "id": "method-longevity-classification-framework",
+      "page": 43,
+      "category": "method",
+      "condition": "N/A (describes a foundational step in analysis).",
+      "effect": "Classifying the overall span of life (Alpayu, Madhyamayu, Deerghayu) provides a crucial framework for interpreting Dasha periods and potential challenges.",
+      "implementation": "Prioritize the development of a robust longevity classification module (Alpayu, Madhyamayu, Deerghayu) as a foundational step for Dasha analysis and risk assessment.",
+      "confidence": "high"
+    }
+  ]
+}

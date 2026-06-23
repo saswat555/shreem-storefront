@@ -1,0 +1,35 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "text": "```json\n{\n  \"pages\": [96, 97],\n  \"page_summary\": \"These pages detail several methods for calculating an individual's longevity in Jyotish. They describe two approaches to Nakshatrayu based on the Moon's position and birth constellation, the Kendrayu method considering Rahu or Mars in kendra houses, the Kendra-Trikona Span method using planetary placements in kendra and trikona houses, and the initial steps for Kalidasa's Nakshatra Ayurdaya.\",\n  \"rules\": [\n    {\n      \"id\": \"nakshatrayu-balance-period\",\n      \"page\": 96,\n      \"category\": \"method\",\n      \"condition\": \"Moon's longitude within a nakshatra, its extent, and the balance period yet to be covered.\",\n      \"effect\": \"Calculates a specific duration in years, months, days, and ghatis, representing a component of the individual's lifespan.\",\n      \"implementation\": \"Software should calculate the remaining portion of the Moon's current nakshatra based on its longitude and convert this balance period (in ghatis/vighatis) into years, months, and days. This value contributes to the overall longevity assessment.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"nakshatrayu-alternative-method\",\n      \"page\": 96,\n      \"category\": \"method\",\n      \"condition\": \"Balance ghatis and vighatis of the birth constellation.\",\n      \"effect\": \"Calculates a specific duration in days, convertible to years, months, and days, representing a component of the individual's lifespan.\",\n      \"implementation\": \"Software should take the balance ghatis and vighatis of the birth nakshatra, multiply this value by 60, then divide by 12. The result is a duration in days, which should be converted to years, months, and days for longevity assessment.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"kendrayu-calculation\",\n      \"page\": 96,\n      \"category\": \"method\",\n      \"condition\": \"Rahu or Mars occupying kendra houses (1, 4, 7, 10).\",\n      \"effect\": \"Calculates a longevity span based on the rasi numbers of occupied kendras, with deductions for specific planetary placements.\",\n      \"implementation\": \"Software should identify the rasi numbers of the kendra houses (1, 4, 7, 10). If Rahu or Mars occupies any of these, deduct the rasi number of that occupied house from the total of the four kendra rasi numbers. Multiply the resulting balance by 3 to determine a longevity span in years.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"kendra-trikona-span\",\n      \"page\": 97,\n      \"category\": \"method\",\n      \"condition\": \"Planets occupying kendra houses (1, 4, 7, 10) and trikona houses (5, 9).\",\n      \"effect\": \"Calculates a longevity span based on the rasi numbers of occupied kendra and trikona houses.\",\n      \"implementation\": \"Software should identify the rasi numbers of kendra and trikona houses occupied by planets. Sum these rasi numbers. Add 6 to this total. Multiply the new total by 12, then divide by 10 to determine a longevity span in years.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"nakshatra-ayurdaya-kalidasa-steps\",\n      \"page\": 97,\n      \"category\": \"method\",\n      \"condition\": \"Planets' positions in specific nakshatras and padas.\",\n      \"effect\": \"Each planet contributes a term of life based on its position.\",\n      \"implementation\": \"For each planet, determine its nakshatra and pada. Then, count the number of nakshatras crossed from Ashwini nakshatra (including Ashwini and the planet's current nakshatra). This count is a step in calculating the planet's contribution to longevity.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"incomplete-example-caution\",\n      \"page\": 97,\n      \"category\": \"caution\",\n      \"condition\": \"An example calculation is provided without a clear preceding rule or full context.\",\n      \"effect\": \"Potential for misinterpretation or incorrect application if the full rule is not available.\",\n      \"implementation\": \"Software development should ensure that all rules are fully defined and unambiguous before implementation. Examples should clarify, not introduce new, undefined conditions.\",\n      \"confidence\": \"high\"\n    }\n  ]\n}\n```"
+          }
+        ],
+        "role": "model"
+      },
+      "finishReason": "STOP",
+      "index": 0
+    }
+  ],
+  "usageMetadata": {
+    "promptTokenCount": 550,
+    "candidatesTokenCount": 1065,
+    "totalTokenCount": 4577,
+    "promptTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 292
+      },
+      {
+        "modality": "IMAGE",
+        "tokenCount": 258
+      }
+    ],
+    "thoughtsTokenCount": 2962,
+    "serviceTier": "standard"
+  },
+  "modelVersion": "gemini-2.5-flash",
+  "responseId": "5GQ1asL4OLyx4-EPhfmycQ"
+}

@@ -1,0 +1,35 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "text": "```json\n{\n  \"pages\": [76, 77],\n  \"page_summary\": \"This section details the 'mandal sodhana' process for calculating planetary longevity contributions, followed by 'Harana Samskaras' (reduction rules). These rules adjust the initial planetary periods based on various astrological conditions like planetary placement, debility, combustion, and associations. The text also clarifies how to apply multiple reductions and provides specific examples of their impact on a planet's final longevity contribution.\",\n  \"rules\": [\n    {\n      \"id\": \"longevity-base-periods-context\",\n      \"page\": 76,\n      \"category\": \"method\",\n      \"condition\": \"Initial calculation of planetary contributions to longevity.\",\n      \"effect\": \"Planets contribute gross periods (e.g., Sun 19.15 years, Moon 9.04 years, Mars 24.89 years, Mercury 15.52 years, Jupiter 2.00 years, Venus 4.37 years, Saturn 23.30 years, Lagna 9.81 years).\",\n      \"implementation\": \"Use these as baseline values for subsequent reduction calculations. These are not rules for reduction but the starting point for the 'mandalayu' calculation.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"reduction-multiple-planets-rasi\",\n      \"page\": 76,\n      \"category\": \"longevity_class\",\n      \"condition\": \"More than one planet is posited in the same Rasi.\",\n      \"effect\": \"Each planet's contributed longevity span is reduced by half.\",\n      \"implementation\": \"For each planet in a Rasi containing multiple planets, apply a 50% reduction to its initial longevity contribution. The author's view supports applying this reduction to each planet's contribution.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"reduction-natural-enemy-sign\",\n      \"page\": 76,\n      \"category\": \"longevity_class\",\n      \"condition\": \"A planet is located in its natural enemy's sign.\",\n      \"effect\": \"The planet's contributed longevity span is reduced by one-third.\",\n      \"implementation\": \"Apply a 33.33% reduction to the initial longevity contribution of any planet in its natural enemy's sign.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"reduction-sign-of-debility\",\n      \"page\": 76,\n      \"category\": \"longevity_class\",\n      \"condition\": \"A planet is in its sign of debility.\",\n      \"effect\": \"The planet's contributed longevity span is reduced by half.\",\n      \"implementation\": \"Apply a 50% reduction to the initial longevity contribution of any debilitated planet.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"reduction-combustion\",\n      \"page\": 76,\n      \"category\": \"longevity_class\",\n      \"condition\": \"A planet is combust. Exceptions: Venus and Saturn.\",\n      \"effect\": \"The planet's contributed longevity span is halved.\",\n      \"implementation\": \"Apply a 50% reduction to the initial longevity contribution of any combust planet, excluding Venus and Saturn.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"reduction-graha-yuddha\",\n      \"page\": 76,\n      \"category\": \"longevity_class\",\n      \"condition\": \"A planet is involved in Graha Yuddha (planetary war).\",\n      \"effect\": \"The planet's contributed longevity span is reduced by one-third.\",\n      \"implementation\": \"Apply a 33.33% reduction to the initial longevity contribution of any planet engaged in Graha Yuddha.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"reduction-chakrardha-visible-half\",\n      \"page\": 76,\n      \"category\": \"longevity_class\",\n      \"condition\": \"A planet is posited in the visible half of the zodiac (houses 7th to 12th).\",\n      \"effect\": \"This condition requires further reductions to the planet's contributed span.\",\n      \"implementation\": \"Identify planets in houses 7-12. Note that this condition, especially when combined with other factors, can lead to significant reductions, potentially even a full reduction as seen in specific examples.\",\n      \"confidence\": \"medium\"\n    },\n    {\n      \"id\": \"reduction-sun-moon-rahu-ketu\",\n      \"page\": 77,\n      \"category\": \"longevity_class\",\n      \"condition\": \"Sun or Moon are associated with Rahu or Ketu in any Rasi (interpreted as 'unusual appearance' like an eclipse).\",\n      \"effect\": \"One-third of their contributed longevity span is deducted.\",\n      \"implementation\": \"Apply a 33.33% reduction to the initial longevity contribution of Sun or Moon if conjoined with Rahu or Ketu.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"reduction-highest-application-rule\",\n      \"page\": 77,\n      \"category\": \"method\",\n      \"condition\": \"A single planet is subject to more than one reduction rule.\",\n      \"effect\": \"Only the highest percentage reduction among the applicable rules should be applied.\",\n      \"implementation\": \"When multiple reduction rules apply to a planet, calculate each potential reduction and then apply only the largest percentage reduction to its initial longevity contribution.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"reduction-mercury-full-example\",\n      \"page\": 77,\n      \"category\": \"longevity_class\",\n      \"condition\": \"Mercury is subject to Rule 2 (enemy sign) and Rule 6 (visible half of zodiac).\",\n      \"effect\": \"Mercury's contributed longevity span is fully reduced.\",\n      \"implementation\": \"If Mercury meets the conditions for both Rule 2 and Rule 6, its initial longevity contribution should be zeroed out.\",\n      \"confidence\": \"medium\"\n    }\n  ]\n}\n```"
+          }
+        ],
+        "role": "model"
+      },
+      "finishReason": "STOP",
+      "index": 0
+    }
+  ],
+  "usageMetadata": {
+    "promptTokenCount": 550,
+    "candidatesTokenCount": 1404,
+    "totalTokenCount": 6489,
+    "promptTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 292
+      },
+      {
+        "modality": "IMAGE",
+        "tokenCount": 258
+      }
+    ],
+    "thoughtsTokenCount": 4535,
+    "serviceTier": "standard"
+  },
+  "modelVersion": "gemini-2.5-flash",
+  "responseId": "ZGM1aru3JsDbjuMPgIax-Q4"
+}

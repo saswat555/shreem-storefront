@@ -1,0 +1,152 @@
+{
+  "pages": [
+    "061"
+  ],
+  "page_summary": "This page introduces Pindayurdaya and Amsayurdaya as methods for assessing an individual's life span. It details how planets contribute to longevity based on their zodiacal position and exaltation, outlining various schools of thought (Yavanacharya, Manitha, Parashara, Jeevasarma, Badarayana) and their specific period grants. The text also describes different types of reductions (Haranas) that modify these planetary contributions, including the effects of debilitation, and mentions conditions for period increases.",
+  "rules": [
+    {
+      "id": "pindayu-basic-concept",
+      "page": "061",
+      "category": "longevity_class",
+      "condition": "General Pindayurdaya method application.",
+      "effect": "Planets contribute to an individual's life span assessment based on their position in the zodiac.",
+      "implementation": "Software should calculate initial planetary contributions to longevity based on their zodiacal placement.",
+      "confidence": "high"
+    },
+    {
+      "id": "pindayu-period-reductions",
+      "page": "061",
+      "category": "mitigation",
+      "condition": "Pindayurdaya longevity period calculations.",
+      "effect": "Initial planetary period contributions are subject to various reductions (Harana Sanskaras) due to different astrological factors.",
+      "implementation": "Software must apply subsequent reduction rules to the initial planetary longevity grants.",
+      "confidence": "high"
+    },
+    {
+      "id": "pindayu-schools-of-thought",
+      "page": "061",
+      "category": "longevity_class",
+      "condition": "Pindayurdaya calculation methodology.",
+      "effect": "The system involves three distinct schools for granting periods and four subdivisions for applying reductions, resulting in 12 variations.",
+      "implementation": "Software should be designed to accommodate multiple Pindayurdaya calculation variations and their specific rules.",
+      "confidence": "high"
+    },
+    {
+      "id": "exaltation-grants-yav-man-par",
+      "page": "061",
+      "category": "longevity_class",
+      "condition": "Sun, Moon, Mars, Mercury, Jupiter, Venus, or Saturn are in their Paramochcha (highest exaltation) position, according to Yavanacharya, Manitha, and Parashara.",
+      "effect": "These planets contribute specific longevity periods: Sun 19 years, Moon 25 years, Mars 15 years, Mercury 12 years, Jupiter 15 years, Venus 21 years, and Saturn 20 years.",
+      "implementation": "Software should assign these specific period contributions when planets are in their highest exaltation points.",
+      "confidence": "high"
+    },
+    {
+      "id": "jeevasarma-vimsottari-proportion",
+      "page": "061",
+      "category": "longevity_class",
+      "condition": "A planet is in its own sign (same position), according to Jeevasarma.",
+      "effect": "The planet grants a maximum period contribution equivalent to one-seventh of the Vimsottari system's total (120 years and 5 days).",
+      "implementation": "Software should calculate this proportionate period contribution for planets located in their own signs.",
+      "confidence": "high"
+    },
+    {
+      "id": "jeevasarma-equal-period",
+      "page": "061",
+      "category": "longevity_class",
+      "condition": "Each planet, according to Jeevasarma's method.",
+      "effect": "Each planet grants an equal period contribution of 17 years, 1 month, and 22 days.",
+      "implementation": "Software should apply this uniform period contribution for each planet when using Jeevasarma's equal period method.",
+      "confidence": "high"
+    },
+    {
+      "id": "badarayana-equal-period",
+      "page": "061",
+      "category": "longevity_class",
+      "condition": "Each planet, according to Badarayana's method.",
+      "effect": "Each planet grants a period contribution of one-seventh of 100 years, approximately 14.28 years.",
+      "implementation": "Software should apply this uniform period contribution for each planet when using Badarayana's method.",
+      "confidence": "high"
+    },
+    {
+      "id": "neechardhaharan-reduction",
+      "page": "061",
+      "category": "mitigation",
+      "condition": "A planet is at its point of debility, under the Neechardhaharan process.",
+      "effect": "The planet's granted longevity period contribution is reduced by half.",
+      "implementation": "Software should halve the calculated period contribution for planets identified as debilitated under this specific rule.",
+      "confidence": "high"
+    },
+    {
+      "id": "neechabhava-reduction",
+      "page": "061",
+      "category": "mitigation",
+      "condition": "A planet is at its point of exaltation but subsequently reaches its point of deep debility, under the Neechabhava process.",
+      "effect": "The planet's entire granted longevity period contribution is nullified.",
+      "implementation": "Software should set the period contribution to zero if an exalted planet also reaches deep debility according to this rule.",
+      "confidence": "high"
+    },
+    {
+      "id": "kritaharana-reduction",
+      "page": "061",
+      "category": "mitigation",
+      "condition": "Application of the Kritaharana process.",
+      "effect": "Allows for proportionate reductions to planetary longevity period contributions.",
+      "implementation": "Software should apply proportionate reductions based on specific criteria (further details not provided on this page) when using Kritaharana.",
+      "confidence": "medium"
+    },
+    {
+      "id": "akritaharana-no-reduction",
+      "page": "061",
+      "category": "mitigation",
+      "condition": "A planet is at its points of debility, under the Akritaharana process.",
+      "effect": "No reductions are applied to the granted longevity period contributions.",
+      "implementation": "Software should not apply any reductions for debilitated planets when following the Akritaharana school of thought.",
+      "confidence": "high"
+    },
+    {
+      "id": "deep-debilitation-halving",
+      "page": "061",
+      "category": "mitigation",
+      "condition": "A planet is at its point of deep debilitation.",
+      "effect": "The granted longevity period contribution is halved.",
+      "implementation": "Software should reduce the period contribution by half for planets in deep debilitation.",
+      "confidence": "high"
+    },
+    {
+      "id": "harana-sanskara-categories",
+      "page": "061",
+      "category": "mitigation",
+      "condition": "Reductions in planetary longevity period contributions (Harana Sanskaras).",
+      "effect": "There are four specific situations leading to reduced grants, including Chakrapatha Harana, Satrukshetra Harana, and Astangata.",
+      "implementation": "Software should identify and apply these specific Harana types to adjust period contributions (details for each Harana are not provided on this page).",
+      "confidence": "medium"
+    },
+    {
+      "id": "amsayu-period-increase",
+      "page": "061",
+      "category": "protection",
+      "condition": "A planet is in the house of its friends or similar beneficial placements, under the Amsayu method.",
+      "effect": "The planet gains an increase in its granted longevity period contribution.",
+      "implementation": "Software should increase the longevity period contribution for planets in astrologically favorable positions, as per Amsayu rules.",
+      "confidence": "medium"
+    },
+    {
+      "id": "pindayu-variations-caution",
+      "page": "061",
+      "category": "caution",
+      "condition": "Implementing the Pindayu method.",
+      "effect": "There are 12 variations of the Pindayu method, indicating significant complexity and differing approaches.",
+      "implementation": "Software development should acknowledge the numerous variations and ensure clarity on which specific Pindayu method is being implemented.",
+      "confidence": "high"
+    },
+    {
+      "id": "amsayu-pindayu-distinction",
+      "page": "061",
+      "category": "caution",
+      "condition": "Applying period adjustments from the Amsayu method.",
+      "effect": "Period increases allowed in the Amsayu method are not applicable to Pindayurdaya calculations.",
+      "implementation": "Software must maintain a clear distinction between Amsayu and Pindayurdaya calculations, preventing cross-application of their specific rules.",
+      "confidence": "high"
+    }
+  ]
+}

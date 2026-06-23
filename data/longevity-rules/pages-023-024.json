@@ -1,0 +1,228 @@
+{
+  "pages": [
+    "023",
+    "024"
+  ],
+  "page_summary": {
+    "023": "This page introduces the concept of longevity judgment, emphasizing the role of the ascendant, Moon, and planetary sub-lords. It details specific rules for determining short, middle, or long life based on the ascendant sub-lord's position and house ownership, and identifies Badhakasthana for fixed signs. It also notes that house occupants are generally more influential than house lords.",
+    "024": "This page continues with general astrological principles regarding planetary results based on constellations and nodal connections. It then outlines a hierarchy of planets and houses that indicate challenging periods, starting with Badhakasthanas, followed by the 7th, 2nd, 6th, 8th, and 12th houses. It provides an example of Badhakasthana for movable signs and discusses how dasha periods of these influential planets can coincide with significant life events. Finally, it lists additional factors like planets in or aspecting the 8th house, and the Drekkana and Navamsa of the 8th house, as indicators for assessing challenging periods."
+  },
+  "rules": [
+    {
+      "id": "longevity-asc-sublord-malefic-placement",
+      "page": "023",
+      "category": "longevity_class",
+      "condition": "Ascendant sub-lord is positioned in the 6th, 8th, or 12th house, or in the constellation of a Maraka or Badhakasthana.",
+      "effect": "Indicates a shorter life span potential.",
+      "implementation": "Identify the ascendant sub-lord and its placement/constellation. Flag for shorter life span assessment.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-badhakasthana-fixed-signs",
+      "page": "023",
+      "category": "longevity_class",
+      "condition": "For fixed signs (Taurus, Leo, Scorpio, Aquarius) as the ascendant.",
+      "effect": "The 9th house is considered a Badhakasthana, indicating potential challenges.",
+      "implementation": "Identify the ascendant sign. If fixed, mark the 9th house as Badhakasthana for further analysis.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-asc-sublord-benefic-placement",
+      "page": "023",
+      "category": "longevity_class",
+      "condition": "Ascendant sub-lord is positioned in the 1st, 5th, 9th, or 10th house, or owns these houses.",
+      "effect": "Indicates a longer life span potential.",
+      "implementation": "Identify the ascendant sub-lord and its placement/ownership. Flag for longer life span assessment.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-asc-sublord-mixed-influence",
+      "page": "023",
+      "category": "longevity_class",
+      "condition": "Ascendant sub-lord signifies both benefic and malefic houses.",
+      "effect": "Indicates a middle life span potential.",
+      "implementation": "Identify the ascendant sub-lord's significations. If mixed, flag for middle life span assessment.",
+      "confidence": "high"
+    },
+    {
+      "id": "method-occupants-vs-lords-strength",
+      "page": "023",
+      "category": "method",
+      "condition": "General principle of planetary influence.",
+      "effect": "Occupants of houses are considered more influential than the lords of those houses in delivering results.",
+      "implementation": "Prioritize the influence of planets occupying a house over the influence of the house lord when assessing outcomes.",
+      "confidence": "high"
+    },
+    {
+      "id": "method-planets-in-occupant-constellation",
+      "page": "024",
+      "category": "method",
+      "condition": "Planets are in the constellation of house occupants.",
+      "effect": "These planets will offer results pertaining to those houses.",
+      "implementation": "Identify planets in constellations of house occupants to understand their functional results.",
+      "confidence": "high"
+    },
+    {
+      "id": "method-planets-in-lord-constellation",
+      "page": "024",
+      "category": "method",
+      "condition": "Planets are in the constellation of house lords.",
+      "effect": "These planets will offer results pertaining to those houses.",
+      "implementation": "Identify planets in constellations of house lords to understand their functional results.",
+      "confidence": "high"
+    },
+    {
+      "id": "method-nodes-house-connection-strength",
+      "page": "024",
+      "category": "method",
+      "condition": "Nodes (Rahu/Ketu) are connected to houses in any manner.",
+      "effect": "Nodes are considered the strongest to offer results related to those houses.",
+      "implementation": "Give high importance to nodal connections when assessing house results.",
+      "confidence": "high"
+    },
+    {
+      "id": "method-nodes-conjunction-results",
+      "page": "024",
+      "category": "method",
+      "condition": "Nodes are conjoined with other planets.",
+      "effect": "Nodes give results of the planets they are conjoined with.",
+      "implementation": "When a node is conjoined, attribute the results of the conjoined planet to the node.",
+      "confidence": "high"
+    },
+    {
+      "id": "method-nodes-aspect-results",
+      "page": "024",
+      "category": "method",
+      "condition": "Nodes are aspected by other planets.",
+      "effect": "Nodes give results of the planets aspecting them.",
+      "implementation": "When a node is aspected, attribute the results of the aspecting planet to the node.",
+      "confidence": "high"
+    },
+    {
+      "id": "method-nodes-dispositor-results",
+      "page": "024",
+      "category": "method",
+      "condition": "Nodes are posited in a specific house.",
+      "effect": "Nodes give results of the lord of the house they are posited in.",
+      "implementation": "Attribute the results of the dispositor of a node to the node itself.",
+      "confidence": "high"
+    },
+    {
+      "id": "maraka-badhakasthana-potency",
+      "page": "024",
+      "category": "maraka",
+      "condition": "Badhakasthanas, their occupants, and their lords.",
+      "effect": "These are considered highly potent indicators of challenging periods.",
+      "implementation": "Identify Badhakasthanas, their occupants, and lords for significant impact assessment.",
+      "confidence": "high"
+    },
+    {
+      "id": "maraka-7th-house-potency",
+      "page": "024",
+      "category": "maraka",
+      "condition": "Occupants and the lord of the 7th house.",
+      "effect": "These are next in potency for indicating challenging periods after Badhakasthana factors.",
+      "implementation": "Assess occupants and the lord of the 7th house as significant indicators of challenging periods.",
+      "confidence": "high"
+    },
+    {
+      "id": "maraka-2nd-house-potency",
+      "page": "024",
+      "category": "maraka",
+      "condition": "Occupants and the lord of the 2nd house.",
+      "effect": "These have less potency than 7th house factors but still indicate challenging periods.",
+      "implementation": "Assess occupants and the lord of the 2nd house as indicators, noting their reduced potency compared to 7th house factors.",
+      "confidence": "high"
+    },
+    {
+      "id": "maraka-6th-8th-12th-house-potency",
+      "page": "024",
+      "category": "maraka",
+      "condition": "Occupants and the lords of the 6th, 8th, and 12th houses.",
+      "effect": "These are considered the least potent among the indicators of challenging periods.",
+      "implementation": "Assess occupants and lords of 6th, 8th, and 12th houses as indicators, noting their lower potency.",
+      "confidence": "high"
+    },
+    {
+      "id": "maraka-badhakasthana-movable-signs",
+      "page": "024",
+      "category": "maraka",
+      "condition": "For movable signs (Aries, Cancer, Libra, Capricorn) as the ascendant.",
+      "effect": "The 11th house is considered the Badhakasthana, indicating potential challenges.",
+      "implementation": "Identify the ascendant sign. If movable, mark the 11th house as Badhakasthana for further analysis.",
+      "confidence": "high"
+    },
+    {
+      "id": "maraka-planet-in-7th-house-potency",
+      "page": "024",
+      "category": "maraka",
+      "condition": "A planet occupies the 7th house, especially if it is also a Maraka or Badhaka lord.",
+      "effect": "Such a planet can become a potent indicator of challenging periods.",
+      "implementation": "Identify planets in the 7th house and cross-reference with Maraka/Badhaka lordship for increased potency.",
+      "confidence": "medium"
+    },
+    {
+      "id": "dasha-timing-maraka-associations",
+      "page": "024",
+      "category": "dasha_timing",
+      "condition": "Dasha periods of Maraka lords or planets strongly associated with them (e.g., nodes).",
+      "effect": "These periods can coincide with significant challenging life events.",
+      "implementation": "When assessing dasha periods, pay close attention to those of identified Maraka planets and their strong associates.",
+      "confidence": "high"
+    },
+    {
+      "id": "maraka-planet-in-8th-house",
+      "page": "024",
+      "category": "maraka",
+      "condition": "A planet is positioned in the 8th house.",
+      "effect": "This planet can indicate challenging periods.",
+      "implementation": "Identify planets in the 8th house as potential indicators of challenging events.",
+      "confidence": "high"
+    },
+    {
+      "id": "maraka-strongest-planet-in-8th",
+      "page": "024",
+      "category": "maraka",
+      "condition": "Multiple planets are positioned in the 8th house.",
+      "effect": "The strongest among them is considered the most influential in indicating challenging periods.",
+      "implementation": "If multiple planets are in the 8th house, determine their relative strengths to identify the primary indicator.",
+      "confidence": "high"
+    },
+    {
+      "id": "maraka-planet-aspecting-8th-house",
+      "page": "024",
+      "category": "maraka",
+      "condition": "A planet aspects the 8th house.",
+      "effect": "This planet can also indicate challenging periods.",
+      "implementation": "Identify planets aspecting the 8th house as potential indicators of challenging events.",
+      "confidence": "high"
+    },
+    {
+      "id": "method-drekkana-8th-house",
+      "page": "024",
+      "category": "method",
+      "condition": "Assessment of the 8th house.",
+      "effect": "The Drekkana of the 8th house is an important factor in assessing challenging periods.",
+      "implementation": "Include the analysis of the 8th house Drekkana in the overall assessment of challenging events.",
+      "confidence": "medium"
+    },
+    {
+      "id": "method-navamsa-8th-house",
+      "page": "024",
+      "category": "method",
+      "condition": "Assessment of the 8th house.",
+      "effect": "The Navamsa of the 8th house is an indicator of challenging events.",
+      "implementation": "Include the analysis of the 8th house Navamsa in the overall assessment of challenging events.",
+      "confidence": "medium"
+    },
+    {
+      "id": "caution-moon-position-variability",
+      "page": "023",
+      "category": "caution",
+      "condition": "Astrological calculations for birth charts.",
+      "effect": "The Moon's position changes substantially and quickly, impacting sub-period and sub-sub-period calculations.",
+      "implementation": "Emphasize the need for precise birth time for accurate Moon-based calculations, as small errors can lead to significant changes in dasha timings.",
+      "confidence": "high"
+    }
+  ]
+}

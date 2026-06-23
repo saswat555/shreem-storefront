@@ -14,6 +14,7 @@ import {
 } from "./cookies"
 import { getRegion } from "./regions"
 import { getLocale } from "@lib/data/locale-actions"
+import { isDigitalOnlyCart } from "@lib/util/digital-cart"
 
 const revalidateCartState = async (countryCode?: string) => {
   const cartCacheTag = await getCacheTag("carts")
@@ -53,7 +54,7 @@ export async function retrieveCart(cartId?: string, fields?: string) {
     ...(await getAuthHeaders()),
   }
 
-  return await sdk.client
+  const cart = await sdk.client
     .fetch<HttpTypes.StoreCartResponse>(`/store/carts/${id}`, {
       method: "GET",
       query: {
@@ -64,6 +65,62 @@ export async function retrieveCart(cartId?: string, fields?: string) {
     })
     .then(({ cart }: { cart: HttpTypes.StoreCart }) => cart)
     .catch(() => null)
+
+  if (
+    cart &&
+    isDigitalOnlyCart(cart) &&
+    ((cart.shipping_methods?.length ?? 0) > 0 ||
+      Number((cart as any).shipping_total || (cart as any).shipping_subtotal || 0) > 0)
+  ) {
+    await cleanupDigitalCartShipping(cart.id, { revalidate: false })
+
+    return await sdk.client
+      .fetch<HttpTypes.StoreCartResponse>(`/store/carts/${id}`, {
+        method: "GET",
+        query: {
+          fields,
+        },
+        headers,
+        cache: "no-store",
+      })
+      .then(({ cart }: { cart: HttpTypes.StoreCart }) => cart)
+      .catch(() => cart)
+  }
+
+  return cart
+}
+
+export async function cleanupDigitalCartShipping(
+  cartId: string,
+  options: { revalidate?: boolean } = {}
+) {
+  if (!cartId) {
+    return null
+  }
+
+  const headers = {
+    ...(await getAuthHeaders()),
+  }
+
+  return sdk.client
+    .fetch(`/store/carts/${cartId}/digital-shipping-cleanup`, {
+      method: "POST",
+      headers,
+      cache: "no-store",
+    })
+    .then(async (result) => {
+      if (options.revalidate !== false) {
+        await revalidateCartState()
+      }
+      return result
+    })
+    .catch((error) => {
+      console.error("[cart] digital shipping cleanup failed", {
+        cart_id: cartId,
+        message: error?.message || String(error),
+      })
+      return null
+    })
 }
 
 export async function getOrSetCart(countryCode: string) {
@@ -488,6 +545,21 @@ export async function placeOrder(cartId?: string) {
 
   const headers = {
     ...(await getAuthHeaders()),
+  }
+
+  const currentCart = await retrieveCart(id)
+
+  if (
+    currentCart &&
+    isDigitalOnlyCart(currentCart) &&
+    ((currentCart.shipping_methods?.length ?? 0) > 0 ||
+      Number(
+        (currentCart as any).shipping_total ||
+          (currentCart as any).shipping_subtotal ||
+          0
+      ) > 0)
+  ) {
+    await cleanupDigitalCartShipping(id)
   }
 
   const latestCart = await retrieveCart(

@@ -1,0 +1,89 @@
+{
+  "pages": [
+    83
+  ],
+  "page_summary": "This page outlines the contents of two Jyotish texts: 'Jaimini Sutram (Complete)' and 'Secrets of Ashtaka Varga'. It details various astrological calculation methods, predictive techniques, and timing principles, including approaches to longevity assessment and event timing using Jaimini and Ashtakavarga systems.",
+  "rules": [
+    {
+      "id": "j_karka_significators",
+      "page": 83,
+      "category": "method",
+      "condition": "Jaimini astrological analysis",
+      "effect": "Identification of planetary significators (Karkas) and their inherent significance (Karkatwas).",
+      "implementation": "Software should compute and display Jaimini Karkas and their associated significance for planets.",
+      "confidence": "high"
+    },
+    {
+      "id": "j_supportive_charts",
+      "page": 83,
+      "category": "method",
+      "condition": "Jaimini astrological analysis",
+      "effect": "Derivation of specific supportive charts, such as Karakamsa, Arudha, and Upapada, for predictive insights.",
+      "implementation": "Software should calculate and present Karakamsa, Arudha, and Upapada charts based on Jaimini principles.",
+      "confidence": "high"
+    },
+    {
+      "id": "j_longevity_dashas",
+      "page": 83,
+      "category": "longevity_class",
+      "condition": "Application of Jaimini Dasha systems (Chara, Sthira, Navamsa)",
+      "effect": "Assessment of potential life span through specific planetary period calculations.",
+      "implementation": "Software should calculate and display longevity indicators based on Jaimini Dasha systems.",
+      "confidence": "high"
+    },
+    {
+      "id": "j_shadowy_planets",
+      "page": 83,
+      "category": "method",
+      "condition": "Jaimini astrological analysis",
+      "effect": "Understanding the importance and influence of Rahu, Ketu, and Gulika.",
+      "implementation": "Software should incorporate Rahu, Ketu, and Gulika in Jaimini calculations and interpretations.",
+      "confidence": "high"
+    },
+    {
+      "id": "j_event_timing",
+      "page": 83,
+      "category": "dasha_timing",
+      "condition": "Application of Jaimini predictive techniques",
+      "effect": "Precise identification of periods for specific life events, with potential for short-term accuracy.",
+      "implementation": "Software should offer event timing calculations based on Jaimini principles.",
+      "confidence": "high"
+    },
+    {
+      "id": "av_transit_favorable_positions",
+      "page": 83,
+      "category": "method",
+      "condition": "Application of Bhinna, Samudaya, and Gochara Ashtakavarga",
+      "effect": "Identification of favorable positions for luminaries and planets during transit relative to natal positions.",
+      "implementation": "Software should calculate and display Ashtakavarga scores for transiting planets to identify auspicious periods.",
+      "confidence": "high"
+    },
+    {
+      "id": "av_longevity_calculation",
+      "page": 83,
+      "category": "longevity_class",
+      "condition": "Application of Ashtakavarga with trinal reduction and dual ownership principles",
+      "effect": "Assessment of potential life span using specific Ashtakavarga calculation methods.",
+      "implementation": "Software should calculate and present longevity indicators based on Ashtakavarga methods.",
+      "confidence": "high"
+    },
+    {
+      "id": "av_house_strength",
+      "page": 83,
+      "category": "mitigation",
+      "condition": "Analysis of Sarvashtakavarga scores for each house",
+      "effect": "Indication of the inherent strength of houses, correlating with various life outcomes and potential challenges.",
+      "implementation": "Software should display Sarvashtakavarga scores for each house to indicate its strength and potential.",
+      "confidence": "high"
+    },
+    {
+      "id": "av_transit_event_timing",
+      "page": 83,
+      "category": "dasha_timing",
+      "condition": "Analysis of transit influences in relation to Ashtakavarga",
+      "effect": "Identification of periods for various life events, such as career changes, health fluctuations, and prosperity.",
+      "implementation": "Software should provide Ashtakavarga-based transit analysis for event timing.",
+      "confidence": "high"
+    }
+  ]
+}

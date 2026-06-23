@@ -1,0 +1,116 @@
+{
+  "pages": [
+    80
+  ],
+  "page_summary": "This page discusses Jyotish longevity assessment, focusing on Maraka planets and Badhakasthana lords. It provides rules for identifying critical periods and mitigating factors, using examples of Scorpio and Aquarius Lagnas. Key elements include the roles of 2nd, 7th, 8th, 11th, and 12th lords, planetary placements, Nakshatra influences, and the significance of Saturn as Ayush Karaka.",
+  "rules": [
+    {
+      "id": "maraka-dasha-bhukti-lords",
+      "page": 80,
+      "category": "maraka",
+      "condition": "Dasha lord is the 7th house lord AND Bhukti lord is the 2nd house lord.",
+      "effect": "Both planets are considered primary Marakas (indicators of critical life events).",
+      "implementation": "Identify Dasha and Bhukti lords. If they rule the 2nd or 7th houses, flag them as potential Marakas for critical event timing.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-badhakasthana-priority",
+      "page": 80,
+      "category": "method",
+      "condition": "Assessing potential for critical life events.",
+      "effect": "The Badhakasthana and its lord are primary considerations for longevity judgment.",
+      "implementation": "Software should calculate and prominently display the Badhakasthana and its lord in longevity analysis modules.",
+      "confidence": "high"
+    },
+    {
+      "id": "badhaka-lord-malefic-association",
+      "page": 80,
+      "category": "maraka",
+      "condition": "Badhakasthana lord is associated with natural malefics (e.g., Mars, Rahu) or its Nakshatra is occupied by malefics. Rahu is a node.",
+      "effect": "The Badhakasthana lord and associated malefics (especially Rahu) become strong indicators of critical periods.",
+      "implementation": "Identify the Badhakasthana lord. Check its conjunctions/aspects with malefics and Nakshatra occupants. Assign higher critical potential to Rahu.",
+      "confidence": "medium"
+    },
+    {
+      "id": "lagna-lord-mitigation",
+      "page": 80,
+      "category": "mitigation",
+      "condition": "The Lagna lord also rules the 8th house and is placed in the 12th house.",
+      "effect": "Despite 8th lordship and 12th placement, the Lagna lord's potential to cause severe adverse events is reduced.",
+      "implementation": "When the Lagna lord also rules the 8th and is in the 12th, reduce its malefic score for critical event predictions.",
+      "confidence": "medium"
+    },
+    {
+      "id": "rahu-quadrant-benefic",
+      "page": 80,
+      "category": "protection",
+      "condition": "Rahu is placed in a Kendra (quadrant: 1st, 4th, 7th, or 10th house).",
+      "effect": "Rahu's malefic nature is reduced, and it can function as a benefic.",
+      "implementation": "If Rahu is in a quadrant, adjust its malefic influence downwards or assign a benefic influence in calculations.",
+      "confidence": "medium"
+    },
+    {
+      "id": "saturn-ayush-karaka",
+      "page": 80,
+      "category": "method",
+      "condition": "Assessing longevity potential.",
+      "effect": "Saturn is the universal significator of longevity (Ayush Karaka).",
+      "implementation": "Software should highlight Saturn's condition, strength, and dignity when evaluating longevity prospects.",
+      "confidence": "high"
+    },
+    {
+      "id": "benefic-kendra-own-sign-mitigation",
+      "page": 80,
+      "category": "mitigation",
+      "condition": "A benefic planet is in a Kendra house, but it occupies its own sign.",
+      "effect": "The functional malefic status typically assigned to a benefic in a Kendra is nullified or significantly reduced.",
+      "implementation": "When a benefic is in a Kendra, check if it's in its own sign. If so, do not assign functional malefic status or reduce its malefic impact.",
+      "confidence": "medium"
+    },
+    {
+      "id": "badhaka-lord-lagna-mitigation",
+      "page": 80,
+      "category": "mitigation",
+      "condition": "Badhaka lord (e.g., 11th lord for fixed signs) occupies the Lagna with the Ayush Karaka (Saturn) and a Yoga Karaka.",
+      "effect": "The malefic influence of the Badhaka lord is significantly reduced.",
+      "implementation": "If a Badhaka lord is in Lagna with Saturn and a Yoga Karaka, reduce its malefic potential in critical event analysis.",
+      "confidence": "medium"
+    },
+    {
+      "id": "maraka-lords-12th-placement",
+      "page": 80,
+      "category": "maraka",
+      "condition": "A planet is the lord of both the 2nd and 7th houses (Maraka houses) AND is placed in the 12th house.",
+      "effect": "This planetary configuration indicates a strong potential for critical life events.",
+      "implementation": "Identify planets ruling both 2nd and 7th houses. If such a planet is in the 12th, flag it as a highly critical Maraka.",
+      "confidence": "high"
+    },
+    {
+      "id": "fixed-lagna-badhaka-occupant",
+      "page": 80,
+      "category": "maraka",
+      "condition": "For a fixed sign Lagna (e.g., Aquarius), the 9th house is Badhakasthana. A natural malefic (e.g., Saturn), especially if it's also the 12th lord, occupies this Badhakasthana. Occupants are considered stronger than the house lord.",
+      "effect": "The planet occupying the Badhakasthana, particularly if it's a natural malefic and 12th lord, becomes a very strong Maraka.",
+      "implementation": "For fixed Lagnas, identify the 9th house as Badhakasthana. Prioritize occupants over the lord for Badhakasthana influence. If a natural malefic (especially 12th lord) occupies it, flag it as a primary Maraka.",
+      "confidence": "high"
+    },
+    {
+      "id": "maraka-nakshatra-occupants",
+      "page": 80,
+      "category": "maraka",
+      "condition": "Planets occupy the Nakshatra of a Maraka lord. Additionally, if such a planet also rules the 8th house and is placed in the 7th house.",
+      "effect": "Planets in the Nakshatra of a Maraka lord gain significant Maraka potential. This potential is amplified if the planet also rules the 8th house and is in the 7th.",
+      "implementation": "Identify Maraka lords. Find planets in their Nakshatras. Evaluate these planets' house lordships and placements. Prioritize planets in a Maraka lord's Nakshatra, especially if they also rule the 8th or are in the 7th.",
+      "confidence": "high"
+    },
+    {
+      "id": "ninth-lord-jupiter-aspect-mitigation",
+      "page": 80,
+      "category": "mitigation",
+      "condition": "A planet is the 9th house lord and is under the direct aspect of a retrograde Jupiter.",
+      "effect": "The planet's potential for causing severe adverse events is reduced.",
+      "implementation": "When a planet is the 9th lord and aspected by retrograde Jupiter, reduce its malefic impact in critical event analysis.",
+      "confidence": "medium"
+    }
+  ]
+}

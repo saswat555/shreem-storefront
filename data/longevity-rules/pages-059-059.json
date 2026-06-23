@@ -1,0 +1,153 @@
+{
+  "pages": [
+    110,
+    111
+  ],
+  "page_summary": "This document outlines various Jyotish rules for assessing longevity, including planetary conjunctions, house placements, and the influence of malefics, Lagna, 7th house, Atmakaraka, Moon sign, Lagnesh, and Kaala Hora Lagna (KHL). It emphasizes the need for multiple indicators for a robust assessment and provides a method for prioritizing KHL indications in case of conflicting results. A mathematical approach using 'bhogyamsas' for calculating longevity is also introduced, along with a definition for 'medium longevity'.",
+  "rules": [
+    {
+      "id": "saturn-lagna-7th-lord-conj",
+      "page": 110,
+      "category": "longevity_class",
+      "condition": "Saturn is conjoined with the Lagna Lord or the lord of the 7th house.",
+      "effect": "Indication of potential for reduced longevity.",
+      "implementation": "Flag this planetary conjunction as a factor in longevity assessment.",
+      "confidence": "high"
+    },
+    {
+      "id": "lagna-7th-hemmed-malefics",
+      "page": 110,
+      "category": "longevity_class",
+      "condition": "Lagna or the 7th house is hemmed between malefics (Papa Kartari Yoga).",
+      "effect": "Indication of potential for reduced longevity.",
+      "implementation": "Flag this 'hemmed' condition for Lagna or 7th house as a factor in longevity assessment.",
+      "confidence": "high"
+    },
+    {
+      "id": "malefics-3-5-9-11-from-lagna",
+      "page": 110,
+      "category": "longevity_class",
+      "condition": "Malefics are posited in the 3rd, 5th, 9th, or 11th house from the Lagna.",
+      "effect": "Indication of potential for reduced longevity.",
+      "implementation": "Flag malefics in these specific houses from Lagna as a factor in longevity assessment.",
+      "confidence": "high"
+    },
+    {
+      "id": "malefics-3-5-9-11-from-atmakaraka",
+      "page": 110,
+      "category": "longevity_class",
+      "condition": "Malefics are posited in the 3rd, 5th, 9th, or 11th house from the Atmakaraka.",
+      "effect": "Indication of potential for reduced longevity.",
+      "implementation": "Flag malefics in these specific houses from Atmakaraka as a factor in longevity assessment.",
+      "confidence": "high"
+    },
+    {
+      "id": "atmakaraka-hemmed-malefics",
+      "page": 110,
+      "category": "longevity_class",
+      "condition": "Atmakaraka is hemmed between malefics (Papa Kartari Yoga).",
+      "effect": "Indication of potential for reduced longevity.",
+      "implementation": "Flag this 'hemmed' condition for Atmakaraka as a factor in longevity assessment.",
+      "confidence": "high"
+    },
+    {
+      "id": "multiple-factors-longevity-assessment",
+      "page": 110,
+      "category": "caution",
+      "condition": "Assessing longevity based on multiple astrological factors.",
+      "effect": "A single factor is insufficient for a definitive assessment of reduced longevity; multiple factors strengthen the indication.",
+      "implementation": "Software should aggregate and weigh multiple indicators rather than relying on a single one for longevity assessment.",
+      "confidence": "high"
+    },
+    {
+      "id": "lagna-dual-8th-lord-movable",
+      "page": 110,
+      "category": "longevity_class",
+      "condition": "Lagna is a dual sign AND the 8th Lord is in a movable sign.",
+      "effect": "Indication of potential for reduced longevity.",
+      "implementation": "Flag this specific combination of Lagna and 8th Lord placement as a factor in longevity assessment.",
+      "confidence": "high"
+    },
+    {
+      "id": "moon-sign-lagnesh-movable",
+      "page": 111,
+      "category": "longevity_class",
+      "condition": "Moon sign is a movable sign AND Lagnesh is in a movable sign.",
+      "effect": "Indication of potential for extended longevity.",
+      "implementation": "Flag this combination as a factor in longevity assessment.",
+      "confidence": "high"
+    },
+    {
+      "id": "lagnesh-movable-khl-fixed",
+      "page": 111,
+      "category": "longevity_class",
+      "condition": "Lagnesh is in a movable sign AND Kaala Hora Lagna (KHL) is a fixed sign.",
+      "effect": "Indication of potential for medium longevity.",
+      "implementation": "Flag this combination as a factor in longevity assessment.",
+      "confidence": "high"
+    },
+    {
+      "id": "khl-priority-conflicting-spans",
+      "page": 111,
+      "category": "method",
+      "condition": "When multiple groups of longevity factors indicate different spans of life.",
+      "effect": "The span indicated by Kaala Hora Lagna (KHL) should be prioritized.",
+      "implementation": "If conflicting longevity indications arise from different methods, prioritize the KHL-derived span in the final assessment.",
+      "confidence": "high"
+    },
+    {
+      "id": "saturn-mars-10th-longevity",
+      "page": 111,
+      "category": "longevity_class",
+      "condition": "Saturn and Mars are placed together in the 10th house.",
+      "effect": "Indication of potential for reduced longevity.",
+      "implementation": "Flag this planetary conjunction in the 10th house as a factor in longevity assessment.",
+      "confidence": "medium"
+    },
+    {
+      "id": "saturn-in-moon-sign-longevity",
+      "page": 111,
+      "category": "longevity_class",
+      "condition": "Saturn is posited in the Moon sign.",
+      "effect": "Indication of potential for reduced longevity.",
+      "implementation": "Flag Saturn's placement in the Moon sign as a factor in longevity assessment.",
+      "confidence": "medium"
+    },
+    {
+      "id": "saturn-lordship-longevity-weight",
+      "page": 111,
+      "category": "method",
+      "condition": "Assessing Saturn's influence on longevity.",
+      "effect": "Saturn's impact on longevity assessment is amplified if it is the Lagna Lord or 7th Lord.",
+      "implementation": "Give higher weight to Saturn's indications if it is the Lagna Lord or 7th Lord in longevity calculations.",
+      "confidence": "high"
+    },
+    {
+      "id": "atmakaraka-longevity-factor",
+      "page": 111,
+      "category": "method",
+      "condition": "General longevity assessment.",
+      "effect": "Atmakaraka's position and condition are relevant factors for longevity assessment.",
+      "implementation": "Include Atmakaraka analysis as part of the comprehensive longevity assessment.",
+      "confidence": "high"
+    },
+    {
+      "id": "madhyamayu-definition",
+      "page": 111,
+      "category": "method",
+      "condition": "Interpreting 'medium longevity' (Madhyamayu).",
+      "effect": "Medium longevity is typically considered to be between 32 and 64 years.",
+      "implementation": "Use this age range when classifying longevity as 'medium' in software outputs.",
+      "confidence": "high"
+    },
+    {
+      "id": "bhogyamsa-longevity-calculation",
+      "page": 111,
+      "category": "method",
+      "condition": "Calculating longevity using mathematical terms.",
+      "effect": "Longevity calculation involves determining contributing groups of factors. The 'bhogyamsa' (remaining degrees in a sign) of planets, Lagna, or KHL is used, calculated as 30 degrees minus the longitude within the sign.",
+      "implementation": "Implement a mathematical calculation method that considers groups of factors and uses bhogyamsa (30 - longitude within sign) for longevity determination.",
+      "confidence": "high"
+    }
+  ]
+}

@@ -7,15 +7,33 @@ import { useEffect, useMemo, useState } from "react"
 
 type ImageGalleryProps = {
   images: HttpTypes.StoreProductImage[]
+  fallbackImage?: string
 }
 
 const AUTO_ADVANCE_MS = 4800
 
-const ImageGallery = ({ images }: ImageGalleryProps) => {
-  const availableImages = useMemo(
-    () => images.filter((image) => Boolean(image.url)),
-    [images]
-  )
+const ImageGallery = ({ images, fallbackImage }: ImageGalleryProps) => {
+  const [failedImageIds, setFailedImageIds] = useState<Record<string, true>>({})
+  const availableImages = useMemo(() => {
+    const resolvedImages = images
+      .map((image, index) => {
+        const imageId = image.id || `product-image-${index}`
+        const failed = failedImageIds[imageId]
+
+        return {
+          ...image,
+          id: imageId,
+          url: failed ? fallbackImage : image.url || fallbackImage,
+        }
+      })
+      .filter((image) => Boolean(image.url))
+
+    if (!resolvedImages.length && fallbackImage) {
+      return [{ id: "product-fallback-image", url: fallbackImage }]
+    }
+
+    return resolvedImages
+  }, [images, fallbackImage, failedImageIds])
   const [activeIndex, setActiveIndex] = useState(0)
   const [isPaused, setIsPaused] = useState(false)
 
@@ -73,6 +91,16 @@ const ImageGallery = ({ images }: ImageGalleryProps) => {
           alt={`Product image ${activeIndex + 1}`}
           loading={activeIndex === 0 ? "eager" : "lazy"}
           className="absolute inset-0 h-full w-full object-contain p-3 transition-transform duration-700 ease-out small:p-5"
+          onError={() => {
+            if (!fallbackImage || activeImage.url === fallbackImage) {
+              return
+            }
+
+            setFailedImageIds((current) => ({
+              ...current,
+              [activeImage.id]: true,
+            }))
+          }}
         />
 
         <div className="absolute left-3 top-3 inline-flex items-center gap-2 rounded-full border border-[rgba(18,63,99,0.12)] bg-white/86 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--shreem-accent-dark)] shadow-[0_12px_28px_rgba(15,49,70,0.12)]">
@@ -124,6 +152,16 @@ const ImageGallery = ({ images }: ImageGalleryProps) => {
                 alt={`Product thumbnail ${index + 1}`}
                 loading="lazy"
                 className="h-full w-full object-cover"
+                onError={() => {
+                  if (!fallbackImage || image.url === fallbackImage) {
+                    return
+                  }
+
+                  setFailedImageIds((current) => ({
+                    ...current,
+                    [image.id]: true,
+                  }))
+                }}
               />
             </button>
           ))}

@@ -1,0 +1,35 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "text": "```json\n{\n  \"pages\": [124, 125],\n  \"page_summary\": \"These pages detail the calculation methodologies for constructing Drekkanas and Navamsa divisional charts, including how their respective lords and starting points are determined. They also introduce a specific calculation method for deriving a component of longevity, referred to as Pindayurdaya or Amsayurdaya, based on planetary longitudes.\",\n  \"rules\": [\n    {\n      \"id\": \"drekkanas-division-method\",\n      \"page\": 124,\n      \"category\": \"method\",\n      \"condition\": \"Calculating Drekkanas divisional chart\",\n      \"effect\": \"Each Rasi is divided into three equal parts, each spanning 10 degrees.\",\n      \"implementation\": \"Software should use 10-degree segments for Drekkanas chart construction.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"drekkanas-lord-first-part\",\n      \"page\": 124,\n      \"category\": \"method\",\n      \"condition\": \"Determining the lord of the first Drekkanas of a Rasi\",\n      \"effect\": \"The lord of the first Drekkanas is the lord of the Rasi itself.\",\n      \"implementation\": \"Software should assign the Rasi lord as the lord for the first 10 degrees of that Rasi.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"drekkanas-lord-second-part\",\n      \"page\": 124,\n      \"category\": \"method\",\n      \"condition\": \"Determining the lord of the second Drekkanas of a Rasi\",\n      \"effect\": \"The lord of the second Drekkanas is the lord of the 5th Rasi from the current Rasi.\",\n      \"implementation\": \"Software should identify the lord of the 5th Rasi from the current Rasi for the second 10-degree segment.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"drekkanas-lord-third-part\",\n      \"page\": 124,\n      \"category\": \"method\",\n      \"condition\": \"Determining the lord of the third Drekkanas of a Rasi\",\n      \"effect\": \"The lord of the third Drekkanas is the lord of the 5th from the 5th Rasi (which is the 9th Rasi) from the current Rasi.\",\n      \"implementation\": \"Software should identify the lord of the 9th Rasi from the current Rasi for the third 10-degree segment.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"navamsa-division-method\",\n      \"page\": 125,\n      \"category\": \"method\",\n      \"condition\": \"Calculating Navamsa divisional chart\",\n      \"effect\": \"Each Rasi is divided into nine equal parts, each spanning 3 degrees and 20 minutes.\",\n      \"implementation\": \"Software should use 3°20' segments for Navamsa chart construction.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"navamsa-counting-principle\",\n      \"page\": 125,\n      \"category\": \"method\",\n      \"condition\": \"Determining the starting Navamsa for a Rasi\",\n      \"effect\": \"The first Navamsa of each Rasi is counted from a specific Rasi based on its nature.\",\n      \"implementation\": \"Software should apply the provided mapping table for Navamsa counting.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"navamsa-starting-rasi-movable\",\n      \"page\": 125,\n      \"category\": \"method\",\n      \"condition\": \"Rasis: Aries, Leo, Sagittarius\",\n      \"effect\": \"The first Navamsa for these Rasis starts from Aries.\",\n      \"implementation\": \"Software should map the first Navamsa of Aries, Leo, Sagittarius to Aries.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"navamsa-starting-rasi-fixed\",\n      \"page\": 125,\n      \"category\": \"method\",\n      \"condition\": \"Rasis: Taurus, Virgo, Capricorn\",\n      \"effect\": \"The first Navamsa for these Rasis starts from Capricorn.\",\n      \"implementation\": \"Software should map the first Navamsa of Taurus, Virgo, Capricorn to Capricorn.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"navamsa-starting-rasi-dual\",\n      \"page\": 125,\n      \"category\": \"method\",\n      \"condition\": \"Rasis: Gemini, Libra, Aquarius\",\n      \"effect\": \"The first Navamsa for these Rasis starts from Libra.\",\n      \"implementation\": \"Software should map the first Navamsa of Gemini, Libra, Aquarius to Libra.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"navamsa-starting-rasi-watery\",\n      \"page\": 125,\n      \"category\": \"method\",\n      \"condition\": \"Rasis: Cancer, Scorpio, Pisces\",\n      \"effect\": \"The first Navamsa for these Rasis starts from Cancer.\",\n      \"implementation\": \"Software should map the first Navamsa of Cancer, Scorpio, Pisces to Cancer.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"longevity-calc-sun-component\",\n      \"page\": 125,\n      \"category\": \"longevity_class\",\n      \"condition\": \"Sun's longitude (e.g., 193.16 degrees)\",\n      \"effect\": \"A specific calculation (longitude in minutes divided by 200, then the quotient divided by 12) yields a component for a calculated period within the Pindayurdaya/Amsayurdaya system.\",\n      \"implementation\": \"Software should perform this calculation for the Sun to derive its contribution to the Pindayurdaya/Amsayurdaya system. The result is a numerical value representing a period component.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"longevity-calc-moon-component\",\n      \"page\": 125,\n      \"category\": \"longevity_class\",\n      \"condition\": \"Moon's longitude (e.g., 109.30 degrees)\",\n      \"effect\": \"A specific calculation (longitude in minutes divided by 200) yields a quotient for a calculated period within the Pindayurdaya/Amsayurdaya system.\",\n      \"implementation\": \"Software should perform this calculation for the Moon to derive its contribution to the Pindayurdaya/Amsayurdaya system. The result is a numerical value representing a period component.\",\n      \"confidence\": \"high\"\n    }\n  ]\n}\n```"
+          }
+        ],
+        "role": "model"
+      },
+      "finishReason": "STOP",
+      "index": 0
+    }
+  ],
+  "usageMetadata": {
+    "promptTokenCount": 550,
+    "candidatesTokenCount": 1581,
+    "totalTokenCount": 5900,
+    "promptTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 292
+      },
+      {
+        "modality": "IMAGE",
+        "tokenCount": 258
+      }
+    ],
+    "thoughtsTokenCount": 3769,
+    "serviceTier": "standard"
+  },
+  "modelVersion": "gemini-2.5-flash",
+  "responseId": "kGY1aoTVEYX_juMP556QaQ"
+}

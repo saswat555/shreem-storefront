@@ -87,6 +87,32 @@ const PRASHNA_SCHEMA = {
 const sanitizeString = (value: unknown, maxLength: number) =>
   typeof value === "string" ? value.trim().slice(0, maxLength) : ""
 
+const createDateFromLocalInput = ({
+  date,
+  time,
+  city,
+}: {
+  date?: string
+  time?: string
+  city: { utcOffsetHours: number }
+}) => {
+  if (!date || !time) {
+    return new Date()
+  }
+
+  const [year, month, day] = date.split("-").map(Number)
+  const [hour, minute] = time.split(":").map(Number)
+
+  if (![year, month, day, hour, minute].every(Number.isFinite)) {
+    return new Date()
+  }
+
+  return new Date(
+    Date.UTC(year, month - 1, day, hour, minute) -
+      city.utcOffsetHours * 60 * 60 * 1000
+  )
+}
+
 const sanitizeBookCitations = (value: unknown) =>
   Array.isArray(value)
     ? value
@@ -304,6 +330,17 @@ export async function POST(request: NextRequest) {
     (payload as { panchangSystemId?: unknown } | null)?.panchangSystemId,
     40
   )
+  const questionMoment = createDateFromLocalInput({
+    date: sanitizeString(
+      (payload as { questionDate?: unknown } | null)?.questionDate,
+      20
+    ),
+    time: sanitizeString(
+      (payload as { questionTime?: unknown } | null)?.questionTime,
+      20
+    ),
+    city,
+  })
   const language =
     rawLanguage === "hindi" || rawLanguage === "hinglish"
       ? rawLanguage
@@ -319,10 +356,14 @@ export async function POST(request: NextRequest) {
   const questionParts = splitQuestionParts(question)
   const chart = (() => {
     try {
-      return buildDetailedPrashnaChart({ city, panchangSystemId })
+      return buildDetailedPrashnaChart({
+        city,
+        date: questionMoment,
+        panchangSystemId,
+      })
     } catch (error) {
       console.error("Prashna chart calculation failed", error)
-      return buildPrashnaChart({ city })
+      return buildPrashnaChart({ city, date: questionMoment })
     }
   })()
   const prashnaFactors = Array.isArray(chart.prashnaFactors)
@@ -395,6 +436,8 @@ export async function POST(request: NextRequest) {
         question_parts: questionParts,
         city_id: city.id,
         city: `${city.name}, ${city.region}`,
+        question_moment_iso: questionMoment.toISOString(),
+        question_moment_local: chart.generatedAtLocal,
         panchang_system_id: chart.panchangSystem?.id,
         language,
       },
@@ -481,6 +524,8 @@ export async function POST(request: NextRequest) {
       question_parts: questionParts,
       city_id: city.id,
       city: `${city.name}, ${city.region}`,
+      question_moment_iso: questionMoment.toISOString(),
+      question_moment_local: chart.generatedAtLocal,
       panchang_system_id: chart.panchangSystem?.id,
       language,
     },

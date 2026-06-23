@@ -1,0 +1,207 @@
+{
+  "pages": [
+    44,
+    45
+  ],
+  "page_summary": "This document outlines principles for assessing planetary influences on physical well-being and identifying Maraka (physical vulnerability) planets. It details how planetary lordship and house occupation classify planets as functional benefics or malefics, and identifies specific houses and their lords/occupants as Maraka indicators. It also provides guidelines for evaluating planetary strength and relationships.",
+  "rules": [
+    {
+      "id": "longevity-trine-lords-benefic",
+      "page": 44,
+      "category": "longevity_class",
+      "condition": "A planet is the lord of a trine house (1st, 5th, or 9th).",
+      "effect": "The planet is considered functionally beneficial for overall well-being.",
+      "implementation": "Flag these planets as having a positive influence on vitality and resilience.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-malefic-house-lords",
+      "page": 44,
+      "category": "longevity_class",
+      "condition": "A planet is the lord of the 3rd, 6th, 8th, or 11th house.",
+      "effect": "The planet is considered functionally malefic, regardless of its natural benefic status.",
+      "implementation": "Flag these planets as having a challenging influence on vitality and resilience.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-benefic-quadrant-lords",
+      "page": 44,
+      "category": "longevity_class",
+      "condition": "A naturally benefic planet owns a quadrant house (1st, 4th, 7th, or 10th).",
+      "effect": "The planet becomes functionally malefic.",
+      "implementation": "Adjust the functional nature of such planets from benefic to malefic for vitality assessments.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-malefic-quadrant-lords",
+      "page": 44,
+      "category": "longevity_class",
+      "condition": "A naturally malefic planet owns a quadrant house (1st, 4th, 7th, or 10th).",
+      "effect": "The planet becomes functionally benefic.",
+      "implementation": "Adjust the functional nature of such planets from malefic to benefic for vitality assessments.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-lagna-lord-always-benefic",
+      "page": 44,
+      "category": "longevity_class",
+      "condition": "A planet is the lord of the Lagna (1st house).",
+      "effect": "The planet is always considered functionally beneficial, as Lagna is both a trine and a quadrant.",
+      "implementation": "Maintain the Lagna lord's beneficial status in all vitality assessments.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-lagna-lord-6th-8th-exception",
+      "page": 44,
+      "category": "longevity_class",
+      "condition": "The Lagna lord also lords the 6th or 8th house.",
+      "effect": "The Lagna lord retains its beneficial nature and does not become malefic.",
+      "implementation": "Prioritize the Lagna lordship; do not classify the Lagna lord as malefic due to 6th or 8th house lordship.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-sun-moon-6th-8th-exception",
+      "page": 44,
+      "category": "longevity_class",
+      "condition": "Sun or Moon lords the 6th or 8th house.",
+      "effect": "Sun and Moon do not become functionally malefic due to this lordship.",
+      "implementation": "Do not classify Sun or Moon as malefic based solely on 6th or 8th house lordship.",
+      "confidence": "high"
+    },
+    {
+      "id": "maraka-2nd-7th-lords-occupants",
+      "page": 44,
+      "category": "maraka",
+      "condition": "A planet is the lord of the 2nd or 7th house, or occupies one of these houses.",
+      "effect": "Such planets are considered Marakas, indicating potential periods of physical vulnerability.",
+      "implementation": "Flag these planets as primary indicators of physical challenges. Their periods (dashas) may correlate with health concerns.",
+      "confidence": "high"
+    },
+    {
+      "id": "maraka-7th-lord-potency",
+      "page": 45,
+      "category": "maraka",
+      "condition": "Comparing the 2nd lord and 7th lord as Marakas.",
+      "effect": "The 7th lord is considered a more potent Maraka than the 2nd lord.",
+      "implementation": "Assign a higher weighting or priority to the 7th lord's influence when assessing physical vulnerability.",
+      "confidence": "high"
+    },
+    {
+      "id": "maraka-7th-house-occupant-potency",
+      "page": 45,
+      "category": "maraka",
+      "condition": "Comparing planets occupying the 2nd house versus the 7th house as Marakas.",
+      "effect": "Planets occupying the 7th house are considered stronger Marakas than those occupying the 2nd house.",
+      "implementation": "Assign a higher weighting or priority to planets in the 7th house when assessing physical vulnerability.",
+      "confidence": "high"
+    },
+    {
+      "id": "maraka-7th-lord-association-potency",
+      "page": 45,
+      "category": "maraka",
+      "condition": "Maraka planets are associated with the 7th lord versus the 2nd lord.",
+      "effect": "Maraka planets associated with the 7th lord are considered more potent than those associated with the 2nd lord.",
+      "implementation": "Increase the Maraka influence of planets that form associations with the 7th lord.",
+      "confidence": "high"
+    },
+    {
+      "id": "maraka-jupiter-venus-2nd-house",
+      "page": 44,
+      "category": "maraka",
+      "condition": "Jupiter or Venus occupies the 2nd house.",
+      "effect": "These benefics are considered strong Marakas in this position.",
+      "implementation": "Flag Jupiter or Venus in the 2nd house as significant indicators of physical vulnerability.",
+      "confidence": "medium"
+    },
+    {
+      "id": "maraka-jupiter-venus-7th-lord-mitigation",
+      "page": 44,
+      "category": "mitigation",
+      "condition": "Jupiter or Venus occupies the 2nd house but is not the lord of the 7th house.",
+      "effect": "These benefics are not considered as strong Marakas unless they also lord the 7th house.",
+      "implementation": "Reduce the Maraka influence of Jupiter or Venus in the 2nd house if they are not also the 7th lord.",
+      "confidence": "medium"
+    },
+    {
+      "id": "maraka-12th-house-evaluation",
+      "page": 45,
+      "category": "maraka",
+      "condition": "Evaluating physical vulnerability.",
+      "effect": "The 12th house lord and its occupants should be considered.",
+      "implementation": "Include the 12th house lord and its occupants in the assessment of physical challenges and vulnerability.",
+      "confidence": "high"
+    },
+    {
+      "id": "dasha-timing-functional-malefic",
+      "page": 44,
+      "category": "dasha_timing",
+      "condition": "A planet's dasha (period) is identified as functionally malefic.",
+      "effect": "This period may correlate with significant physical challenges or health concerns.",
+      "implementation": "Highlight these dasha periods as potentially challenging for physical well-being in user reports, using neutral language.",
+      "confidence": "high"
+    },
+    {
+      "id": "dasha-timing-lagna-strength",
+      "page": 44,
+      "category": "dasha_timing",
+      "condition": "The strength of the Lagna Rasi (ascendant sign).",
+      "effect": "May indicate specific diurnal periods (day or night) when physical challenges are more likely to manifest.",
+      "implementation": "If Lagna Rasi strength is strong, challenges may be indicated during the day; if weak, during the night. Use this as a subtle timing indicator for potential health advisories.",
+      "confidence": "medium"
+    },
+    {
+      "id": "method-bhava-from-bhava",
+      "page": 45,
+      "category": "method",
+      "condition": "Judging the affairs of a specific bhava (house).",
+      "effect": "The corresponding bhava from that specific bhava should also be considered (e.g., 4th from 4th, 7th from 7th, 8th from 8th, 10th from 10th).",
+      "implementation": "Implement a 'bhava-from-bhava' logic for deeper analysis of house significations.",
+      "confidence": "high"
+    },
+    {
+      "id": "method-12th-house-detriment",
+      "page": 45,
+      "category": "method",
+      "condition": "The 12th house relative to any given house.",
+      "effect": "Represents potential detrimental outcomes or losses for the affairs of that given house.",
+      "implementation": "Use the 12th house as an indicator of challenges or reductions related to the house it precedes.",
+      "confidence": "high"
+    },
+    {
+      "id": "method-malefic-potency-strength",
+      "page": 45,
+      "category": "method",
+      "condition": "Assessing the impact of a malefic planet.",
+      "effect": "The potency of a malefic planet in indicating physical vulnerability depends on its overall strength.",
+      "implementation": "Integrate planetary strength (e.g., Shadbala, Avasthas) into the calculation of a malefic's impact on health.",
+      "confidence": "high"
+    },
+    {
+      "id": "method-planetary-relationships",
+      "page": 45,
+      "category": "method",
+      "condition": "Evaluating planetary interactions.",
+      "effect": "Key relationships include mutual exchange of houses, mutual aspect, a planet's full direct aspect on a planet occupying its former house, and planets occupying the same Rasi.",
+      "implementation": "Develop algorithms to identify and quantify these specific planetary relationships for comprehensive analysis.",
+      "confidence": "high"
+    },
+    {
+      "id": "caution-complex-cases",
+      "page": 44,
+      "category": "caution",
+      "condition": "Applying astrological rules for physical well-being.",
+      "effect": "These are general guidelines for intricate cases; careful interpretation is required.",
+      "implementation": "Ensure software output acknowledges the complexity of astrological analysis and avoids overly deterministic statements.",
+      "confidence": "high"
+    },
+    {
+      "id": "caution-not-all-marakas-potent",
+      "page": 45,
+      "category": "caution",
+      "condition": "Identifying Maraka planets.",
+      "effect": "Not all planets identified as Marakas are always potent indicators of severe physical vulnerability.",
+      "implementation": "Avoid overstating the impact of Maraka planets; consider other mitigating or strengthening factors before issuing strong advisories.",
+      "confidence": "high"
+    }
+  ]
+}

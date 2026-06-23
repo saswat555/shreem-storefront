@@ -1,0 +1,36 @@
+{
+  "pages": [
+    66,
+    67
+  ],
+  "page_summary": "These pages display Ashtaka Varga tables for Venus and Saturn, which are presented as components for astrological longevity assessment.",
+  "rules": [
+    {
+      "id": "venus-ashtaka-varga-table-data",
+      "page": 66,
+      "category": "method",
+      "condition": "Presence of Venus's Ashtaka Varga table.",
+      "effect": "This table provides the benefic points (bindus) contributed by the Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn, and Lagna to each of the twelve zodiac signs, summing to a total of 52 points across all signs for Venus's Ashtaka Varga.",
+      "implementation": "Software should store and utilize these specific Ashtaka Varga point values for Venus as presented, for calculations where Venus's Ashtaka Varga is required.",
+      "confidence": "high"
+    },
+    {
+      "id": "saturn-ashtaka-varga-table-data",
+      "page": 67,
+      "category": "method",
+      "condition": "Presence of Saturn's Ashtaka Varga table.",
+      "effect": "This table provides the benefic points (bindus) contributed by the Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn, and Lagna to each of the twelve zodiac signs, summing to a total of 39 points across all signs for Saturn's Ashtaka Varga.",
+      "implementation": "Software should store and utilize these specific Ashtaka Varga point values for Saturn as presented, for calculations where Saturn's Ashtaka Varga is required.",
+      "confidence": "high"
+    },
+    {
+      "id": "ashtaka-varga-longevity-context",
+      "page": 66,
+      "category": "method",
+      "condition": "Ashtaka Varga tables are presented under the heading 'Judgement of Longevity'.",
+      "effect": "The provided Venus and Saturn Ashtaka Varga data are indicated as relevant inputs for astrological longevity assessment.",
+      "implementation": "Software should associate Venus and Saturn Ashtaka Varga calculations with the longevity module, noting that specific interpretation rules for these tables are not detailed on these pages.",
+      "confidence": "high"
+    }
+  ]
+}

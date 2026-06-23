@@ -1,0 +1,35 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "text": "```json\n{\n  \"pages\": [98, 99],\n  \"page_summary\": \"These pages describe a specific method for calculating a planet's contribution to an individual's longevity, known as Ayurdaya. The method involves determining an initial year component based on nakshatra padas and a subsequent month/day component derived from the planet's transit times within its birth nakshatra and pada, using defined terms like Pramana and Ichcha. It explicitly states that planetary longitudes are not considered for this calculation.\",\n  \"rules\": [\n    {\n      \"id\": \"ayurdaya-initial-years-calculation\",\n      \"page\": 98,\n      \"category\": \"method\",\n      \"condition\": \"To calculate the initial year component of a planet's longevity contribution using a specific prior figure and the number of padas.\",\n      \"effect\": \"The remainder of a division (a figure from a preceding step by 3), multiplied by 4, then added to the number of padas (from an initial step), yields the initial years attributed by the planet.\",\n      \"implementation\": \"Software should implement this arithmetic sequence to derive the initial year component of a planet's longevity contribution. This requires inputs from prior steps (e.g., 'figure at 2' and 'padas at 1').\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"ayurdaya-pramana-definition\",\n      \"page\": 98,\n      \"category\": \"method\",\n      \"condition\": \"To determine the 'Pramana' for a planet in the context of this Ayurdaya calculation.\",\n      \"effect\": \"Pramana is defined as the total duration a planet takes to traverse the entire nakshatra it occupied at the time of birth, calculated as the difference between its entry and exit times from that nakshatra.\",\n      \"implementation\": \"Software must calculate the full transit time of a planet through its birth nakshatra to establish the Pramana value.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"ayurdaya-ichcha-definition\",\n      \"page\": 98,\n      \"category\": \"method\",\n      \"condition\": \"To determine the 'Ichcha' for a planet in the context of this Ayurdaya calculation.\",\n      \"effect\": \"Ichcha is defined as the duration a planet takes to travel through the specific pada of the nakshatra it occupied at birth, calculated as the difference between the birth time and the planet's exit time from that specific pada.\",\n      \"implementation\": \"Software must calculate the time elapsed from the moment of birth until the planet exits its birth nakshatra pada to establish the Ichcha value.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"ayurdaya-pramana-ichcha-conversion\",\n      \"page\": 98,\n      \"category\": \"method\",\n      \"condition\": \"After calculating Pramana and Ichcha durations.\",\n      \"effect\": \"The durations of Pramana and Ichcha must be converted into Vighatis for subsequent calculations.\",\n      \"implementation\": \"Software should convert the calculated Pramana and Ichcha values into Vighatis as a prerequisite for the next calculation step.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"ayurdaya-months-calculation\",\n      \"page\": 98,\n      \"category\": \"method\",\n      \"condition\": \"After Pramana and Ichcha have been converted to Vighatis.\",\n      \"effect\": \"Multiply Ichcha (in vighatis) by 12, then divide the product by Pramana (in vighatis). The result is the number of months (in decimals), which can then be converted into months, days, ghatis, and vighatis.\",\n      \"implementation\": \"Software should perform this specific arithmetic operation using the vighati values of Ichcha and Pramana to derive the monthly component of the longevity contribution.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"ayurdaya-total-contribution\",\n      \"page\": 98,\n      \"category\": \"longevity_class\",\n      \"condition\": \"After calculating the initial years component (from rule 4 on page 98) and the months/days component (from rule 8 on page 98) for a specific planet.\",\n      \"effect\": \"Adding the initial years component to the calculated months/days component yields the total duration attributed by that planet according to this method.\",\n      \"implementation\": \"Software should sum the year component and the month/day component for each planet to determine its total Ayurdaya contribution.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"ayurdaya-longitude-exclusion\",\n      \"page\": 98,\n      \"category\": \"caution\",\n      \"condition\": \"When applying this specific Ayurdaya calculation method.\",\n      \"effect\": \"Planetary longitudes are explicitly not to be considered in this particular calculation.\",\n      \"implementation\": \"Software must ensure that planetary longitudes are excluded from the inputs or calculations for this specific longevity determination method.\",\n      \"confidence\": \"high\"\n    }\n  ]\n}\n```"
+          }
+        ],
+        "role": "model"
+      },
+      "finishReason": "STOP",
+      "index": 0
+    }
+  ],
+  "usageMetadata": {
+    "promptTokenCount": 550,
+    "candidatesTokenCount": 1172,
+    "totalTokenCount": 5201,
+    "promptTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 292
+      },
+      {
+        "modality": "IMAGE",
+        "tokenCount": 258
+      }
+    ],
+    "thoughtsTokenCount": 3479,
+    "serviceTier": "standard"
+  },
+  "modelVersion": "gemini-2.5-flash",
+  "responseId": "-mQ1arrmHoTijuMP1Ju-mQQ"
+}

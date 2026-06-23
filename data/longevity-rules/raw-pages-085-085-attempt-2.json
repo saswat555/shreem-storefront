@@ -1,0 +1,35 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "text": "```json\n{\n  \"pages\": [85],\n  \"page_summary\": \"This introductory page describes a comprehensive textbook on Hindu Astrology. It highlights that the book includes extensive chapters on longevity assessment, scientific analysis of astrological houses, judgment principles, Yogas, medical astrology, planetary transits, Ashtaka Varga, and Jaimini system components. The text emphasizes the book's aim to establish the scientific validity of astrology.\",\n  \"rules\": []\n}\n```"
+          }
+        ],
+        "role": "model"
+      },
+      "finishReason": "STOP",
+      "index": 0
+    }
+  ],
+  "usageMetadata": {
+    "promptTokenCount": 611,
+    "candidatesTokenCount": 101,
+    "totalTokenCount": 1699,
+    "promptTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 353
+      },
+      {
+        "modality": "IMAGE",
+        "tokenCount": 258
+      }
+    ],
+    "thoughtsTokenCount": 987,
+    "serviceTier": "standard"
+  },
+  "modelVersion": "gemini-2.5-flash",
+  "responseId": "rmk1aq6nAaux4-EPp_Ka0AY"
+}

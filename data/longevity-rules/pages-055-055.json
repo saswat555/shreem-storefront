@@ -1,0 +1,180 @@
+{
+  "pages": [
+    102,
+    103
+  ],
+  "page_summary": "This section details methods for calculating a native's longevity based on planetary contributions and various reduction factors. It includes initial periods granted by planets and Lagna, followed by rules for reducing these periods based on planetary placement, state, and interactions. A final caution against fatalistic interpretation is provided.",
+  "rules": [
+    {
+      "id": "longevity-base-sun",
+      "page": 102,
+      "category": "longevity_class",
+      "condition": "Sun's contribution to gross longevity",
+      "effect": "Adds 4 years, 7 months, 0 days, 14 hours, 24 minutes to the total calculated longevity.",
+      "implementation": "Use this duration as the baseline contribution for the Sun in longevity calculations.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-base-moon",
+      "page": 102,
+      "category": "longevity_class",
+      "condition": "Moon's contribution to gross longevity",
+      "effect": "Adds 9 years, 3 months, 25 days, 4 hours, 48 minutes to the total calculated longevity.",
+      "implementation": "Use this duration as the baseline contribution for the Moon in longevity calculations.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-base-mars",
+      "page": 102,
+      "category": "longevity_class",
+      "condition": "Mars's contribution to gross longevity",
+      "effect": "Adds 5 years, 9 months, 18 days to the total calculated longevity.",
+      "implementation": "Use this duration as the baseline contribution for Mars in longevity calculations.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-base-mercury",
+      "page": 102,
+      "category": "longevity_class",
+      "condition": "Mercury's contribution to gross longevity",
+      "effect": "Adds 11 years, 2 months, 6 days, 14 hours, 24 minutes to the total calculated longevity.",
+      "implementation": "Use this duration as the baseline contribution for Mercury in longevity calculations.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-base-jupiter",
+      "page": 102,
+      "category": "longevity_class",
+      "condition": "Jupiter's contribution to gross longevity",
+      "effect": "Adds 8 years, 3 months, 18 days to the total calculated longevity.",
+      "implementation": "Use this duration as the baseline contribution for Jupiter in longevity calculations.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-base-venus",
+      "page": 102,
+      "category": "longevity_class",
+      "condition": "Venus's contribution to gross longevity",
+      "effect": "Adds 10 years, 2 months, 3 days to the total calculated longevity.",
+      "implementation": "Use this duration as the baseline contribution for Venus in longevity calculations.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-base-saturn",
+      "page": 102,
+      "category": "longevity_class",
+      "condition": "Saturn's contribution to gross longevity",
+      "effect": "Adds 3 years, 0 months, 3 days, 14 hours, 24 minutes to the total calculated longevity.",
+      "implementation": "Use this duration as the baseline contribution for Saturn in longevity calculations.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-lagna-calculation",
+      "page": 102,
+      "category": "longevity_class",
+      "condition": "Lagna's contribution to gross longevity",
+      "effect": "Calculated by converting Lagna longitude (ignoring signs) to seconds, then dividing by 1000 to derive months and a fraction of a month. For example, a 5-32 Lagna longitude yields 19 months, 7 days, 14 hours, 24 minutes.",
+      "implementation": "Implement the specified conversion and division method for Lagna's contribution to the gross longevity.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-reduction-visible-half-malefic",
+      "page": 102,
+      "category": "longevity_calculation_factor",
+      "condition": "Malefic planet located in the visible half of the chart (houses 12, 11, 10, 9, 8, or 7).",
+      "effect": "Reduces the planet's longevity contribution by a specific fraction: 12th house (Full), 11th (1/2), 10th (1/3), 9th (1/4), 8th (1/5), 7th (1/6).",
+      "implementation": "Apply the specified reduction fraction to the malefic planet's initial longevity period based on its house placement.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-reduction-visible-half-benefic",
+      "page": 102,
+      "category": "longevity_calculation_factor",
+      "condition": "Benefic planet located in the visible half of the chart (houses 12, 11, 10, 9, 8, or 7).",
+      "effect": "Reduces the planet's longevity contribution by a specific fraction: 12th house (1/2), 11th (1/4), 10th (1/6), 9th (1/8), 8th (1/10), 7th (1/12).",
+      "implementation": "Apply the specified reduction fraction to the benefic planet's initial longevity period based on its house placement.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-reduction-combust-debilitated",
+      "page": 102,
+      "category": "longevity_calculation_factor",
+      "condition": "Planet is combust or in its sign of debility. Combustion is determined by the planet's distance from the Sun.",
+      "effect": "Reduces the planet's longevity contribution by 1/2.",
+      "implementation": "If a planet meets either condition (combust or debilitated), reduce its initial longevity period by half. Ensure combustion is defined by distance from the Sun.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-reduction-graha-yuddha",
+      "page": 103,
+      "category": "longevity_calculation_factor",
+      "condition": "Planet is involved in a planetary war (graha yuddha). This occurs when a planet is with Mars in the same Rasi, and either Mars or the planet is retrograde.",
+      "effect": "Reduces the planet's longevity contribution by 1/2.",
+      "implementation": "Identify graha yuddha based on the specified conditions and apply a 1/2 reduction to the affected planet's longevity period.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-reduction-enemy-camp",
+      "page": 103,
+      "category": "longevity_calculation_factor",
+      "condition": "Planet is located in an enemy Rasi (enemy's camp).",
+      "effect": "Reduces the planet's longevity contribution by 1/3.",
+      "implementation": "Determine if a planet is in an enemy Rasi and apply a 1/3 reduction to its longevity period.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-reduction-highest-priority",
+      "page": 103,
+      "category": "longevity_calculation_factor",
+      "condition": "A planet is subject to multiple longevity reduction rules simultaneously.",
+      "effect": "Only the highest reduction percentage among the applicable rules is applied.",
+      "implementation": "When multiple reduction rules apply to a single planet, calculate all potential reductions and apply only the largest one to its longevity period.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-reduction-exception-sun-moon-mars-saturn-lagna",
+      "page": 103,
+      "category": "longevity_calculation_factor",
+      "condition": "Sun, Moon, Mars, Saturn, or Lagna are subject to general reduction rules.",
+      "effect": "These specific entities do not have any reductions applied to their longevity terms.",
+      "implementation": "Exclude Sun, Moon, Mars, Saturn, and Lagna from all general reduction calculations.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-reduction-mercury-specific",
+      "page": 103,
+      "category": "longevity_calculation_factor",
+      "condition": "Mercury is afflicted and considered a malefic.",
+      "effect": "Mercury's longevity term undergoes the full reduction specified by Rule 1 (visible half placement) as if it were a malefic.",
+      "implementation": "If Mercury is determined to be afflicted, treat it as a malefic for the purpose of applying Rule 1 (visible half) reductions.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-reduction-venus-specific",
+      "page": 103,
+      "category": "longevity_calculation_factor",
+      "condition": "Venus is subject to Rule 2 (combust or debilitated).",
+      "effect": "Venus's longevity term is reduced by 1/2.",
+      "implementation": "Apply a 1/2 reduction to Venus's longevity if it is combust or debilitated, as per Rule 2.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-reduction-jupiter-specific",
+      "page": 103,
+      "category": "longevity_calculation_factor",
+      "condition": "Jupiter is subject to Rule 1 (visible half placement).",
+      "effect": "Jupiter's longevity term is reduced by 1/12.",
+      "implementation": "Apply a 1/12 reduction to Jupiter's longevity if it is in the visible half, overriding the general benefic rule for Rule 1.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-caution-interpretation",
+      "page": 103,
+      "category": "caution",
+      "condition": "Displaying calculated longevity periods to users.",
+      "effect": "Calculated longevity periods should be presented as theoretical astrological calculations, not as definitive predictions of life span.",
+      "implementation": "Include a disclaimer or contextual note emphasizing that these calculations are for astrological study and not to be interpreted as a direct prediction of life duration. For example, 'This calculation represents a theoretical astrological longevity period and should not be interpreted as a definitive life span prediction.'",
+      "confidence": "high"
+    }
+  ]
+}

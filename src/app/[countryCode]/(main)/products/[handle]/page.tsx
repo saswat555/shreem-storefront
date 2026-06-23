@@ -17,6 +17,15 @@ type Props = {
   searchParams: Promise<{ v_id?: string }>
 }
 
+const PRODUCT_IMAGE_FALLBACKS: Record<string, string> = {
+  "shreem-ai-jyotish-credits": "/shreem-scenes/postive-energy.jpg",
+  "shreem-ai-jyotish-monthly": "/shreem-scenes/postive-energy.jpg",
+  "shreem-expert-jyotish-consultation": "/shreem-scenes/postive-energy.jpg",
+}
+
+const getProductImageFallback = (handle?: string | null) =>
+  handle ? PRODUCT_IMAGE_FALLBACKS[handle] || "" : ""
+
 export async function generateStaticParams() {
   try {
     const countryCodes = await listRegions().then((regions) =>
@@ -173,6 +182,9 @@ export default async function ProductPage(props: Props) {
   const images = getImagesForVariant(pricedProduct, selectedVariantId).map(
     normalizeProductImage
   )
+  const fallbackImage = toAbsoluteProductImageUrl(
+    getProductImageFallback(pricedProduct.handle)
+  )
   const customer = await retrieveCustomer().catch(() => null)
   const defaultShippingAddress =
     customer?.addresses?.find((address) => address.is_default_shipping) ||
@@ -186,6 +198,7 @@ export default async function ProductPage(props: Props) {
   const { cheapestPrice } = getProductPrice({ product: pricedProduct })
   const imageUrls = [
     pricedProduct.thumbnail,
+    fallbackImage,
     ...(images || []).map((image) => image.url),
   ]
     .map(toAbsoluteProductImageUrl)
@@ -295,6 +308,7 @@ export default async function ProductPage(props: Props) {
         region={region}
         countryCode={params.countryCode}
         images={images}
+        fallbackImage={fallbackImage}
         initialDeliveryPincode={initialDeliveryPincode}
       />
     </>

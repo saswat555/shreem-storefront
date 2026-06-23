@@ -1,0 +1,126 @@
+{
+  "pages": [
+    "005",
+    "006"
+  ],
+  "page_summary": "Pages 005 and 006 introduce the book's scope, highlighting the complexity of Jyotish longevity determination and the critical role of accurate birth time. Page 005 lists chapters on 'Death Inflicting Planets' and 'Novel Method of Determination of Longevity'. Page 006 discusses the importance of birth time verification methods and introduces various 'arishtas' (astrological indicators of significant life challenges).",
+  "rules": [
+    {
+      "id": "longevity-prediction-complexity",
+      "page": "006",
+      "category": "caution",
+      "condition": "Attempting precise determination of human life-span in exact years, months, and days.",
+      "effect": "This is a highly complex and challenging astrological task.",
+      "implementation": "Software should avoid precise numerical life-span predictions and instead focus on general life-span indicators or potential influences.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-prediction-scope",
+      "page": "006",
+      "category": "caution",
+      "condition": "Predicting specific life-span outcomes.",
+      "effect": "Such predictions are considered to be beyond the appropriate scope of astrological interpretation.",
+      "implementation": "Software should present life-span indicators as potential influences or tendencies, not as definitive or fatalistic outcomes.",
+      "confidence": "high"
+    },
+    {
+      "id": "birth-time-accuracy-critical",
+      "page": "006",
+      "category": "method",
+      "condition": "Before any astrological analysis, especially concerning life-span.",
+      "effect": "The reliability of the birth time is paramount for accurate chart interpretation.",
+      "implementation": "Software should include a feature or prompt for users to confirm birth time accuracy, or clearly indicate when birth time is unverified.",
+      "confidence": "high"
+    },
+    {
+      "id": "birth-time-verification-approach",
+      "page": "006",
+      "category": "method",
+      "condition": "When verifying birth time for astrological analysis.",
+      "effect": "The focus should be on confirming the given birth time rather than attempting rectification.",
+      "implementation": "Software should provide tools for birth time verification (e.g., event matching) but not automatic rectification.",
+      "confidence": "high"
+    },
+    {
+      "id": "birth-time-verification-ruling-planets",
+      "page": "006",
+      "category": "method",
+      "condition": "For birth time verification.",
+      "effect": "The Ruling Planets method (K. S. Krishnamurti) is a recognized technique for verification.",
+      "implementation": "Software could incorporate the Ruling Planets method as an option for birth time verification.",
+      "confidence": "medium"
+    },
+    {
+      "id": "birth-time-verification-moon-constellation",
+      "page": "006",
+      "category": "method",
+      "condition": "For birth time verification.",
+      "effect": "Checking the Moon's constellation position is a recognized technique for verification.",
+      "implementation": "Software could incorporate Moon's constellation position as an option for birth time verification.",
+      "confidence": "medium"
+    },
+    {
+      "id": "birth-time-verification-sex",
+      "page": "006",
+      "category": "method",
+      "condition": "For birth time verification.",
+      "effect": "Astrological indicators for sex can be used to confirm birth time accuracy.",
+      "implementation": "Software could include a module to check astrological indicators for sex against the user's input as a verification step.",
+      "confidence": "medium"
+    },
+    {
+      "id": "life-span-interpretation-yogas",
+      "page": "006",
+      "category": "method",
+      "condition": "Interpreting the concept of 'life-span' in Jyotish.",
+      "effect": "Life-span refers to the duration determined by various planetary combinations (yogas).",
+      "implementation": "Software should interpret 'life-span' in terms of astrological yogas and planetary influences rather than a fixed numerical value.",
+      "confidence": "high"
+    },
+    {
+      "id": "arishta-gandarishta-birth",
+      "page": "006",
+      "category": "caution",
+      "condition": "Birth occurring in Gandarishta.",
+      "effect": "Indicates potential significant life challenges or vulnerabilities.",
+      "implementation": "Software should identify and flag Gandarishta as an indicator of potential vulnerabilities or challenges, without predicting specific outcomes.",
+      "confidence": "high"
+    },
+    {
+      "id": "arishta-tithi-ganda-birth",
+      "page": "006",
+      "category": "caution",
+      "condition": "Birth occurring in Tithi Ganda.",
+      "effect": "Indicates potential significant life challenges or vulnerabilities.",
+      "implementation": "Software should identify and flag Tithi Ganda as an indicator of potential vulnerabilities or challenges, without predicting specific outcomes.",
+      "confidence": "high"
+    },
+    {
+      "id": "arishta-lagna-ganda-birth",
+      "page": "006",
+      "category": "caution",
+      "condition": "Birth occurring in Lagna Ganda.",
+      "effect": "Indicates potential significant life challenges or vulnerabilities.",
+      "implementation": "Software should identify and flag Lagna Ganda as an indicator of potential vulnerabilities or challenges, without predicting specific outcomes.",
+      "confidence": "high"
+    },
+    {
+      "id": "arishta-visha-navamsas-birth",
+      "page": "006",
+      "category": "caution",
+      "condition": "Birth occurring with Visha Navamsas.",
+      "effect": "Indicates potential significant life challenges or vulnerabilities.",
+      "implementation": "Software should identify and flag Visha Navamsas as an indicator of potential vulnerabilities or challenges, without predicting specific outcomes.",
+      "confidence": "high"
+    },
+    {
+      "id": "arishta-inauspicious-muhurtas-birth",
+      "page": "006",
+      "category": "caution",
+      "condition": "Birth occurring during inauspicious Muhurtas.",
+      "effect": "Indicates potential significant life challenges or vulnerabilities.",
+      "implementation": "Software should identify and flag inauspicious Muhurtas at birth as an indicator of potential vulnerabilities or challenges, without predicting specific outcomes.",
+      "confidence": "high"
+    }
+  ]
+}

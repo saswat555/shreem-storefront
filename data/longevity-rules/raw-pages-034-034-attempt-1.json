@@ -1,0 +1,35 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "text": "```json\n{\n  \"pages\": [1, 2],\n  \"page_summary\": \"This section introduces the methodology for constructing Ashtaka Varga charts, specifically detailing how benefic points are assigned by the Sun and Moon. It emphasizes that these initial Ashtaka Varga points are preliminary and require further processing before they can be used for longevity assessment.\",\n  \"rules\": [\n    {\n      \"id\": \"av-chart-structure\",\n      \"page\": 1,\n      \"category\": \"method\",\n      \"condition\": \"Constructing an Ashtaka Varga chart for benefic point calculation\",\n      \"effect\": \"Ashtaka Varga charts are structured with 12 Rasis as horizontal entries and 7 planets plus Lagna as vertical entries, indicating benefic points.\",\n      \"implementation\": \"Software should generate Ashtaka Varga charts with Rasis as rows and contributing entities (planets, Lagna) as columns, marking benefic points in the intersections.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"av-sun-benefic-points\",\n      \"page\": 1,\n      \"category\": \"method\",\n      \"condition\": \"Calculating benefic points for Sun in its Ashtaka Varga\",\n      \"effect\": \"Sun contributes benefic points to the 1st, 2nd, 4th, 7th, 8th, 9th, 10th, and 11th Rasis when counted from its own natal position.\",\n      \"implementation\": \"When computing Sun's Ashtaka Varga, mark a benefic point in these specified Rasis relative to Sun's placement in the natal chart.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"av-moon-benefic-points\",\n      \"page\": 1,\n      \"category\": \"method\",\n      \"condition\": \"Calculating benefic points for Moon in its Ashtaka Varga\",\n      \"effect\": \"Moon contributes benefic points to the 3rd, 6th, 10th, and 11th Rasis when counted from its own natal position.\",\n      \"implementation\": \"When computing Moon's Ashtaka Varga, mark a benefic point in these specified Rasis relative to Moon's placement in the natal chart.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"av-reduction-prerequisite\",\n      \"page\": 1,\n      \"category\": \"caution\",\n      \"condition\": \"Using Ashtaka Varga points for longevity assessment\",\n      \"effect\": \"Raw Ashtaka Varga benefic points are not directly suitable for longevity calculation and require two subsequent reduction processes.\",\n      \"implementation\": \"Software should not use raw Ashtaka Varga totals for longevity predictions without implementing subsequent reduction steps. Flag this as an incomplete calculation stage for longevity assessment.\",\n      \"confidence\": \"high\"\n    }\n  ]\n}\n```"
+          }
+        ],
+        "role": "model"
+      },
+      "finishReason": "STOP",
+      "index": 0
+    }
+  ],
+  "usageMetadata": {
+    "promptTokenCount": 550,
+    "candidatesTokenCount": 641,
+    "totalTokenCount": 5547,
+    "promptTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 292
+      },
+      {
+        "modality": "IMAGE",
+        "tokenCount": 258
+      }
+    ],
+    "thoughtsTokenCount": 4356,
+    "serviceTier": "standard"
+  },
+  "modelVersion": "gemini-2.5-flash",
+  "responseId": "rGI1auy9EJv8juMP1LbBqQE"
+}

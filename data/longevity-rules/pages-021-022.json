@@ -1,0 +1,453 @@
+{
+  "pages": [
+    "021",
+    "022"
+  ],
+  "page_summary": {
+    "021": "This page outlines how planets and nodes can become Marakas, detailing their identification based on house lordship, occupation, and associations. It introduces the concept of Maraka houses (12th from 1st, 8th, 3rd) and categorizes Maraka indicators into Primary, Secondary, and Tertiary based on their potency, with a strong emphasis on the 2nd and 7th houses. It also provides rules for dasha timing of critical events and mentions Ashtaka Varga and Janma Nakshatras as assessment methods.",
+    "022": "This page further elaborates on Maraka indicators, including Saturn, the weakest planet, and specific divisional chart lords. It discusses factors influencing longevity potential, such as Lagna affliction and Jupiter's mitigating aspects. It reiterates the significance of 2nd and 7th houses and notes the increased potency of Rahu/Ketu as Marakas. The page concludes by emphasizing a two-step assessment: first, determining overall longevity potential, then identifying and timing critical life events."
+  },
+  "rules": [
+    {
+      "id": "P021-M-01",
+      "page": "021",
+      "category": "maraka",
+      "condition": "Planets and nodes",
+      "effect": "Can become Maraka indicators.",
+      "implementation": "Identify all planets and nodes as potential Maraka indicators for further assessment.",
+      "confidence": "high"
+    },
+    {
+      "id": "P021-M-02",
+      "page": "021",
+      "category": "maraka",
+      "condition": "Planets occupying challenging houses (e.g., 6th, 8th, 12th), or being lords of challenging houses, or associated with such houses/lords",
+      "effect": "Can become Maraka indicators.",
+      "implementation": "Flag planets based on their house occupation, lordship, and associations with challenging houses (6, 8, 12).",
+      "confidence": "high"
+    },
+    {
+      "id": "P021-Method-01",
+      "page": "021",
+      "category": "method",
+      "condition": "Determining the most potent Maraka indicator",
+      "effect": "Requires assessing the relative strength of planets.",
+      "implementation": "Incorporate a planetary strength assessment module to rank potential Maraka indicators.",
+      "confidence": "high"
+    },
+    {
+      "id": "P021-Protection-01",
+      "page": "021",
+      "category": "protection",
+      "condition": "Lagna lord",
+      "effect": "Generally considered a protective influence.",
+      "implementation": "Assign a positive baseline influence to the Lagna lord.",
+      "confidence": "high"
+    },
+    {
+      "id": "P021-Protection-02",
+      "page": "021",
+      "category": "protection",
+      "condition": "Lagna lord occupies Lagna or is exalted",
+      "effect": "Becomes very powerful, indicating strong protection.",
+      "implementation": "Enhance the protective influence of a strong Lagna lord.",
+      "confidence": "high"
+    },
+    {
+      "id": "P021-D-01",
+      "page": "021",
+      "category": "dasha_timing",
+      "condition": "Lagna lord is comparatively weaker than the 8th lord",
+      "effect": "The 8th lord's minor periods within its major period can indicate health challenges.",
+      "implementation": "Flag 8th lord's sub-periods within its main period for health vulnerability if Lagna lord is weak.",
+      "confidence": "medium"
+    },
+    {
+      "id": "P021-D-02",
+      "page": "021",
+      "category": "dasha_timing",
+      "condition": "Lagna lord and 8th lord occupy houses 1, 4, 5, 7, 8, or 10, along with another planet",
+      "effect": "The Paka period of the planet occupying the 8th house can indicate a critical life event.",
+      "implementation": "Identify this specific planetary placement and highlight the Paka period of the 8th house occupant.",
+      "confidence": "medium"
+    },
+    {
+      "id": "P021-D-03",
+      "page": "021",
+      "category": "dasha_timing",
+      "condition": "8th lord is weak and occupies a trine or quadrant house with another planet",
+      "effect": "The 8th lord's period can indicate a critical life event.",
+      "implementation": "Flag the 8th lord's period if it meets these conditions.",
+      "confidence": "medium"
+    },
+    {
+      "id": "P021-D-04",
+      "page": "021",
+      "category": "dasha_timing",
+      "condition": "Saturn occupies Lagna or the 8th house",
+      "effect": "Saturn's major or minor period can indicate a critical life event.",
+      "implementation": "Highlight Saturn's periods if it is in Lagna or 8th house.",
+      "confidence": "medium"
+    },
+    {
+      "id": "P021-D-05",
+      "page": "021",
+      "category": "dasha_timing",
+      "condition": "Lords of 1st and 2nd house occupy movable signs",
+      "effect": "Their own periods can indicate a critical life event.",
+      "implementation": "Flag periods of 1st and 2nd lords if they are in movable signs.",
+      "confidence": "medium"
+    },
+    {
+      "id": "P021-Method-02",
+      "page": "021",
+      "category": "method",
+      "condition": "Longevity assessment",
+      "effect": "Ashtaka Varga can be used for conclusions.",
+      "implementation": "Integrate Ashtaka Varga calculations into longevity assessment.",
+      "confidence": "high"
+    },
+    {
+      "id": "P021-Method-03",
+      "page": "021",
+      "category": "method",
+      "condition": "Identifying critical life phases",
+      "effect": "Can be based on birth constellations (Janma Nakshatras) and Lagna Rashi.",
+      "implementation": "Use Janma Nakshatra and Lagna Rashi for identifying sensitive periods.",
+      "confidence": "high"
+    },
+    {
+      "id": "P021-Caution-01",
+      "page": "021",
+      "category": "caution",
+      "condition": "Identifying the most potent Maraka among potential Maraka planets",
+      "effect": "This is a complex determination.",
+      "implementation": "Software should indicate the complexity and potential for multiple Maraka influences, avoiding definitive single predictions.",
+      "confidence": "high"
+    },
+    {
+      "id": "P021-M-03",
+      "page": "021",
+      "category": "maraka",
+      "condition": "Houses 1, 8, and 3 are important for existence",
+      "effect": "Their 12th houses (12th, 7th, 2nd respectively) are considered Maraka houses.",
+      "implementation": "Identify houses 2, 7, 12 as Maraka houses based on this principle.",
+      "confidence": "high"
+    },
+    {
+      "id": "P021-M-04",
+      "page": "021",
+      "category": "maraka",
+      "condition": "Lords of Maraka houses (2, 7, 12), their occupants, and planets connected with them",
+      "effect": "Are considered Maraka indicators.",
+      "implementation": "Flag these planets as potential Marakas.",
+      "confidence": "high"
+    },
+    {
+      "id": "P021-M-05",
+      "page": "021",
+      "category": "maraka",
+      "condition": "Rahu and Ketu",
+      "effect": "Can act as Marakas by association (with planets in the same house, planets aspecting them, lords of constellations they tenant, or lords of Rashi they tenant).",
+      "implementation": "Assess Rahu and Ketu's Maraka potential based on their associations and dispositors.",
+      "confidence": "high"
+    },
+    {
+      "id": "P021-Method-04",
+      "page": "021",
+      "category": "method",
+      "condition": "Many potential Maraka indicators",
+      "effect": "They can be grouped into Primary, Secondary, and Tertiary categories based on their potency.",
+      "implementation": "Implement a tiered classification system for Maraka planets.",
+      "confidence": "high"
+    },
+    {
+      "id": "P021-M-06",
+      "page": "021",
+      "category": "maraka",
+      "condition": "Lords of 3rd, 6th, and 8th houses",
+      "effect": "Can also be Maraka indicators.",
+      "implementation": "Consider 3rd, 6th, and 8th lords as secondary Maraka indicators.",
+      "confidence": "medium"
+    },
+    {
+      "id": "P021-Method-05",
+      "page": "021",
+      "category": "method",
+      "condition": "Assessing Maraka influence",
+      "effect": "Lords of 22nd Drekkana and 64th Navamsa (from Moon) can be associated with Maraka planets.",
+      "implementation": "Calculate and consider the lords of 22nd Drekkana and 64th Navamsa from Moon for Maraka assessment.",
+      "confidence": "high"
+    },
+    {
+      "id": "P021-M-07",
+      "page": "021",
+      "category": "maraka",
+      "condition": "Houses 2 and 7",
+      "effect": "Are primary Maraka houses.",
+      "implementation": "Assign high significance to houses 2 and 7 in Maraka assessment.",
+      "confidence": "high"
+    },
+    {
+      "id": "P021-M-08",
+      "page": "021",
+      "category": "maraka",
+      "condition": "Planets occupying 2nd and 7th houses",
+      "effect": "Are Primary Maraka indicators, generally stronger than the lords of these houses. Malefic occupants are stronger than benefic occupants.",
+      "implementation": "Prioritize occupants of 2nd/7th houses as Primary Marakas. Rank malefics higher than benefics among these occupants.",
+      "confidence": "high"
+    },
+    {
+      "id": "P021-M-09",
+      "page": "021",
+      "category": "maraka",
+      "condition": "Lords of 2nd and 7th houses, and planets conjoined with them",
+      "effect": "Are Primary Maraka indicators, but less potent than direct occupants of these houses.",
+      "implementation": "Include these as Primary Marakas, with a potency score lower than direct occupants.",
+      "confidence": "high"
+    },
+    {
+      "id": "P021-M-10",
+      "page": "021",
+      "category": "maraka",
+      "condition": "Benefic planets occupying 2nd and 7th houses",
+      "effect": "Are classified as Secondary Maraka indicators.",
+      "implementation": "Classify benefic occupants of 2nd/7th as Secondary Marakas, distinguishing them from malefics which are Primary.",
+      "confidence": "high"
+    },
+    {
+      "id": "P022-M-01",
+      "page": "022",
+      "category": "maraka",
+      "condition": "Lords of 3rd and 8th houses (houses of life) associated with 2nd and 7th lords",
+      "effect": "Can become Maraka indicators.",
+      "implementation": "Flag 3rd/8th lords if they have strong associations with 2nd/7th lords.",
+      "confidence": "high"
+    },
+    {
+      "id": "P022-M-02",
+      "page": "022",
+      "category": "maraka",
+      "condition": "Saturn (Ayush Karaka) connected to Primary/Secondary Marakas or lords of 6th/8th houses",
+      "effect": "Can be a Tertiary Maraka indicator.",
+      "implementation": "Assess Saturn's Maraka potential based on these connections.",
+      "confidence": "high"
+    },
+    {
+      "id": "P022-M-03",
+      "page": "022",
+      "category": "maraka",
+      "condition": "The weakest planet in the horoscope",
+      "effect": "Can be a Maraka indicator.",
+      "implementation": "Identify the weakest planet (e.g., by Shadbala) and consider its Maraka potential.",
+      "confidence": "medium"
+    },
+    {
+      "id": "P022-M-04",
+      "page": "022",
+      "category": "maraka",
+      "condition": "Lords of 22nd Drekkana and 64th Navamsa (from Moon)",
+      "effect": "Can be Maraka indicators.",
+      "implementation": "Calculate and include these lords in Maraka assessment.",
+      "confidence": "high"
+    },
+    {
+      "id": "P022-D-06",
+      "page": "022",
+      "category": "dasha_timing",
+      "condition": "Planets most afflicted by aspect, conjunction, or association",
+      "effect": "Can indicate critical periods.",
+      "implementation": "Identify highly afflicted planets and highlight their dasha periods as potentially challenging.",
+      "confidence": "high"
+    },
+    {
+      "id": "P022-Caution-02",
+      "page": "022",
+      "category": "caution",
+      "condition": "Determining which specific planet will manifest a critical event",
+      "effect": "Depends on their power and requires judicious assessment.",
+      "implementation": "Software should present a range of potential Maraka influences and their relative strengths, rather than a single definitive one.",
+      "confidence": "high"
+    },
+    {
+      "id": "P022-Longevity-01",
+      "page": "022",
+      "category": "longevity_class",
+      "condition": "Afflicted Lagna (e.g., malefic occupation, hemmed by malefics)",
+      "effect": "Can indicate a shorter longevity potential.",
+      "implementation": "Flag charts with an afflicted Lagna as having potential for shorter longevity.",
+      "confidence": "high"
+    },
+    {
+      "id": "P022-Longevity-02",
+      "page": "022",
+      "category": "longevity_class",
+      "condition": "Lagna lord in an enemy sign and aspected by a Maraka indicator",
+      "effect": "Can indicate a shorter longevity potential.",
+      "implementation": "Flag this combination as a factor for reduced longevity.",
+      "confidence": "high"
+    },
+    {
+      "id": "P022-Longevity-03",
+      "page": "022",
+      "category": "longevity_class",
+      "condition": "Maraka indicators in the 5th house",
+      "effect": "Can indicate a shorter longevity potential.",
+      "implementation": "Flag Maraka presence in the 5th house as a longevity factor.",
+      "confidence": "medium"
+    },
+    {
+      "id": "P022-Mitigation-01",
+      "page": "022",
+      "category": "mitigation",
+      "condition": "Powerful aspect of Jupiter on Maraka indicators or the Lagna lord",
+      "effect": "Can mitigate negative longevity indications.",
+      "implementation": "Implement Jupiter's benefic aspects as a significant protective factor against Maraka influences.",
+      "confidence": "high"
+    },
+    {
+      "id": "P022-Longevity-04",
+      "page": "022",
+      "category": "longevity_class",
+      "condition": "Guru Chandra Yoga (Jupiter aspecting Moon)",
+      "effect": "Indicates extended longevity potential.",
+      "implementation": "Identify and highlight this yoga as a strong indicator of long life.",
+      "confidence": "high"
+    },
+    {
+      "id": "P022-Caution-03",
+      "page": "022",
+      "category": "caution",
+      "condition": "Exact yogas for longevity",
+      "effect": "May not be universally available, but principles guide interpretation.",
+      "implementation": "Software should rely on established principles and combinations rather than seeking exact, rare yogas.",
+      "confidence": "high"
+    },
+    {
+      "id": "P022-Longevity-05",
+      "page": "022",
+      "category": "longevity_class",
+      "condition": "Strong Lagnesh (Lagna lord) aspecting Lagna",
+      "effect": "Indicates extended longevity potential.",
+      "implementation": "Enhance longevity score for a strong, Lagna-aspecting Lagna lord.",
+      "confidence": "high"
+    },
+    {
+      "id": "P022-Longevity-06",
+      "page": "022",
+      "category": "longevity_class",
+      "condition": "Lagna lord and 8th lord are not in the same house or not mutually aspecting",
+      "effect": "Indicates extended longevity potential.",
+      "implementation": "Consider this separation as a positive longevity factor.",
+      "confidence": "high"
+    },
+    {
+      "id": "P022-Caution-04",
+      "page": "022",
+      "category": "caution",
+      "condition": "Longevity indications",
+      "effect": "May need adjustment based on overall chart strength.",
+      "implementation": "Longevity assessment should be dynamic and consider the cumulative strength of all factors.",
+      "confidence": "high"
+    },
+    {
+      "id": "P022-M-05",
+      "page": "022",
+      "category": "maraka",
+      "condition": "2nd and 7th houses",
+      "effect": "Are primary Maraka houses; their occupants and lords are Maraka indicators.",
+      "implementation": "Reinforce the importance of 2nd and 7th houses, their lords, and occupants in Maraka assessment.",
+      "confidence": "high"
+    },
+    {
+      "id": "P022-M-06",
+      "page": "022",
+      "category": "maraka",
+      "condition": "Saturn as Ayush Karaka also being the lord of a Maraka house (e.g., 7th)",
+      "effect": "Can become a Maraka indicator.",
+      "implementation": "Flag Saturn's Maraka potential if it has dual roles as Ayush Karaka and Maraka lord.",
+      "confidence": "high"
+    },
+    {
+      "id": "P022-Mitigation-02",
+      "page": "022",
+      "category": "mitigation",
+      "condition": "Lagna lord in 7th house, especially if aspected by a benefic (e.g., Jupiter, 9th lord)",
+      "effect": "May not be a strong Maraka indicator.",
+      "implementation": "Reduce the Maraka potency of Lagna lord in 7th if benefic aspects are present.",
+      "confidence": "medium"
+    },
+    {
+      "id": "P022-Caution-05",
+      "page": "022",
+      "category": "caution",
+      "condition": "Jupiter as 6th lord",
+      "effect": "May not be wholly benefic.",
+      "implementation": "Consider Jupiter's lordship of challenging houses (like 6th) when assessing its benefic influence.",
+      "confidence": "high"
+    },
+    {
+      "id": "P022-M-07",
+      "page": "022",
+      "category": "maraka",
+      "condition": "Primary Maraka indicators",
+      "effect": "Include Saturn, Sun, and Mars.",
+      "implementation": "Prioritize these planets as Primary Marakas based on their general nature and specific chart placements.",
+      "confidence": "high"
+    },
+    {
+      "id": "P022-M-08",
+      "page": "022",
+      "category": "maraka",
+      "condition": "Other Maraka indicators",
+      "effect": "Include Venus, Rahu, Jupiter, and Mercury.",
+      "implementation": "Consider these planets as potential Marakas depending on their specific chart placements and associations.",
+      "confidence": "high"
+    },
+    {
+      "id": "P022-M-09",
+      "page": "022",
+      "category": "maraka",
+      "condition": "Saturn as 7th lord and 8th lord (or associated with 8th lord) and in Lagna without benefic aspect",
+      "effect": "Is a significant Maraka indicator.",
+      "implementation": "Assign high Maraka potency to Saturn under these specific conditions.",
+      "confidence": "high"
+    },
+    {
+      "id": "P022-M-10",
+      "page": "022",
+      "category": "maraka",
+      "condition": "Venus and Rahu as occupants of the 6th house",
+      "effect": "Can be Maraka indicators.",
+      "implementation": "Flag this specific combination as a Maraka influence.",
+      "confidence": "medium"
+    },
+    {
+      "id": "P022-M-11",
+      "page": "022",
+      "category": "maraka",
+      "condition": "Nodes (Rahu/Ketu) when acting as Marakas",
+      "effect": "Are more powerful than planets.",
+      "implementation": "Assign higher potency to Rahu/Ketu when they are identified as Marakas.",
+      "confidence": "high"
+    },
+    {
+      "id": "P022-D-07",
+      "page": "022",
+      "category": "dasha_timing",
+      "condition": "Mahadasa of a strong Maraka indicator and Bhukti of another Maraka indicator (e.g., Saturn MD, Rahu Bhukti)",
+      "effect": "Can coincide with critical life events.",
+      "implementation": "Highlight such dasha/bhukti periods as highly sensitive for critical events.",
+      "confidence": "high"
+    },
+    {
+      "id": "P022-Method-06",
+      "page": "022",
+      "category": "method",
+      "condition": "Longevity and critical event timing assessment",
+      "effect": "First determine the longevity class, then identify Maraka planets for timing critical periods.",
+      "implementation": "Structure the software's analysis to first assess overall longevity potential, then identify and time specific critical influences.",
+      "confidence": "high"
+    }
+  ]
+}

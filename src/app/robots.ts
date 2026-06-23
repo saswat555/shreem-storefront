@@ -7,7 +7,7 @@ const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL ||
   process.env.NEXT_PUBLIC_BASE_URL ||
   process.env.SITE_URL ||
-  "https://shreemfarms.in"
+  "https://www.shreemfarms.in"
 
 const siteUrl = SITE_URL.replace(/\/+$/, "")
 

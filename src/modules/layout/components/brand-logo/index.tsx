@@ -1,4 +1,3 @@
-import { clx } from "@medusajs/ui"
 import Image from "next/image"
 
 type BrandLogoProps = {
@@ -69,61 +68,71 @@ export default function BrandLogo({
   const isHero = size === "hero"
   const isFooter = size === "footer"
   const isSidebar = size === "sidebar"
+  const imageSizes =
+    size === "nav"
+      ? "(max-width: 767px) 36px, 76px"
+      : isFooter
+        ? "(max-width: 767px) 64px, 144px"
+        : isSidebar
+          ? "(max-width: 767px) 96px, 224px"
+          : `${config.image}px`
 
   return (
     <div
-      className={clx(
+      className={[
         "flex items-center gap-3",
-        isHero && "flex-col gap-4",
-        isFooter && "items-start gap-5",
-        isSidebar && "flex-col items-center gap-4 text-center",
-        isCentered && "mx-auto w-fit text-center",
-        className
-      )}
+        isHero ? "flex-col gap-4" : "",
+        isFooter ? "items-start gap-5" : "",
+        isSidebar ? "flex-col items-center gap-4 text-center" : "",
+        isCentered ? "mx-auto w-fit text-center" : "",
+        className || "",
+      ].filter(Boolean).join(" ")}
     >
       <div
-        className={clx(
+        className={[
           "relative overflow-hidden border shadow-[0_16px_32px_rgba(0,0,0,0.08)]",
           config.container,
           isDark
             ? "border-white/15 bg-white/10"
-            : "border-[var(--shreem-border)] bg-white/85"
-        )}
+            : "border-[var(--shreem-border)] bg-white/85",
+        ].join(" ")}
       >
         <Image
           src="/logo.jpeg"
           alt="Shreem logo with peacock feather inspired motif"
           width={config.image}
           height={config.image}
-          priority
+          priority={size === "nav"}
+          quality={58}
+          sizes={imageSizes}
           className="h-full w-full rounded-[14px] object-contain"
         />
       </div>
       <div
-        className={clx(
+        className={[
           "flex min-w-0 flex-col",
-          size === "nav" && "max-w-[84px] small:max-w-none",
-          isCentered && "items-center"
-        )}
+          size === "nav" ? "max-w-[84px] small:max-w-none" : "",
+          isCentered ? "items-center" : "",
+        ].filter(Boolean).join(" ")}
       >
         <span
-          className={clx(
+          className={[
             "leading-none",
             config.title,
-            isDark ? "text-white" : "text-[var(--shreem-ink)]"
-          )}
+            isDark ? "text-white" : "text-[var(--shreem-ink)]",
+          ].join(" ")}
         >
           Shreem
         </span>
         {showCaption && (
           <span
-            className={clx(
+            className={[
               "mt-1 hidden leading-relaxed sm:block",
-              isCentered && "max-w-[30rem]",
-              isFooter && "max-w-[28rem]",
+              isCentered ? "max-w-[30rem]" : "",
+              isFooter ? "max-w-[28rem]" : "",
               config.caption,
-              isDark ? "text-white/70" : "text-[var(--shreem-muted)]"
-            )}
+              isDark ? "text-white/70" : "text-[var(--shreem-muted)]",
+            ].filter(Boolean).join(" ")}
           >
             {caption}
           </span>

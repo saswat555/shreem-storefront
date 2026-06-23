@@ -50,7 +50,7 @@ export const shreemJournalPosts: ShreemJournalPost[] = [
       "A Shreem Blog note on cultured curd, hand-churned makkhan, and the warm smoky finish that gives bilona A2 ghee its signature character.",
     excerpt:
       "Bilona ghee begins with curd, not with haste. That slower journey shapes the aroma, the feel of the kitchen, and the depth that people remember.",
-    image: "/shreem-scenes/bilona-process.png",
+    image: "/shreem-scenes/bilona-process.jpg",
     imageAlt: "Bilona A2 ghee process illustration with Gauri and Mayur",
     category: "Kitchen Wisdom",
     readTime: "5 min read",
@@ -86,7 +86,7 @@ export const shreemJournalPosts: ShreemJournalPost[] = [
       "A Shreem Blog piece on neem dhoop, devotional fragrance, and why calmer evening rituals matter in a family home.",
     excerpt:
       "Neem dhoop is not meant to overpower a room. It belongs to the prayer hour, when fragrance should support calm, devotion, and a gentler atmosphere.",
-    image: "/shreem-scenes/neem-dhoop.png",
+    image: "/shreem-scenes/neem-dhoop.jpg",
     imageAlt: "Neem dhoop evening ritual illustration in the Shreem world",
     category: "Home Rituals",
     readTime: "4 min read",
@@ -122,7 +122,7 @@ export const shreemJournalPosts: ShreemJournalPost[] = [
       "A Shreem Blog article on Jeevamrut, living-soil thinking, and why many farmers are drawn to more natural farming inputs.",
     excerpt:
       "Jeevamrut belongs to a farming idea that respects soil as living. It shifts attention from force and dependency toward biological health and patience.",
-    image: "/shreem-scenes/hero-scene.png",
+    image: "/shreem-scenes/hero-scene.jpg",
     imageAlt: "Village-inspired Shreem farm and gaushala illustration",
     category: "Farm Life",
     readTime: "5 min read",

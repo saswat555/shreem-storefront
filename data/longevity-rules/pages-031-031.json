@@ -1,0 +1,126 @@
+{
+  "pages": [
+    54,
+    55
+  ],
+  "page_summary": "These pages detail Jyotish principles, particularly from Jaimini, for assessing the nature, location, and potential timing of significant life transitions. Rules involve the analysis of Padas, Rasis (movable, fixed, dual), specific house placements (8th, 3rd, 5th), and planetary influences (malefics, Rahu, Saturn, Mercury) to indicate the circumstances surrounding major life events.",
+  "rules": [
+    {
+      "id": "p54-mode-external-event",
+      "page": 54,
+      "category": "longevity_class",
+      "condition": "The 8th house Rasi from Lagna Pada AND the 7th house Pada are both movable signs.",
+      "effect": "Indicates a critical life phase or significant event occurring outside the primary residence.",
+      "implementation": "Flag this combination to identify potential external circumstances during a major life event.",
+      "confidence": "high"
+    },
+    {
+      "id": "p54-mode-internal-event",
+      "page": 54,
+      "category": "longevity_class",
+      "condition": "The 8th house Rasi from Lagna Pada AND the 7th house Pada are both fixed signs.",
+      "effect": "Indicates a critical life phase or significant event occurring within the primary residence.",
+      "implementation": "Flag this combination to identify potential internal circumstances during a major life event.",
+      "confidence": "high"
+    },
+    {
+      "id": "p54-mode-travel-event",
+      "page": 54,
+      "category": "longevity_class",
+      "condition": "The 8th house Rasi from Lagna Pada AND the 7th house Pada are both dual signs.",
+      "effect": "Indicates a critical life phase or significant event potentially occurring during travel or transit.",
+      "implementation": "Flag this combination to identify potential travel-related circumstances during a major life event.",
+      "confidence": "high"
+    },
+    {
+      "id": "p54-pada-calculation-method",
+      "page": 54,
+      "category": "method",
+      "condition": "General principle for calculating Padas: A Pada is determined by counting the same number of houses from the lord of a house as the lord is from its own house. This method is attributed to Jaimini.",
+      "effect": "Defines the method for determining Pada positions for various houses.",
+      "implementation": "Implement the Jaimini Pada calculation logic for all relevant houses in the astrological chart.",
+      "confidence": "high"
+    },
+    {
+      "id": "p54-unconventional-event-movable",
+      "page": 54,
+      "category": "longevity_class",
+      "condition": "The 3rd Rasi from the Pada Navamsa Rasi is a movable sign.",
+      "effect": "Indicates a critical life phase potentially occurring under unconventional circumstances.",
+      "implementation": "Flag this combination as an indicator of unusual circumstances surrounding a major life event.",
+      "confidence": "high"
+    },
+    {
+      "id": "p54-unconventional-enclosed-event",
+      "page": 54,
+      "category": "longevity_class",
+      "condition": "The 5th Rasi from the Pada Rasi OR the Navamsa Rasi are movable signs.",
+      "effect": "Indicates a critical life phase potentially occurring under unconventional circumstances and within an enclosed space.",
+      "implementation": "Flag this combination as an indicator of unusual circumstances within an enclosed space during a major life event.",
+      "confidence": "high"
+    },
+    {
+      "id": "p54-timing-earlier-event",
+      "page": 54,
+      "category": "dasha_timing",
+      "condition": "One of the Rasis mentioned in the preceding rules (3rd from Pada Navamsa Rasi or 5th from Pada Rasi/Navamsa Rasi) is movable AND the other is dual.",
+      "effect": "Indicates a significant life transition event occurring earlier than typical expectations.",
+      "implementation": "Flag this combination as a potential indicator of an earlier-than-expected major life event.",
+      "confidence": "medium"
+    },
+    {
+      "id": "p54-place-stony-event",
+      "page": 54,
+      "category": "longevity_class",
+      "condition": "The 3rd Rasi from Pada Rasi OR Pada Navamsa Rasi is occupied or aspected by challenging planetary influences (malefics).",
+      "effect": "Indicates a critical life phase potentially occurring in locations characterized by stone or rocky terrain.",
+      "implementation": "Flag this combination as an indicator of specific environmental circumstances during a major life event.",
+      "confidence": "high"
+    },
+    {
+      "id": "p54-incomplete-rule",
+      "page": 54,
+      "category": "caution",
+      "condition": "Incomplete rule: 'If the eighth rasi from lagna or atmakaraka and Pada'",
+      "effect": "This rule is incomplete and cannot be actioned.",
+      "implementation": "Do not implement this rule due to lack of complete information.",
+      "confidence": "low"
+    },
+    {
+      "id": "p55-mode-suffocation-event",
+      "page": 55,
+      "category": "maraka",
+      "condition": "The 3rd Rasi OR Pada Navamsa Rasi is occupied or aspected by challenging planetary influences (malefics), particularly Rahu.",
+      "effect": "Indicates a critical life phase potentially involving circumstances related to suffocation or suspension.",
+      "implementation": "Flag this combination as an indicator of specific challenging circumstances during a major life event.",
+      "confidence": "high"
+    },
+    {
+      "id": "p55-mode-blunt-force-animal-event",
+      "page": 55,
+      "category": "maraka",
+      "condition": "The 3rd Rasi from Lagna OR Atmakaraka is Libra OR the 3rd Rasi from Lagna OR Atmakaraka is Leo.",
+      "effect": "If Libra, indicates a critical life phase potentially involving blunt force trauma. If Leo, indicates a critical life phase potentially involving animal encounters (specifically snakes).",
+      "implementation": "Flag these specific Rasi placements from Lagna/Atmakaraka as indicators of particular challenging circumstances during a major life event.",
+      "confidence": "high"
+    },
+    {
+      "id": "p55-mode-ingestion-gastro-event",
+      "page": 55,
+      "category": "maraka",
+      "condition": "Saturn is in the 8th house from Atmakaraka. Additionally, if this combination is aspected by Mercury.",
+      "effect": "If Saturn is 8th from Atmakaraka, indicates a critical life phase potentially involving ingestion of harmful substances. If aspected by Mercury, suggests a critical life phase potentially involving severe gastrointestinal issues.",
+      "implementation": "Flag this combination of Saturn and Atmakaraka, and the additional aspect by Mercury, as indicators of specific health-related challenges during a major life event.",
+      "confidence": "high"
+    },
+    {
+      "id": "p55-jaimini-broader-scope",
+      "page": 55,
+      "category": "caution",
+      "condition": "General statement that Jaimini astrology encompasses many other methods for analyzing critical life events.",
+      "effect": "Acknowledges the broader scope of Jaimini astrology in analyzing critical life events beyond the specific rules listed.",
+      "implementation": "Note that these rules are part of a larger system and not exhaustive for comprehensive analysis.",
+      "confidence": "high"
+    }
+  ]
+}

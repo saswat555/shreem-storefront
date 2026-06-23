@@ -10,6 +10,7 @@ import ManualUpiQrImage from "@modules/common/components/manual-upi-qr-image"
 import Divider from "@modules/common/components/divider"
 import { getPaymentInfo, isStripeLike, paymentInfoMap } from "@lib/constants"
 import { safeInitiatePaymentSession } from "@lib/data/cart"
+import { isDigitalOnlyCart } from "@lib/util/digital-cart"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
@@ -181,7 +182,9 @@ const Payment = ({
     cart.gift_cards.length > 0 &&
     Number(cart?.total || 0) === 0
 
+  const digitalOnlyCart = isDigitalOnlyCart(cart)
   const hasShipping =
+    digitalOnlyCart ||
     !cart?.shipping_address ||
     !Array.isArray(cart?.shipping_methods) ||
     cart.shipping_methods.length > 0

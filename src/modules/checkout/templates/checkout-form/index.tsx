@@ -5,6 +5,7 @@ import Addresses from "@modules/checkout/components/addresses"
 import Payment from "@modules/checkout/components/payment"
 import Review from "@modules/checkout/components/review"
 import Shipping from "@modules/checkout/components/shipping"
+import { isDigitalOnlyCart } from "@lib/util/digital-cart"
 
 const filterUnsafeShippingMethods = (methods: any[]) => {
   if (!Array.isArray(methods)) {
@@ -84,12 +85,19 @@ export default async function CheckoutForm({
 
   const safeShippingMethods = filterUnsafeShippingMethods(shippingMethods || [])
   const safePaymentMethods = normalizePaymentMethods(paymentMethods || [])
+  const digitalOnlyCart = isDigitalOnlyCart(cart)
 
   return (
     <div className="grid w-full grid-cols-1 gap-y-4 small:gap-y-6">
       <Addresses cart={cart} customer={customer} />
 
-      {safeShippingMethods.length === 0 ? (
+      {digitalOnlyCart ? (
+        <Shipping
+          cart={cart}
+          availableShippingMethods={[]}
+          digitalOnly
+        />
+      ) : safeShippingMethods.length === 0 ? (
         <CheckoutWarning message="No delivery option is available right now. Please check the India region shipping option in Admin." />
       ) : (
         <Shipping cart={cart} availableShippingMethods={safeShippingMethods} />

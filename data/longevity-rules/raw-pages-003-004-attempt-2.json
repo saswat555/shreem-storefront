@@ -1,0 +1,35 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "text": "```json\n{\n  \"pages\": [3, 4],\n  \"page_summary\": \"These initial pages introduce the book's scope on Jyotish longevity, outlining topics such as chart preparation, identification of challenging yogas, Balarishtas, Arishta-bhangas, and various mathematical calculation methods. Page 004 is the title page. No specific astrological rules are detailed on these pages.\",\n  \"rules\": []\n}\n```"
+          }
+        ],
+        "role": "model"
+      },
+      "finishReason": "STOP",
+      "index": 0
+    }
+  ],
+  "usageMetadata": {
+    "promptTokenCount": 813,
+    "candidatesTokenCount": 100,
+    "totalTokenCount": 2665,
+    "promptTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 297
+      },
+      {
+        "modality": "IMAGE",
+        "tokenCount": 516
+      }
+    ],
+    "thoughtsTokenCount": 1752,
+    "serviceTier": "standard"
+  },
+  "modelVersion": "gemini-2.5-flash",
+  "responseId": "rl01ar6sL5bLqfkP1M7AIA"
+}

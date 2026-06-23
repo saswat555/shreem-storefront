@@ -19,6 +19,7 @@ type ProductTemplateProps = {
   region: HttpTypes.StoreRegion
   countryCode: string
   images: HttpTypes.StoreProductImage[]
+  fallbackImage?: string
   initialDeliveryPincode?: string
 }
 
@@ -27,6 +28,7 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
   region,
   countryCode,
   images,
+  fallbackImage,
   initialDeliveryPincode,
 }) => {
   if (!product || !product.id) {
@@ -93,7 +95,7 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
                 </p>
               </div>
             </div>
-            <ImageGallery images={images} />
+            <ImageGallery images={images} fallbackImage={fallbackImage} />
           </div>
         </section>
 

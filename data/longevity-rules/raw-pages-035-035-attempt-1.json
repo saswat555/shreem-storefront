@@ -1,0 +1,35 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "text": "```json\n{\n  \"pages\": [62, 63],\n  \"page_summary\": \"Pages 62 and 63 present Ashtaka Varga tables for the Moon and Mars, respectively. These tables detail the benefic points contributed by various planets and the Lagna to each Rashi, serving as foundational data for astrological analysis, including longevity assessments.\",\n  \"rules\": [\n    {\n      \"id\": \"moon-ashtakavarga-calculation\",\n      \"page\": 62,\n      \"category\": \"method\",\n      \"condition\": \"When computing the Moon's Ashtaka Varga (Chandra Ashtakavarga).\",\n      \"effect\": \"Defines the benefic points (bindus) contributed by Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn, and Lagna to each Rashi, relative to the Moon's position in the chart.\",\n      \"implementation\": \"Software should use the table on page 62 to assign benefic points for each Rashi based on the Moon's placement. The total points for each Rashi and the total contributions from each planet/Lagna should be calculated as per the table's structure.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"mars-ashtakavarga-calculation\",\n      \"page\": 63,\n      \"category\": \"method\",\n      \"condition\": \"When computing the Mars's Ashtaka Varga (Mangala Ashtakavarga).\",\n      \"effect\": \"Defines the benefic points (bindus) contributed by Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn, and Lagna to each Rashi, relative to the Mars's position in the chart.\",\n      \"implementation\": \"Software should use the table on page 63 to assign benefic points for each Rashi based on the Mars's placement. The total points for each Rashi and the total contributions from each planet/Lagna should be calculated as per the table's structure.\",\n      \"confidence\": \"high\"\n    }\n  ]\n}\n```"
+          }
+        ],
+        "role": "model"
+      },
+      "finishReason": "STOP",
+      "index": 0
+    }
+  ],
+  "usageMetadata": {
+    "promptTokenCount": 550,
+    "candidatesTokenCount": 455,
+    "totalTokenCount": 5206,
+    "promptTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 292
+      },
+      {
+        "modality": "IMAGE",
+        "tokenCount": 258
+      }
+    ],
+    "thoughtsTokenCount": 4201,
+    "serviceTier": "standard"
+  },
+  "modelVersion": "gemini-2.5-flash",
+  "responseId": "x2I1aqyxFcq9juMPtbmFkAE"
+}

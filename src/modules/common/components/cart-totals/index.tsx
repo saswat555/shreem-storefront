@@ -13,9 +13,10 @@ type CartTotalsProps = {
     shipping_subtotal?: number | null
     discount_subtotal?: number | null
   }
+  digitalOnly?: boolean
 }
 
-const CartTotals: React.FC<CartTotalsProps> = ({ totals }) => {
+const CartTotals: React.FC<CartTotalsProps> = ({ totals, digitalOnly = false }) => {
   const {
     currency_code,
     total,
@@ -35,9 +36,11 @@ const CartTotals: React.FC<CartTotalsProps> = ({ totals }) => {
           </span>
         </div>
         <div className="flex items-start justify-between gap-4">
-          <span>Shipping</span>
+          <span>{digitalOnly ? "Digital delivery" : "Shipping"}</span>
           <span className="shrink-0 text-right" data-testid="cart-shipping" data-value={shipping_subtotal || 0}>
-            {convertToLocale({ amount: shipping_subtotal ?? 0, currency_code })}
+            {digitalOnly
+              ? "Free"
+              : convertToLocale({ amount: shipping_subtotal ?? 0, currency_code })}
           </span>
         </div>
         {!!discount_subtotal && (

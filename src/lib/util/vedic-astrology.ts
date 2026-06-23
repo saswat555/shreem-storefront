@@ -475,6 +475,86 @@ const getAspectType = (
   return "special"
 }
 
+const ASPECT_SUPPORTIVE_PLANETS = new Set(["Jupiter", "Venus", "Mercury"])
+const ASPECT_PRESSURE_PLANETS = new Set(["Mars", "Saturn", "Rahu", "Ketu"])
+const SOFT_HOUSES = new Set([1, 4, 5, 7, 9, 10, 11])
+const PRESSURE_HOUSES = new Set([6, 8, 12])
+
+const getAspectJudgement = ({
+  planetName,
+  targetHouse,
+  theme,
+}: {
+  planetName: string
+  targetHouse: number
+  theme: string
+}) => {
+  const isSupportive = ASPECT_SUPPORTIVE_PLANETS.has(planetName)
+  const isPressure = ASPECT_PRESSURE_PLANETS.has(planetName)
+  const targetIsPressure = PRESSURE_HOUSES.has(targetHouse)
+  const targetIsSoft = SOFT_HOUSES.has(targetHouse)
+  const polarity: GrahaAspect["polarity"] =
+    isSupportive && !targetIsPressure
+      ? "supportive"
+      : isPressure || targetIsPressure
+      ? "challenging"
+      : "mixed"
+
+  const positiveEffect =
+    planetName === "Jupiter"
+      ? `${theme} receives wisdom, protection, counsel and growth potential.`
+      : planetName === "Venus"
+      ? `${theme} receives harmony, comfort, relationship support and refinement.`
+      : planetName === "Mercury"
+      ? `${theme} receives planning, trade, communication, calculation and skill support.`
+      : planetName === "Moon"
+      ? `${theme} receives emotional attention, public sensitivity and family/mind involvement.`
+      : planetName === "Sun"
+      ? `${theme} receives authority, visibility, self-respect and leadership pressure.`
+      : planetName === "Mars"
+      ? `${theme} receives courage, speed, technical drive and competitive force.`
+      : planetName === "Saturn"
+      ? `${theme} receives discipline, endurance, responsibility and long-term structure.`
+      : planetName === "Rahu"
+      ? `${theme} receives ambition, unusual opportunity, digital/foreign pull and hunger for growth.`
+      : `${theme} receives detachment, spiritual correction, simplification and sharp discrimination.`
+
+  const negativeEffect =
+    planetName === "Jupiter"
+      ? targetIsPressure
+        ? `${theme} can expand worries or over-optimism if discipline is missing.`
+        : `${theme} can become excessive if the native over-promises or ignores practical limits.`
+      : planetName === "Venus"
+      ? `${theme} can become indulgent, comfort-seeking or relationship-dependent if boundaries are weak.`
+      : planetName === "Mercury"
+      ? `${theme} can become overthinking, calculation without action, nervous speech or scattered decisions.`
+      : planetName === "Moon"
+      ? `${theme} can fluctuate with mood, family pressure and emotional reactions.`
+      : planetName === "Sun"
+      ? `${theme} can bring ego clashes, authority pressure or impatience if humility is missing.`
+      : planetName === "Mars"
+      ? `${theme} can bring haste, conflict, heat, sharp speech or sudden breaks if not channelled.`
+      : planetName === "Saturn"
+      ? `${theme} can bring delay, heaviness, fear, duty pressure or slow results before maturity.`
+      : planetName === "Rahu"
+      ? `${theme} can become restless, obsessive, unconventional or unstable if ethics and routine slip.`
+      : `${theme} can feel detached, irregular, isolating or hard to understand until simplified.`
+
+  const label =
+    polarity === "supportive"
+      ? "Supportive impact"
+      : polarity === "challenging"
+      ? "Challenging impact"
+      : "Mixed impact"
+
+  return {
+    polarity,
+    positiveEffect,
+    negativeEffect,
+    interpretation: `${label}: ${planetName} aspects house ${targetHouse}. Positive effect: ${positiveEffect} Caution: ${negativeEffect}`,
+  }
+}
+
 const buildGrahaAspects = ({
   planets,
   houses,
@@ -493,6 +573,11 @@ const buildGrahaAspects = ({
       const targetHouse = houseByNumber.get(targetHouseNumber)
       const targetSign = targetHouse?.sign || ""
       const theme = targetHouse?.theme || ""
+      const judgement = getAspectJudgement({
+        planetName: planet.name,
+        targetHouse: targetHouseNumber,
+        theme,
+      })
 
       return {
         fromPlanet: planet.name,
@@ -502,10 +587,11 @@ const buildGrahaAspects = ({
         toSign: targetSign,
         aspectType: getAspectType(planet.name, distance),
         strength: "full",
+        polarity: judgement.polarity,
+        positiveEffect: judgement.positiveEffect,
+        negativeEffect: judgement.negativeEffect,
         theme,
-        interpretation: `${planet.name} from house ${
-          planet.bhavaHouse || planet.house
-        } aspects house ${targetHouseNumber} (${targetSign}), modifying ${theme}.`,
+        interpretation: judgement.interpretation,
       }
     })
   )

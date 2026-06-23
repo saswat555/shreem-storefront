@@ -1,6 +1,10 @@
 import "server-only"
 
-import { getGeminiApiKey, getGeminiModel } from "./prakriti-config"
+import {
+  getGeminiApiKey,
+  getGeminiModel,
+  normalizeGeminiModel,
+} from "./prakriti-config"
 
 type GeminiGenerateOptions = {
   prompt: string
@@ -13,13 +17,17 @@ type GeminiGenerateOptions = {
   timeoutMs?: number
   maxAttempts?: number
   maxOutputTokens?: number
+  thinkingBudget?: number
   label?: string
+  model?: string
 }
 
 export type GeminiUsage = {
   prompt_tokens: number
   completion_tokens: number
   total_tokens: number
+  cached_prompt_tokens?: number
+  thoughts_tokens?: number
   estimated_cost_usd: number
   estimated_cost_inr: number
 }
@@ -50,6 +58,7 @@ export type GeminiAttemptLog = {
   error?: string
   timedOut?: boolean
   invalidJson?: boolean
+  finishReason?: string
   durationMs: number
   usage?: GeminiUsage
 }
@@ -156,9 +165,11 @@ const getGeminiModelFallbacks = (primaryModel: string) => {
   )
   const defaults = configured.length
     ? configured
-    : [primaryModel, "gemini-2.5-flash-lite", "gemini-2.0-flash"]
+    : [primaryModel, "gemini-2.5-flash-lite"]
 
-  return Array.from(new Set([primaryModel, ...defaults]))
+  return Array.from(new Set([primaryModel, ...defaults])).filter(
+    (model) => model !== "gemini-2.0-flash"
+  )
 }
 
 const canUseOllamaForFrontendAi = () =>
@@ -219,34 +230,52 @@ const safeParseJson = (text: string) => {
 const getDefaultGeminiRates = (model: string, promptTokens: number) => {
   const normalizedModel = model.toLowerCase()
 
+  if (!normalizedModel.includes("gemini")) {
+    return { input: 0, output: 0, cachedInput: 0 }
+  }
+
+  if (normalizedModel.includes("3.5-flash")) {
+    return { input: 1.5, output: 9, cachedInput: 0.15 }
+  }
+
+  if (normalizedModel.includes("3-flash") || normalizedModel.includes("3.0-flash")) {
+    return { input: 0.5, output: 3, cachedInput: 0.05 }
+  }
+
   if (normalizedModel.includes("2.5-pro")) {
     return promptTokens > 200_000
-      ? { input: 2.5, output: 15 }
-      : { input: 1.25, output: 10 }
+      ? { input: 2.5, output: 15, cachedInput: 0.25 }
+      : { input: 1.25, output: 10, cachedInput: 0.125 }
   }
 
   if (normalizedModel.includes("2.5-flash-lite")) {
-    return { input: 0.1, output: 0.4 }
+    return { input: 0.1, output: 0.4, cachedInput: 0.01 }
+  }
+
+  if (normalizedModel.includes("2.5-flash")) {
+    return { input: 0.3, output: 2.5, cachedInput: 0.03 }
   }
 
   if (normalizedModel.includes("2.0-flash-lite")) {
-    return { input: 0.075, output: 0.3 }
+    return { input: 0.075, output: 0.3, cachedInput: 0.0075 }
   }
 
   if (normalizedModel.includes("2.0-flash")) {
-    return { input: 0.1, output: 0.4 }
+    return { input: 0.1, output: 0.4, cachedInput: 0.01 }
   }
 
-  return { input: 0.3, output: 2.5 }
+  return { input: 0.3, output: 2.5, cachedInput: 0.03 }
 }
 
 const estimateGeminiCost = ({
   promptTokens,
   completionTokens,
+  cachedPromptTokens = 0,
   model,
 }: {
   promptTokens: number
   completionTokens: number
+  cachedPromptTokens?: number
   model: string
 }) => {
   const defaults = getDefaultGeminiRates(model, promptTokens)
@@ -260,13 +289,23 @@ const estimateGeminiCost = ({
       process.env.AI_OUTPUT_COST_PER_1M_TOKENS,
     defaults.output
   )
-  const usdToInr = parsePositiveNumber(
-    process.env.AI_USD_TO_INR || process.env.USD_TO_INR,
-    85
+  const cachedInputRate = parsePositiveNumber(
+    process.env.GEMINI_CACHED_INPUT_COST_PER_1M_TOKENS ||
+      process.env.AI_CACHED_INPUT_COST_PER_1M_TOKENS,
+    defaults.cachedInput
   )
+  const usdToInr = parsePositiveNumber(
+    process.env.GOOGLE_AI_BILLING_USD_TO_INR ||
+      process.env.AI_USD_TO_INR ||
+      process.env.USD_TO_INR,
+    94.55
+  )
+  const cachedTokens = Math.max(0, Math.floor(cachedPromptTokens))
+  const billablePromptTokens = Math.max(0, promptTokens - cachedTokens)
 
   const usd =
-    (promptTokens / 1_000_000) * inputRate +
+    (billablePromptTokens / 1_000_000) * inputRate +
+    (cachedTokens / 1_000_000) * cachedInputRate +
     (completionTokens / 1_000_000) * outputRate
 
   return {
@@ -293,6 +332,20 @@ export const normalizeGeminiUsage = (
       )
     )
   )
+  const cachedPromptTokens = Math.max(
+    0,
+    Math.floor(
+      Number(
+        usageMetadata?.cachedContentTokenCount ||
+          usageMetadata?.cachedPromptTokenCount ||
+          0
+      )
+    )
+  )
+  const thoughtsTokens = Math.max(
+    0,
+    Math.floor(Number(usageMetadata?.thoughtsTokenCount || 0))
+  )
   const totalTokens = Math.max(
     promptTokens + completionTokens,
     Math.floor(Number(usageMetadata?.totalTokenCount || 0))
@@ -301,10 +354,13 @@ export const normalizeGeminiUsage = (
   return {
     prompt_tokens: promptTokens,
     completion_tokens: completionTokens,
+    cached_prompt_tokens: cachedPromptTokens,
+    thoughts_tokens: thoughtsTokens,
     total_tokens: totalTokens,
     ...estimateGeminiCost({
       promptTokens,
-      completionTokens,
+      completionTokens: completionTokens + thoughtsTokens,
+      cachedPromptTokens,
       model,
     }),
   }
@@ -314,177 +370,11 @@ export const emptyGeminiUsage = (): GeminiUsage => ({
   prompt_tokens: 0,
   completion_tokens: 0,
   total_tokens: 0,
+  cached_prompt_tokens: 0,
+  thoughts_tokens: 0,
   estimated_cost_usd: 0,
   estimated_cost_inr: 0,
 })
-
-const mergeGeminiUsage = (
-  first: GeminiUsage,
-  second: GeminiUsage
-): GeminiUsage => ({
-  prompt_tokens: first.prompt_tokens + second.prompt_tokens,
-  completion_tokens: first.completion_tokens + second.completion_tokens,
-  total_tokens: first.total_tokens + second.total_tokens,
-  estimated_cost_usd: Number(
-    (first.estimated_cost_usd + second.estimated_cost_usd).toFixed(6)
-  ),
-  estimated_cost_inr: Number(
-    (first.estimated_cost_inr + second.estimated_cost_inr).toFixed(4)
-  ),
-})
-
-const attemptJsonRepair = async ({
-  apiKey,
-  model,
-  text,
-  responseSchema,
-  timeoutMs,
-  queuedMs,
-  label,
-  usage,
-}: {
-  apiKey: string
-  model: string
-  text: string
-  responseSchema: unknown
-  timeoutMs: number
-  queuedMs: number
-  label: string
-  usage: GeminiUsage
-}): Promise<GeminiGenerateResult | null> => {
-  if (!text.trim()) {
-    return null
-  }
-
-  const ollamaUrl = process.env.OLLAMA_URL
-  const isOllama = canUseOllamaForFrontendAi()
-  const actualModel = isOllama ? (process.env.OLLAMA_MODEL || "deepseek-r1:1.5b") : model
-
-  const controller = new AbortController()
-  const timeout = setTimeout(() => controller.abort(), timeoutMs)
-  const repairPrompt = [
-    "The following response is an invalid or truncated JSON object.",
-    "Repair it into one valid compact JSON object matching the response schema.",
-    "If a value is cut off, finish it briefly. If a schema field is missing, fill strings with a short useful sentence, arrays with [] when evidence is unavailable, and booleans with false.",
-    "Do not add markdown. Do not explain. Return JSON only.",
-    "Invalid JSON response:",
-    text.slice(0, 14000),
-  ].join("\n")
-
-  let response: Response | null = null
-
-  if (isOllama) {
-    response = await fetch(`${ollamaUrl}/api/generate`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      signal: controller.signal,
-      body: JSON.stringify({
-        model: actualModel,
-        prompt: repairPrompt,
-        stream: false,
-        format: "json",
-        options: {
-          temperature: 0,
-          num_predict: 4096,
-          num_ctx: Math.max(8192, 4096 + 1024 + Math.ceil(repairPrompt.length / 3)),
-        },
-      }),
-    }).catch((error) => {
-      console.error(`[${label}] Ollama JSON repair request failed`, {
-        error: error instanceof Error ? error.message : String(error),
-      })
-      return null
-    })
-  } else {
-    response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(
-        actualModel
-      )}:generateContent`,
-      {
-        method: "POST",
-        headers: {
-          "x-goog-api-key": apiKey,
-          "Content-Type": "application/json",
-        },
-        signal: controller.signal,
-        body: JSON.stringify({
-          contents: [
-            {
-              role: "user",
-              parts: [{ text: repairPrompt }],
-            },
-          ],
-          generationConfig: {
-            temperature: 0,
-            maxOutputTokens: 4096,
-            responseMimeType: "application/json",
-            responseSchema,
-          },
-        }),
-      }
-    ).catch((error) => {
-      console.error(`[${label}] Gemini JSON repair request failed`, {
-        error: error instanceof Error ? error.message : String(error),
-      })
-      return null
-    })
-  }
-
-  clearTimeout(timeout)
-
-  if (!response?.ok) {
-    console.error(`[${label}] ${isOllama ? "Ollama" : "Gemini"} JSON repair failed`, {
-      status: response?.status,
-      statusText: response?.statusText,
-    })
-    return null
-  }
-
-  const data = await response.json()
-  let repairedText = ""
-  let rawUsage: any = null
-
-  if (isOllama) {
-    repairedText = data.response || ""
-    rawUsage = {
-      promptTokenCount: data.prompt_eval_count || 0,
-      candidatesTokenCount: data.eval_count || 0,
-    }
-  } else {
-    repairedText = data.candidates?.[0]?.content?.parts
-      ?.map((part: { text?: string }) => part.text || "")
-      .join("")
-      .trim() || ""
-    rawUsage = data.usageMetadata
-  }
-
-  const parsed = safeParseJson(repairedText)
-
-  if (!parsed) {
-    console.error(`[${label}] ${isOllama ? "Ollama" : "Gemini"} JSON repair returned invalid JSON`, {
-      textPreview: repairedText.slice(0, 500),
-    })
-    return null
-  }
-
-  return {
-    ok: true,
-    parsed,
-    text: repairedText,
-    model: actualModel,
-    provider: isOllama ? "ollama" : "gemini",
-    usage: mergeGeminiUsage(
-      usage,
-      normalizeGeminiUsage(rawUsage, actualModel)
-    ),
-    status: response.status,
-    statusText: response.statusText,
-    attempts: 1,
-    queuedMs,
-  }
-}
 
 export const generateGeminiJson = async ({
   prompt,
@@ -494,9 +384,11 @@ export const generateGeminiJson = async ({
   timeoutMs = getAstrologyAiTimeoutMs(),
   maxAttempts,
   maxOutputTokens,
+  thinkingBudget = 0,
   label = "Gemini",
+  model: modelOverride,
 }: GeminiGenerateOptions): Promise<GeminiGenerateResult> => {
-  const model = getGeminiModel().replace(/^models\//, "")
+  const model = normalizeGeminiModel(modelOverride || getGeminiModel())
   const apiKey = getGeminiApiKey()
   const attempts = getGeminiMaxAttempts(maxAttempts)
   const limitTokens = getGeminiMaxOutputTokens(maxOutputTokens)
@@ -580,6 +472,9 @@ export const generateGeminiJson = async ({
                   maxOutputTokens: limitTokens,
                   responseMimeType: "application/json",
                   responseSchema,
+                  ...(currentModel.includes("2.5")
+                    ? { thinkingConfig: { thinkingBudget } }
+                    : {}),
                 },
               }),
             }
@@ -643,7 +538,11 @@ export const generateGeminiJson = async ({
             queuedMs,
           }
 
-          console.error(`[${label}] Gemini generation failed`, {
+          const willRetry =
+            retryable && (attempt < attempts || modelIndex < modelsToTry.length - 1)
+          const logGenerationIssue = willRetry ? console.log : console.error
+
+          logGenerationIssue(`[${label}] Gemini generation ${willRetry ? "retrying" : "failed"}`, {
             attempt,
             attempts,
             model: currentModel,
@@ -655,7 +554,7 @@ export const generateGeminiJson = async ({
             error: errorMessage,
           })
 
-          if (retryable && (attempt < attempts || modelIndex < modelsToTry.length - 1)) {
+          if (willRetry) {
             await sleep(getBackoffMs(attempt, modelIndex))
             continue
           }
@@ -684,51 +583,14 @@ export const generateGeminiJson = async ({
 
         const usage = normalizeGeminiUsage(rawUsage, currentModel)
         const parsed = safeParseJson(text)
+        const finishReason = isOllama
+          ? undefined
+          : String(data.candidates?.[0]?.finishReason || "") || undefined
 
         if (!parsed) {
-          const repaired = await attemptJsonRepair({
-            apiKey,
-            model: currentModel,
-            text: text || "",
-            responseSchema,
-            timeoutMs: Math.min(timeoutMs, 45_000),
-            queuedMs,
-            label,
-            usage,
-          })
-
-          if (repaired) {
-            const repairedLog: GeminiAttemptLog = {
-              provider,
-              model: currentModel,
-              attempt,
-              status: response.status,
-              statusText: response.statusText,
-              ok: true,
-              invalidJson: true,
-              durationMs: Date.now() - startedAt,
-              usage: repaired.usage,
-            }
-            const logs = [...attemptLogs, repairedLog]
-
-            console.warn(`[${label}] ${isOllama ? "Ollama" : "Gemini"} JSON was repaired after truncation`, {
-              attempt,
-              model: currentModel,
-              queuedMs,
-            })
-
-            return {
-              ...repaired,
-              model: currentModel,
-              provider,
-              attempts: totalAttempts,
-              attempt_logs: logs,
-            }
-          }
-
           const retryable = shouldRetryGemini({
             status: response.status,
-            invalidJson: true,
+            invalidJson: false,
           })
 
           attemptLogs.push({
@@ -740,6 +602,7 @@ export const generateGeminiJson = async ({
             ok: false,
             error: "invalid_json",
             invalidJson: true,
+            finishReason,
             durationMs: Date.now() - startedAt,
             usage,
           })
@@ -766,6 +629,10 @@ export const generateGeminiJson = async ({
             modelIndex,
             queuedMs,
             retryable,
+            finishReason,
+            promptTokens: usage.prompt_tokens,
+            completionTokens: usage.completion_tokens,
+            thoughtsTokens: usage.thoughts_tokens,
             textPreview: (text || "").slice(0, 500),
           })
 
@@ -784,6 +651,7 @@ export const generateGeminiJson = async ({
           status: response.status,
           statusText: response.statusText,
           ok: true,
+          finishReason,
           durationMs: Date.now() - startedAt,
           usage,
         }

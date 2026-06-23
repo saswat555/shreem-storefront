@@ -71,8 +71,7 @@
         180deg,
         rgba(248, 241, 228, 0.9),
         rgba(247, 242, 232, 0.9)
-      ),
-      url("/shreem-scenes/hero-scene.png");
+      );
     background-position: center top;
     background-repeat: no-repeat;
     background-size: cover;
@@ -488,6 +487,24 @@
       radial-gradient(circle at 70% 86%, rgba(255, 198, 80, 0.16), transparent 31%),
       radial-gradient(circle at 40% 54%, rgba(134, 82, 255, 0.18), transparent 34%),
       linear-gradient(135deg, #04101f 0%, #0b1934 36%, #1c1437 72%, #371024 100%);
+  }
+
+  body.astrology-night-mode .astrology-realm [class*="bg-white"],
+  body.astrology-night-mode .astrology-realm [class*="bg-[rgba(255,248,233"],
+  body.astrology-night-mode .astrology-realm [class*="bg-[rgba(240,248,246"],
+  body.astrology-night-mode .astrology-realm [class*="bg-amber"],
+  body.astrology-night-mode .astrology-realm [class*="bg-rose"] {
+    background: rgba(9, 22, 43, 0.72) !important;
+    border-color: rgba(190, 211, 255, 0.18) !important;
+    color: var(--shreem-muted) !important;
+  }
+
+  body.astrology-night-mode .astrology-realm [class*="text-[var(--shreem-ink)]"] {
+    color: var(--shreem-ink) !important;
+  }
+
+  body.astrology-night-mode .astrology-realm [class*="text-[var(--shreem-muted)]"] {
+    color: var(--shreem-muted) !important;
   }
 
   .astrology-realm::before {

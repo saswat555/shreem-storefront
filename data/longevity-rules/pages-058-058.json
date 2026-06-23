@@ -1,0 +1,198 @@
+{
+  "pages": [
+    108,
+    109
+  ],
+  "page_summary": "These pages outline methods for determining the general longevity class (short, medium, long life) based on the strength and placement of the 7th and 8th house lords and the Atmakaraka. They also detail various astrological conditions that can lead to an upward or downward revision of this initial longevity assessment, focusing on benefic and malefic planetary influences, particularly involving Jupiter, Saturn, and the Moon.",
+  "rules": [
+    {
+      "id": "longevity-method-khl",
+      "page": 108,
+      "category": "method",
+      "condition": "When different astrological factors indicate varying longevity classes for an individual.",
+      "effect": "The determination of longevity class by the K.H.L. group should be accepted as primary.",
+      "implementation": "Software should prioritize the K.H.L. group's longevity assessment when conflicting indicators are present.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-7-8-lords-kendra",
+      "page": 108,
+      "category": "longevity_class",
+      "condition": "The stronger of the 7th and 8th house lords (from Lagna) occupies a Kendra house (1st, 4th, 7th, or 10th).",
+      "effect": "Indicates a long duration of life.",
+      "implementation": "Flag this condition as a strong indicator for the 'long life' category.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-7-8-lords-panaphara",
+      "page": 108,
+      "category": "longevity_class",
+      "condition": "The stronger of the 7th and 8th house lords (from Lagna) occupies a Panaphara house (2nd, 5th, 8th, or 11th).",
+      "effect": "Indicates a medium duration of life.",
+      "implementation": "Flag this condition as an indicator for the 'medium life' category.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-7-8-lords-apoklima",
+      "page": 108,
+      "category": "longevity_class",
+      "condition": "The stronger of the 7th and 8th house lords (from Lagna) occupies an Apoklima house (3rd, 6th, 9th, or 12th).",
+      "effect": "Indicates a short duration of life.",
+      "implementation": "Flag this condition as an indicator for the 'short life' category.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-ak-7-8-kendra",
+      "page": 108,
+      "category": "longevity_class",
+      "condition": "The strongest among the Atmakaraka planet, the 7th house lord, and the 8th house lord occupies a Kendra house.",
+      "effect": "Indicates a long duration of life.",
+      "implementation": "Flag this condition as a strong indicator for the 'long life' category.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-ak-7-8-panaphara",
+      "page": 108,
+      "category": "longevity_class",
+      "condition": "The strongest among the Atmakaraka planet, the 7th house lord, and the 8th house lord occupies a Panaphara house.",
+      "effect": "Indicates a medium duration of life.",
+      "implementation": "Flag this condition as an indicator for the 'medium life' category.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-ak-7-8-apoklima",
+      "page": 108,
+      "category": "longevity_class",
+      "condition": "The strongest among the Atmakaraka planet, the 7th house lord, and the 8th house lord occupies an Apoklima house.",
+      "effect": "Indicates a short duration of life.",
+      "implementation": "Flag this condition as an indicator for the 'short life' category.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-jupiter-lagna-7-benefic",
+      "page": 108,
+      "category": "mitigation",
+      "condition": "Jupiter is positioned in the Lagna or the 7th house, and is associated with or aspected by benefic planets. (Mere presence of Jupiter without benefic aspect or association is not sufficient for this effect).",
+      "effect": "Can lead to an upward revision of the determined longevity class.",
+      "implementation": "If a 'short' or 'medium' longevity class is indicated, this condition suggests a potential upgrade to 'medium' or 'long' respectively, provided the benefic influence is strong.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-asc-desc-subhakartari",
+      "page": 109,
+      "category": "mitigation",
+      "condition": "The Ascendant or the Descendant has benefic planets on both sides (Subhakartari Yoga).",
+      "effect": "Contributes to an upward revision of the determined longevity class.",
+      "implementation": "Consider this a positive factor that can improve longevity prospects.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-ak-7th-subhakartari",
+      "page": 109,
+      "category": "mitigation",
+      "condition": "The Atmakaraka or the 7th house from the Atmakaraka has benefic planets on both sides.",
+      "effect": "Contributes to an upward revision of the determined longevity class.",
+      "implementation": "Consider this a positive factor that can improve longevity prospects.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-benefics-trine-ak-7th",
+      "page": 109,
+      "category": "mitigation",
+      "condition": "Benefic planets are in a trine (5th or 9th house) from the Atmakaraka or the 7th house from the Atmakaraka.",
+      "effect": "Contributes to an upward revision of the determined longevity class.",
+      "implementation": "Consider this a positive factor that can improve longevity prospects.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-benefics-lagna-desc",
+      "page": 109,
+      "category": "mitigation",
+      "condition": "Benefic planets are present in the Lagna or the Descendant.",
+      "effect": "Contributes to an upward revision of the determined longevity class.",
+      "implementation": "Consider the presence of benefics in Lagna or Descendant as a positive factor for longevity.",
+      "confidence": "medium"
+    },
+    {
+      "id": "longevity-benefics-trine-asc-desc",
+      "page": 109,
+      "category": "mitigation",
+      "condition": "Benefic planets are in a trine (5th or 9th house) from the Ascendant or the Descendant.",
+      "effect": "Contributes to an upward revision of the determined longevity class.",
+      "implementation": "Consider this a positive factor that can improve longevity prospects.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-caution-saturn-factor",
+      "page": 109,
+      "category": "caution",
+      "condition": "Saturn is identified as one of the primary factors determining the longevity class.",
+      "effect": "Indicates a potential for downward revision of the determined longevity class.",
+      "implementation": "When Saturn is a key determinant, exercise extra caution and review other downward revision factors carefully.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-caution-saturn-debilitated-malefic",
+      "page": 109,
+      "category": "caution",
+      "condition": "Saturn is positioned in its sign of debilitation or an enemy sign, and is associated with or aspected by a malefic planet. (This reduction is not applicable if Saturn is in its own sign or exaltation, or if only aspected by malefic(s) without association).",
+      "effect": "Indicates a potential for downward revision of the determined longevity class.",
+      "implementation": "Flag this as a significant negative factor for longevity, but ensure the exceptions (own sign, exaltation, or aspect-only) are correctly applied to prevent false positives.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-caution-saturn-kendra-jupiter-mars",
+      "page": 109,
+      "category": "caution",
+      "condition": "Saturn is positioned in a Kendrasthana (1st, 4th, 7th, or 10th) from Jupiter, or if these Kendrasthanas are aspected by Saturn along with Mars.",
+      "effect": "Indicates a potential for downward revision of the determined longevity class.",
+      "implementation": "Flag this as a negative factor for longevity prospects.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-caution-moon-8-12-asc",
+      "page": 109,
+      "category": "caution",
+      "condition": "The Moon is positioned in the 8th or 12th house from the Ascendant.",
+      "effect": "Indicates a potential for downward revision of the determined longevity class.",
+      "implementation": "Flag this as a negative factor for longevity prospects.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-caution-moon-8-ak",
+      "page": 109,
+      "category": "caution",
+      "condition": "The Moon is positioned in the 8th house from the Atmakaraka.",
+      "effect": "Indicates a potential for downward revision of the determined longevity class.",
+      "implementation": "Flag this as a negative factor for longevity prospects.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-caution-moon-12-7-lagna-ak",
+      "page": 109,
+      "category": "caution",
+      "condition": "The Moon is positioned in the 12th house or the 7th house from the Lagna, or from the Atmakaraka.",
+      "effect": "Indicates a potential for downward revision of the determined longevity class.",
+      "implementation": "Flag this as a negative factor for longevity prospects.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-caution-saturn-lagna-rasi-ak-rasi",
+      "page": 109,
+      "category": "caution",
+      "condition": "Saturn is positioned in the Lagna, or the Janma Rasi (Moon sign), or the Rasi of the Atmakaraka.",
+      "effect": "Indicates a potential for downward revision of the determined longevity class.",
+      "implementation": "Flag this as a negative factor for longevity prospects.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-caution-saturn-6-8-12-lagna-janma-ak",
+      "page": 109,
+      "category": "caution",
+      "condition": "Saturn is positioned in the 6th, 8th, or 12th house from the Lagna, or the Janma Rasi (Moon sign), or the sign of the Atmakaraka.",
+      "effect": "Indicates a potential for downward revision of the determined longevity class.",
+      "implementation": "Flag this as a significant negative factor for longevity prospects.",
+      "confidence": "high"
+    }
+  ]
+}

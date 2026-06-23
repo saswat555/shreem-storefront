@@ -4,19 +4,31 @@ import { NextRequest, NextResponse } from "next/server"
 const BACKEND_URL = process.env.MEDUSA_BACKEND_URL
 const PUBLISHABLE_API_KEY = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY
 const DEFAULT_REGION = process.env.NEXT_PUBLIC_DEFAULT_REGION || "in"
+const FALLBACK_REGION = {
+  id: "fallback-region-in",
+  name: "India",
+  countries: [{ iso_2: DEFAULT_REGION }],
+} as unknown as HttpTypes.StoreRegion
 
 const regionMapCache = {
   regionMap: new Map<string, HttpTypes.StoreRegion>(),
   regionMapUpdated: Date.now(),
 }
 
+const getFallbackRegionMap = () => {
+  const fallbackMap = new Map<string, HttpTypes.StoreRegion>()
+  fallbackMap.set(DEFAULT_REGION, FALLBACK_REGION)
+  return fallbackMap
+}
+
 async function getRegionMap(cacheId: string) {
   const { regionMap, regionMapUpdated } = regionMapCache
 
   if (!BACKEND_URL) {
-    throw new Error(
-      "Middleware.ts: Error fetching regions. Did you set up regions in your Medusa Admin and define a MEDUSA_BACKEND_URL environment variable? Note that the variable is no longer named NEXT_PUBLIC_MEDUSA_BACKEND_URL."
+    console.error(
+      "Middleware.ts: MEDUSA_BACKEND_URL is missing. Falling back to default region."
     )
+    return getFallbackRegionMap()
   }
 
   if (
@@ -24,39 +36,52 @@ async function getRegionMap(cacheId: string) {
     regionMapUpdated < Date.now() - 3600 * 1000
   ) {
     // Fetch regions from Medusa. We can't use the JS client here because middleware is running on Edge and the client needs a Node environment.
-    const { regions } = await fetch(`${BACKEND_URL}/store/regions`, {
-      headers: {
-        "x-publishable-api-key": PUBLISHABLE_API_KEY!,
-      },
-      next: {
-        revalidate: 3600,
-        tags: [`regions-${cacheId}`],
-      },
-      cache: "force-cache",
-    }).then(async (response) => {
-      const json = await response.json()
+    try {
+      const { regions } = await fetch(`${BACKEND_URL}/store/regions`, {
+        headers: {
+          "x-publishable-api-key": PUBLISHABLE_API_KEY!,
+        },
+        next: {
+          revalidate: 3600,
+          tags: [`regions-${cacheId}`],
+        },
+        cache: "force-cache",
+      }).then(async (response) => {
+        const json = await response.json().catch(() => ({}))
 
-      if (!response.ok) {
-        throw new Error(json.message)
+        if (!response.ok) {
+          throw new Error(json.message || `Regions request failed: ${response.status}`)
+        }
+
+        return json
+      })
+
+      if (!regions?.length) {
+        throw new Error(
+          "No regions found. Please set up regions in your Medusa Admin."
+        )
       }
 
-      return json
-    })
+      regionMapCache.regionMap.clear()
 
-    if (!regions?.length) {
-      throw new Error(
-        "No regions found. Please set up regions in your Medusa Admin."
-      )
-    }
-
-    // Create a map of country codes to regions.
-    regions.forEach((region: HttpTypes.StoreRegion) => {
-      region.countries?.forEach((c) => {
-        regionMapCache.regionMap.set(c.iso_2 ?? "", region)
+      regions.forEach((region: HttpTypes.StoreRegion) => {
+        region.countries?.forEach((c) => {
+          regionMapCache.regionMap.set(c.iso_2 ?? "", region)
+        })
       })
-    })
 
-    regionMapCache.regionMapUpdated = Date.now()
+      regionMapCache.regionMapUpdated = Date.now()
+    } catch (error) {
+      console.error("Middleware.ts: Error fetching regions; using fallback region.", {
+        message: error instanceof Error ? error.message : String(error),
+      })
+
+      if (regionMapCache.regionMap.size) {
+        return regionMapCache.regionMap
+      }
+
+      return getFallbackRegionMap()
+    }
   }
 
   return regionMapCache.regionMap
@@ -104,6 +129,16 @@ async function getCountryCode(
  * Middleware to handle region selection and onboarding status.
  */
 export async function middleware(request: NextRequest) {
+  const hostname = request.nextUrl.hostname.toLowerCase()
+
+  if (hostname === "shreemfarms.in") {
+    const canonicalUrl = request.nextUrl.clone()
+    canonicalUrl.hostname = "www.shreemfarms.in"
+    canonicalUrl.protocol = "https:"
+
+    return NextResponse.redirect(canonicalUrl, 308)
+  }
+
   if (request.nextUrl.pathname.includes(".")) {
     return NextResponse.next()
   }
@@ -116,7 +151,12 @@ export async function middleware(request: NextRequest) {
 
   let cacheId = cacheIdCookie?.value || crypto.randomUUID()
 
-  const regionMap = await getRegionMap(cacheId)
+  const regionMap = await getRegionMap(cacheId).catch((error) => {
+    console.error("Middleware.ts: Region map failed; using fallback.", {
+      message: error instanceof Error ? error.message : String(error),
+    })
+    return getFallbackRegionMap()
+  })
 
   const countryCode = regionMap && (await getCountryCode(request, regionMap))
 

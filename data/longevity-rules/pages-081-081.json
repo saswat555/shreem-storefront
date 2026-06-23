@@ -1,0 +1,80 @@
+{
+  "pages": [
+    "081"
+  ],
+  "page_summary": "This page discusses principles for judging longevity, identifying significant planets for marakasthana, and methods for timing events using natal and horary charts. It emphasizes caution and the probabilistic nature of astrological predictions. Examples of specific planetary combinations related to developmental stages and lifespan are provided from Suka Nadi doctrines.",
+  "rules": [
+    {
+      "id": "maraka-planets-identification-081",
+      "page": "081",
+      "category": "maraka",
+      "condition": "Planets associated with marakasthana.",
+      "effect": "Saturn, Mercury, and Venus are identified as significant for longevity assessment.",
+      "implementation": "Flag these planets for special analysis in longevity modules.",
+      "confidence": "high"
+    },
+    {
+      "id": "transit-timing-method-081",
+      "page": "081",
+      "category": "dasha_timing",
+      "condition": "Examination of planetary transits from the Moon sign and the 7th house.",
+      "effect": "Relevant for timing significant life events.",
+      "implementation": "Incorporate Moon sign and 7th house transits in event timing calculations.",
+      "confidence": "high"
+    },
+    {
+      "id": "chart-types-for-longevity-081",
+      "page": "081",
+      "category": "method",
+      "condition": "Assessing longevity potential.",
+      "effect": "Both natal (birth) and horary charts are applicable.",
+      "implementation": "Allow users to select either chart type for longevity analysis.",
+      "confidence": "high"
+    },
+    {
+      "id": "caution-in-longevity-analysis-081",
+      "page": "081",
+      "category": "caution",
+      "condition": "Performing longevity analysis.",
+      "effect": "Requires extreme caution and careful interpretation.",
+      "implementation": "Display a caution message to internal users regarding the probabilistic nature of longevity predictions.",
+      "confidence": "high"
+    },
+    {
+      "id": "astrology-as-probabilistic-081",
+      "page": "081",
+      "category": "caution",
+      "condition": "Any astrological prediction.",
+      "effect": "Outcomes are probabilistic, not absolute certainties.",
+      "implementation": "Ensure all predictive outputs are framed as indications or probabilities, not definitive statements.",
+      "confidence": "high"
+    },
+    {
+      "id": "developmental-indicator-female-081",
+      "page": "081",
+      "category": "longevity_class",
+      "condition": "Lords of the 5th and 8th houses conjunct in the 7th house with Saturn and Rahu.",
+      "effect": "Indicates a potential for specific developmental challenges in females.",
+      "implementation": "Identify this combination for specific health or developmental indicators, avoiding fatalistic language.",
+      "confidence": "high"
+    },
+    {
+      "id": "full-lifespan-indicator-081",
+      "page": "081",
+      "category": "longevity_class",
+      "condition": "Movable Rasi as the Ascendant, with the 8th house lord placed in the Ascendant.",
+      "effect": "Indicates a potential for a full lifespan.",
+      "implementation": "Flag this combination as a positive indicator for longevity potential.",
+      "confidence": "high"
+    },
+    {
+      "id": "predictive-scope-timing-compatibility-081",
+      "page": "081",
+      "category": "method",
+      "condition": "General astrological analysis.",
+      "effect": "Provides methods for timing events and assessing marital compatibility.",
+      "implementation": "Note that the system should support event timing and compatibility modules.",
+      "confidence": "high"
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "pages": [
+    64,
+    65
+  ],
+  "page_summary": "These pages present Ashtaka Varga tables for Mercury and Jupiter, detailing benefic points (bindus) assigned by various planets and Lagna to each zodiac sign. These tables are indicated as a component for the 'Judgement of Longevity' but do not contain explicit interpretive rules for longevity, Maraka, or dasha timing.",
+  "rules": [
+    {
+      "id": "ashtaka-varga-mercury-table",
+      "page": 64,
+      "category": "method",
+      "condition": "Ashtaka Varga calculation for Mercury",
+      "effect": "Provides a table showing benefic points (bindus) contributed by Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn, and Lagna to each zodiac sign for Mercury's Ashtaka Varga. Each sign's total bindus are also listed.",
+      "implementation": "Software should calculate and display Mercury's Ashtaka Varga table, including individual planetary contributions and total bindus per sign, as a foundational data point for longevity analysis.",
+      "confidence": "high"
+    },
+    {
+      "id": "ashtaka-varga-jupiter-table",
+      "page": 65,
+      "category": "method",
+      "condition": "Ashtaka Varga calculation for Jupiter",
+      "effect": "Provides a table showing benefic points (bindus) contributed by Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn, and Lagna to each zodiac sign for Jupiter's Ashtaka Varga. Each sign's total bindus are also listed.",
+      "implementation": "Software should calculate and display Jupiter's Ashtaka Varga table, including individual planetary contributions and total bindus per sign, as a foundational data point for longevity analysis.",
+      "confidence": "high"
+    },
+    {
+      "id": "caution-no-explicit-rules",
+      "page": 64,
+      "category": "caution",
+      "condition": "Review of pages 64 and 65 for longevity and Maraka rules.",
+      "effect": "The pages provide Ashtaka Varga data tables but do not contain explicit textual rules for interpreting these tables in the context of longevity classes, Maraka determination, dasha timing, or any mitigation/protection strategies.",
+      "implementation": "Software should note that while Ashtaka Varga is a tool for longevity assessment, the specific interpretive rules for using these bindu totals to determine longevity or Maraka periods are not present on these pages and must be sourced elsewhere.",
+      "confidence": "high"
+    }
+  ]
+}

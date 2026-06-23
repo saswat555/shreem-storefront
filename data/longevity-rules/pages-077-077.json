@@ -1,0 +1,116 @@
+{
+  "pages": [
+    77
+  ],
+  "page_summary": "This page outlines the fundamental principles of Jyotish longevity assessment, emphasizing that life span (yogajayu/ayusha) is primarily determined by planetary influences and their combinations (yogas). It highlights the critical role of the Janma Lagna, planetary significations (karakatwas), and specific divisional charts like Navamsa and Drekkana. The text also cautions about the multiplicity of methods and attributes estimation inaccuracies to interpretation rather than mathematical flaws.",
+  "rules": [
+    {
+      "id": "longevity-planetary-basis-077-1",
+      "page": 77,
+      "category": "longevity_class",
+      "condition": "General assessment of life span",
+      "effect": "Longevity (yogajayu/ayusha) is fundamentally determined by planetary configurations and their combinations (yogas).",
+      "implementation": "Software should prioritize planetary analysis and yogas for longevity calculations, treating mathematical methods as corroborative tools.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-math-corroboration-077-2",
+      "page": 77,
+      "category": "method",
+      "condition": "Applying mathematical methods for longevity assessment",
+      "effect": "Mathematical methods are intended to corroborate conclusions derived from planetary studies, not to independently define longevity.",
+      "implementation": "Ensure mathematical calculations align with and support interpretations based on planetary positions and aspects.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-janma-lagna-importance-077-3",
+      "page": 77,
+      "category": "method",
+      "condition": "Assessing longevity in a natal chart",
+      "effect": "The Janma Lagna (ascendant) holds paramount importance in determining the extent of life.",
+      "implementation": "The Lagna must be a primary reference point for all longevity-related calculations and interpretations.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-divisional-relation-lagna-077-4",
+      "page": 77,
+      "category": "method",
+      "condition": "Analyzing zodiacal divisions for longevity",
+      "effect": "Other zodiacal divisions (signs, nakshatras, navamsa, drekkana) are to be considered in relation to the Janma Lagna.",
+      "implementation": "Ensure all divisional chart analyses for longevity are contextualized by the natal Lagna.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-karakatwa-crucial-077-5",
+      "page": 77,
+      "category": "method",
+      "condition": "Evaluating planetary roles in longevity",
+      "effect": "Planetary significations (karakatwas) are crucial factors in longevity assessment.",
+      "implementation": "Integrate both permanent and temporary karakatwas into longevity algorithms.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-karakatwa-types-077-6",
+      "page": 77,
+      "category": "method",
+      "condition": "Applying planetary significations",
+      "effect": "Planetary significations include permanent (e.g., Saturn for longevity) and temporary (lordship, house occupation) aspects.",
+      "implementation": "Distinguish and apply both types of karakatwas in planetary analysis for longevity.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-saturn-karaka-077-7",
+      "page": 77,
+      "category": "longevity_class",
+      "condition": "Identifying permanent significators for longevity",
+      "effect": "Saturn is a permanent significator (karaka) for longevity (ayu).",
+      "implementation": "Assign Saturn a primary role in longevity calculations and interpretations.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-gandarishta-factor-077-8",
+      "page": 77,
+      "category": "method",
+      "condition": "Assessing specific astrological configurations",
+      "effect": "The concept of Gandarishtas, including Tithi Gandas, is an important consideration in longevity assessment.",
+      "implementation": "Include Gandarishta calculations and their implications in longevity analysis.",
+      "confidence": "medium"
+    },
+    {
+      "id": "longevity-divisional-charts-077-9",
+      "page": 77,
+      "category": "method",
+      "condition": "Utilizing divisional charts for longevity",
+      "effect": "Navamsa and Drekkana divisional charts are important for detailed longevity analysis.",
+      "implementation": "Ensure these divisional charts are generated and their planetary placements considered for longevity.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-methods-variability-077-10",
+      "page": 77,
+      "category": "caution",
+      "condition": "General approach to longevity calculations",
+      "effect": "There are numerous methods for calculating longevity, and their reliability can vary.",
+      "implementation": "Software should acknowledge the multiplicity of methods and potentially offer different approaches, with clear documentation of their basis.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-estimation-failure-077-11",
+      "page": 77,
+      "category": "caution",
+      "condition": "Analyzing discrepancies in longevity estimations",
+      "effect": "Inaccurate longevity estimations are typically due to misinterpretation of planetary influences rather than flaws in mathematical methods.",
+      "implementation": "Focus on robust interpretation models for planetary effects rather than solely refining mathematical formulas.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-cessation-indication-077-12",
+      "page": 77,
+      "category": "maraka",
+      "condition": "Planetary analysis for life span",
+      "effect": "Planets are considered to indicate both the potential for life and the probability of its cessation.",
+      "implementation": "Software should analyze planetary positions for indicators related to the duration of life, including factors that may suggest its conclusion.",
+      "confidence": "high"
+    }
+  ]
+}

@@ -12,6 +12,7 @@ export type AiUsagePayload = {
   model?: string
   prompt_tokens?: number
   completion_tokens?: number
+  cached_prompt_tokens?: number
   total_tokens?: number
   estimated_cost_usd?: number
   estimated_cost_inr?: number
@@ -82,18 +83,227 @@ const hasUsableUsageRecord = (result?: AiUsageWriteResponse) => {
   return Boolean(result && result.synced !== false && result.usage)
 }
 
+const MAX_AI_USAGE_POST_CHARS = 45_000
+
+const compactString = (value: string, max = 1600) =>
+  value.length > max ? `${value.slice(0, max)}...` : value
+
+const compactJsonForAiUsage = (
+  value: unknown,
+  parentKey = "",
+  depth = 0
+): unknown => {
+  if (value === null || typeof value === "undefined") {
+    return value
+  }
+
+  if (typeof value === "string") {
+    return compactString(value, depth > 3 ? 700 : 1800)
+  }
+
+  if (typeof value === "number" || typeof value === "boolean") {
+    return value
+  }
+
+  if (Array.isArray(value)) {
+    const limit =
+      /attempt_logs/i.test(parentKey) ? 8 :
+      /bphs|proof|evidence|timeline|dasha|houses|aspects|planets/i.test(parentKey) ? 12 :
+      24
+
+    return value
+      .slice(0, limit)
+      .map((item) => compactJsonForAiUsage(item, parentKey, depth + 1))
+  }
+
+  if (typeof value === "object") {
+    if (depth > 5) {
+      return "[compacted-depth]"
+    }
+
+    const record = value as Record<string, unknown>
+    const heavyKeys = new Set([
+      "chart",
+      "evidence_stack",
+      "bphs_rule_proofs",
+      "knowledge_context",
+      "knowledge_references",
+      "dasha_timeline",
+      "longevity_assessment",
+      "critical_period_analysis",
+      "targeted_remedy_seeds",
+      "targeted_remedies",
+      "detected_cases",
+      "detected_yogas",
+      "health_indicators",
+      "house_outcomes",
+      "planet_effects",
+      "graha_table",
+      "house_table",
+      "aspects",
+      "houses",
+      "planets",
+    ])
+
+    return Object.fromEntries(
+      Object.entries(record)
+        .filter(([key]) => !(depth > 1 && heavyKeys.has(key)))
+        .map(([key, item]) => [
+          key,
+          compactJsonForAiUsage(item, key, depth + 1),
+        ])
+    )
+  }
+
+  return String(value)
+}
+
+const fitAiUsagePayload = (payload: AiUsagePayload): AiUsagePayload => {
+  const compacted: AiUsagePayload = {
+    ...payload,
+    input: compactJsonForAiUsage(payload.input) as Record<string, unknown>,
+    response: compactJsonForAiUsage(payload.response) as Record<string, unknown>,
+    metadata: compactJsonForAiUsage(payload.metadata || {}) as Record<string, unknown>,
+    attempt_logs: compactJsonForAiUsage(payload.attempt_logs || []) as Array<
+      Record<string, unknown>
+    >,
+  }
+
+  if (JSON.stringify(compacted).length <= MAX_AI_USAGE_POST_CHARS) {
+    return compacted
+  }
+
+  const analysis = (payload.response as any)?.analysis || {}
+  const profile = (payload.response as any)?.profile
+  const chart = (payload.response as any)?.chart
+  const compactResponse = {
+    compacted: true,
+    profile,
+    message: (payload.response as any)?.message,
+    model: payload.model,
+    provider: payload.provider,
+    token_usage: {
+      prompt_tokens: payload.prompt_tokens,
+      completion_tokens: payload.completion_tokens,
+      cached_prompt_tokens: payload.cached_prompt_tokens,
+      total_tokens: payload.total_tokens,
+      estimated_cost_usd: payload.estimated_cost_usd,
+      estimated_cost_inr: payload.estimated_cost_inr,
+      attempts: payload.attempts,
+    },
+    chart_summary: {
+      ascendant: chart?.ascendant,
+      moonSign: chart?.moonSign,
+      nakshatra: chart?.nakshatra,
+      nakshatraPada: chart?.nakshatraPada,
+      dasha: chart?.dasha
+        ? {
+            mahadasha: chart.dasha.mahadasha,
+            antardasha: chart.dasha.antardasha,
+            pratyantar: chart.dasha.pratyantar,
+          }
+        : undefined,
+    },
+    analysis: {
+      summary: compactJsonForAiUsage(analysis.summary, "summary", 1),
+      current_period_analysis: compactJsonForAiUsage(
+        analysis.current_period_analysis,
+        "current_period_analysis",
+        1
+      ),
+      career_direction: compactJsonForAiUsage(
+        analysis.career_direction,
+        "career_direction",
+        1
+      ),
+      relationship_pattern: compactJsonForAiUsage(
+        analysis.relationship_pattern,
+        "relationship_pattern",
+        1
+      ),
+      health_caution: compactJsonForAiUsage(
+        analysis.health_caution,
+        "health_caution",
+        1
+      ),
+      prediction_table: compactJsonForAiUsage(
+        Array.isArray(analysis.prediction_table)
+          ? analysis.prediction_table.slice(0, 12)
+          : [],
+        "prediction_table",
+        1
+      ),
+      sub_question_answers: compactJsonForAiUsage(
+        Array.isArray(analysis.sub_question_answers)
+          ? analysis.sub_question_answers.slice(0, 3)
+          : [],
+        "sub_question_answers",
+        1
+      ),
+      targeted_remedies: compactJsonForAiUsage(
+        Array.isArray(analysis.targeted_remedies)
+          ? analysis.targeted_remedies.slice(0, 8)
+          : [],
+        "targeted_remedies",
+        1
+      ),
+    },
+  }
+
+  if (JSON.stringify({ ...compacted, response: compactResponse }).length <= MAX_AI_USAGE_POST_CHARS) {
+    return {
+      ...compacted,
+      response: compactResponse as Record<string, unknown>,
+      metadata: {
+        ...(compacted.metadata || {}),
+        payload_compacted: true,
+        compaction_mode: "kundli_meaningful_summary",
+        original_payload_chars: JSON.stringify(payload).length,
+      },
+    }
+  }
+
+  return {
+    ...compacted,
+    response: {
+      compacted: true,
+      compaction_mode: "minimal_usage_summary",
+      profile,
+      token_usage: compactResponse.token_usage,
+      chart_summary: compactResponse.chart_summary,
+      analysis: {
+        summary: compactResponse.analysis.summary,
+        current_period_analysis: compactResponse.analysis.current_period_analysis,
+        prediction_table: compactResponse.analysis.prediction_table,
+        sub_question_answers: compactResponse.analysis.sub_question_answers,
+        targeted_remedies: compactResponse.analysis.targeted_remedies,
+      },
+      summary: compactResponse.analysis.summary,
+      targeted_remedies: compactResponse.analysis.targeted_remedies,
+    },
+    metadata: {
+      ...(compacted.metadata || {}),
+      payload_compacted: true,
+      compaction_mode: "minimal_usage_summary",
+      original_payload_chars: JSON.stringify(payload).length,
+    },
+  }
+}
+
 const postAiUsageToRoute = async (
   route: string,
   headers: Record<string, any>,
   payload: AiUsagePayload
 ) => {
+  const safePayload = fitAiUsagePayload(payload)
   const enrichedPayload = {
-    ...payload,
+    ...safePayload,
     metadata: {
-      ...(payload.metadata || {}),
-      ai_provider: payload.provider,
-      ai_attempts: payload.attempts,
-      ai_attempt_logs: payload.attempt_logs,
+      ...(safePayload.metadata || {}),
+      ai_provider: safePayload.provider,
+      ai_attempts: safePayload.attempts,
+      ai_attempt_logs: safePayload.attempt_logs,
+      cached_prompt_tokens: safePayload.cached_prompt_tokens,
     },
   }
 
@@ -286,44 +496,6 @@ export const listAiUsage = async ({
     ...(createdTo ? { created_to: createdTo } : {}),
   }
 
-  /**
-   * For listing, prefer admin route first because this is normally consumed
-   * by the admin AI Usage page.
-   */
-  if ("authorization" in headers) {
-    try {
-      const adminResult = await getAiUsageFromRoute(
-        ADMIN_AI_USAGE_ROUTE,
-        headers,
-        query
-      )
-
-      const items = adminResult.usage || adminResult.items || []
-
-      console.log("[AI usage] admin list result", {
-        synced: adminResult?.synced,
-        count: items.length,
-        message: adminResult?.message,
-        error: adminResult?.error,
-      })
-
-      if (adminResult.synced !== false) {
-        return {
-          synced: true,
-          items,
-        }
-      }
-    } catch (adminError: any) {
-      console.error("[AI usage] admin list failed", {
-        route: ADMIN_AI_USAGE_ROUTE,
-        reason: getErrorReason(adminError, "admin_route_unavailable"),
-      })
-    }
-  }
-
-  /**
-   * Fallback to store route so existing storefront/server usage is not affected.
-   */
   try {
     const storeResult = await getAiUsageFromRoute(
       STORE_AI_USAGE_ROUTE,
@@ -349,6 +521,37 @@ export const listAiUsage = async ({
       route: STORE_AI_USAGE_ROUTE,
       reason: getErrorReason(storeError, "store_route_unavailable"),
     })
+
+    if ("authorization" in headers) {
+      try {
+        const adminResult = await getAiUsageFromRoute(
+          ADMIN_AI_USAGE_ROUTE,
+          headers,
+          query
+        )
+
+        const items = adminResult.usage || adminResult.items || []
+
+        console.log("[AI usage] admin list fallback result", {
+          synced: adminResult?.synced,
+          count: items.length,
+          message: adminResult?.message,
+          error: adminResult?.error,
+        })
+
+        if (adminResult.synced !== false) {
+          return {
+            synced: true,
+            items,
+          }
+        }
+      } catch (adminError: any) {
+        console.error("[AI usage] admin list fallback failed", {
+          route: ADMIN_AI_USAGE_ROUTE,
+          reason: getErrorReason(adminError, "admin_route_unavailable"),
+        })
+      }
+    }
 
     return { synced: false, items: [] as AiUsageRecord[] }
   }

@@ -1,0 +1,324 @@
+{
+  "pages": [
+    "052",
+    "053"
+  ],
+  "page_summary": "This document outlines Jyotish rules for assessing longevity and identifying potential critical life events. It details the hierarchy of planetary influences on health, specific types of challenges indicated by exalted or Vargottama planets, and combinations leading to severe issues related to self, spouse, or confinement.",
+  "rules": [
+    {
+      "id": "influence-hierarchy-occupants",
+      "page": "052",
+      "category": "method",
+      "condition": "Evaluating sources of health challenges",
+      "effect": "Occupants of a house are primary influencers.",
+      "implementation": "Prioritize analysis of planets occupying a house for health indications.",
+      "confidence": "high"
+    },
+    {
+      "id": "influence-hierarchy-house-lord",
+      "page": "052",
+      "category": "method",
+      "condition": "Evaluating sources of health challenges",
+      "effect": "The lord of the house is the next significant influencer.",
+      "implementation": "After occupants, consider the house lord's condition and placement.",
+      "confidence": "high"
+    },
+    {
+      "id": "influence-hierarchy-aspecting-planets",
+      "page": "052",
+      "category": "method",
+      "condition": "Evaluating sources of health challenges",
+      "effect": "Planets aspecting the house are the third significant influencers.",
+      "implementation": "Include aspects on the house in the analysis of health challenges.",
+      "confidence": "high"
+    },
+    {
+      "id": "influence-hierarchy-drekkana-lords",
+      "page": "052",
+      "category": "method",
+      "condition": "Evaluating sources of health challenges",
+      "effect": "Lords and Rasi of Drekkana are the final influencers for specific health issues.",
+      "implementation": "Use Drekkana analysis for detailed insights into the nature of health issues.",
+      "confidence": "high"
+    },
+    {
+      "id": "drekkana-8th-house-peculiarities",
+      "page": "052",
+      "category": "caution",
+      "condition": "Analyzing the Drekkana of the Rasi falling in the 8th house",
+      "effect": "Each Drekkana has unique indications for health challenges.",
+      "implementation": "Refer to classical texts for specific interpretations of 8th house Drekkana Rasi.",
+      "confidence": "high"
+    },
+    {
+      "id": "exalted-sun-troubles",
+      "page": "052",
+      "category": "maraka",
+      "condition": "Sun is an exalted occupant of a house",
+      "effect": "Indicates potential for severe challenges related to fire or armed conflict.",
+      "implementation": "Flag potential for specific severe challenges when Sun is exalted in a house.",
+      "confidence": "medium"
+    },
+    {
+      "id": "exalted-moon-troubles",
+      "page": "052",
+      "category": "maraka",
+      "condition": "Moon is an exalted occupant of a house",
+      "effect": "Indicates potential for severe challenges related to water.",
+      "implementation": "Flag potential for specific severe challenges when Moon is exalted in a house.",
+      "confidence": "medium"
+    },
+    {
+      "id": "exalted-mars-troubles",
+      "page": "052",
+      "category": "maraka",
+      "condition": "Mars is an exalted occupant of a house",
+      "effect": "Indicates potential for severe challenges related to quarrels or armed conflict.",
+      "implementation": "Flag potential for specific severe challenges when Mars is exalted in a house.",
+      "confidence": "medium"
+    },
+    {
+      "id": "exalted-sun-navamsa-troubles",
+      "page": "052",
+      "category": "maraka",
+      "condition": "Sun is exalted in a house and also in the same Navamsa",
+      "effect": "Indicates potential for severe challenges related to reputation or scandal.",
+      "implementation": "Flag potential for specific severe challenges when Sun is exalted in both Rasi and Navamsa.",
+      "confidence": "medium"
+    },
+    {
+      "id": "exalted-moon-navamsa-troubles",
+      "page": "052",
+      "category": "maraka",
+      "condition": "Moon is exalted in a house and also in the same Navamsa",
+      "effect": "Indicates potential for severe challenges involving quadrupeds.",
+      "implementation": "Flag potential for specific severe challenges when Moon is exalted in both Rasi and Navamsa.",
+      "confidence": "medium"
+    },
+    {
+      "id": "exalted-mars-navamsa-troubles",
+      "page": "052",
+      "category": "maraka",
+      "condition": "Mars is exalted in a house and also in the same Navamsa",
+      "effect": "Indicates potential for severe challenges involving quadrupeds.",
+      "implementation": "Flag potential for specific severe challenges when Mars is exalted in both Rasi and Navamsa.",
+      "confidence": "medium"
+    },
+    {
+      "id": "exalted-mercury-navamsa-troubles",
+      "page": "052",
+      "category": "maraka",
+      "condition": "Mercury is exalted in a house and also in the same Navamsa",
+      "effect": "Indicates potential for severe challenges related to blood impurities.",
+      "implementation": "Flag potential for specific severe challenges when Mercury is exalted in both Rasi and Navamsa.",
+      "confidence": "medium"
+    },
+    {
+      "id": "exalted-jupiter-navamsa-troubles",
+      "page": "052",
+      "category": "maraka",
+      "condition": "Jupiter is exalted in a house and also in the same Navamsa",
+      "effect": "Indicates potential for severe challenges related to phlegmatic diseases.",
+      "implementation": "Flag potential for specific severe challenges when Jupiter is exalted in both Rasi and Navamsa.",
+      "confidence": "medium"
+    },
+    {
+      "id": "exalted-venus-navamsa-troubles",
+      "page": "052",
+      "category": "maraka",
+      "condition": "Venus is exalted in a house and also in the same Navamsa",
+      "effect": "Indicates potential for severe challenges related to mouth diseases.",
+      "implementation": "Flag potential for specific severe challenges when Venus is exalted in both Rasi and Navamsa.",
+      "confidence": "medium"
+    },
+    {
+      "id": "exalted-saturn-navamsa-troubles",
+      "page": "052",
+      "category": "maraka",
+      "condition": "Saturn is exalted in a house and also in the same Navamsa",
+      "effect": "Indicates potential for severe challenges related to deprivation or starvation.",
+      "implementation": "Flag potential for specific severe challenges when Saturn is exalted in both Rasi and Navamsa.",
+      "confidence": "medium"
+    },
+    {
+      "id": "vargottama-sun-8th-house-troubles",
+      "page": "052",
+      "category": "maraka",
+      "condition": "Sun is Vargottama in the 8th house",
+      "effect": "Indicates potential for severe challenges related to iron or injury.",
+      "implementation": "Flag potential for specific severe challenges when Sun is Vargottama in 8th house.",
+      "confidence": "medium"
+    },
+    {
+      "id": "vargottama-moon-8th-house-troubles",
+      "page": "052",
+      "category": "maraka",
+      "condition": "Moon is Vargottama in the 8th house",
+      "effect": "Indicates potential for severe challenges involving quadrupeds.",
+      "implementation": "Flag potential for specific severe challenges when Moon is Vargottama in 8th house.",
+      "confidence": "medium"
+    },
+    {
+      "id": "vargottama-mars-8th-house-troubles",
+      "page": "052",
+      "category": "maraka",
+      "condition": "Mars is Vargottama in the 8th house",
+      "effect": "Indicates potential for severe challenges related to falls from heights.",
+      "implementation": "Flag potential for specific severe challenges when Mars is Vargottama in 8th house.",
+      "confidence": "medium"
+    },
+    {
+      "id": "vargottama-mercury-8th-house-troubles",
+      "page": "052",
+      "category": "maraka",
+      "condition": "Mercury is Vargottama in the 8th house",
+      "effect": "Indicates potential for severe challenges related to wind-related ailments.",
+      "implementation": "Flag potential for specific severe challenges when Mercury is Vargottama in 8th house.",
+      "confidence": "medium"
+    },
+    {
+      "id": "vargottama-jupiter-8th-house-troubles",
+      "page": "052",
+      "category": "maraka",
+      "condition": "Jupiter is Vargottama in the 8th house",
+      "effect": "Indicates potential for severe challenges originating from one's own actions (e.g., self-inflicted injury).",
+      "implementation": "Flag potential for specific severe challenges when Jupiter is Vargottama in 8th house.",
+      "confidence": "medium"
+    },
+    {
+      "id": "vargottama-venus-8th-house-troubles",
+      "page": "052",
+      "category": "maraka",
+      "condition": "Venus is Vargottama in the 8th house",
+      "effect": "Indicates potential for severe challenges related to skin conditions like leprosy.",
+      "implementation": "Flag potential for specific severe challenges when Venus is Vargottama in 8th house.",
+      "confidence": "medium"
+    },
+    {
+      "id": "vargottama-saturn-8th-house-troubles",
+      "page": "052",
+      "category": "maraka",
+      "condition": "Saturn is Vargottama in the 8th house",
+      "effect": "Indicates potential for severe challenges related to cancer, tumors, or injuries.",
+      "implementation": "Flag potential for specific severe challenges when Saturn is Vargottama in 8th house.",
+      "confidence": "medium"
+    },
+    {
+      "id": "inimical-sun-8th-house-troubles",
+      "page": "053",
+      "category": "maraka",
+      "condition": "Sun is in an inimical sign in the 8th house",
+      "effect": "Indicates potential for severe health challenges related to impure blood.",
+      "implementation": "Flag potential for specific severe health challenges when Sun is in an inimical sign in 8th house.",
+      "confidence": "medium"
+    },
+    {
+      "id": "inimical-moon-8th-house-troubles",
+      "page": "053",
+      "category": "maraka",
+      "condition": "Moon is in an inimical sign in the 8th house",
+      "effect": "Indicates potential for severe health challenges related to bowel issues.",
+      "implementation": "Flag potential for specific severe health challenges when Moon is in an inimical sign in 8th house.",
+      "confidence": "medium"
+    },
+    {
+      "id": "inimical-mars-8th-house-troubles",
+      "page": "053",
+      "category": "maraka",
+      "condition": "Mars is in an inimical sign in the 8th house",
+      "effect": "Indicates potential for severe health challenges related to sexual organs.",
+      "implementation": "Flag potential for specific severe health challenges when Mars is in an inimical sign in 8th house.",
+      "confidence": "medium"
+    },
+    {
+      "id": "inimical-saturn-8th-house-troubles",
+      "page": "053",
+      "category": "maraka",
+      "condition": "Saturn is in an inimical sign in the 8th house",
+      "effect": "Indicates potential for severe challenges involving quadrupeds, specifically horses.",
+      "implementation": "Flag potential for specific severe challenges when Saturn is in an inimical sign in 8th house.",
+      "confidence": "medium"
+    },
+    {
+      "id": "mars-quadrant-rahu-7th-self-troubles",
+      "page": "053",
+      "category": "maraka",
+      "condition": "Mars is in a quadrant and Rahu is in the 7th house",
+      "effect": "Indicates potential for severe challenges originating from one's own actions.",
+      "implementation": "Flag potential for self-originating severe challenges with this planetary combination.",
+      "confidence": "medium"
+    },
+    {
+      "id": "malefics-kendras-lagna-lord-surrounded-self-troubles",
+      "page": "053",
+      "category": "maraka",
+      "condition": "Malefics are in Kendras and the Lagna lord is surrounded by malefics",
+      "effect": "Indicates potential for severe challenges originating from one's own actions.",
+      "implementation": "Flag potential for self-originating severe challenges with this planetary combination.",
+      "confidence": "medium"
+    },
+    {
+      "id": "spouse-troubles-sun-saturn-lagna-moon-mars-7th-venus-2nd",
+      "page": "053",
+      "category": "maraka",
+      "condition": "Lagna occupied by Sun and Saturn; Moon and Mars in the 7th house; and Venus in the 2nd house",
+      "effect": "Indicates potential for severe challenges originating from the spouse.",
+      "implementation": "Flag potential for spouse-related severe challenges with this planetary combination.",
+      "confidence": "medium"
+    },
+    {
+      "id": "spouse-troubles-pisces-asc-sun-moon-lagna-malefics-8th",
+      "page": "053",
+      "category": "maraka",
+      "condition": "Pisces is the ascendant; Sun and Moon occupy the ascendant; and malefics are in the 8th house",
+      "effect": "Indicates potential for severe challenges originating from the spouse.",
+      "implementation": "Flag potential for spouse-related severe challenges with this planetary combination.",
+      "confidence": "medium"
+    },
+    {
+      "id": "spouse-troubles-saturn-mars-7th-7th-lord-6th-8th-12th",
+      "page": "053",
+      "category": "maraka",
+      "condition": "Saturn and Mars are in the 7th house; and the 7th lord occupies the 6th, 8th, or 12th house",
+      "effect": "Indicates potential for severe challenges originating from the spouse.",
+      "implementation": "Flag potential for spouse-related severe challenges with this planetary combination.",
+      "confidence": "medium"
+    },
+    {
+      "id": "spouse-troubles-saturn-mars-7th-sun-7th-lord-6th-8th-12th",
+      "page": "053",
+      "category": "maraka",
+      "condition": "Saturn and Mars are in the 7th house; and Sun as the 7th lord is posited in the 6th, 8th, or 12th house",
+      "effect": "Indicates potential for severe challenges originating from the spouse.",
+      "implementation": "Flag potential for spouse-related severe challenges with this planetary combination.",
+      "confidence": "medium"
+    },
+    {
+      "id": "confinement-troubles-lagna-lord-malefic-debility-8th-lord-no-aspect",
+      "page": "053",
+      "category": "maraka",
+      "condition": "The Lagna lord along with a malefic occupies a house of debility; and the 8th lord is not occupying or aspecting that house",
+      "effect": "Indicates potential for severe challenges related to confinement or imprisonment.",
+      "implementation": "Flag potential for confinement-related severe challenges with this planetary combination.",
+      "confidence": "medium"
+    },
+    {
+      "id": "confinement-troubles-lagna-8th-lords-debility-aspected-by-debilitated",
+      "page": "053",
+      "category": "maraka",
+      "condition": "The lords of Lagna and 8th house are posited in houses of their debility and aspected by planets who are in their own houses of debility",
+      "effect": "Indicates potential for severe challenges related to confinement or imprisonment.",
+      "implementation": "Flag potential for confinement-related severe challenges with this planetary combination.",
+      "confidence": "medium"
+    },
+    {
+      "id": "confinement-troubles-lagna-8th-lords-debility-rahu-aspect-lagnesh-no-9th-aspect",
+      "page": "053",
+      "category": "maraka",
+      "condition": "The lords of Lagna and 8th house are in their houses of debility, aspected by Rahu, and the Lagnesh is not aspecting the 9th house",
+      "effect": "Indicates potential for severe challenges related to confinement or imprisonment, possibly involving air or travel.",
+      "implementation": "Flag potential for confinement-related severe challenges, possibly with an air/travel component, with this planetary combination.",
+      "confidence": "medium"
+    }
+  ]
+}

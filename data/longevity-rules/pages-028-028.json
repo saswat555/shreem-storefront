@@ -1,0 +1,198 @@
+{
+  "pages": [
+    48,
+    49
+  ],
+  "page_summary": "This section outlines various astrological methods for assessing longevity and identifying periods associated with critical life events, primarily through planetary transits of Jupiter, Saturn, Moon, and Sun to specific calculated points. It also introduces the Spashta Jeeva, Deha, and Mrityu system for determining overall longevity class.",
+  "rules": [
+    {
+      "id": "jupiter-transit-gulika-sun-lagna-sum",
+      "page": 48,
+      "category": "maraka",
+      "condition": "Jupiter transits the rasi or specific point derived from the sum of Gulika, Sun, and Lagna longitudes.",
+      "effect": "Indicates a period of significant life transition or challenge.",
+      "implementation": "Calculate the sum of longitudes for Gulika, Sun, and Lagna. Identify the rasi and precise degree. Monitor Jupiter's transit to this point.",
+      "confidence": "high"
+    },
+    {
+      "id": "jupiter-transit-trine-lord-of-sum-rasi",
+      "page": 48,
+      "category": "maraka",
+      "condition": "Jupiter transits the trine to the rasi of the lord of the point derived from the sum of Gulika, Sun, and Lagna longitudes.",
+      "effect": "Suggests a period requiring careful assessment of life events.",
+      "implementation": "Identify the lord of the rasi calculated in the previous rule. Monitor Jupiter's transit to the trine aspects (5th/9th houses) from this lord's rasi.",
+      "confidence": "high"
+    },
+    {
+      "id": "jupiter-transit-yamakantaka-deduction",
+      "page": 48,
+      "category": "maraka",
+      "condition": "Jupiter transits the rasi or its navamsa obtained by deducting Yamakantaka's longitude from the Lagna lord's longitude.",
+      "effect": "Highlights a potentially challenging phase.",
+      "implementation": "Calculate the point by subtracting Yamakantaka's longitude from the Lagna lord's longitude. Monitor Jupiter's transit to this rasi or its navamsa.",
+      "confidence": "high"
+    },
+    {
+      "id": "saturn-transit-navamsa-gulika-deduction",
+      "page": 48,
+      "category": "maraka",
+      "condition": "Saturn transits the navamsa rasi of the point derived by deducting Gulika's longitude from Saturn's longitude.",
+      "effect": "Points to a period of heightened vulnerability or major change.",
+      "implementation": "Calculate the point by subtracting Gulika's longitude from Saturn's longitude. Determine the navamsa rasi of this point. Monitor Saturn's transit to this navamsa rasi.",
+      "confidence": "high"
+    },
+    {
+      "id": "saturn-transit-trine-gulika-deduction-rasi",
+      "page": 48,
+      "category": "maraka",
+      "condition": "Saturn transits the trine to the rasi derived from the deduction of Gulika's longitude from Saturn's longitude.",
+      "effect": "Indicates a significant life event period.",
+      "implementation": "Identify the rasi calculated in the previous rule. Monitor Saturn's transit to the trine aspects (5th/9th houses) from this rasi.",
+      "confidence": "high"
+    },
+    {
+      "id": "saturn-transit-dhum-vyatipata-sum",
+      "page": 48,
+      "category": "maraka",
+      "condition": "Saturn transits the rasi or its drekkana after adding longitudes of Dhuma, Vyatipata, Paridhi, Dhanu, and Upketu.",
+      "effect": "Suggests a period of critical life transitions.",
+      "implementation": "Calculate the sum of longitudes for Dhuma, Vyatipata, Paridhi, Dhanu, and Upketu. Monitor Saturn's transit to this resulting rasi or its drekkana.",
+      "confidence": "high"
+    },
+    {
+      "id": "saturn-transit-dwadasamsa-gulika",
+      "page": 48,
+      "category": "maraka",
+      "condition": "Saturn transits the dwadasamsa of Gulika.",
+      "effect": "Highlights a period of potential challenge.",
+      "implementation": "Determine the dwadasamsa of Gulika's longitude. Monitor Saturn's transit to this dwadasamsa.",
+      "confidence": "high"
+    },
+    {
+      "id": "saturn-transit-trines-6th-8th-12th-lord-sum",
+      "page": 48,
+      "category": "maraka",
+      "condition": "Saturn transits the trines of the rasi derived from the total longitudes of the 6th, 8th, and 12th house lords.",
+      "effect": "Indicates a period requiring careful attention to well-being.",
+      "implementation": "Sum the longitudes of the 6th, 8th, and 12th house lords. Identify the rasi of this sum. Monitor Saturn's transit to the trine aspects (5th/9th houses) from this rasi.",
+      "confidence": "high"
+    },
+    {
+      "id": "jupiter-transit-navamsa-gulika",
+      "page": 48,
+      "category": "maraka",
+      "condition": "Jupiter transits the navamsa of Gulika.",
+      "effect": "Suggests a period of significant change.",
+      "implementation": "Determine the navamsa of Gulika's longitude. Monitor Jupiter's transit to this navamsa.",
+      "confidence": "high"
+    },
+    {
+      "id": "moon-transit-moon-gulika-sum",
+      "page": 48,
+      "category": "maraka",
+      "condition": "Moon transits the rasi derived by adding the longitudes of Moon and Gulika.",
+      "effect": "Indicates a short-term period of emotional or physical sensitivity.",
+      "implementation": "Sum the longitudes of Moon and Gulika. Monitor Moon's transit to this resulting rasi.",
+      "confidence": "high"
+    },
+    {
+      "id": "sun-transit-lagna-sun-gulika-sum",
+      "page": 49,
+      "category": "maraka",
+      "condition": "Sun transits the rasi derived by adding the longitudes of Lagna, Sun, and Gulika.",
+      "effect": "Highlights a period of potential challenge to vitality.",
+      "implementation": "Sum the longitudes of Lagna, Sun, and Gulika. Monitor Sun's transit to this resulting rasi.",
+      "confidence": "high"
+    },
+    {
+      "id": "jupiter-transit-trines-lagna-lord-sun-gulika-sum",
+      "page": 49,
+      "category": "maraka",
+      "condition": "Jupiter transits the rasi or its trines derived by adding the longitudes of the Lagna lord, Sun, and Gulika.",
+      "effect": "Indicates a period of major life events.",
+      "implementation": "Sum the longitudes of the Lagna lord, Sun, and Gulika. Monitor Jupiter's transit to this resulting rasi or its trines.",
+      "confidence": "high"
+    },
+    {
+      "id": "jupiter-transit-trine-yamakantaka-deduction-lagna",
+      "page": 49,
+      "category": "maraka",
+      "condition": "Jupiter transits the rasi or its trine derived by deducting the longitude of Yamakantaka from Lagna.",
+      "effect": "Suggests a period of significant personal transformation.",
+      "implementation": "Calculate the point by deducting Yamakantaka's longitude from Lagna's longitude. Monitor Jupiter's transit to this rasi or its trine.",
+      "confidence": "high"
+    },
+    {
+      "id": "jupiter-transit-navamsa-lagna-saturn-gulika-sum-x4",
+      "page": 49,
+      "category": "maraka",
+      "condition": "Jupiter transits the rasi or its navamsa derived by adding the longitudes of Lagna, Saturn, and Gulika, then multiplying by four.",
+      "effect": "Highlights a period of intense life changes.",
+      "implementation": "Sum the longitudes of Lagna, Saturn, and Gulika, then multiply by four. Monitor Jupiter's transit to this resulting rasi or its navamsa.",
+      "confidence": "high"
+    },
+    {
+      "id": "saturn-rounds-longevity-classes",
+      "page": 49,
+      "category": "longevity_class",
+      "condition": "Saturn's transit through the zodiac in its first, second, or third full round.",
+      "effect": "The first round may indicate a shorter longevity indication (Alpayu). The second round may indicate a medium longevity indication (Madhyamayu). The third round may indicate a longer longevity indication (Deerghayu).",
+      "implementation": "Track Saturn's full cycles through the zodiac. Correlate the current cycle with the native's determined longevity class for contextual analysis.",
+      "confidence": "high"
+    },
+    {
+      "id": "evil-periods-day-births",
+      "page": 49,
+      "category": "method",
+      "condition": "For day births, calculate the sum of longitudes of Sun and Saturn to determine a specific constellation.",
+      "effect": "The period of the lord of this constellation is considered a challenging period.",
+      "implementation": "Calculate (Sun longitude + Saturn longitude). Identify the constellation corresponding to this sum. The dasha/bhukti of the lord of this constellation should be flagged for careful review.",
+      "confidence": "high"
+    },
+    {
+      "id": "evil-periods-night-births",
+      "page": 49,
+      "category": "method",
+      "condition": "For night births, calculate the sum of longitudes of Moon and Rahu to determine a specific constellation.",
+      "effect": "The period of the lord of this constellation is considered a challenging period.",
+      "implementation": "Calculate (Moon longitude + Rahu longitude). Identify the constellation corresponding to this sum. The dasha/bhukti of the lord of this constellation should be flagged for careful review.",
+      "confidence": "high"
+    },
+    {
+      "id": "spashta-jeeva-calculation",
+      "page": 49,
+      "category": "method",
+      "condition": "Calculation of Spashta Jeeva.",
+      "effect": "Spashta Jeeva = (Longitude of Lagna x 5) + Longitude of Gulika.",
+      "implementation": "Implement this formula to calculate Spashta Jeeva for longevity assessment.",
+      "confidence": "high"
+    },
+    {
+      "id": "spashta-deha-calculation",
+      "page": 49,
+      "category": "method",
+      "condition": "Calculation of Spashta Deha.",
+      "effect": "Spashta Deha = (Longitude of Moon x 8) + Longitude of Gulika.",
+      "implementation": "Implement this formula to calculate Spashta Deha for longevity assessment.",
+      "confidence": "high"
+    },
+    {
+      "id": "spashta-mrityu-calculation",
+      "page": 49,
+      "category": "method",
+      "condition": "Calculation of Spashta Mrityu.",
+      "effect": "Spashta Mrityu = (Longitude of Gulika x 7) + Longitude of Sun.",
+      "implementation": "Implement this formula to calculate Spashta Mrityu for longevity assessment.",
+      "confidence": "high"
+    },
+    {
+      "id": "spashta-longevity-comparison",
+      "page": 49,
+      "category": "longevity_class",
+      "condition": "If the total of Spashta Jeeva and Spashta Deha exceeds Spashta Mrityu.",
+      "effect": "Indicates a longer longevity potential (Deerghayu). If the sum is less, it suggests a shorter longevity indication.",
+      "implementation": "Compare (Spashta Jeeva + Spashta Deha) with Spashta Mrityu to determine the general longevity class (shorter or longer indication).",
+      "confidence": "high"
+    }
+  ]
+}

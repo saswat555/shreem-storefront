@@ -1,0 +1,216 @@
+{
+  "pages": [
+    112,
+    113
+  ],
+  "page_summary": "These pages detail methods for calculating an individual's longevity span using Jaimini principles. The process involves determining an average Bhogyamsa, applying specific multipliers (gunakas), and adding a base value (khanda) corresponding to different life span classifications (short, medium, long) and their sub-divisions. Different sets of gunakas and khandas are provided based on the number of influencing factors.",
+  "rules": [
+    {
+      "id": "longevity-calc-avg-bhogyamsa",
+      "page": 112,
+      "category": "method",
+      "condition": "To determine longevity using this method",
+      "effect": "An average Bhogyamsa value must first be ascertained.",
+      "implementation": "Calculate the average Bhogyamsa as a preliminary step for longevity assessment.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-calc-gunaka-multiplication",
+      "page": 112,
+      "category": "method",
+      "condition": "After determining the average Bhogyamsa",
+      "effect": "Multiply the average by specific 'gunakas' (multipliers) associated with Deerghayu (long), Madhyayu (medium), and Alpayu (short) life classes.",
+      "implementation": "Apply the appropriate gunaka multiplier to the average Bhogyamsa based on the target longevity class.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-calc-madhyamayu-gunaka",
+      "page": 112,
+      "category": "method",
+      "condition": "When calculating for the Madhyamayu (medium life) class",
+      "effect": "The gunaka (multiplier) to be used is 32.",
+      "implementation": "Use 32 as the gunaka for Madhyamayu calculations in this specific method.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-calc-conversion-to-days",
+      "page": 112,
+      "category": "method",
+      "condition": "After multiplying the average Bhogyamsa by the gunaka",
+      "effect": "The resulting value is further multiplied by 12 to convert it into days.",
+      "implementation": "Convert the initial product (average * gunaka) into days by multiplying by 12.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-calc-add-khanda",
+      "page": 112,
+      "category": "method",
+      "condition": "After calculating the period in years, months, and days",
+      "effect": "This period must be added to the 'khanda' (base value) of the respective longevity class.",
+      "implementation": "Add the calculated period to the khanda value corresponding to the determined longevity class.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-class-khanda-definition",
+      "page": 112,
+      "category": "longevity_class",
+      "condition": "Regarding longevity classes",
+      "effect": "Khandas represent the lowest limit or starting point for each respective class.",
+      "implementation": "Understand khandas as the minimum duration for a given longevity class.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-class-alpayu-range",
+      "page": 112,
+      "category": "longevity_class",
+      "condition": "For the Alpayu (short life) class",
+      "effect": "Its lowest point (khanda) is 0, and it extends up to 32 years.",
+      "implementation": "Define Alpayu as 0-32 years, with a khanda of 0.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-class-madhyayu-khanda",
+      "page": 112,
+      "category": "longevity_class",
+      "condition": "For the Madhyayu (medium life) class",
+      "effect": "It starts from 32 years, with its khanda being 32.",
+      "implementation": "Define Madhyayu with a khanda of 32 years.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-class-deerghayu-khanda",
+      "page": 112,
+      "category": "longevity_class",
+      "condition": "For the Deerghayu (long life) class",
+      "effect": "It starts from 64 years, with its khanda being 64.",
+      "implementation": "Define Deerghayu with a khanda of 64 years.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-class-primary-divisions",
+      "page": 112,
+      "category": "longevity_class",
+      "condition": "The fundamental longevity calculations are based on",
+      "effect": "Three primary classes: long life, medium life, and short life.",
+      "implementation": "Categorize initial longevity assessments into these three main classes.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-class-sub-divisions",
+      "page": 112,
+      "category": "longevity_class",
+      "condition": "Each primary longevity class (long, medium, short)",
+      "effect": "Can be further sub-divided into three classes: Higher, Middle, and Lower, each with specific upper limits.",
+      "implementation": "Implement sub-categorization within each primary longevity class.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-class-sub-division-limits",
+      "page": 112,
+      "category": "longevity_class",
+      "condition": "For sub-divided longevity classes",
+      "effect": "Upper limits are: Long life (Higher 120 yrs, Middle 108 yrs, Lower 96 yrs); Medium life (Higher 80 yrs, Middle 72 yrs, Lower 64 yrs); Short life (Higher 40 yrs, Middle 36 yrs, Lower 32 yrs).",
+      "implementation": "Use these specific upper limits for defining the ranges of each sub-class.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-calc-sub-class-parameters",
+      "page": 112,
+      "category": "method",
+      "condition": "For the sub-divided longevity classes",
+      "effect": "Specific khandas and gunakas exist, and their usage follows Jaimini's method.",
+      "implementation": "Apply appropriate khandas and gunakas for sub-classes consistent with the main Jaimini method.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-calc-alternative-parameters-one-factor-long",
+      "page": 113,
+      "category": "method",
+      "condition": "When one factor determines a Long Life span",
+      "effect": "Use Khanda 64 and Gunaka 32.",
+      "implementation": "Apply these parameters if the assessment indicates a single factor for long life.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-calc-alternative-parameters-two-factors-long",
+      "page": 113,
+      "category": "method",
+      "condition": "When two factors determine a Long Life span",
+      "effect": "Use Khanda 72 and Gunaka 36.",
+      "implementation": "Apply these parameters if the assessment indicates two factors for long life.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-calc-alternative-parameters-three-factors-long",
+      "page": 113,
+      "category": "method",
+      "condition": "When three factors determine a Long Life span",
+      "effect": "Use Khanda 80 and Gunaka 40.",
+      "implementation": "Apply these parameters if the assessment indicates three factors for long life.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-calc-alternative-parameters-one-factor-medium",
+      "page": 113,
+      "category": "method",
+      "condition": "When one factor determines a Medium Life span",
+      "effect": "Use Khanda 40 and Gunaka 40.",
+      "implementation": "Apply these parameters if the assessment indicates a single factor for medium life.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-calc-alternative-parameters-two-factors-medium",
+      "page": 113,
+      "category": "method",
+      "condition": "When two factors determine a Medium Life span",
+      "effect": "Use Khanda 40 and Gunaka 40.",
+      "implementation": "Apply these parameters if the assessment indicates two factors for medium life.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-calc-alternative-parameters-three-factors-medium",
+      "page": 113,
+      "category": "method",
+      "condition": "When three factors determine a Medium Life span",
+      "effect": "Use Khanda 36 and Gunaka 36.",
+      "implementation": "Apply these parameters if the assessment indicates three factors for medium life.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-calc-alternative-parameters-one-factor-short",
+      "page": 113,
+      "category": "method",
+      "condition": "When one factor determines a Short Life span",
+      "effect": "Use Khanda 0 and Gunaka 40.",
+      "implementation": "Apply these parameters if the assessment indicates a single factor for short life.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-calc-alternative-parameters-two-factors-short",
+      "page": 113,
+      "category": "method",
+      "condition": "When two factors determine a Short Life span",
+      "effect": "Use Khanda 0 and Gunaka 36.",
+      "implementation": "Apply these parameters if the assessment indicates two factors for short life.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-calc-alternative-parameters-three-factors-short",
+      "page": 113,
+      "category": "method",
+      "condition": "When three factors determine a Short Life span",
+      "effect": "Use Khanda 0 and Gunaka 32.",
+      "implementation": "Apply these parameters if the assessment indicates three factors for short life.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-calc-alternative-method-consistency",
+      "page": 113,
+      "category": "method",
+      "condition": "When using the alternative Ayurdaya method",
+      "effect": "The initial calculation of average Bhogyamsas remains consistent with other methods.",
+      "implementation": "Ensure the average Bhogyamsa calculation is standardized across different Ayurdaya methods.",
+      "confidence": "high"
+    }
+  ]
+}

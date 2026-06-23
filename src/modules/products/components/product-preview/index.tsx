@@ -5,6 +5,12 @@ import LocalizedClientLink from "@modules/common/components/localized-client-lin
 import Thumbnail from "../thumbnail"
 import PreviewPrice from "./price"
 
+const PRODUCT_IMAGE_FALLBACKS: Record<string, string> = {
+  "shreem-ai-jyotish-credits": "/shreem-scenes/postive-energy.jpg",
+  "shreem-ai-jyotish-monthly": "/shreem-scenes/postive-energy.jpg",
+  "shreem-expert-jyotish-consultation": "/shreem-scenes/postive-energy.jpg",
+}
+
 export default async function ProductPreview({
   product,
   isFeatured,
@@ -30,6 +36,9 @@ export default async function ProductPreview({
             ...image,
             url: toAbsoluteProductImageUrl(image.url),
           }))}
+          fallbackImage={toAbsoluteProductImageUrl(
+            PRODUCT_IMAGE_FALLBACKS[product.handle || ""]
+          )}
           size="full"
           isFeatured={isFeatured}
         />

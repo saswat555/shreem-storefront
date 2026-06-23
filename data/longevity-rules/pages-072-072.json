@@ -1,0 +1,270 @@
+{
+  "pages": [
+    136,
+    137
+  ],
+  "page_summary": "This document outlines various Jyotish methods and conditions for assessing longevity. It covers general planetary placements, specific Ayurdaya systems like Samudaya Ashtaka Varga, Misrayu, Pindayu, Amsakayu, Nisargayu, Rasmikayurdaya, Nakshatrayu, and Navamsayu. Key factors include the strength of Lagna, Sun, Moon, and specific planets such as Saturn (as Ayush Karaka), Jupiter, and Mercury. It also briefly discusses Dasha systems for chronological timing.",
+  "rules": [
+    {
+      "id": "longevity-moon-panaphara-apoklima",
+      "page": 136,
+      "category": "longevity_class",
+      "condition": "Moon occupies any Panaphara or Apoklima house with another planet.",
+      "effect": "Indicates a factor contributing to longevity assessment.",
+      "implementation": "Software should identify Moon's placement in Panaphara/Apoklima houses with conjunctions for longevity assessment.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-mars-strength",
+      "page": 136,
+      "category": "longevity_class",
+      "condition": "Mars is strong in the chart.",
+      "effect": "Indicates a factor contributing to longevity assessment.",
+      "implementation": "Software should evaluate Mars' strength (e.g., dignity, aspect) as a longevity indicator.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-moon-weak-other-strong",
+      "page": 136,
+      "category": "longevity_class",
+      "condition": "Moon is weak, but other planets in the birth chart are strong.",
+      "effect": "Indicates a factor contributing to longevity assessment, suggesting compensatory strength.",
+      "implementation": "Software should assess Moon's weakness alongside the overall strength of other planets for longevity analysis.",
+      "confidence": "high"
+    },
+    {
+      "id": "method-samudaya-ashtaka-varga",
+      "page": 136,
+      "category": "method",
+      "condition": "Application of Samudaya method of Ayurdaya of the Ashtaka Varga.",
+      "effect": "This method has specific conditions for its application in longevity assessment.",
+      "implementation": "Software should recognize Samudaya Ashtaka Varga as a distinct longevity calculation method.",
+      "confidence": "high"
+    },
+    {
+      "id": "samudaya-ashtaka-varga-cond1",
+      "page": 136,
+      "category": "longevity_class",
+      "condition": "Moon with some other planets occupies a quadrant, and other weak planets are in Panaphara or Apoklima houses.",
+      "effect": "A specific condition for applying the Samudaya Ashtaka Varga method, indicating a longevity factor.",
+      "implementation": "Software should check for this planetary distribution when applying or evaluating the Samudaya Ashtaka Varga method.",
+      "confidence": "high"
+    },
+    {
+      "id": "samudaya-ashtaka-varga-cond2",
+      "page": 136,
+      "category": "longevity_class",
+      "condition": "Saturn, as the Ayush Karaka, is strong.",
+      "effect": "A specific condition for applying the Samudaya Ashtaka Varga method, indicating a longevity factor.",
+      "implementation": "Software should assess the strength of Saturn as Ayush Karaka for Samudaya Ashtaka Varga method.",
+      "confidence": "high"
+    },
+    {
+      "id": "method-misrayu",
+      "page": 136,
+      "category": "method",
+      "condition": "Application of Misrayu method.",
+      "effect": "This method has specific conditions for its application in longevity assessment.",
+      "implementation": "Software should recognize Misrayu as a distinct longevity calculation method.",
+      "confidence": "high"
+    },
+    {
+      "id": "misrayu-cond1",
+      "page": 136,
+      "category": "longevity_class",
+      "condition": "Moon is strong, and other planets are also strong.",
+      "effect": "A specific condition for applying the Misrayu method, indicating a longevity factor.",
+      "implementation": "Software should check for strong Moon and other strong planets when applying or evaluating the Misrayu method.",
+      "confidence": "high"
+    },
+    {
+      "id": "misrayu-cond2",
+      "page": 136,
+      "category": "longevity_class",
+      "condition": "There is no planet in a Kendra house, and Moon is strong.",
+      "effect": "A specific condition for applying the Misrayu method, indicating a longevity factor.",
+      "implementation": "Software should check for empty Kendra houses and a strong Moon when applying or evaluating the Misrayu method.",
+      "confidence": "high"
+    },
+    {
+      "id": "caution-ashtaka-varga-moon-link",
+      "page": 136,
+      "category": "caution",
+      "condition": "Ashtaka Varga method calculations are particularly linked to the Moon's position.",
+      "effect": "Calculations in the Ashtaka Varga method may not be useful if conditions differ from those specified, potentially leading to incorrect assessments.",
+      "implementation": "Software should ensure Moon's position and strength are correctly factored into Ashtaka Varga calculations and flag potential inaccuracies if conditions are not met.",
+      "confidence": "high"
+    },
+    {
+      "id": "method-pindayu-amsakayu-nisargayu-basis",
+      "page": 136,
+      "category": "method",
+      "condition": "Pindayu, Amsakayu, and Nisargayu methods are being practiced.",
+      "effect": "These methods are based on the comparative strength and weaknesses of Moon, Sun, and Lagna as fundamental pillars for longevity assessment.",
+      "implementation": "Software should use the comparative strength of Moon, Sun, and Lagna as core inputs for these longevity calculation methods.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-lagna-strength",
+      "page": 137,
+      "category": "longevity_class",
+      "condition": "Lagna is strong.",
+      "effect": "Indicates a fundamental factor for enhanced longevity potential.",
+      "implementation": "Software should assess Lagna strength as a primary indicator for longevity.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-sun-vitality",
+      "page": 137,
+      "category": "longevity_class",
+      "condition": "Sun stands for physical vitality.",
+      "effect": "Indicates a factor contributing to overall life force and resilience.",
+      "implementation": "Software should evaluate Sun's strength and dignity as an indicator of physical vitality in longevity assessment.",
+      "confidence": "high"
+    },
+    {
+      "id": "method-pindayu-application",
+      "page": 137,
+      "category": "method",
+      "condition": "Application of Pindayu method.",
+      "effect": "This method is applied under specific conditions related to Sun's strength and planetary yogas.",
+      "implementation": "Software should recognize Pindayu as a distinct longevity calculation method.",
+      "confidence": "high"
+    },
+    {
+      "id": "pindayu-cond1-sun-dignity",
+      "page": 137,
+      "category": "longevity_class",
+      "condition": "Sun is strong in the chart, attaining dignity in its own house, exaltation, or moola trikona.",
+      "effect": "A specific condition for applying the Pindayu method, indicating a longevity factor.",
+      "implementation": "Software should check Sun's dignity (own house, exaltation, moola trikona) for Pindayu method application.",
+      "confidence": "high"
+    },
+    {
+      "id": "pindayu-cond2-sun-trine-strong",
+      "page": 137,
+      "category": "longevity_class",
+      "condition": "Sun gains strength when in trine to other strong planets.",
+      "effect": "A specific condition for applying the Pindayu method, indicating a longevity factor.",
+      "implementation": "Software should evaluate Sun's strength through trine aspects with other strong planets for Pindayu method.",
+      "confidence": "high"
+    },
+    {
+      "id": "pindayu-cond3-mahapurusha-yogas",
+      "page": 137,
+      "category": "longevity_class",
+      "condition": "Mahapurusha yogas are present.",
+      "effect": "A specific condition for applying the Pindayu method, indicating a longevity factor.",
+      "implementation": "Software should identify the presence of Mahapurusha yogas for Pindayu method application.",
+      "confidence": "high"
+    },
+    {
+      "id": "method-amsakayu-application",
+      "page": 137,
+      "category": "method",
+      "condition": "Application of Amsakayu method.",
+      "effect": "This method is applied under specific conditions related to Lagna, house lords, and benefic planets.",
+      "implementation": "Software should recognize Amsakayu as a distinct longevity calculation method.",
+      "confidence": "high"
+    },
+    {
+      "id": "amsakayu-cond1-lagna-strength",
+      "page": 137,
+      "category": "longevity_class",
+      "condition": "Lagna is strong.",
+      "effect": "A specific condition for applying the Amsakayu method, indicating a longevity factor.",
+      "implementation": "Software should assess Lagna strength for Amsakayu method application.",
+      "confidence": "high"
+    },
+    {
+      "id": "amsakayu-cond2-house-lord-strength",
+      "page": 137,
+      "category": "longevity_class",
+      "condition": "The lord of any house or bhava, including the Lagna, is strong by its occupation or aspect.",
+      "effect": "A specific condition for applying the Amsakayu method, indicating a longevity factor.",
+      "implementation": "Software should evaluate the strength of house lords (including Lagna lord) by occupation or aspect for Amsakayu method.",
+      "confidence": "high"
+    },
+    {
+      "id": "amsakayu-cond3-benefic-strength",
+      "page": 137,
+      "category": "longevity_class",
+      "condition": "Benefic planets make the Lagna strong.",
+      "effect": "A specific condition for applying the Amsakayu method, indicating a longevity factor.",
+      "implementation": "Software should assess the influence of benefic planets on Lagna strength for Amsakayu method.",
+      "confidence": "high"
+    },
+    {
+      "id": "method-nisargayu-application",
+      "page": 137,
+      "category": "method",
+      "condition": "Application of Nisargayu method.",
+      "effect": "This method is followed if Moon is strong in the chart.",
+      "implementation": "Software should recognize Nisargayu as a distinct longevity calculation method.",
+      "confidence": "high"
+    },
+    {
+      "id": "nisargayu-cond1-moon-strength",
+      "page": 137,
+      "category": "longevity_class",
+      "condition": "Moon is strong in the chart.",
+      "effect": "A specific condition for applying the Nisargayu method, indicating a longevity factor.",
+      "implementation": "Software should assess Moon's strength for Nisargayu method application.",
+      "confidence": "high"
+    },
+    {
+      "id": "method-rasmikayurdaya-navamsayu-nakshatrayu",
+      "page": 137,
+      "category": "method",
+      "condition": "Application of Rasmikayurdaya, Nakshatrayu, and Navamsayu methods.",
+      "effect": "These methods consider the position of Ayush Karaka Saturn, benefic Jupiter, and Mercury as important factors.",
+      "implementation": "Software should recognize these as distinct longevity calculation methods and prioritize the specified planets.",
+      "confidence": "high"
+    },
+    {
+      "id": "rasmikayurdaya-cond1-saturn-strength",
+      "page": 137,
+      "category": "longevity_class",
+      "condition": "Saturn is stronger than Mercury and Jupiter.",
+      "effect": "A specific condition for attempting the Rasmikayu method, indicating a longevity factor.",
+      "implementation": "Software should compare the strengths of Saturn, Mercury, and Jupiter for Rasmikayu method application.",
+      "confidence": "high"
+    },
+    {
+      "id": "navamsayu-cond1-jupiter-strength",
+      "page": 137,
+      "category": "longevity_class",
+      "condition": "Jupiter is strong and stronger than Mercury.",
+      "effect": "A specific condition for following the Navamsayu method, indicating a longevity factor.",
+      "implementation": "Software should compare the strengths of Jupiter and Mercury for Navamsayu method application.",
+      "confidence": "high"
+    },
+    {
+      "id": "nakshatrayu-cond1-mercury-strength",
+      "page": 137,
+      "category": "longevity_class",
+      "condition": "Mercury is strong.",
+      "effect": "A specific condition for following the Nakshatrayu method, indicating a longevity factor.",
+      "implementation": "Software should assess Mercury's strength for Nakshatrayu method application.",
+      "confidence": "high"
+    },
+    {
+      "id": "dasha-timing-rules-existence",
+      "page": 137,
+      "category": "dasha_timing",
+      "condition": "Rules exist for Dasa of planets and their chronological order.",
+      "effect": "These rules govern the timing of events and are distinct from Ayurdaya longevity calculations.",
+      "implementation": "Software should implement Dasa calculations (e.g., Vimsottari, Ashtottari) for chronological event timing, separate from longevity assessment.",
+      "confidence": "high"
+    },
+    {
+      "id": "dasha-timing-vimsottari-ashtottari",
+      "page": 137,
+      "category": "dasha_timing",
+      "condition": "Vimsottari and Ashtottari systems are popular Dasa methods.",
+      "effect": "These systems have fixed periods allotted to planets and a fixed chronology.",
+      "implementation": "Software should support Vimsottari and Ashtottari Dasa systems with their defined planetary periods and chronological order.",
+      "confidence": "high"
+    }
+  ]
+}

@@ -29,8 +29,13 @@ export type AiWallet = {
   recent_ledger?: {
     id: string
     type: string
+    source?: string | null
     credits: number
     balance_after: number
+    order_id?: string | null
+    usage_id?: string | null
+    note?: string | null
+    metadata?: Record<string, unknown>
     created_at?: string
   }[]
 }

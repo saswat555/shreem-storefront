@@ -10,9 +10,10 @@ import { useState } from "react"
 type ShippingProps = {
   cart: any
   availableShippingMethods: any[]
+  digitalOnly?: boolean
 }
 
-const Shipping = ({ cart, availableShippingMethods }: ShippingProps) => {
+const Shipping = ({ cart, availableShippingMethods, digitalOnly = false }: ShippingProps) => {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -57,6 +58,27 @@ const Shipping = ({ cart, availableShippingMethods }: ShippingProps) => {
   const selectedOption = availableShippingMethods?.find(
     (m) => m.id === selectedMethodId
   )
+
+  if (digitalOnly) {
+    return (
+      <div className="bg-white">
+        <div className="mb-6 flex flex-row items-center justify-between">
+          <Heading level="h2" className="text-2xl">
+            Delivery
+          </Heading>
+        </div>
+        <div className="rounded-[18px] border border-[rgba(13,129,126,0.18)] bg-[rgba(240,248,246,0.78)] px-4 py-4">
+          <Text className="font-medium text-[var(--shreem-ink)]">
+            Digital delivery
+          </Text>
+          <Text className="mt-1 text-ui-fg-subtle">
+            AI credits are added to the customer wallet after successful payment.
+            No courier delivery fee is charged.
+          </Text>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="bg-white">

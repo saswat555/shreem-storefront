@@ -1,0 +1,98 @@
+{
+  "pages": [
+    67
+  ],
+  "page_summary": "This page outlines methods for calculating planetary contributions to longevity (Sphuta Ayurvarshas), including specific additions (Bharana Samskaras) and reductions (Harana Samskaras) based on planetary conditions. It also describes a method for selecting the appropriate calculation system for Lagna's contribution to longevity.",
+  "rules": [
+    {
+      "id": "planetary-ayurvarshas-calculation-method",
+      "page": 67,
+      "category": "method",
+      "condition": "Calculating a planet's contribution to longevity (Ayurvarshas).",
+      "effect": "Each planet contributes a specific duration to the total longevity period based on a calculation involving its position and strength.",
+      "implementation": "Software should calculate planetary ayurvarshas using the specified method: convert planetary longitude to minutes, divide by 200, then use the remainder divided by 12 to determine the years contributed.",
+      "confidence": "high"
+    },
+    {
+      "id": "moon-own-sign-longevity-addition",
+      "page": 67,
+      "category": "mitigation",
+      "condition": "Moon is located in its own sign.",
+      "effect": "Adds 8.85 years to the total calculated longevity period.",
+      "implementation": "If the Moon is in its own sign, add 8.85 years to the overall longevity calculation.",
+      "confidence": "high"
+    },
+    {
+      "id": "venus-own-drekkana-longevity-addition",
+      "page": 67,
+      "category": "mitigation",
+      "condition": "Venus is located in its own drekkana.",
+      "effect": "Adds 3.34 years to the total calculated longevity period.",
+      "implementation": "If Venus is in its own drekkana, add 3.34 years to the overall longevity calculation.",
+      "confidence": "high"
+    },
+    {
+      "id": "jupiter-retrograde-longevity-addition",
+      "page": 67,
+      "category": "mitigation",
+      "condition": "Jupiter is in retrograde motion.",
+      "effect": "Adds 10.20 years to the total calculated longevity period.",
+      "implementation": "If Jupiter is retrograde, add 10.20 years to the overall longevity calculation.",
+      "confidence": "high"
+    },
+    {
+      "id": "mars-malefic-12th-house-longevity-reduction",
+      "page": 67,
+      "category": "maraka",
+      "condition": "Mars, acting as a malefic, is positioned in the 12th house.",
+      "effect": "Its entire calculated contribution to longevity is removed.",
+      "implementation": "If Mars is a malefic and in the 12th house, its calculated ayurvarshas should be set to zero for the total longevity sum.",
+      "confidence": "high"
+    },
+    {
+      "id": "venus-benefic-12th-house-longevity-reduction",
+      "page": 67,
+      "category": "maraka",
+      "condition": "Venus, acting as a benefic, is positioned in the 12th house.",
+      "effect": "Its contribution to longevity is reduced (specific amount not fully detailed on this page).",
+      "implementation": "If Venus is a benefic and in the 12th house, apply a reduction to its ayurvarshas. (Note: The exact reduction value is incomplete on this page).",
+      "confidence": "low"
+    },
+    {
+      "id": "moon-benefic-10th-house-longevity-reduction",
+      "page": 67,
+      "category": "maraka",
+      "condition": "Moon, acting as a benefic, is positioned in the 10th house.",
+      "effect": "Reduces the total longevity period by 2.95 years.",
+      "implementation": "If Moon is a benefic and in the 10th house, subtract 2.95 years from the overall longevity calculation.",
+      "confidence": "high"
+    },
+    {
+      "id": "sun-enemy-house-longevity-reduction",
+      "page": 67,
+      "category": "maraka",
+      "condition": "Sun is located in an enemy's house (Satrukshetra).",
+      "effect": "Reduces the Sun's calculated longevity contribution by one-third.",
+      "implementation": "If the Sun is in an enemy's house, reduce its calculated ayurvarshas by one-third.",
+      "confidence": "medium"
+    },
+    {
+      "id": "astangata-no-longevity-reduction",
+      "page": 67,
+      "category": "caution",
+      "condition": "A planet is in Astangata (combustion).",
+      "effect": "No reduction to longevity is applied specifically due to this condition.",
+      "implementation": "Do not apply any longevity reduction for planets in combustion based on this particular rule.",
+      "confidence": "high"
+    },
+    {
+      "id": "lagna-ayurvarshas-method-selection",
+      "page": 67,
+      "category": "method",
+      "condition": "Determining the method for calculating Lagna's contribution to longevity.",
+      "effect": "If the Lagna lord is stronger than the Navamsa Lagna lord, use Varahamihira's method. Otherwise, use Parashara's method.",
+      "implementation": "Software should compare the strength of the Lagna lord and Navamsa Lagna lord to select the appropriate calculation method for Lagna's longevity contribution.",
+      "confidence": "high"
+    }
+  ]
+}

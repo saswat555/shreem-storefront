@@ -1,0 +1,35 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "text": "```json\n{\n  \"pages\": [84],\n  \"page_summary\": \"This page describes the contents and calculation methods provided by an astrological ephemeris, covering planetary positions, ayanamsa, ascendant determination, tithi, nakshatra, yoga, and dasha systems like Vimsottari and Astottari, along with lunar phases and specific time calculations.\",\n  \"rules\": [\n    {\n      \"id\": \"ephemeris-system-ayanamsa-084\",\n      \"page\": 84,\n      \"category\": \"method\",\n      \"condition\": \"Astrological calculations are based on the Niryana system.\",\n      \"effect\": \"Planetary positions and other derived calculations will adhere to the Niryana framework, specifically using Chitra paksha (Lahiri) ayanamsa.\",\n      \"implementation\": \"Software should utilize the Niryana system with Lahiri Ayanamsa for all relevant astrological computations.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"ephemeris-planetary-data-084\",\n      \"page\": 84,\n      \"category\": \"method\",\n      \"condition\": \"Daily motion and sidereal positions for all major planets (Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn, Rahu, Uranus, Neptune, Pluto) are provided.\",\n      \"effect\": \"Enables precise tracking of planetary movements and their positions over time.\",\n      \"implementation\": \"Software can integrate this data for accurate planetary position calculations and ephemeris generation.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"ephemeris-lagna-sidereal-time-084\",\n      \"page\": 84,\n      \"category\": \"method\",\n      \"condition\": \"Daily Sidereal Time at Noon is indicated.\",\n      \"effect\": \"Facilitates the determination of the Lagna (Ascendant) for a given time and location.\",\n      \"implementation\": \"Software should use the provided Sidereal Time as a basis for calculating the Ascendant.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"ephemeris-ascendant-calculation-084\",\n      \"page\": 84,\n      \"category\": \"method\",\n      \"condition\": \"Methods for calculating the Ascendant through Sidereal time are included.\",\n      \"effect\": \"Provides a computational approach for determining the rising sign.\",\n      \"implementation\": \"Software should implement Ascendant calculation routines following the specified Sidereal time methods.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"ephemeris-local-mean-time-084\",\n      \"page\": 84,\n      \"category\": \"method\",\n      \"condition\": \"Local Mean Time for important cities and towns, including foreign locations, is available.\",\n      \"effect\": \"Supports accurate time conversions and adjustments for location-specific chart calculations.\",\n      \"implementation\": \"Software should incorporate this data for precise time zone and local time handling in astrological charts.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"ephemeris-tithi-calculation-084\",\n      \"page\": 84,\n      \"category\": \"method\",\n      \"condition\": \"Methods for calculating Tithi (lunar day) are included.\",\n      \"effect\": \"Enables the determination of the specific lunar phase or day.\",\n      \"implementation\": \"Software should implement Tithi calculation based on the provided methodologies.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"ephemeris-nakshatra-calculation-084\",\n      \"page\": 84,\n      \"category\": \"method\",\n      \"condition\": \"Methods for calculating Nakshatra (lunar mansion) are included.\",\n      \"effect\": \"Enables the determination of the specific lunar mansion occupied by the Moon.\",\n      \"implementation\": \"Software should implement Nakshatra calculation based on the provided methodologies.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"ephemeris-yoga-calculation-084\",\n      \"page\": 84,\n      \"category\": \"method\",\n      \"condition\": \"Methods for calculating Yoga (planetary combination) are included.\",\n      \"effect\": \"Enables the determination of specific astrological Yogas.\",\n      \"implementation\": \"Software should implement Yoga calculation based on the provided methodologies.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"ephemeris-vimsottari-dasha-084\",\n      \"page\": 84,\n      \"category\": \"method\",\n      \"condition\": \"Methods for Vimsottari Dasha calculation are included.\",\n      \"effect\": \"Provides a basis for computing the Vimsottari Dasha periods.\",\n      \"implementation\": \"Software should implement Vimsottari Dasha calculation based on the provided methodologies.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"ephemeris-astottari-dasha-084\",\n      \"page\": 84,\n      \"category\": \"method\",\n      \"condition\": \"Methods for Astottari Dasha calculation are included.\",\n      \"effect\": \"Provides a basis for computing the Astottari Dasha periods.\",\n      \"implementation\": \"Software should implement Astottari Dasha calculation based on the provided methodologies.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"ephemeris-lunar-phases-084\",\n      \"page\": 84,\n      \"category\": \"method\",\n      \"condition\": \"Dates for New Moon and Full Moon are provided.\",\n      \"effect\": \"Supports calculations and analysis related to lunar cycles and phases.\",\n      \"implementation\": \"Software can utilize this data for tracking and displaying lunar phases.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"ephemeris-malmasa-rahukalam-084\",\n      \"page\": 84,\n      \"category\": \"method\",\n      \"condition\": \"Information on Malmasa (intercalary month) and Rahu Kalam (inauspicious period) is included.\",\n      \"effect\": \"Provides data for considerations regarding auspicious and inauspicious timings.\",\n      \"implementation\": \"Software can incorporate these calculations for timing assessments and panchang elements.\",\n      \"confidence\": \"high\"\n    }\n  ]\n}\n```"
+          }
+        ],
+        "role": "model"
+      },
+      "finishReason": "STOP",
+      "index": 0
+    }
+  ],
+  "usageMetadata": {
+    "promptTokenCount": 611,
+    "candidatesTokenCount": 1451,
+    "totalTokenCount": 4505,
+    "promptTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 353
+      },
+      {
+        "modality": "IMAGE",
+        "tokenCount": 258
+      }
+    ],
+    "thoughtsTokenCount": 2443,
+    "serviceTier": "standard"
+  },
+  "modelVersion": "gemini-2.5-flash",
+  "responseId": "kWk1aoeNIYbVqfkPlOSm0Q4"
+}

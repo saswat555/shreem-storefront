@@ -201,6 +201,7 @@ export default async function ShreemAstrologyPage(props: {
           customerName={`${customer.first_name || ""} ${
             customer.last_name || ""
           }`.trim()}
+          customerMetadata={(customer.metadata || {}) as Record<string, unknown>}
         />
       </div>
     </div>

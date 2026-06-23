@@ -15,6 +15,12 @@ const SOURCE_FILES = [
     title: "Brihat Parashara Hora Shastra Hindi Commentary",
     allowLooseBody: true,
   },
+  {
+    file: "data/longetivity.txt",
+    volume: "Longetivity scanned OCR",
+    title: "Longetivity Classical Astrology Notes",
+    allowLooseBody: true,
+  },
 ]
 const OUTPUT_PATH = path.join(ROOT, "data", "bphs-rag.json")
 

@@ -12,6 +12,12 @@ const backendUrl = (
 const publicSiteUrl = (
   process.env.NEXT_PUBLIC_SITE_URL ||
   process.env.SITE_URL ||
+  "https://www.shreemfarms.in"
+).replace(/\/+$/, "")
+
+const googleOAuthRedirectBaseUrl = (
+  process.env.GOOGLE_OAUTH_REDIRECT_BASE_URL ||
+  process.env.NEXT_PUBLIC_GOOGLE_OAUTH_REDIRECT_BASE_URL ||
   "https://shreemfarms.in"
 ).replace(/\/+$/, "")
 
@@ -89,7 +95,7 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const redirectUri = `${publicSiteUrl}/${countryCode}/auth/google/callback`
+    const redirectUri = `${googleOAuthRedirectBaseUrl}/${countryCode}/auth/google/callback`
 
     const upstream = await fetch(`${backendUrl}/store/auth/google-direct-callback`, {
       method: "POST",

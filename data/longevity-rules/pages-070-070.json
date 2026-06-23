@@ -1,0 +1,125 @@
+{
+  "pages": [
+    "070"
+  ],
+  "page_summary": "This document outlines a specific Jyotish method for estimating longevity based on a system of assigning marks from planetary placements relative to Paka Lagna and Aroodha Lagna. It details conditions for gaining or losing marks, which are then summed and converted into an estimated duration. The author expresses reservations about the method's simplicity. Additionally, the document provides crucial cautions regarding the general applicability of all longevity calculations, stating they are intended for 'ordinary persons' under 'normal conditions' and acknowledging ambiguity in these definitions.",
+  "rules": [
+    {
+      "id": "paka-lagna-lagnesh-mercury-11th-malefic-sun",
+      "page": "070",
+      "category": "longevity_class",
+      "condition": "Lagnesh is Mercury, occupying the 11th house, and associated with a malefic Sun.",
+      "effect": "Contributes zero marks to the longevity score.",
+      "implementation": "Identify Lagnesh. Check its house placement and conjunctions/aspects with malefic planets. Apply mark adjustment.",
+      "confidence": "high"
+    },
+    {
+      "id": "paka-lagna-3rd-lord-sun-11th",
+      "page": "070",
+      "category": "longevity_class",
+      "condition": "The Third Lord is Sun, occupying the 11th house.",
+      "effect": "Contributes zero marks to the longevity score.",
+      "implementation": "Identify the 3rd lord. Check its house placement. Apply mark adjustment.",
+      "confidence": "high"
+    },
+    {
+      "id": "paka-lagna-8th-lord-saturn-8th-malefic",
+      "page": "070",
+      "category": "longevity_class",
+      "condition": "The Eighth Lord is Saturn, located in the 8th house, and is considered malefic.",
+      "effect": "Contributes one full mark (0.5 for placement, an additional 0.5 for malefic nature).",
+      "implementation": "Identify the 8th lord. Check its house placement and inherent nature. Apply mark adjustment.",
+      "confidence": "high"
+    },
+    {
+      "id": "paka-lagna-10th-lord-jupiter-kendra-mercury-house",
+      "page": "070",
+      "category": "longevity_class",
+      "condition": "The Tenth Lord is Jupiter, positioned in a Kendra house from Paka Lagna, and located in a house ruled by Mercury.",
+      "effect": "Contributes half a mark to the longevity score.",
+      "implementation": "Identify the 10th lord. Determine its position relative to Paka Lagna and the ruler of its occupied house. Apply mark adjustment.",
+      "confidence": "high"
+    },
+    {
+      "id": "aroodha-lagna-lagnesh-mercury-8th-sun",
+      "page": "070",
+      "category": "longevity_class",
+      "condition": "Lagnesh is Mercury, occupying the 8th house, and associated with Sun.",
+      "effect": "Contributes zero marks (initial 0.5 reduced by 0.5 due to Sun association).",
+      "implementation": "Identify Lagnesh. Check its house placement and conjunctions/aspects with Sun. Apply mark adjustment.",
+      "confidence": "high"
+    },
+    {
+      "id": "aroodha-lagna-3rd-lord-mars-6th-malefic",
+      "page": "070",
+      "category": "longevity_class",
+      "condition": "The Third Lord is Mars, occupying the 6th house, and is considered malefic.",
+      "effect": "Contributes half a mark to the longevity score.",
+      "implementation": "Identify the 3rd lord. Check its house placement and inherent nature. Apply mark adjustment.",
+      "confidence": "high"
+    },
+    {
+      "id": "aroodha-lagna-8th-lord-mars-as-3rd-lord",
+      "page": "070",
+      "category": "longevity_class",
+      "condition": "The Eighth Lord is Mars, and its mark contribution follows the rule for Third Lord Mars in 6th house (Rule 6).",
+      "effect": "Contributes half a mark to the longevity score.",
+      "implementation": "Identify the 8th lord. If it is Mars and meets the conditions of Rule 6 (in 6th house and malefic), apply mark adjustment.",
+      "confidence": "high"
+    },
+    {
+      "id": "aroodha-lagna-10th-lord-mercury-as-lagnesh",
+      "page": "070",
+      "category": "longevity_class",
+      "condition": "The Tenth Lord is Mercury, and its mark contribution follows the rule for Lagnesh Mercury in 8th house with Sun (Rule 5).",
+      "effect": "Contributes zero marks to the longevity score.",
+      "implementation": "Identify the 10th lord. If it is Mercury and meets the conditions of Rule 5 (in 8th house and associated with Sun), apply mark adjustment.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-calculation-method",
+      "page": "070",
+      "category": "method",
+      "condition": "After calculating total marks from Paka and Aroodha Lagna rules.",
+      "effect": "The total marks are multiplied by 6.25 to derive an estimated duration in years.",
+      "implementation": "Sum all marks obtained from applicable rules. Multiply the sum by 6.25 to get the estimated duration.",
+      "confidence": "high"
+    },
+    {
+      "id": "author-method-caution",
+      "page": "070",
+      "category": "caution",
+      "condition": "Applying the described longevity calculation method.",
+      "effect": "The author notes this method is 'too simple and easy,' lacking extensive rules or calculations. Readers may try it, but the author offers no further comments.",
+      "implementation": "When presenting results from this method, include a disclaimer about its simplicity and the author's reservations. Avoid definitive statements based solely on this method.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-ordinary-persons",
+      "page": "070",
+      "category": "caution",
+      "condition": "Applying longevity calculations based on planetary influences.",
+      "effect": "These calculations apply primarily to 'ordinary persons.' They may not accurately reflect the life span of 'sages and saints,' who are believed to transcend planetary influences.",
+      "implementation": "Software should avoid making definitive statements about life span, especially for individuals whose charts might suggest exceptional spiritual qualities. Emphasize that astrological indications are for general life patterns.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-normal-conditions",
+      "page": "070",
+      "category": "caution",
+      "condition": "Applying longevity calculations.",
+      "effect": "These calculations are valid under 'normal conditions of life' and may not be reliable during 'abnormal conditions' such as disturbed social or political environments.",
+      "implementation": "Software should include a disclaimer that astrological assessments reflect potential under typical circumstances and may be influenced by significant external events.",
+      "confidence": "high"
+    },
+    {
+      "id": "extraordinary-person-ambiguity",
+      "page": "070",
+      "category": "caution",
+      "condition": "Interpreting the scope of longevity rules.",
+      "effect": "The precise definition of an 'extraordinary person' (e.g., sages, saints) for whom longevity calculations do not apply is not fully clear.",
+      "implementation": "Acknowledge the inherent ambiguity in classifying individuals as 'extraordinary' and avoid making such classifications within the software. Focus on general astrological principles.",
+      "confidence": "high"
+    }
+  ]
+}

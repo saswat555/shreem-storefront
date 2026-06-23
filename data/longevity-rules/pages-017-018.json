@@ -1,0 +1,306 @@
+{
+  "pages": [
+    17,
+    18
+  ],
+  "page_summary": "These pages outline various astrological combinations (yogas) used to determine an individual's longevity class, specifically focusing on indicators for a middle life span (Madhyamayu) and a long life span (Purnayu). General principles for assessing house strength, which influences longevity, are also provided. The text details specific planetary placements and aspects that suggest particular life span ranges.",
+  "rules": [
+    {
+      "id": "P017-METHOD-HOUSE-STRENGTH-1",
+      "page": 17,
+      "category": "method",
+      "condition": "A house's lord is weak.",
+      "effect": "Indicates a weak house.",
+      "implementation": "Assess house strength based on its lord's condition.",
+      "confidence": "high"
+    },
+    {
+      "id": "P017-METHOD-HOUSE-STRENGTH-2",
+      "page": 17,
+      "category": "method",
+      "condition": "A house is occupied by malefics.",
+      "effect": "Indicates a weak house.",
+      "implementation": "Assess house strength based on malefic occupation.",
+      "confidence": "high"
+    },
+    {
+      "id": "P017-METHOD-HOUSE-STRENGTH-3",
+      "page": 17,
+      "category": "method",
+      "condition": "A house is aspected by malefics.",
+      "effect": "Indicates a weak house.",
+      "implementation": "Assess house strength based on malefic aspects.",
+      "confidence": "high"
+    },
+    {
+      "id": "P017-METHOD-HOUSE-STRENGTH-4",
+      "page": 17,
+      "category": "method",
+      "condition": "A house is hemmed between malefics (Papa Kartari Yoga).",
+      "effect": "Indicates a weak house.",
+      "implementation": "Assess house strength based on planetary placement around it.",
+      "confidence": "high"
+    },
+    {
+      "id": "P017-LONGEVITY-MADHYAMAYU-1",
+      "page": 17,
+      "category": "longevity_class",
+      "condition": "Malefics occupy houses 2, 3, 4, 5, 8, and 11.",
+      "effect": "Indicates a middle life span.",
+      "implementation": "Flag potential middle life span indication if this combination is present.",
+      "confidence": "high"
+    },
+    {
+      "id": "P017-LONGEVITY-MADHYAMAYU-2",
+      "page": 17,
+      "category": "longevity_class",
+      "condition": "Weak Jupiter is Lagna lord AND malefics occupy Kendras (1,4,7,10), Trines (5,9), and Dusthanas (6,8,12).",
+      "effect": "Indicates a middle life span.",
+      "implementation": "Flag potential middle life span indication if this combination is present.",
+      "confidence": "high"
+    },
+    {
+      "id": "P017-LONGEVITY-MADHYAMAYU-3",
+      "page": 17,
+      "category": "longevity_class",
+      "condition": "Benefic in Kendra (1,4,7,10) or Trine (5,9) AND powerful Saturn in 6th house AND/OR a malefic in 8th house.",
+      "effect": "Indicates a middle life span.",
+      "implementation": "Flag potential middle life span indication if this combination is present.",
+      "confidence": "high"
+    },
+    {
+      "id": "P017-LONGEVITY-MADHYAMAYU-4",
+      "page": 17,
+      "category": "longevity_class",
+      "condition": "Kendras (1,4,7,10) and Trines (5,9) are occupied by both benefics and malefics.",
+      "effect": "Indicates a middle life span.",
+      "implementation": "Flag potential middle life span indication if this combination is present.",
+      "confidence": "high"
+    },
+    {
+      "id": "P017-LONGEVITY-MADHYAMAYU-5",
+      "page": 17,
+      "category": "longevity_class",
+      "condition": "Weak Lagna lord AND Jupiter in Kendra (1,4,7,10) or Trine (5,9) AND malefics in 6th, 8th, and 12th houses.",
+      "effect": "Indicates a middle life span.",
+      "implementation": "Flag potential middle life span indication if this combination is present.",
+      "confidence": "high"
+    },
+    {
+      "id": "P017-LONGEVITY-MADHYAMAYU-6",
+      "page": 17,
+      "category": "longevity_class",
+      "condition": "Day birth AND malefics occupy 8th house from Moon.",
+      "effect": "Indicates a middle life span.",
+      "implementation": "Flag potential middle life span indication if this combination is present.",
+      "confidence": "high"
+    },
+    {
+      "id": "P017-LONGEVITY-MADHYAMAYU-7",
+      "page": 17,
+      "category": "longevity_class",
+      "condition": "Lagna lord OR 8th lord OR 10th lord is weak.",
+      "effect": "Indicates a middle life span.",
+      "implementation": "Flag potential middle life span indication if this combination is present.",
+      "confidence": "high"
+    },
+    {
+      "id": "P018-LONGEVITY-SPECIFIC-AGE-1",
+      "page": 18,
+      "category": "longevity_class",
+      "condition": "Benefic in its own sign aspects 8th house.",
+      "effect": "Suggests a potential life span of 10 or 40 years.",
+      "implementation": "Flag potential specific life span indication. Note the 'may be' uncertainty.",
+      "confidence": "medium"
+    },
+    {
+      "id": "P018-LONGEVITY-SPECIFIC-AGE-2",
+      "page": 18,
+      "category": "longevity_class",
+      "condition": "Powerful benefic in Kendra (1,4,7,10) AND Mercury in Kendra (own/friend's/exaltation sign) AND Moon in 7th aspected by Jupiter.",
+      "effect": "Indicates a life span of 50 years.",
+      "implementation": "Flag potential specific life span indication.",
+      "confidence": "high"
+    },
+    {
+      "id": "P018-LONGEVITY-SPECIFIC-AGE-3",
+      "page": 18,
+      "category": "longevity_class",
+      "condition": "Mercury in 4th or 10th house AND Moon in Lagna, 8th or 12th house AND Jupiter and Venus conjoined in any house.",
+      "effect": "Suggests a potential life span of 50 years.",
+      "implementation": "Flag potential specific life span indication. Note the 'may have' uncertainty.",
+      "confidence": "medium"
+    },
+    {
+      "id": "P018-LONGEVITY-SPECIFIC-AGE-4",
+      "page": 18,
+      "category": "longevity_class",
+      "condition": "Sun conjoined with malefics in Lagna AND Moon in 10th AND Jupiter in Kendra (1,4,7,10).",
+      "effect": "Indicates a life span of about 55 years.",
+      "implementation": "Flag potential specific life span indication.",
+      "confidence": "high"
+    },
+    {
+      "id": "P018-LONGEVITY-SPECIFIC-AGE-5",
+      "page": 18,
+      "category": "longevity_class",
+      "condition": "Venus in Lagna AND Jupiter in Kendra (1,4,7,10) AND Saturn in 9th house.",
+      "effect": "Indicates a life span of 63 years.",
+      "implementation": "Flag potential specific life span indication.",
+      "confidence": "high"
+    },
+    {
+      "id": "P018-LONGEVITY-SPECIFIC-AGE-6",
+      "page": 18,
+      "category": "longevity_class",
+      "condition": "Any house from Lagna to 4th house is occupied by four planets.",
+      "effect": "Indicates a life span of 61 years.",
+      "implementation": "Flag potential specific life span indication.",
+      "confidence": "high"
+    },
+    {
+      "id": "P018-LONGEVITY-SPECIFIC-AGE-7",
+      "page": 18,
+      "category": "longevity_class",
+      "condition": "Lagna OR any Kendra house (1,4,7,10) occupied by Jupiter and Venus AND one planet in 4th house.",
+      "effect": "Indicates a life span of 60 years.",
+      "implementation": "Flag potential specific life span indication.",
+      "confidence": "high"
+    },
+    {
+      "id": "P018-LONGEVITY-PURNAYU-1",
+      "page": 18,
+      "category": "longevity_class",
+      "condition": "Moon in 5th house AND Jupiter in a Trine (5,9) AND Mars in 10th house.",
+      "effect": "Indicates a long life span.",
+      "implementation": "Flag potential long life span indication.",
+      "confidence": "high"
+    },
+    {
+      "id": "P018-LONGEVITY-PURNAYU-2",
+      "page": 18,
+      "category": "longevity_class",
+      "condition": "8th lord (if malefic) in 8th house OR Saturn in 8th house.",
+      "effect": "Indicates a long life span.",
+      "implementation": "Flag potential long life span indication.",
+      "confidence": "medium"
+    },
+    {
+      "id": "P018-LONGEVITY-PURNAYU-3",
+      "page": 18,
+      "category": "longevity_class",
+      "condition": "8th lord in its own sign OR Saturn occupies 8th house.",
+      "effect": "Indicates a long life span.",
+      "implementation": "Flag potential long life span indication.",
+      "confidence": "high"
+    },
+    {
+      "id": "P018-LONGEVITY-PURNAYU-4",
+      "page": 18,
+      "category": "longevity_class",
+      "condition": "Saturn in 5th house (in its own sign or exaltation sign).",
+      "effect": "Indicates a long life span.",
+      "implementation": "Flag potential long life span indication.",
+      "confidence": "high"
+    },
+    {
+      "id": "P018-LONGEVITY-PURNAYU-5",
+      "page": 18,
+      "category": "longevity_class",
+      "condition": "6th lord AND 12th lord are posited in Lagna.",
+      "effect": "Indicates a long life span.",
+      "implementation": "Flag potential long life span indication.",
+      "confidence": "high"
+    },
+    {
+      "id": "P018-LONGEVITY-PURNAYU-6",
+      "page": 18,
+      "category": "longevity_class",
+      "condition": "Lagna lord OR 10th lord occupies a Kendra (1,4,7,10).",
+      "effect": "Indicates a long life span.",
+      "implementation": "Flag potential long life span indication.",
+      "confidence": "high"
+    },
+    {
+      "id": "P018-LONGEVITY-PURNAYU-7",
+      "page": 18,
+      "category": "longevity_class",
+      "condition": "10th lord in 5th house.",
+      "effect": "Indicates a long life span.",
+      "implementation": "Flag potential long life span indication.",
+      "confidence": "high"
+    },
+    {
+      "id": "P018-LONGEVITY-PURNAYU-8",
+      "page": 18,
+      "category": "longevity_class",
+      "condition": "8th lord is exalted.",
+      "effect": "Indicates a long life span.",
+      "implementation": "Flag potential long life span indication.",
+      "confidence": "high"
+    },
+    {
+      "id": "P018-LONGEVITY-PURNAYU-9",
+      "page": 18,
+      "category": "longevity_class",
+      "condition": "Benefics occupy Kendras (1,4,7,10).",
+      "effect": "Indicates a long life span.",
+      "implementation": "Flag potential long life span indication.",
+      "confidence": "high"
+    },
+    {
+      "id": "P018-LONGEVITY-PURNAYU-10",
+      "page": 18,
+      "category": "longevity_class",
+      "condition": "Saturn conjoined with 10th lord, 8th lord, AND Lagna lord in a Kendra (1,4,7,10).",
+      "effect": "Indicates a long life span.",
+      "implementation": "Flag potential long life span indication.",
+      "confidence": "high"
+    },
+    {
+      "id": "P018-LONGEVITY-PURNAYU-11",
+      "page": 18,
+      "category": "longevity_class",
+      "condition": "8th lord posited in Lagna AND aspected by Jupiter OR Venus.",
+      "effect": "Indicates a long life span.",
+      "implementation": "Flag potential long life span indication.",
+      "confidence": "high"
+    },
+    {
+      "id": "P018-LONGEVITY-PURNAYU-12",
+      "page": 18,
+      "category": "longevity_class",
+      "condition": "Jupiter AND Venus posited in Kendras (1,4,7,10).",
+      "effect": "Indicates a long life span.",
+      "implementation": "Flag potential long life span indication.",
+      "confidence": "high"
+    },
+    {
+      "id": "P018-LONGEVITY-PURNAYU-13",
+      "page": 18,
+      "category": "longevity_class",
+      "condition": "Lagna AND Moon are strong.",
+      "effect": "Indicates a long life span.",
+      "implementation": "Flag potential long life span indication. Requires a clear definition of 'strong' within the system.",
+      "confidence": "medium"
+    },
+    {
+      "id": "P018-LONGEVITY-PURNAYU-14",
+      "page": 18,
+      "category": "longevity_class",
+      "condition": "Lagna lord AND Moon sign lord are aspected by benefics OR conjoined with benefic planets.",
+      "effect": "Indicates a long life span.",
+      "implementation": "Flag potential long life span indication.",
+      "confidence": "high"
+    },
+    {
+      "id": "P018-LONGEVITY-PURNAYU-15",
+      "page": 18,
+      "category": "longevity_class",
+      "condition": "Jupiter posited in Lagna.",
+      "effect": "Indicates a long life span.",
+      "implementation": "Flag potential long life span indication.",
+      "confidence": "high"
+    }
+  ]
+}

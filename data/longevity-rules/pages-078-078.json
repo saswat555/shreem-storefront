@@ -1,0 +1,107 @@
+{
+  "pages": [
+    "078"
+  ],
+  "page_summary": "This page outlines Maraka planet rules, specifically for Saturn in the 2nd house, and identifies auspicious and inauspicious houses for longevity assessment. It emphasizes the role of planets in health and external life events. The text also cautions about Dasha system limitations, the importance of transits, and the potential exemption of highly spiritual individuals from standard astrological rules.",
+  "rules": [
+    {
+      "id": "saturn-2nd-maraka",
+      "page": "078",
+      "category": "maraka",
+      "condition": "Saturn is posited in the 2nd house.",
+      "effect": "Saturn can function as a Maraka planet.",
+      "implementation": "Identify Saturn's potential Maraka role when placed in the 2nd house.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-key-factors",
+      "page": "078",
+      "category": "method",
+      "condition": "N/A",
+      "effect": "Sun, Moon, Atmakaraka, Lagna, Moon's sign are crucial for longevity assessment.",
+      "implementation": "Include these specific factors in longevity calculations and analysis.",
+      "confidence": "high"
+    },
+    {
+      "id": "auspicious-houses-5-9",
+      "page": "078",
+      "category": "method",
+      "condition": "N/A",
+      "effect": "Houses 5 and 9 are generally considered auspicious.",
+      "implementation": "Assign benefic status to houses 5 and 9 in astrological interpretations.",
+      "confidence": "high"
+    },
+    {
+      "id": "inauspicious-houses-3-6-8-12",
+      "page": "078",
+      "category": "method",
+      "condition": "N/A",
+      "effect": "Houses 3, 6, 8, and 12 are generally inauspicious.",
+      "implementation": "Assign malefic status to houses 3, 6, 8, and 12 in astrological interpretations.",
+      "confidence": "high"
+    },
+    {
+      "id": "planets-health-vulnerabilities",
+      "page": "078",
+      "category": "method",
+      "condition": "N/A",
+      "effect": "Planets are associated with specific health vulnerabilities.",
+      "implementation": "Map planetary positions and conditions to potential health issues for analysis.",
+      "confidence": "medium"
+    },
+    {
+      "id": "external-longevity-factors",
+      "page": "078",
+      "category": "method",
+      "condition": "N/A",
+      "effect": "External events like accidents or violence considered in longevity.",
+      "implementation": "Incorporate indicators for external life-altering events into longevity analysis.",
+      "confidence": "medium"
+    },
+    {
+      "id": "concept-maraka-planets",
+      "page": "078",
+      "category": "maraka",
+      "condition": "N/A",
+      "effect": "The concept of planets influencing life's conclusion was developed.",
+      "implementation": "Identify and analyze planets designated as Marakas in the chart.",
+      "confidence": "high"
+    },
+    {
+      "id": "dasha-longevity-alignment-caution",
+      "page": "078",
+      "category": "dasha_timing",
+      "condition": "Discrepancy between standard Dasha timing and longevity assessment.",
+      "effect": "Standard Dasha systems may not always align with predicted life span.",
+      "implementation": "Be aware that alternative Dasha systems might be necessary for specific longevity cases.",
+      "confidence": "medium"
+    },
+    {
+      "id": "transits-modify-dashas",
+      "page": "078",
+      "category": "dasha_timing",
+      "condition": "N/A",
+      "effect": "Transiting planets can significantly influence Dasha period results.",
+      "implementation": "Always consider current transits when evaluating Dasha period effects.",
+      "confidence": "high"
+    },
+    {
+      "id": "multiple-astrology-methods",
+      "page": "078",
+      "category": "method",
+      "condition": "N/A",
+      "effect": "Multiple astrological methods and perspectives exist for comprehensive analysis.",
+      "implementation": "Support and integrate various analytical approaches for life event timing and assessment.",
+      "confidence": "high"
+    },
+    {
+      "id": "spiritual-exemption-caution",
+      "page": "078",
+      "category": "caution",
+      "condition": "Subject is identified as a highly evolved spiritual individual.",
+      "effect": "Standard astrological rules may not apply conventionally.",
+      "implementation": "Flag that standard astrological predictions may not be applicable for individuals identified as highly spiritual.",
+      "confidence": "high"
+    }
+  ]
+}

@@ -2,7 +2,7 @@ import { Metadata } from "next"
 import Image from "next/image"
 
 import { shreemMascots } from "@lib/constants/shreem"
-import { listBlogPosts } from "@lib/data/journal"
+import { listBlogPostsPage } from "@lib/data/journal"
 import { getBaseURL } from "@lib/util/env"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 
@@ -14,7 +14,7 @@ export async function generateMetadata(props: {
   const { countryCode } = await props.params
   const title = "Shreem Blog | Bilona Ghee, Neem Dhoop & Natural Farming"
   const description =
-    "Read the Shreem Blog for notes on bilona A2 ghee, neem dhoop, desi-cow living, cow dung cakes, Jeevamrut, and natural-farming wisdom."
+    "Read Shreem guides on gau-kasht A2 bilona ghee, preservative-free D2C food, neem dhoop, cow dung cakes, Jeevamrut, and natural farming."
 
   return {
     title,
@@ -33,11 +33,24 @@ export async function generateMetadata(props: {
 
 export default async function BlogPage(props: {
   params: Promise<{ countryCode: string }>
+  searchParams?: Promise<{ page?: string }>
 }) {
   const { countryCode } = await props.params
+  const searchParams = await props.searchParams
+  const currentPage = Math.max(1, Number(searchParams?.page || 1) || 1)
+  const pageSize = 9
+  const offset = (currentPage - 1) * pageSize
   const baseUrl = getBaseURL()
-  const blogPosts = await listBlogPosts()
+  const blogResult = await listBlogPostsPage({
+    limit: pageSize,
+    offset,
+  })
+  const blogPosts = blogResult.posts
   const [featuredPost, ...posts] = blogPosts
+  const totalPages = Math.max(1, Math.ceil(blogResult.count / pageSize))
+  const previousPageHref =
+    currentPage <= 2 ? "/blog" : `/blog?page=${currentPage - 1}`
+  const nextPageHref = `/blog?page=${currentPage + 1}`
   const itemListSchema = {
     "@context": "https://schema.org",
     "@type": "ItemList",
@@ -64,9 +77,8 @@ export default async function BlogPage(props: {
               Field notes for the kitchen, prayer room, and soil.
             </h1>
             <p className="brand-page-copy mt-5 max-w-[42rem]">
-              Read practical notes on bilona ghee, neem dhoop, desi-cow living,
-              and the illustrated world that gives the store its warmth, color,
-              and memory.
+              Read practical notes on gau-kasht A2 bilona ghee, preservative-free
+              Indian D2C food, neem dhoop, desi-cow living, and natural farming.
             </p>
           </div>
           <div className="grid gap-4">
@@ -97,6 +109,7 @@ export default async function BlogPage(props: {
         </div>
       </section>
 
+      {featuredPost && (
       <section className="py-8 small:py-10">
         <LocalizedClientLink href={`/blog/${featuredPost.slug}`} className="block">
           <article className="brand-card overflow-hidden">
@@ -134,6 +147,7 @@ export default async function BlogPage(props: {
           </article>
         </LocalizedClientLink>
       </section>
+      )}
 
       <section className="pb-16 pt-2 small:pb-24">
         <div className="grid items-stretch gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -172,6 +186,29 @@ export default async function BlogPage(props: {
               </article>
             </LocalizedClientLink>
           ))}
+        </div>
+        <div className="mt-8 flex flex-col items-center justify-between gap-4 rounded-[24px] border border-[var(--shreem-border)] bg-white/80 px-5 py-4 text-sm text-[var(--shreem-muted)] sm:flex-row">
+          <span>
+            Page {currentPage} of {totalPages} · {blogResult.count} articles
+          </span>
+          <div className="flex gap-3">
+            {currentPage > 1 && (
+              <LocalizedClientLink
+                href={previousPageHref}
+                className="brand-secondary-button px-4 py-2"
+              >
+                Previous
+              </LocalizedClientLink>
+            )}
+            {blogResult.hasMore && (
+              <LocalizedClientLink
+                href={nextPageHref}
+                className="brand-primary-button px-4 py-2"
+              >
+                Next
+              </LocalizedClientLink>
+            )}
+          </div>
         </div>
       </section>
     </div>

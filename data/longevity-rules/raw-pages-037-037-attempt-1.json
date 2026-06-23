@@ -1,0 +1,35 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "text": "```json\n{\n  \"pages\": [66, 67],\n  \"page_summary\": \"These pages display Ashtaka Varga tables for Venus and Saturn, which are presented as components for astrological longevity assessment.\",\n  \"rules\": [\n    {\n      \"id\": \"venus-ashtaka-varga-table-data\",\n      \"page\": 66,\n      \"category\": \"method\",\n      \"condition\": \"Presence of Venus's Ashtaka Varga table.\",\n      \"effect\": \"This table provides the benefic points (bindus) contributed by the Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn, and Lagna to each of the twelve zodiac signs, summing to a total of 52 points across all signs for Venus's Ashtaka Varga.\",\n      \"implementation\": \"Software should store and utilize these specific Ashtaka Varga point values for Venus as presented, for calculations where Venus's Ashtaka Varga is required.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"saturn-ashtaka-varga-table-data\",\n      \"page\": 67,\n      \"category\": \"method\",\n      \"condition\": \"Presence of Saturn's Ashtaka Varga table.\",\n      \"effect\": \"This table provides the benefic points (bindus) contributed by the Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn, and Lagna to each of the twelve zodiac signs, summing to a total of 39 points across all signs for Saturn's Ashtaka Varga.\",\n      \"implementation\": \"Software should store and utilize these specific Ashtaka Varga point values for Saturn as presented, for calculations where Saturn's Ashtaka Varga is required.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"ashtaka-varga-longevity-context\",\n      \"page\": 66,\n      \"category\": \"method\",\n      \"condition\": \"Ashtaka Varga tables are presented under the heading 'Judgement of Longevity'.\",\n      \"effect\": \"The provided Venus and Saturn Ashtaka Varga data are indicated as relevant inputs for astrological longevity assessment.\",\n      \"implementation\": \"Software should associate Venus and Saturn Ashtaka Varga calculations with the longevity module, noting that specific interpretation rules for these tables are not detailed on these pages.\",\n      \"confidence\": \"high\"\n    }\n  ]\n}\n```"
+          }
+        ],
+        "role": "model"
+      },
+      "finishReason": "STOP",
+      "index": 0
+    }
+  ],
+  "usageMetadata": {
+    "promptTokenCount": 550,
+    "candidatesTokenCount": 537,
+    "totalTokenCount": 3547,
+    "promptTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 292
+      },
+      {
+        "modality": "IMAGE",
+        "tokenCount": 258
+      }
+    ],
+    "thoughtsTokenCount": 2460,
+    "serviceTier": "standard"
+  },
+  "modelVersion": "gemini-2.5-flash",
+  "responseId": "62I1atuWEYjBg8UP09fbkAU"
+}

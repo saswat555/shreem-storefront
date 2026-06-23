@@ -1,0 +1,90 @@
+{
+  "pages": [
+    "048",
+    "049"
+  ],
+  "page_summary": "This document outlines methods for calculating planetary contributions to longevity, including Bharana Samskaras (factors that increase a planet's contribution) and Harana Samskaras (factors that decrease it). It also introduces variations in longevity calculation methods, such as Rasmikayu, and provides examples of how planetary positions influence these contributions.",
+  "rules": [
+    {
+      "id": "bharana-retrograde-double",
+      "page": "048",
+      "category": "longevity_class",
+      "condition": "A planet is retrograde.",
+      "effect": "The planet's madhyamayu period (middle longevity contribution) is doubled.",
+      "implementation": "If a planet is retrograde, multiply its base madhyamayu contribution by 2.",
+      "confidence": "high"
+    },
+    {
+      "id": "bharana-exalted-double",
+      "page": "048",
+      "category": "longevity_class",
+      "condition": "A planet is exalted.",
+      "effect": "The planet's madhyamayu period is doubled.",
+      "implementation": "If a planet is exalted, multiply its base madhyamayu contribution by 2.",
+      "confidence": "high"
+    },
+    {
+      "id": "bharana-intimate-friend-double",
+      "page": "048",
+      "category": "longevity_class",
+      "condition": "A planet is in a house owned by an intimate friend (both natural and temporal friend).",
+      "effect": "The planet's madhyamayu period is doubled.",
+      "implementation": "If a planet is in an intimate friend's house, multiply its base madhyamayu contribution by 2.",
+      "confidence": "high"
+    },
+    {
+      "id": "bharana-multiple-benefit-selection",
+      "page": "048",
+      "category": "method",
+      "condition": "Multiple Bharana Samskara rules apply to a single planet.",
+      "effect": "Only the benefit of one applicable rule is applied; benefits are not cumulative.",
+      "implementation": "When multiple Bharana Samskara conditions are met for a planet, apply only one doubling effect, not multiple.",
+      "confidence": "high"
+    },
+    {
+      "id": "harana-enemy-house-reduction",
+      "page": "049",
+      "category": "longevity_class",
+      "condition": "A planet is in its natural enemy's house.",
+      "effect": "The planet's madhyamayu period is reduced by 1/12.",
+      "implementation": "If a planet is in its natural enemy's house, subtract 1/12 of its madhyamayu contribution.",
+      "confidence": "high"
+    },
+    {
+      "id": "harana-bharana-application-order",
+      "page": "049",
+      "category": "method",
+      "condition": "A planet qualifies for both an increase (Bharana Samskara) and a decrease (Harana Samskara) in its longevity contribution.",
+      "effect": "Increases are applied to the planetary longevity contribution before decreases.",
+      "implementation": "First apply any doubling effects from Bharana Samskaras, then apply any reductions from Harana Samskaras.",
+      "confidence": "high"
+    },
+    {
+      "id": "rasmikayu-paramochcha-rasmis",
+      "page": "049",
+      "category": "method",
+      "condition": "Calculating longevity using a specific Rasmikayu variation, particularly for planets in Paramochcha position.",
+      "effect": "Specific 'rasmis' values are assigned: Sun 16, Moon 20, Mars 1, Mercury 9, Jupiter 8, Venus 9, Saturn 25.",
+      "implementation": "When using this Rasmikayu variation, use these specified rasmis values for planets in Paramochcha.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-exaltation-distance-calculation",
+      "page": "049",
+      "category": "method",
+      "condition": "Calculating a planet's longevity contribution based on its distance from its exaltation point.",
+      "effect": "The longitudinal difference between the planet and its exaltation point is multiplied by a specific factor (e.g., 16 for Sun) to determine its contribution.",
+      "implementation": "Calculate the longitudinal difference from exaltation, then multiply by the planet-specific factor to get its longevity contribution.",
+      "confidence": "high"
+    },
+    {
+      "id": "caution-longevity-method-variations",
+      "page": "049",
+      "category": "caution",
+      "condition": "Considering different traditional Jyotish longevity calculation methods (e.g., Pindayu, Rasmikayu).",
+      "effect": "There are multiple variations and methods for calculating longevity, which may yield slightly different results.",
+      "implementation": "Acknowledge that different traditional methods exist and may produce varying longevity estimates. Do not present a single, definitive 'life span prediction' to customers.",
+      "confidence": "high"
+    }
+  ]
+}

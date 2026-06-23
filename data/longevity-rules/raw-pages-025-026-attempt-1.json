@@ -1,0 +1,35 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "text": "```json\n{\n  \"pages\": [\n    {\n      \"page\": \"025\",\n      \"page_summary\": \"This page outlines basic longevity indicators, specific planetary combinations that may lead to unexpected life events, a method for timing critical periods based on zodiac divisions and Rasi Sandhi, and specific Vimsottari and Tara Dasha periods associated with significant life challenges. It also discusses how planetary afflictions can intensify these challenges and how benefic influences can mitigate them, linking Tara Dasha to different longevity spans.\",\n      \"rules\": [\n        {\n          \"id\": \"longevity-8th-exaltation\",\n          \"page\": \"025\",\n          \"category\": \"longevity_class\",\n          \"condition\": \"Planet in exaltation in the 8th house.\",\n          \"effect\": \"Indicates a positive influence on longevity.\",\n          \"implementation\": \"Software should flag this as a positive indicator for longevity assessment.\",\n          \"confidence\": \"high\"\n        },\n        {\n          \"id\": \"longevity-8th-navamsa-exaltation-friend\",\n          \"page\": \"025\",\n          \"category\": \"longevity_class\",\n          \"condition\": \"Planet in 8th house is in Navamsa of its exaltation sign or a friendly Rasi.\",\n          \"effect\": \"Indicates a positive influence on longevity.\",\n          \"implementation\": \"Software should flag this as a positive indicator for longevity assessment.\",\n          \"confidence\": \"high\"\n        },\n        {\n          \"id\": \"longevity-8th-vargottama\",\n          \"page\": \"025\",\n          \"category\": \"longevity_class\",\n          \"condition\": \"Planet in the 8th house is Vargottama.\",\n          \"effect\": \"Indicates a positive influence on longevity.\",\n          \"implementation\": \"Software should flag this as a positive indicator for longevity assessment.\",\n          \"confidence\": \"high\"\n        },\n        {\n          \"id\": \"caution-lagna-8th-lord-multiple-planets\",\n          \"page\": \"025\",\n          \"category\": \"caution\",\n          \"condition\": \"Lagna lord with 8th lord and other planets; or 8th lord in 8th with other planets.\",\n          \"effect\": \"Indicates a potential for sudden or unexpected life-altering events.\",\n          \"implementation\": \"Software should identify this combination as a significant indicator for life-altering events, requiring careful interpretation.\",\n          \"confidence\": \"medium\"\n        },\n        {\n          \"id\": \"caution-mars-10th-saturn-4th\",\n          \"page\": \"025\",\n          \"category\": \"caution\",\n          \"condition\": \"Mars in 10th house AND Saturn in 4th house.\",\n          \"effect\": \"Indicates a potential for sudden or unexpected life-altering events.\",\n          \"implementation\": \"Software should identify this combination as a significant indicator for life-altering events, requiring careful interpretation.\",\n          \"confidence\": \"high\"\n        },\n        {\n          \"id\": \"caution-saturn-mars-rahu-8th\",\n          \"page\": \"025\",\n          \"category\": \"caution\",\n          \"condition\": \"Saturn, Mars, and Rahu occupy the 8th house.\",\n          \"effect\": \"Indicates a potential for sudden or unexpected life-altering events.\",\n          \"implementation\": \"Software should identify this combination as a significant indicator for life-altering events, requiring careful interpretation.\",\n          \"confidence\": \"high\"\n        },\n        {\n          \"id\": \"caution-mars-6-12-saturn-8-moon-6-8-12\",\n          \"page\": \"025\",\n          \"category\": \"caution\",\n          \"condition\": \"Mars in 6th/12th, Saturn in 8th, Moon in 6th/8th/12th houses.\",\n          \"effect\": \"Indicates a potential for sudden or unexpected life-altering events.\",\n          \"implementation\": \"Software should identify this combination as a significant indicator for life-altering events, requiring careful interpretation.\",\n          \"confidence\": \"high\"\n        },\n        {\n          \"id\": \"method-zodiac-divisions-rasi-sandhi\","
+          }
+        ],
+        "role": "model"
+      },
+      "finishReason": "MAX_TOKENS",
+      "index": 0
+    }
+  ],
+  "usageMetadata": {
+    "promptTokenCount": 813,
+    "candidatesTokenCount": 957,
+    "totalTokenCount": 24809,
+    "promptTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 297
+      },
+      {
+        "modality": "IMAGE",
+        "tokenCount": 516
+      }
+    ],
+    "thoughtsTokenCount": 23039,
+    "serviceTier": "standard"
+  },
+  "modelVersion": "gemini-2.5-flash",
+  "responseId": "v2A1arboPMPv4-EP_5uJiAU"
+}

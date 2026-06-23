@@ -1,0 +1,53 @@
+{
+  "pages": [
+    54
+  ],
+  "page_summary": "This page introduces a method for calculating a planet's contribution to longevity, focusing on the Sun as an example. It emphasizes the use of nirayana longitudes and provides a table of nakshatra longitudes. The calculation involves determining the nakshatra and padas traversed by a planet and converting the remaining longitude into a time duration.",
+  "rules": [
+    {
+      "id": "nirayana-longitude-basis",
+      "page": 54,
+      "category": "method",
+      "condition": "Performing longevity calculations (Ayurdaya)",
+      "effect": "Nirayana longitudes of planets are the fundamental input.",
+      "implementation": "Ensure all planetary positions are in nirayana longitudes for longevity calculations.",
+      "confidence": "high"
+    },
+    {
+      "id": "nakshatra-longitude-reference",
+      "page": 54,
+      "category": "method",
+      "condition": "Determining a planet's position within nakshatras for longevity calculations",
+      "effect": "A reference table of cumulative nakshatra longitudes (from Ashwini) is used to identify the specific nakshatra and its traversed portion.",
+      "implementation": "Utilize the provided nakshatra longitude table (or equivalent data) to accurately map planetary longitudes to their respective nakshatras and their extent.",
+      "confidence": "high"
+    },
+    {
+      "id": "pada-definition",
+      "page": 54,
+      "category": "method",
+      "condition": "Calculating sub-divisions within a nakshatra",
+      "effect": "One 'pada' of a constellation is defined as 3 degrees 20 minutes (3° 20') or 200 minutes of arc.",
+      "implementation": "Use 3° 20' or 200 minutes as the standard measure for one pada in all related calculations.",
+      "confidence": "high"
+    },
+    {
+      "id": "calculate-nakshatra-padas-traversed",
+      "page": 54,
+      "category": "longevity_class",
+      "condition": "Determining a planet's contribution to longevity based on its nakshatra position",
+      "effect": "To find the padas traversed by a planet within its current nakshatra, subtract the cumulative longitude of preceding nakshatras from the planet's longitude.",
+      "implementation": "For a given planet's longitude, identify its current nakshatra. Subtract the cumulative longitude of all prior nakshatras from the planet's longitude to get the 'balance' within the current nakshatra.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-contribution-conversion",
+      "page": 54,
+      "category": "longevity_class",
+      "condition": "Converting the 'balance' longitude within a nakshatra into a time duration for longevity",
+      "effect": "The remaining longitude 'balance' (if less than one pada) is converted to seconds, then divided by 1000 to yield months in decimal form. This duration is added to a base period (e.g., years).",
+      "implementation": "If the 'balance' longitude is less than 3° 20', convert this angular measure into seconds. Divide the seconds by 1000 to obtain a value in months (decimal). Add this to the base longevity period.",
+      "confidence": "high"
+    }
+  ]
+}

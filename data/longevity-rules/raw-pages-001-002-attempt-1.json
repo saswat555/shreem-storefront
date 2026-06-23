@@ -1,0 +1,35 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "text": "```json\n{\n  \"pages\": [1, 2],\n  \"page_summary\": \"The provided pages include the cover of the book 'Judgement of Longevity' by D.P. Saxena and an advertisement for other astrological texts by O.P. Verma. The advertisement describes general astrological concepts like planetary aspects, conjunctions, transits, and Vimshttari Dasa. No specific Jyotish longevity or Maraka rules were found on these pages.\",\n  \"rules\": []\n}\n```"
+          }
+        ],
+        "role": "model"
+      },
+      "finishReason": "STOP",
+      "index": 0
+    }
+  ],
+  "usageMetadata": {
+    "promptTokenCount": 813,
+    "candidatesTokenCount": 110,
+    "totalTokenCount": 1910,
+    "promptTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 297
+      },
+      {
+        "modality": "IMAGE",
+        "tokenCount": 516
+      }
+    ],
+    "thoughtsTokenCount": 987,
+    "serviceTier": "standard"
+  },
+  "modelVersion": "gemini-2.5-flash",
+  "responseId": "ol01apTaL6K7qfkPl-_tyQM"
+}

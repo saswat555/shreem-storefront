@@ -47,6 +47,14 @@ type KootaScore = {
   reason: string
 }
 
+type DeepMatchScore = {
+  name: string
+  score: number
+  max: number
+  reason: string
+  flags: string[]
+}
+
 const MATCHMAKING_SCHEMA = {
   type: "object",
   properties: {
@@ -370,6 +378,643 @@ const signIndex = (name: string) => Math.max(SIGNS.indexOf(name), 0)
 const inclusiveDistance = (fromIndex: number, toIndex: number, max: number) =>
   ((toIndex - fromIndex + max) % max) + 1
 
+const DUSTHANA_HOUSES = [6, 8, 12]
+const KENDRA_HOUSES = [1, 4, 7, 10]
+const TRIKONA_HOUSES = [1, 5, 9]
+const MANGALIK_HOUSES = [1, 2, 4, 7, 8, 12]
+const STRONG_MANGALIK_HOUSES = [7, 8]
+const BENEFICS = ["Jupiter", "Venus", "Mercury", "Moon"]
+const HARSH_RELATIONSHIP_PLANETS = ["Mars", "Saturn", "Rahu", "Ketu", "Sun"]
+
+const getPlanet = (chart: PrashnaChart, name: string) =>
+  chart.planets.find((planet) => planet.name === name)
+
+const getHouse = (chart: PrashnaChart, houseNumber: number) =>
+  chart.houses.find((house) => house.house === houseNumber)
+
+const getHousePlanets = (chart: PrashnaChart, houseNumber: number) =>
+  chart.planets.filter(
+    (planet) => (planet.bhavaHouse || planet.house) === houseNumber
+  )
+
+const getAspectsToHouse = (chart: PrashnaChart, houseNumber: number) =>
+  (chart.aspects || []).filter((aspect) => aspect.toHouse === houseNumber)
+
+const getSignDistance = (fromSign: string, toSign: string) =>
+  inclusiveDistance(signIndex(fromSign), signIndex(toSign), 12)
+
+const getPlanetOwnedHouses = (chart: PrashnaChart, planetName: string) =>
+  chart.houses
+    .filter((house) => house.signLord === planetName)
+    .map((house) => house.house)
+
+const isKendraFromMoon = (chart: PrashnaChart, planet: ReturnType<typeof getPlanet>) => {
+  const moon = getPlanet(chart, "Moon")
+
+  return Boolean(
+    moon &&
+      planet &&
+      KENDRA_HOUSES.includes(getSignDistance(moon.sign, planet.sign))
+  )
+}
+
+const isFunctionalSupportPlanet = (chart: PrashnaChart, planetName: string) => {
+  const ownedHouses = getPlanetOwnedHouses(chart, planetName)
+  const ownsKendra = ownedHouses.some((house) => KENDRA_HOUSES.includes(house))
+  const ownsTrikona = ownedHouses.some((house) => TRIKONA_HOUSES.includes(house))
+
+  return ownsKendra && ownsTrikona
+}
+
+const getAspectsToPlanet = (chart: PrashnaChart, planet: ReturnType<typeof getPlanet>) =>
+  planet
+    ? (chart.aspects || []).filter(
+        (aspect) => aspect.toHouse === (planet.bhavaHouse || planet.house)
+      )
+    : []
+
+const getDebilityCancellationFactors = (
+  chart: PrashnaChart,
+  planet: ReturnType<typeof getPlanet>
+) => {
+  if (!planet || getPlanetDignity(planet) !== "debilitated") {
+    return []
+  }
+
+  const signLord = getPlanet(chart, SIGN_LORDS[planet.sign])
+  const factors = [
+    signLord && KENDRA_HOUSES.includes(signLord.bhavaHouse || signLord.house)
+      ? `${SIGN_LORDS[planet.sign]} lord of debilitation sign is in kendra from Lagna`
+      : "",
+    isKendraFromMoon(chart, signLord)
+      ? `${SIGN_LORDS[planet.sign]} lord of debilitation sign is in kendra from Moon`
+      : "",
+    getAspectsToPlanet(chart, planet).some((aspect) =>
+      BENEFICS.includes(aspect.fromPlanet)
+    )
+      ? `benefic drishti supports ${planet.name}`
+      : "",
+    getHousePlanets(chart, planet.bhavaHouse || planet.house).some((item) =>
+      BENEFICS.includes(item.name)
+    )
+      ? `benefic association supports ${planet.name}`
+      : "",
+    planet.retrograde ? `${planet.name} is retrograde, requiring expert cancellation review` : "",
+  ].filter(Boolean)
+
+  return Array.from(new Set(factors))
+}
+
+const getRelationshipPressureWeight = (
+  chart: PrashnaChart,
+  planetName: string,
+  placed = false
+) => {
+  if (isFunctionalSupportPlanet(chart, planetName)) {
+    return placed ? 0.75 : 0.5
+  }
+
+  if (planetName === "Sun") {
+    return 0.75
+  }
+
+  if (planetName === "Rahu" || planetName === "Ketu") {
+    return placed ? 1.5 : 1.25
+  }
+
+  return placed ? 1.5 : 1
+}
+
+const getPlanetDignity = (planet: ReturnType<typeof getPlanet>) => {
+  if (!planet) {
+    return "unknown"
+  }
+
+  const ownSigns: Record<string, string[]> = {
+    Sun: ["Leo"],
+    Moon: ["Cancer"],
+    Mars: ["Aries", "Scorpio"],
+    Mercury: ["Gemini", "Virgo"],
+    Jupiter: ["Sagittarius", "Pisces"],
+    Venus: ["Taurus", "Libra"],
+    Saturn: ["Capricorn", "Aquarius"],
+  }
+  const exaltationSigns: Record<string, string> = {
+    Sun: "Aries",
+    Moon: "Taurus",
+    Mars: "Capricorn",
+    Mercury: "Virgo",
+    Jupiter: "Cancer",
+    Venus: "Pisces",
+    Saturn: "Libra",
+  }
+  const debilitationSigns: Record<string, string> = {
+    Sun: "Libra",
+    Moon: "Scorpio",
+    Mars: "Cancer",
+    Mercury: "Pisces",
+    Jupiter: "Capricorn",
+    Venus: "Virgo",
+    Saturn: "Aries",
+  }
+
+  if (exaltationSigns[planet.name] === planet.sign) {
+    return "exalted"
+  }
+
+  if ((ownSigns[planet.name] || []).includes(planet.sign)) {
+    return "own"
+  }
+
+  if (debilitationSigns[planet.name] === planet.sign) {
+    return "debilitated"
+  }
+
+  return "neutral"
+}
+
+const getMarsDistanceFromReference = ({
+  chart,
+  reference,
+}: {
+  chart: PrashnaChart
+  reference: "Moon" | "Venus" | "Lagna"
+}) => {
+  const mars = getPlanet(chart, "Mars")
+
+  if (!mars) {
+    return null
+  }
+
+  if (reference === "Lagna") {
+    return getSignDistance(chart.ascendant, mars.sign)
+  }
+
+  const referencePlanet = getPlanet(chart, reference)
+
+  return referencePlanet ? getSignDistance(referencePlanet.sign, mars.sign) : null
+}
+
+const getManglikProfile = (chart: PrashnaChart, label: string) => {
+  const mars = getPlanet(chart, "Mars")
+  const references = (["Moon", "Venus", "Lagna"] as const)
+    .map((reference) => ({
+      reference,
+      distance: getMarsDistanceFromReference({ chart, reference }),
+    }))
+    .filter(
+      (item): item is { reference: "Moon" | "Venus" | "Lagna"; distance: number } =>
+        typeof item.distance === "number"
+    )
+  const primaryHits = references.filter(
+    (item) =>
+      item.reference !== "Lagna" && MANGALIK_HOUSES.includes(item.distance)
+  )
+  const lagnaOnlyHit = references.some(
+    (item) => item.reference === "Lagna" && MANGALIK_HOUSES.includes(item.distance)
+  )
+  const strongestHit = primaryHits.find((item) =>
+    STRONG_MANGALIK_HOUSES.includes(item.distance)
+  )
+  const marsDignity = getPlanetDignity(mars)
+  const cancellationFactors = [
+    mars && ["own", "exalted"].includes(marsDignity)
+      ? `Mars is ${marsDignity} in ${mars.sign}`
+      : "",
+    mars &&
+    (chart.aspects || []).some(
+      (aspect) =>
+        aspect.fromPlanet === "Jupiter" &&
+        aspect.toHouse === (mars.bhavaHouse || mars.house)
+    )
+      ? "Jupiter drishti protects Mars"
+      : "",
+    mars &&
+    getHousePlanets(chart, mars.bhavaHouse || mars.house).some((planet) =>
+      ["Jupiter", "Venus"].includes(planet.name)
+    )
+      ? "Benefic association softens Mars"
+      : "",
+  ].filter(Boolean)
+  const severity =
+    strongestHit
+      ? cancellationFactors.length
+        ? "medium"
+        : "high"
+      : primaryHits.length
+        ? cancellationFactors.length
+          ? "low"
+          : "medium"
+        : lagnaOnlyHit
+          ? "low"
+          : "none"
+
+  return {
+    label,
+    severity,
+    references,
+    primary_hits: primaryHits,
+    lagna_only_hit: lagnaOnlyHit && primaryHits.length === 0,
+    cancellation_factors: cancellationFactors,
+    reason:
+      primaryHits.length > 0
+        ? `${label}: Mars is in Manglik-sensitive distance from ${primaryHits
+            .map((item) => `${item.reference} (${item.distance})`)
+            .join(", ")}. Lagna is noted only as secondary support, not as the deciding factor.`
+        : lagnaOnlyHit
+          ? `${label}: Mars is sensitive only from Lagna; Moon/Venus do not confirm strong Manglik pressure.`
+          : `${label}: No Manglik pressure from Moon or Venus by the deterministic check.`,
+  }
+}
+
+const buildRelationshipAxisScore = (chart: PrashnaChart, label: string): DeepMatchScore => {
+  const seventhHouse = getHouse(chart, 7)
+  const seventhLord = seventhHouse?.signLord ? getPlanet(chart, seventhHouse.signLord) : null
+  const seventhPlanets = getHousePlanets(chart, 7)
+  const seventhAspects = getAspectsToHouse(chart, 7)
+  const seventhLordAspects = getAspectsToPlanet(chart, seventhLord)
+  const seventhLordCancellation = getDebilityCancellationFactors(chart, seventhLord)
+  const seventhLordSupport = [
+    ...seventhLordCancellation,
+    ...seventhLordAspects
+      .filter((aspect) => BENEFICS.includes(aspect.fromPlanet))
+      .map((aspect) => `${aspect.fromPlanet} drishti protects 7th lord ${seventhLord?.name}`),
+    seventhLord &&
+    getHousePlanets(chart, seventhLord.bhavaHouse || seventhLord.house).some((planet) =>
+      BENEFICS.includes(planet.name)
+    )
+      ? `benefic association protects 7th lord ${seventhLord.name}`
+      : "",
+  ].filter(Boolean)
+  const flags: string[] = []
+  const supports: string[] = []
+  let score = 7
+
+  if (seventhLord) {
+    const dignity = getPlanetDignity(seventhLord)
+    if (["own", "exalted"].includes(dignity)) score += 2
+    if (dignity === "debilitated") {
+      score -= seventhLordCancellation.length ? 1 : 3
+      if (seventhLordCancellation.length) {
+        supports.push(
+          `${label}: 7th lord ${seventhLord.name} is debilitated but has cancellation/support: ${seventhLordCancellation.join("; ")}`
+        )
+      } else {
+        flags.push(`${label}: 7th lord ${seventhLord.name} is debilitated without clear cancellation`)
+      }
+    }
+    if (DUSTHANA_HOUSES.includes(seventhLord.bhavaHouse || seventhLord.house)) {
+      score -= seventhLordSupport.length ? 1 : 2
+      if (seventhLordSupport.length) {
+        supports.push(
+          `${label}: 7th lord ${seventhLord.name} is in dusthana house ${
+            seventhLord.bhavaHouse || seventhLord.house
+          } but protected by ${seventhLordSupport.join("; ")}`
+        )
+      } else {
+        flags.push(`${label}: 7th lord ${seventhLord.name} is in dusthana house ${seventhLord.bhavaHouse || seventhLord.house}`)
+      }
+    }
+  }
+
+  const harshPlaced = seventhPlanets.filter((planet) =>
+    HARSH_RELATIONSHIP_PLANETS.includes(planet.name)
+  )
+  const beneficPlaced = seventhPlanets.filter((planet) =>
+    BENEFICS.includes(planet.name)
+  )
+  const harshAspects = seventhAspects.filter((aspect) =>
+    HARSH_RELATIONSHIP_PLANETS.includes(aspect.fromPlanet)
+  )
+  const beneficAspects = seventhAspects.filter((aspect) =>
+    BENEFICS.includes(aspect.fromPlanet)
+  )
+
+  const pressureWeight =
+    harshPlaced.reduce(
+      (total, planet) => total + getRelationshipPressureWeight(chart, planet.name, true),
+      0
+    ) +
+    harshAspects.reduce(
+      (total, aspect) =>
+        total + getRelationshipPressureWeight(chart, aspect.fromPlanet),
+      0
+    )
+
+  score += Math.min(beneficPlaced.length + beneficAspects.length + seventhLordSupport.length, 4)
+  score -= Math.min(pressureWeight, 4)
+
+  if (harshPlaced.length && pressureWeight >= 2.5) {
+    flags.push(`${label}: ${harshPlaced.map((planet) => planet.name).join(", ")} placed in 7th house`)
+  }
+  if (harshAspects.length && pressureWeight >= 2.5) {
+    flags.push(`${label}: 7th house receives drishti from ${harshAspects.map((aspect) => aspect.fromPlanet).join(", ")}`)
+  }
+  if (beneficPlaced.length || beneficAspects.length || seventhLordSupport.length) {
+    supports.push(
+      `${label}: support to marriage axis from ${[
+        ...beneficPlaced.map((planet) => `${planet.name} placed`),
+        ...beneficAspects.map((aspect) => `${aspect.fromPlanet} drishti`),
+        ...seventhLordSupport,
+      ].join("; ")}`
+    )
+  }
+
+  return {
+    name: `${label} 7th house/lord`,
+    score: Math.max(0, Math.min(12, score)),
+    max: 12,
+    reason: `${label}: 7th house is ${seventhHouse?.sign || "unknown"}, lord ${seventhHouse?.signLord || "unknown"}${
+      seventhLord ? ` placed in house ${seventhLord.bhavaHouse || seventhLord.house}` : ""
+    }. Planets in 7th: ${seventhPlanets.map((planet) => planet.name).join(", ") || "none"}. Drishti to 7th: ${seventhAspects.map((aspect) => aspect.fromPlanet).join(", ") || "none"}. ${supports.join(" ")}`,
+    flags,
+  }
+}
+
+const buildVenusJupiterScore = (girl: PrashnaChart, boy: PrashnaChart): DeepMatchScore => {
+  const girlJupiter = getPlanet(girl, "Jupiter")
+  const girlVenus = getPlanet(girl, "Venus")
+  const boyJupiter = getPlanet(boy, "Jupiter")
+  const boyVenus = getPlanet(boy, "Venus")
+  const flags: string[] = []
+  let score = 8
+
+  ;[
+    ["Girl Jupiter", girlJupiter],
+    ["Girl Venus", girlVenus],
+    ["Boy Jupiter", boyJupiter],
+    ["Boy Venus", boyVenus],
+  ].forEach(([name, planet]) => {
+    const dignity = getPlanetDignity(planet as ReturnType<typeof getPlanet>)
+    const cancellation = getDebilityCancellationFactors(
+      name.toString().startsWith("Girl") ? girl : boy,
+      planet as ReturnType<typeof getPlanet>
+    )
+    if (["own", "exalted"].includes(dignity)) score += 1
+    if (dignity === "debilitated") {
+      score -= cancellation.length ? 0.5 : 2
+      if (!cancellation.length) {
+        flags.push(`${name} is debilitated without clear cancellation`)
+      }
+    }
+    if (planet && DUSTHANA_HOUSES.includes((planet as any).bhavaHouse || (planet as any).house)) {
+      score -= 1
+      flags.push(`${name} is in dusthana house ${(planet as any).bhavaHouse || (planet as any).house}`)
+    }
+  })
+
+  return {
+    name: "Venus-Jupiter marriage support",
+    score: Math.max(0, Math.min(10, score)),
+    max: 10,
+    reason: `Girl Venus ${girlVenus?.sign || "unknown"} H${girlVenus?.bhavaHouse || girlVenus?.house || "-"}, Girl Jupiter ${girlJupiter?.sign || "unknown"} H${girlJupiter?.bhavaHouse || girlJupiter?.house || "-"}; Boy Venus ${boyVenus?.sign || "unknown"} H${boyVenus?.bhavaHouse || boyVenus?.house || "-"}, Boy Jupiter ${boyJupiter?.sign || "unknown"} H${boyJupiter?.bhavaHouse || boyJupiter?.house || "-"}.`,
+    flags,
+  }
+}
+
+const scoreSingleHouse = (chart: PrashnaChart, houseNumber: number) => {
+  const house = getHouse(chart, houseNumber)
+  const lord = house?.signLord ? getPlanet(chart, house.signLord) : null
+  const placed = getHousePlanets(chart, houseNumber)
+  const aspects = getAspectsToHouse(chart, houseNumber)
+  const lordAspects = getAspectsToPlanet(chart, lord)
+  const lordCancellation = getDebilityCancellationFactors(chart, lord)
+  let score = 5
+  const basis: string[] = []
+  const flags: string[] = []
+
+  if (lord) {
+    const dignity = getPlanetDignity(lord)
+    if (["own", "exalted"].includes(dignity)) score += 1.5
+    if (dignity === "debilitated") {
+      score -= lordCancellation.length ? 0.5 : 2
+      if (!lordCancellation.length) {
+        flags.push(`H${houseNumber} lord ${lord.name} debilitated`)
+      }
+    }
+    if (DUSTHANA_HOUSES.includes(lord.bhavaHouse || lord.house)) {
+      score -= lordAspects.some((aspect) => BENEFICS.includes(aspect.fromPlanet))
+        ? 0.5
+        : 1.5
+    }
+    basis.push(
+      `H${houseNumber} lord ${lord.name} in H${lord.bhavaHouse || lord.house}, ${dignity}${
+        lordCancellation.length ? `, cancellation: ${lordCancellation.join("; ")}` : ""
+      }`
+    )
+  }
+
+  placed.forEach((planet) => {
+    if (BENEFICS.includes(planet.name)) score += 0.75
+    if (HARSH_RELATIONSHIP_PLANETS.includes(planet.name)) {
+      const weight = getRelationshipPressureWeight(chart, planet.name, true)
+      score -= Math.min(weight, 1.25)
+      if (weight >= 1.25) flags.push(`${planet.name} placed in H${houseNumber}`)
+    }
+  })
+
+  aspects.forEach((aspect) => {
+    if (BENEFICS.includes(aspect.fromPlanet)) score += 0.5
+    if (HARSH_RELATIONSHIP_PLANETS.includes(aspect.fromPlanet)) {
+      const weight = getRelationshipPressureWeight(chart, aspect.fromPlanet)
+      score -= Math.min(weight, 1)
+      if (weight >= 1.25) flags.push(`${aspect.fromPlanet} aspects H${houseNumber}`)
+    }
+  })
+
+  basis.push(
+    `placed ${placed.map((planet) => planet.name).join(", ") || "none"}; drishti ${
+      aspects.map((aspect) => aspect.fromPlanet).join(", ") || "none"
+    }`
+  )
+
+  return {
+    score: Math.max(0, Math.min(8, score)),
+    max: 8,
+    basis: basis.join("; "),
+    flags,
+  }
+}
+
+const buildHouseClusterScore = ({
+  girl,
+  boy,
+  name,
+  houses,
+}: {
+  girl: PrashnaChart
+  boy: PrashnaChart
+  name: string
+  houses: number[]
+}): DeepMatchScore => {
+  const girlScores = houses.map((house) => scoreSingleHouse(girl, house))
+  const boyScores = houses.map((house) => scoreSingleHouse(boy, house))
+  const score = Number(
+    [...girlScores, ...boyScores].reduce((total, item) => total + item.score, 0).toFixed(1)
+  )
+  const max = [...girlScores, ...boyScores].reduce((total, item) => total + item.max, 0)
+  const flags = [...girlScores, ...boyScores].flatMap((item) => item.flags)
+
+  return {
+    name,
+    score: Math.max(0, Math.min(max, score)),
+    max,
+    reason: [
+      `Girl: ${girlScores.map((item, index) => `H${houses[index]} ${item.basis}`).join(" | ")}`,
+      `Boy: ${boyScores.map((item, index) => `H${houses[index]} ${item.basis}`).join(" | ")}`,
+    ].join(" || "),
+    flags: flags.slice(0, 4),
+  }
+}
+
+const buildManglikBalanceScore = (girl: PrashnaChart, boy: PrashnaChart): DeepMatchScore => {
+  const girlManglik = getManglikProfile(girl, "Girl")
+  const boyManglik = getManglikProfile(boy, "Boy")
+  const severityRank: Record<string, number> = { none: 0, low: 1, medium: 2, high: 3 }
+  const difference = Math.abs(
+    severityRank[girlManglik.severity] - severityRank[boyManglik.severity]
+  )
+  const baseScore = difference === 0 ? 12 : difference === 1 ? 8 : difference === 2 ? 4 : 1
+  const flags = [girlManglik, boyManglik]
+    .filter((item) => ["medium", "high"].includes(item.severity))
+    .map((item) => item.reason)
+
+  return {
+    name: "Manglik balance from Moon/Venus",
+    score: Math.max(0, Math.min(12, baseScore)),
+    max: 12,
+    reason: `${girlManglik.reason} ${girlManglik.cancellation_factors.length ? `Cancellation/support: ${girlManglik.cancellation_factors.join("; ")}.` : ""} ${boyManglik.reason} ${boyManglik.cancellation_factors.length ? `Cancellation/support: ${boyManglik.cancellation_factors.join("; ")}.` : ""}`,
+    flags,
+  }
+}
+
+const buildLagnaMoonSynergyScore = (girl: PrashnaChart, boy: PrashnaChart): DeepMatchScore => {
+  const lagnaDistance = getSignDistance(girl.ascendant, boy.ascendant)
+  const moonDistance = getSignDistance(girl.moonSign, boy.moonSign)
+  const flags: string[] = []
+  let score = 6
+
+  if ([1, 5, 7, 9, 11].includes(lagnaDistance)) score += 2
+  if ([6, 8, 12].includes(lagnaDistance)) {
+    score -= 2
+    flags.push(`Lagna distance is ${lagnaDistance}, requiring adjustment in daily temperament`)
+  }
+  if ([1, 5, 7, 9, 11].includes(moonDistance)) score += 2
+  if ([6, 8, 12].includes(moonDistance)) {
+    score -= 3
+    flags.push(`Moon distance is ${moonDistance}, emotional rhythm may need conscious handling`)
+  }
+
+  return {
+    name: "Lagna-Moon temperament synergy",
+    score: Math.max(0, Math.min(10, score)),
+    max: 10,
+    reason: `Lagna distance girl-to-boy ${lagnaDistance}; Moon sign distance girl-to-boy ${moonDistance}.`,
+    flags,
+  }
+}
+
+const buildDashaMarriageReadinessScore = (girl: PrashnaChart, boy: PrashnaChart): DeepMatchScore => {
+  const flags: string[] = []
+  let score = 6
+  ;[
+    ["Girl", girl],
+    ["Boy", boy],
+  ].forEach(([label, chart]) => {
+    const dashaLords = [
+      (chart as PrashnaChart).dasha?.mahadasha?.lord,
+      (chart as PrashnaChart).dasha?.antardasha?.lord,
+      (chart as PrashnaChart).dasha?.pratyantar?.lord,
+    ].filter(Boolean) as string[]
+    const seventhLord = getHouse(chart as PrashnaChart, 7)?.signLord
+    const supportive = dashaLords.some((lord) =>
+      [seventhLord, "Venus", "Jupiter", "Moon"].includes(lord)
+    )
+    const pressure = dashaLords.some((lord) =>
+      ["Mars", "Saturn", "Rahu", "Ketu"].includes(lord)
+    )
+
+    if (supportive) score += 1
+    if (pressure) {
+      score -= 1
+      flags.push(`${label}: current dasha has pressure lord ${dashaLords.join("/")}`)
+    }
+  })
+
+  return {
+    name: "Current dasha marriage readiness",
+    score: Math.max(0, Math.min(8, score)),
+    max: 8,
+    reason: `Girl active dasha ${girl.dasha ? `${girl.dasha.mahadasha.lord}/${girl.dasha.antardasha.lord}/${girl.dasha.pratyantar.lord}` : "unavailable"}; Boy active dasha ${boy.dasha ? `${boy.dasha.mahadasha.lord}/${boy.dasha.antardasha.lord}/${boy.dasha.pratyantar.lord}` : "unavailable"}.`,
+    flags,
+  }
+}
+
+const buildDeepMatchScores = (girl: PrashnaChart, boy: PrashnaChart) => {
+  const deepScores = [
+    buildRelationshipAxisScore(girl, "Girl"),
+    buildRelationshipAxisScore(boy, "Boy"),
+    buildHouseClusterScore({
+      girl,
+      boy,
+      name: "Family continuity and domestic support",
+      houses: [2, 4],
+    }),
+    buildHouseClusterScore({
+      girl,
+      boy,
+      name: "Romance, children and emotional creativity",
+      houses: [5],
+    }),
+    buildHouseClusterScore({
+      girl,
+      boy,
+      name: "Intimacy, longevity and shared transformation",
+      houses: [8],
+    }),
+    buildHouseClusterScore({
+      girl,
+      boy,
+      name: "Dharma, values and family guidance",
+      houses: [9],
+    }),
+    buildHouseClusterScore({
+      girl,
+      boy,
+      name: "Communication, effort and conflict handling",
+      houses: [3, 6],
+    }),
+    buildManglikBalanceScore(girl, boy),
+    buildVenusJupiterScore(girl, boy),
+    buildLagnaMoonSynergyScore(girl, boy),
+    buildDashaMarriageReadinessScore(girl, boy),
+  ]
+  const total = Number(
+    deepScores.reduce((sum, score) => sum + score.score, 0).toFixed(1)
+  )
+  const max = deepScores.reduce((sum, score) => sum + score.max, 0)
+  const redFlags = deepScores
+    .filter((score) => score.score / score.max < 0.52)
+    .flatMap((score) => score.flags)
+  const caseRegistry = [
+    ...deepScores.flatMap((score) =>
+      score.flags.map((flag) => ({
+        case_name: score.name,
+        status: score.score / score.max < 0.45 ? "strong concern" : "watch",
+        chart_basis: flag,
+      }))
+    ),
+  ]
+
+  return {
+    scores: deepScores,
+    total,
+    max,
+    red_flags: redFlags,
+    case_registry: caseRegistry,
+  }
+}
+
 const getTaraScore = (girlNakshatra: string, boyNakshatra: string): KootaScore => {
   const girlToBoy = inclusiveDistance(
     nakshatraIndex(girlNakshatra),
@@ -491,16 +1136,32 @@ const getCompatibilityScores = (girl: PrashnaChart, boy: PrashnaChart) => {
       reason: `Nadi factors are ${girlMeta?.nadi || "unknown"} and ${boyMeta?.nadi || "unknown"}.`,
     },
   ]
-  const total = Number(scores.reduce((sum, score) => sum + score.score, 0).toFixed(1))
-  const percentage = Math.round((total / 36) * 100)
+  const gunaTotal = Number(scores.reduce((sum, score) => sum + score.score, 0).toFixed(1))
+  const deepCompatibility = buildDeepMatchScores(girl, boy)
+  const total = Number((gunaTotal + deepCompatibility.total).toFixed(1))
+  const max = 36 + deepCompatibility.max
+  const percentage = Math.round((total / max) * 100)
+  const strongRedFlags = deepCompatibility.red_flags.length
+  const deterministicRecommendation =
+    (gunaTotal < 16 && strongRedFlags >= 4) || percentage < 45
+      ? "avoid"
+      : strongRedFlags >= 3 || percentage < 66
+        ? "caution"
+        : "go"
 
   return {
     scores,
+    deep_scores: deepCompatibility.scores,
+    case_registry: deepCompatibility.case_registry,
+    red_flags: deepCompatibility.red_flags,
+    ashtakoota_total: gunaTotal,
+    ashtakoota_max: 36,
+    deep_total: deepCompatibility.total,
+    deep_max: deepCompatibility.max,
     total,
-    max: 36,
+    max,
     percentage,
-    deterministicRecommendation:
-      total >= 26 ? "go" : total >= 18 ? "caution" : "avoid",
+    deterministicRecommendation,
   }
 }
 
@@ -519,14 +1180,21 @@ const buildPrompt = ({
 }) =>
   [
     "You are Shreem Astrology's Kundli matchmaking assistant.",
-    "Use only the calculated chart data and deterministic Ashtakoota-style score below. Do not change chart facts or invent missing placements.",
-    "Use the retrieved classical reference pack below for marriage judgment, especially Nadi, Bhakoot, Manglik/Mars sensitivity, 7th house, Venus, Moon, Saturn, Rahu/Ketu, and dasha. Do not quote it verbatim.",
+    "Use only the calculated chart data, deterministic Ashtakoota score, and deterministic deep relationship audit below. Do not change chart facts or invent missing placements.",
+    "The final judgment must not be based only on guna. Use Nadi, Bhakoot, Manglik/Mars sensitivity from Moon and Venus, 7th house/lord, family houses 2/4, romance and children house 5, intimacy/shared vulnerability house 8, dharma/value house 9, communication/conflict houses 3/6, Venus, Jupiter, Moon, Saturn, Rahu/Ketu, drishti, and dasha readiness.",
+    "Use the retrieved classical reference pack below for marriage judgment. Do not quote it verbatim.",
     "When you use the reference pack, return book_citations with the exact Citation values and one-line relevance notes.",
     "Follow calculation-first discipline: if a compatibility issue is partial or has cancellation, explain the support and weakness plainly.",
     "Give a clear marriage suitability percentage. Use the deterministic percentage unless a chart red flag justifies a small cautious adjustment, and explain it.",
     "Recommendation must be one of: go, caution, avoid.",
+    "Avoid is only for severe combined failure. If deterministicRecommendation is caution, write a constructive caution reading with support/cancellation factors; do not downgrade to avoid.",
     "Do not guarantee marriage outcomes. Keep the answer realistic, respectful, and useful for families.",
-    "Consider Moon sign/nakshatra, lagna, 7th house, Venus, Mars/Manglik sensitivity, Rahu/Ketu, Saturn pressure, current dasha, and the Ashtakoota breakdown.",
+    "Consider Moon sign/nakshatra, lagna, 7th house, 7th lord, Venus, Jupiter, Mars/Manglik sensitivity, Rahu/Ketu, Saturn pressure, current dasha, drishti, and the Ashtakoota breakdown.",
+    "Never claim Manglik dosha from Lagna alone. Moon and Venus confirmation must drive Manglik severity; Lagna may be mentioned only as secondary support.",
+    "Only mention special cases that are present in deterministic case_registry or directly proven from the chart data. Do not invent Kaal Sarp, Manglik, Nadi, Bhakoot, Shakata, Gajakesari, or other cases.",
+    "When a planet is debilitated but the deterministic audit shows cancellation/support, call it mitigated rather than raw failure.",
+    "Never use fatalistic BPHS wording such as premature death, guaranteed divorce, guaranteed discord, or certain harm. Convert classical risk language into practical family discussion points and expert-review advice.",
+    "Strengths must include real support factors from the deterministic deep audit, not only Nadi/Gana.",
     "If Nadi, Bhakoot, Manglik, severe 7th house, Venus/Mars, Saturn/Rahu/Ketu, health, or family concerns appear, recommend an expert call with Sanjay Kumar Pandey before final decision.",
     LANGUAGE_INSTRUCTIONS[language] || LANGUAGE_INSTRUCTIONS.english,
     "Return JSON only.",
@@ -570,29 +1238,49 @@ const buildPrompt = ({
     `Compatibility score: ${JSON.stringify(compatibility)}`,
   ].join("\n")
 
-const normalizeAnalysis = (parsed: any, fallbackPercentage: number, fallbackRecommendation: string) => ({
-  summary: sanitizeString(parsed?.summary, 900),
-  recommendation: ["go", "caution", "avoid"].includes(parsed?.recommendation)
+const normalizeAnalysis = (parsed: any, fallbackPercentage: number, fallbackRecommendation: string) => {
+  const rawRecommendation = ["go", "caution", "avoid"].includes(parsed?.recommendation)
     ? parsed.recommendation
-    : fallbackRecommendation,
-  percentage_suggestion:
+    : fallbackRecommendation
+  const recommendationRank: Record<string, number> = { go: 2, caution: 1, avoid: 0 }
+  const maxDrop =
+    fallbackRecommendation === "go"
+      ? "caution"
+      : fallbackRecommendation === "caution"
+        ? "caution"
+        : "avoid"
+  const recommendation =
+    recommendationRank[rawRecommendation] < recommendationRank[maxDrop]
+      ? maxDrop
+      : rawRecommendation
+  const rawPercentage =
     typeof parsed?.percentage_suggestion === "number"
       ? Math.min(100, Math.max(0, Math.round(parsed.percentage_suggestion)))
-      : fallbackPercentage,
-  decision_reason: sanitizeString(parsed?.decision_reason, 900),
-  strengths: sanitizeStringArray(parsed?.strengths, 8, 240),
-  concerns: sanitizeStringArray(parsed?.concerns, 8, 240),
-  family_discussion_points: sanitizeStringArray(
-    parsed?.family_discussion_points,
-    8,
-    240
-  ),
-  marriage_timing_note: sanitizeString(parsed?.marriage_timing_note, 700),
-  remedies: sanitizeStringArray(parsed?.remedies, 8, 240),
-  book_citations: sanitizeBookCitations(parsed?.book_citations),
-  expert_call_recommended: Boolean(parsed?.expert_call_recommended),
-  expert_call_reason: sanitizeString(parsed?.expert_call_reason, 600),
-})
+      : fallbackPercentage
+  const percentage = Math.min(
+    100,
+    Math.max(0, Math.max(fallbackPercentage - 5, Math.min(fallbackPercentage + 5, rawPercentage)))
+  )
+
+  return {
+    summary: sanitizeString(parsed?.summary, 900),
+    recommendation,
+    percentage_suggestion: percentage,
+    decision_reason: sanitizeString(parsed?.decision_reason, 900),
+    strengths: sanitizeStringArray(parsed?.strengths, 8, 240),
+    concerns: sanitizeStringArray(parsed?.concerns, 8, 240),
+    family_discussion_points: sanitizeStringArray(
+      parsed?.family_discussion_points,
+      8,
+      240
+    ),
+    marriage_timing_note: sanitizeString(parsed?.marriage_timing_note, 700),
+    remedies: sanitizeStringArray(parsed?.remedies, 8, 240),
+    book_citations: sanitizeBookCitations(parsed?.book_citations),
+    expert_call_recommended: Boolean(parsed?.expert_call_recommended),
+    expert_call_reason: sanitizeString(parsed?.expert_call_reason, 600),
+  }
+}
 
 export async function POST(request: NextRequest) {
   const customer = await retrieveCustomer().catch(() => null)
@@ -634,9 +1322,15 @@ export async function POST(request: NextRequest) {
   }
 
   const compatibility = getCompatibilityScores(girl.chart, boy.chart)
-  const compatibilityFlags = compatibility.scores
-    .filter((score) => score.score < score.max)
-    .map((score) => `${score.name}: ${score.reason}`)
+  const compatibilityFlags = [
+    ...compatibility.scores
+      .filter((score) => score.score < score.max)
+      .map((score) => `${score.name}: ${score.reason}`),
+    ...compatibility.deep_scores
+      .filter((score) => score.score < score.max)
+      .map((score) => `${score.name}: ${score.reason}`),
+    ...compatibility.red_flags,
+  ]
   const knowledgePassages = retrieveAstrologyKnowledge({
     query: [
       "kundli matchmaking marriage compatibility ashtakoota nadi bhakoot manglik",

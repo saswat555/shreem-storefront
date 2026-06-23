@@ -1,0 +1,99 @@
+{
+  "pages": [
+    80,
+    81
+  ],
+  "page_summary": "Pages 80 and 81 discuss methods for assessing longevity and determining Dasha periods in Jyotish. Page 80 outlines conditions for applying the Bhinnayu method for longevity assessment and presents different chronological orders for planetary periods. It also includes a caution regarding the A.V. system's reliability for longevity. Page 81 details the Ashtaka Varga system for Dasha timing, explaining how to determine the initial Dasha lord based on the strength of Sun, Moon, and Lagna, and the subsequent order of periods based on planetary positions relative to the first Dasha lord.",
+  "rules": [
+    {
+      "id": "longevity-bhinnayu-10th-house",
+      "page": 80,
+      "category": "method",
+      "condition": "The 10th house is occupied by both malefic and benefic planets.",
+      "effect": "Indicates that the Bhinnayu method of longevity assessment should be considered.",
+      "implementation": "If this astrological condition is met, the software should flag the chart for Bhinnayu longevity calculation consideration.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-bhinnayu-moon-panaphara-apoklima",
+      "page": 80,
+      "category": "method",
+      "condition": "The Moon occupies a Panaphara or Apoklima house in conjunction with another planet.",
+      "effect": "Indicates that the Bhinnayu method of longevity assessment should be considered.",
+      "implementation": "If this astrological condition is met, the software should flag the chart for Bhinnayu longevity calculation consideration.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-bhinnayu-mars-strong",
+      "page": 80,
+      "category": "method",
+      "condition": "Mars is determined to be strong.",
+      "effect": "Indicates that the Bhinnayu method of longevity assessment should be considered.",
+      "implementation": "If this astrological condition is met, the software should flag the chart for Bhinnayu longevity calculation consideration.",
+      "confidence": "high"
+    },
+    {
+      "id": "dasha-chronology-mukund",
+      "page": 80,
+      "category": "dasha_timing",
+      "condition": "Applying Acharya Mukund's system for period chronology after longevity assessment.",
+      "effect": "The sequence of periods is Lagna, Venus, Mercury, Sun, Mars, Moon, Jupiter, and Saturn.",
+      "implementation": "When using Acharya Mukund's system, apply this specific order for planetary periods.",
+      "confidence": "high"
+    },
+    {
+      "id": "dasha-chronology-other-acharyas",
+      "page": 80,
+      "category": "dasha_timing",
+      "condition": "Applying other Acharyas' systems for period chronology after longevity assessment.",
+      "effect": "The sequence of periods is Sun, Saturn, Jupiter, Venus, Mars, Mercury, Moon, and Lagna.",
+      "implementation": "When using this alternative system, apply this specific order for planetary periods.",
+      "confidence": "high"
+    },
+    {
+      "id": "dasha-av-first-lord",
+      "page": 81,
+      "category": "dasha_timing",
+      "condition": "Determining the first Dasha lord in the Ashtaka Varga (A.V.) system.",
+      "effect": "The strongest among the Sun, Moon, and Lagna will be the first Dasha lord. The period associated with that planet or Lagna in the A.V. system will run first.",
+      "implementation": "Compare the strengths of Sun, Moon, and Lagna. The strongest entity determines the initial Dasha and its duration based on A.V. calculations.",
+      "confidence": "high"
+    },
+    {
+      "id": "dasha-av-subsequent-lords",
+      "page": 81,
+      "category": "dasha_timing",
+      "condition": "Determining subsequent Dasha lords in the Ashtaka Varga (A.V.) system.",
+      "effect": "Periods of planets positioned in quadrants from the first Dasha lord run next, followed by planets in Panaphara houses, and then planets in Apoklima houses.",
+      "implementation": "After the initial Dasha, sequence subsequent periods by planets located in quadrants, then Panaphara houses, then Apoklima houses relative to the first Dasha lord.",
+      "confidence": "high"
+    },
+    {
+      "id": "dasha-av-precedence-strength",
+      "page": 81,
+      "category": "method",
+      "condition": "Multiple planets qualify for the same Dasha category (e.g., multiple planets in quadrants).",
+      "effect": "Precedence for Dasha timing is determined by the relative strength of those planets.",
+      "implementation": "If multiple planets meet the criteria for the next Dasha period, prioritize the planet with the greatest strength.",
+      "confidence": "high"
+    },
+    {
+      "id": "dasha-av-sambhu-hora-alternative",
+      "page": 81,
+      "category": "method",
+      "condition": "Considering alternative Dasha orders within the Ashtaka Varga system.",
+      "effect": "The Dasha order presented in the Sambhu Hora is a recognized alternative, supported by some authorities.",
+      "implementation": "Software may offer the Sambhu Hora Dasha sequence as an alternative option for A.V. period calculations.",
+      "confidence": "medium"
+    },
+    {
+      "id": "caution-av-longevity-reliability",
+      "page": 80,
+      "category": "caution",
+      "condition": "Using the Ashtaka Varga (A.V.) system for longevity assessment.",
+      "effect": "The A.V. system is not universally reliable for precise longevity assessment, and its results may vary in accuracy.",
+      "implementation": "Software should indicate the potential variability and lack of universal reliability when presenting longevity assessments based on the A.V. system. Avoid definitive statements regarding life span.",
+      "confidence": "high"
+    }
+  ]
+}

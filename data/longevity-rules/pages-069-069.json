@@ -1,0 +1,89 @@
+{
+  "pages": [
+    69
+  ],
+  "page_summary": "This section outlines a novel method for assessing an individual's longevity potential using a point-based system. It involves evaluating the strength and placement of the lords of the 1st, 3rd, 8th, and 10th houses from the Ascendant, Chandra Lagna, Paka Lagna, and Aroodha Lagna. Points are awarded or reduced based on planetary dignity, house placement, and associations, culminating in a numerical indicator of longevity.",
+  "rules": [
+    {
+      "id": "longevity-method-lagnas-to-evaluate",
+      "page": 69,
+      "category": "method",
+      "condition": "To determine longevity potential using this method",
+      "effect": "Evaluate the lords of the 1st, 3rd, 8th, and 10th houses from the Ascendant (Janma Lagna), Chandra Lagna, Paka Lagna, and Aroodha Lagna.",
+      "implementation": "Software should identify these four Lagnas and their respective 1st, 3rd, 8th, and 10th house lords for analysis.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-score-kendra-trikona-placement",
+      "page": 69,
+      "category": "longevity_class",
+      "condition": "A concerned house lord is positioned in a Kendra (1, 4, 7, 10) or Trikona (1, 5, 9) house from its respective Lagna.",
+      "effect": "The planet is awarded one full mark towards longevity assessment.",
+      "implementation": "Assign 1 point if the lord meets this placement criterion.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-score-dignity-or-3rd-8th-house",
+      "page": 69,
+      "category": "longevity_class",
+      "condition": "A concerned house lord is not in a Kendra or Trikona house, but is in its own sign, sign of exaltation, Moola Trikona, or positioned in the 3rd or 8th house from its respective Lagna.",
+      "effect": "The planet is awarded half a mark towards longevity assessment.",
+      "implementation": "Assign 0.5 points if the lord meets these placement or dignity criteria.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-score-malefic-upachaya-placement",
+      "page": 69,
+      "category": "longevity_class",
+      "condition": "A concerned house lord is a malefic planet positioned in an Upachaya house (3, 6, 10, 11).",
+      "effect": "The planet is awarded half a mark towards longevity assessment.",
+      "implementation": "Assign 0.5 points if the lord is a malefic and in an Upachaya house.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-mitigation-debility-enemy-camp",
+      "page": 69,
+      "category": "mitigation",
+      "condition": "A planet that would otherwise receive a full mark is in a state of debility or in an enemy's camp.",
+      "effect": "Its awarded mark is reduced to half.",
+      "implementation": "If a planet qualifies for 1 point but is debilitated or in an enemy sign, reduce its score to 0.5 points.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-mitigation-evil-association-combust",
+      "page": 69,
+      "category": "mitigation",
+      "condition": "A concerned house lord has 'evil association' or is combust.",
+      "effect": "Its awarded mark is reduced to half.",
+      "implementation": "If a planet has malefic associations or is combust, reduce its score by half (e.g., from 1 to 0.5, or 0.5 to 0.25 if applicable, based on the initial mark).",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-calculation-final-indicator",
+      "page": 69,
+      "category": "method",
+      "condition": "After calculating all marks for the relevant planets from all Lagnas.",
+      "effect": "Sum all individual marks and multiply the total by 6.25. The resulting product indicates the individual's longevity potential in years.",
+      "implementation": "Software should sum all calculated points and apply the 6.25 multiplier to derive the final longevity indicator. This value should be presented as an indicator, not a definitive prediction.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-example-exaltation-overrides-enemy",
+      "page": 69,
+      "category": "longevity_class",
+      "condition": "A house lord is in the Ascendant, and despite an enemy planet's presence, the lord is exalted.",
+      "effect": "The planet retains its full mark due to exaltation overriding the enemy influence.",
+      "implementation": "Software should recognize that planetary exaltation can negate negative influences like an enemy's presence when determining the final mark, allowing the full mark to be retained.",
+      "confidence": "medium"
+    },
+    {
+      "id": "longevity-example-8th-lord-chandra-lagna-zero",
+      "page": 69,
+      "category": "longevity_class",
+      "condition": "The eighth lord from Chandra Lagna is positioned in the 11th house from Chandra Lagna.",
+      "effect": "The planet receives zero marks for longevity assessment.",
+      "implementation": "Software should assign 0 points for this specific combination, indicating a lack of positive contribution to longevity from this placement.",
+      "confidence": "medium"
+    }
+  ]
+}

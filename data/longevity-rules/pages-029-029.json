@@ -1,0 +1,261 @@
+{
+  "pages": [
+    50,
+    51
+  ],
+  "page_summary": "This document outlines astrological principles for assessing longevity and identifying critical life events. It details specific planetary combinations and transit timings that may indicate periods of vulnerability, and provides a comprehensive framework for interpreting the 8th house, including planetary associations with humors and body parts, to understand potential health challenges and their nature.",
+  "rules": [
+    {
+      "id": "longevity-7-planets-lagna-moon",
+      "page": 50,
+      "category": "longevity_class",
+      "condition": "All seven planets (Sun to Saturn) join together in transit in the Lagna or Moon sign.",
+      "effect": "Indicates a period of significant life challenges or potential health vulnerabilities.",
+      "implementation": "Flag for potential critical life events during such transits, prompting further detailed analysis.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-7-planets-7th-from-moon-asc",
+      "page": 50,
+      "category": "longevity_class",
+      "condition": "All seven planets (Sun to Saturn) join together in transit in the 7th rasi from the Moon sign or Ascendant rasi.",
+      "effect": "Indicates a period of significant life challenges or potential health vulnerabilities.",
+      "implementation": "Flag for potential critical life events during such transits, prompting further detailed analysis.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-malefics-8th-lagna-moon",
+      "page": 50,
+      "category": "longevity_class",
+      "condition": "All malefics join together in the 8th rasi from Lagna or Moon sign.",
+      "effect": "Suggests a period of heightened vulnerability to adverse events or health issues.",
+      "implementation": "Flag for potential critical health or life events during such transits, requiring careful interpretation.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-malefic-lagna-moon-6-8-12",
+      "page": 50,
+      "category": "longevity_class",
+      "condition": "One malefic transits the Lagna sign or the Moon sign, AND other malefics transit to the 6th, 8th, or 12th houses.",
+      "effect": "Indicates a period of potential significant challenges, including health concerns or adverse circumstances.",
+      "implementation": "Flag for potential critical health or life events during such transits, requiring careful interpretation.",
+      "confidence": "high"
+    },
+    {
+      "id": "dasha-timing-sun",
+      "page": 50,
+      "category": "dasha_timing",
+      "condition": "Sun's transit to a new sign.",
+      "effect": "Starts giving results 5 days earlier than its physical transit to the next sign.",
+      "implementation": "Adjust effective start date for Sun's transit results in dasha calculations by subtracting 5 days.",
+      "confidence": "high"
+    },
+    {
+      "id": "dasha-timing-moon",
+      "page": 50,
+      "category": "dasha_timing",
+      "condition": "Moon's transit to a new sign.",
+      "effect": "Starts giving results 72 minutes earlier than its physical transit to the next sign.",
+      "implementation": "Adjust effective start date for Moon's transit results in dasha calculations by subtracting 72 minutes.",
+      "confidence": "high"
+    },
+    {
+      "id": "dasha-timing-mars",
+      "page": 50,
+      "category": "dasha_timing",
+      "condition": "Mars' transit to a new sign.",
+      "effect": "Starts giving results 8 days earlier than its physical transit to the next sign.",
+      "implementation": "Adjust effective start date for Mars' transit results in dasha calculations by subtracting 8 days.",
+      "confidence": "high"
+    },
+    {
+      "id": "dasha-timing-mercury-venus",
+      "page": 50,
+      "category": "dasha_timing",
+      "condition": "Mercury's or Venus' transit to a new sign.",
+      "effect": "Starts giving results 7 days earlier than its physical transit to the next sign.",
+      "implementation": "Adjust effective start date for Mercury's and Venus' transit results in dasha calculations by subtracting 7 days.",
+      "confidence": "high"
+    },
+    {
+      "id": "dasha-timing-jupiter",
+      "page": 50,
+      "category": "dasha_timing",
+      "condition": "Jupiter's transit to a new sign.",
+      "effect": "Starts giving results 2 months earlier than its physical transit to the next sign.",
+      "implementation": "Adjust effective start date for Jupiter's transit results in dasha calculations by subtracting 2 months.",
+      "confidence": "high"
+    },
+    {
+      "id": "dasha-timing-saturn",
+      "page": 50,
+      "category": "dasha_timing",
+      "condition": "Saturn's transit to a new sign.",
+      "effect": "Starts giving results 6 months earlier than its physical transit to the next sign.",
+      "implementation": "Adjust effective start date for Saturn's transit results in dasha calculations by subtracting 6 months.",
+      "confidence": "high"
+    },
+    {
+      "id": "dasha-timing-rahu-ketu",
+      "page": 50,
+      "category": "dasha_timing",
+      "condition": "Rahu's or Ketu's transit to a new sign.",
+      "effect": "Starts giving results 3 months earlier than its physical transit to the next sign.",
+      "implementation": "Adjust effective start date for Rahu's and Ketu's transit results in dasha calculations by subtracting 3 months.",
+      "confidence": "high"
+    },
+    {
+      "id": "caution-8th-house-scope",
+      "page": 50,
+      "category": "caution",
+      "condition": "General interpretation of the 8th house in a chart.",
+      "effect": "The 8th house is a primary indicator for significant life events, including major health challenges, accidents, and psychological factors. Analysis should consider the three humors and seven elements.",
+      "implementation": "When analyzing the 8th house, consider a broad range of potential adverse life events and health conditions. Avoid direct predictions of 'death' or 'suicide'; instead, focus on vulnerability to critical events or severe distress. Integrate humoral and elemental associations for health interpretations.",
+      "confidence": "medium"
+    },
+    {
+      "id": "method-planet-humor-body-sun",
+      "page": 51,
+      "category": "method",
+      "condition": "Sun's influence in a chart, especially concerning health.",
+      "effect": "Associated with Biles humor, and body parts like fire and bone.",
+      "implementation": "Use these associations to interpret the nature of health challenges indicated by the Sun's placement or aspects.",
+      "confidence": "high"
+    },
+    {
+      "id": "method-planet-humor-body-moon",
+      "page": 51,
+      "category": "method",
+      "condition": "Moon's influence in a chart, especially concerning health.",
+      "effect": "Associated with Phlegm and Wind humors, and body parts like water and blood.",
+      "implementation": "Use these associations to interpret the nature of health challenges indicated by the Moon's placement or aspects.",
+      "confidence": "high"
+    },
+    {
+      "id": "method-planet-humor-body-mars",
+      "page": 51,
+      "category": "method",
+      "condition": "Mars' influence in a chart, especially concerning health.",
+      "effect": "Associated with Biles humor, and body parts like injury by arms and marrow.",
+      "implementation": "Use these associations to interpret the nature of health challenges indicated by Mars' placement or aspects.",
+      "confidence": "high"
+    },
+    {
+      "id": "method-planet-humor-body-mercury",
+      "page": 51,
+      "category": "method",
+      "condition": "Mercury's influence in a chart, especially concerning health.",
+      "effect": "Associated with all three humors, and body parts like fever and skin.",
+      "implementation": "Use these associations to interpret the nature of health challenges indicated by Mercury's placement or aspects.",
+      "confidence": "high"
+    },
+    {
+      "id": "method-planet-humor-body-jupiter",
+      "page": 51,
+      "category": "method",
+      "condition": "Jupiter's influence in a chart, especially concerning health.",
+      "effect": "Associated with Phlegm humor, and body parts related to unknown diseases and fat.",
+      "implementation": "Use these associations to interpret the nature of health challenges indicated by Jupiter's placement or aspects.",
+      "confidence": "high"
+    },
+    {
+      "id": "method-planet-humor-body-venus",
+      "page": 51,
+      "category": "method",
+      "condition": "Venus' influence in a chart, especially concerning health.",
+      "effect": "Associated with Phlegm and Wind humors, and body parts related to hunger and semen.",
+      "implementation": "Use these associations to interpret the nature of health challenges indicated by Venus' placement or aspects.",
+      "confidence": "high"
+    },
+    {
+      "id": "method-planet-humor-body-saturn",
+      "page": 51,
+      "category": "method",
+      "condition": "Saturn's influence in a chart, especially concerning health.",
+      "effect": "Associated with Wind humor, and body parts related to thirst and the nervous system.",
+      "implementation": "Use these associations to interpret the nature of health challenges indicated by Saturn's placement or aspects.",
+      "confidence": "high"
+    },
+    {
+      "id": "method-8th-house-kala-purusha",
+      "page": 51,
+      "category": "method",
+      "condition": "Interpreting the 8th house in a chart.",
+      "effect": "The Rasi in the 8th house represents a specific part of the body of the Kala Purusha, and planets in it influence their own effects.",
+      "implementation": "When analyzing the 8th house, consider the natural signification of the Rasi and the planets' inherent qualities to understand potential health vulnerabilities.",
+      "confidence": "high"
+    },
+    {
+      "id": "method-8th-house-drekkana-navamsa",
+      "page": 51,
+      "category": "method",
+      "condition": "Detailed analysis of the 8th house for health and critical events.",
+      "effect": "Important considerations include the Drekkana of the Rasi in the 8th house and the Navamsa of the Lagna.",
+      "implementation": "Incorporate divisional chart analysis (Drekkana, Navamsa) for a more nuanced understanding of 8th house indications related to health and significant life events.",
+      "confidence": "high"
+    },
+    {
+      "id": "method-8th-house-key-planets",
+      "page": 51,
+      "category": "method",
+      "condition": "Identifying key planetary influences on the 8th house.",
+      "effect": "The lord of the 8th house, planets occupying it, and planets aspecting it are important indicators.",
+      "implementation": "Prioritize these planets when assessing potential challenges related to the 8th house, as they reveal the nature and timing of critical events.",
+      "confidence": "high"
+    },
+    {
+      "id": "method-8th-house-empty-alternates",
+      "page": 51,
+      "category": "method",
+      "condition": "The 8th house has no planetary occupants.",
+      "effect": "The 8th lord and the lord of the 22nd Drekkana of the Lagna should be considered for analysis.",
+      "implementation": "If the 8th house is empty, use the 8th lord and the 22nd Drekkana lord as primary indicators for potential critical health or life events.",
+      "confidence": "high"
+    },
+    {
+      "id": "maraka-8th-house-sign-occupant",
+      "page": 51,
+      "category": "maraka",
+      "condition": "Analysis of the 8th house for health challenges.",
+      "effect": "The sign of the 8th house indicates a body part of the Kala Purusha, and the planet occupying the 8th house indicates the nature of the health challenge.",
+      "implementation": "Identify the body part associated with the 8th house sign and the type of health issue indicated by the occupying planet to pinpoint areas of vulnerability.",
+      "confidence": "high"
+    },
+    {
+      "id": "maraka-many-planets-8th-house",
+      "page": 51,
+      "category": "maraka",
+      "condition": "Multiple planets occupying the 8th house.",
+      "effect": "Indicates significant challenges. The strongest planet among them will represent the primary challenge.",
+      "implementation": "When multiple planets are in the 8th house, identify the strongest to pinpoint the most prominent area of vulnerability or the nature of the most significant critical event.",
+      "confidence": "high"
+    },
+    {
+      "id": "maraka-strong-planets-8th-house",
+      "page": 51,
+      "category": "maraka",
+      "condition": "Strong planets located in the 8th house.",
+      "effect": "The challenges indicated will be more complex, influenced by the specific qualities of those strong planets.",
+      "implementation": "Note that strong planets in the 8th house suggest more intricate or persistent issues. Software should prompt for detailed analysis of their significations and potential impact.",
+      "confidence": "high"
+    },
+    {
+      "id": "maraka-strongest-aspecting-8th-house",
+      "page": 51,
+      "category": "maraka",
+      "condition": "Planets aspecting the 8th house.",
+      "effect": "The strongest planet aspecting the 8th house can also indicate the nature of the health challenge.",
+      "implementation": "Include strong aspecting planets in the assessment of 8th house related health vulnerabilities and critical life events.",
+      "confidence": "high"
+    },
+    {
+      "id": "maraka-no-aspect-8th-house-22nd-drekkana",
+      "page": 51,
+      "category": "maraka",
+      "condition": "No planet aspects the 8th house.",
+      "effect": "The Rasi of the 22nd Drekkana or its lord will represent the nature of the significant health challenge.",
+      "implementation": "If no planets aspect the 8th house, refer to the 22nd Drekkana Rasi or its lord for insights into potential critical health events or life challenges.",
+      "confidence": "high"
+    }
+  ]
+}

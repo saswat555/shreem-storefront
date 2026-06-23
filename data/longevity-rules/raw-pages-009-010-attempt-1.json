@@ -1,0 +1,35 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "text": "```json\n{\n  \"pages\": [9, 10],\n  \"page_summary\": \"These pages outline key astrological factors for assessing longevity and detail various methods for birth time rectification, including the use of Ruling Planets and ghata-based calculations, while also highlighting the limitations of these techniques for precise time confirmation.\",\n  \"rules\": [\n    {\n      \"id\": \"longevity-assessment-factors-009\",\n      \"page\": 9,\n      \"category\": \"method\",\n      \"condition\": \"To assess longevity, consider the following astrological factors:\",\n      \"effect\": \"These factors are foundational for a comprehensive longevity judgment and should be identified in the chart.\",\n      \"implementation\": \"Software should identify and display the lords of Lagna Rasi, Lagna Cuspal, Moon Sign, Moon's Constellation, and the Week Day for longevity analysis.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"rectification-rp-asc-sign-nakshatra-009\",\n      \"page\": 9,\n      \"category\": \"method\",\n      \"condition\": \"For accurate birth time, the sign lord of the Ascendant and its nakshatra lord should be among the Ruling Planets (RPs).\",\n      \"effect\": \"This alignment indicates a potentially correct birth time, supporting the accuracy of the chart.\",\n      \"implementation\": \"Software should verify if the Ascendant's sign lord and nakshatra lord are present in the calculated Ruling Planets for the given time.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"rectification-rp-asc-sublord-009\",\n      \"page\": 9,\n      \"category\": \"method\",\n      \"condition\": \"The sub lord of the Ascendant should also be one of the Ruling Planets.\",\n      \"effect\": \"This provides further confirmation for birth time accuracy, strengthening the chart's reliability.\",\n      \"implementation\": \"Software should check if the Ascendant's sub lord is included in the Ruling Planets.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"rectification-lagna-cusp-adjustment-009\",\n      \"page\": 9,\n      \"category\": \"method\",\n      \"condition\": \"The Lagna cusp may need adjustment within approximately 10-15 minutes to align with other constellation rules.\",\n      \"effect\": \"Minor adjustments to birth time can significantly impact Lagna cusp and subsequent divisional charts, affecting analysis.\",\n      \"implementation\": \"Software could indicate the sensitivity of Lagna cusp to small time variations and suggest a potential range for manual verification if rectification is being performed.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"rectification-ghati-nakshatra-check-010\",\n      \"page\": 10,\n      \"category\": \"method\",\n      \"condition\": \"Convert birth time to ghatis, multiply by 4, divide by 9, and check the remainder against specific nakshatras (Aswini/Magha/Moola) to determine the Moon's nakshatra.\",\n      \"effect\": \"This method helps verify the Moon's nakshatra at birth, providing an alternative check for chart consistency.\",\n      \"implementation\": \"Software can implement this calculation to cross-verify the Moon's nakshatra derived from the standard birth time.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"rectification-doubtful-time-indication-010\",\n      \"page\": 10,\n      \"category\": \"caution\",\n      \"condition\": \"If the Moon's nakshatra derived from the ghata-based method does not match the expected nakshatra for the given time, the birth time is considered doubtful.\",\n      \"effect\": \"Indicates a potential inaccuracy in the recorded birth time, requiring further investigation.\",\n      \"implementation\": \"Software should flag a warning if the Moon's nakshatra calculated via the ghata method differs from the chart's Moon nakshatra, suggesting birth time verification.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"sex-determination-kalamritam-ghata-010\",\n      \"page\": 10,\n      \"category\": \"method\",\n      \"condition\": \"From Uttar Kalamritam, convert birth time to ghatis, divide by 225. If the remainder is between 0 and 115 (or 45 and 90), the native is indicated as male. Otherwise, female.\",\n      \"effect\": \"This method attempts to determine the sex of the native based on a ghata calculation.\",\n      \"implementation\": \"Software can calculate this remainder. However, note that the text provides a contradictory example where a remainder (193) falling in the 'otherwise' range (150-225) is stated to indicate a male child, despite the rule implying female. This rule should be used with extreme caution or for verification purposes only.\",\n      \"confidence\": \"low\"\n    },\n    {\n      \"id\": \"sex-determination-method-limitation-010\",\n      \"page\": 10,\n      \"category\": \"caution\",\n      \"condition\": \"The Uttar Kalamritam method for sex determination only indicates the sex of the child and does not confirm the exact time of birth.\",\n      \"effect\": \"This method should not be used for birth time rectification, as it does not provide sufficient precision.\",\n      \"implementation\": \"Software should clearly state that this method is for sex indication only and not for birth time verification or rectification.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"rectification-general-caution-010\",\n      \"page\": 10,\n      \"category\": \"caution\",\n      \"condition\": \"Unless there is a significant error in the recorded birth time, the Uttar Kalamritam sex determination method may not be effective for rectification.\",\n      \"effect\": \"Highlights the limited utility of this specific method for minor birth time adjustments, suggesting it's for gross errors only.\",\n      \"implementation\": \"Software should advise users that this method is not suitable for fine-tuning birth times, but rather for identifying major discrepancies.\",\n      \"confidence\": \"high\"\n    }\n  ]\n}\n```"
+          }
+        ],
+        "role": "model"
+      },
+      "finishReason": "STOP",
+      "index": 0
+    }
+  ],
+  "usageMetadata": {
+    "promptTokenCount": 813,
+    "candidatesTokenCount": 1410,
+    "totalTokenCount": 6473,
+    "promptTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 297
+      },
+      {
+        "modality": "IMAGE",
+        "tokenCount": 516
+      }
+    ],
+    "thoughtsTokenCount": 4250,
+    "serviceTier": "standard"
+  },
+  "modelVersion": "gemini-2.5-flash",
+  "responseId": "Al41auHDKK-1juMPn9jwkA8"
+}

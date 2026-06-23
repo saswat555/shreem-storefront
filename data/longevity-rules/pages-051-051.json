@@ -1,0 +1,153 @@
+{
+  "pages": [
+    94,
+    95
+  ],
+  "page_summary": "This section details methods for calculating planetary contributions to longevity, including specific reduction rules based on planetary placement, benefic/malefic status, and house ownership. It also introduces a principle for applying only the maximum reduction when multiple apply, and outlines an alternative longevity calculation method using the birth Nakshatra.",
+  "rules": [
+    {
+      "id": "longevity-saturn-example-grant",
+      "page": 94,
+      "category": "longevity_class",
+      "condition": "Example: Saturn's position is between 6-7-48 and 6-20-00, resulting in a calculation of 11-17-48, which is interpreted as 'More than 6 rasis'.",
+      "effect": "Contributes 18 years, 4 months, and 8.2 days to the total calculated longevity.",
+      "implementation": "Software should implement the underlying calculation method for planetary longevity grants, using this as an example of a specific outcome for verification.",
+      "confidence": "medium"
+    },
+    {
+      "id": "longevity-rahu-example-grant",
+      "page": 94,
+      "category": "longevity_class",
+      "condition": "Example: Rahu's position is between 9-4-59 and 5-21-0, resulting in a calculation of 3-13-59, which is interpreted as 'Less than 6 rasis'.",
+      "effect": "Contributes 12 years, 9 months, and 18.3 days to the total calculated longevity.",
+      "implementation": "Software should implement the underlying calculation method for planetary longevity grants, using this as an example of a specific outcome for verification.",
+      "confidence": "medium"
+    },
+    {
+      "id": "longevity-ketu-example-grant",
+      "page": 94,
+      "category": "longevity_class",
+      "condition": "Example: Ketu's position is between 3-4-59 and 11-21-0, resulting in a calculation of 3-13-59.",
+      "effect": "Contributes 4 years, 11 months, and 22.1 days to the total calculated longevity.",
+      "implementation": "Software should implement the underlying calculation method for planetary longevity grants, using this as an example of a specific outcome for verification.",
+      "confidence": "medium"
+    },
+    {
+      "id": "reduction-moon-benefic-10th",
+      "page": 94,
+      "category": "longevity_class",
+      "condition": "Moon is considered a benefic planet and is located in the 10th house.",
+      "effect": "Moon's calculated contribution to longevity is reduced by 1/6.",
+      "implementation": "Apply a 1/6 reduction to Moon's longevity contribution if it meets these conditions.",
+      "confidence": "high"
+    },
+    {
+      "id": "reduction-mars-malefic-12th",
+      "page": 94,
+      "category": "longevity_class",
+      "condition": "Mars is considered a malefic planet and is located in the 12th house.",
+      "effect": "Mars' calculated contribution to longevity is reduced by 100%.",
+      "implementation": "Apply a full reduction to Mars' longevity contribution if it meets these conditions.",
+      "confidence": "high"
+    },
+    {
+      "id": "reduction-venus-benefic-12th",
+      "page": 94,
+      "category": "longevity_class",
+      "condition": "Venus is considered a benefic planet and is located in the 12th house.",
+      "effect": "Venus' calculated contribution to longevity is reduced by 1/2.",
+      "implementation": "Apply a 1/2 reduction to Venus' longevity contribution if it meets these conditions.",
+      "confidence": "high"
+    },
+    {
+      "id": "reduction-ketu-malefic-10th",
+      "page": 94,
+      "category": "longevity_class",
+      "condition": "Ketu is considered a malefic planet and is located in the 10th house.",
+      "effect": "Ketu's calculated contribution to longevity is reduced by 1/3.",
+      "implementation": "Apply a 1/3 reduction to Ketu's longevity contribution if it meets these conditions.",
+      "confidence": "high"
+    },
+    {
+      "id": "reduction-satrukshetra-sun",
+      "page": 94,
+      "category": "longevity_class",
+      "condition": "Sun is placed in a house ruled by an enemy planet (e.g., Venus' house).",
+      "effect": "Sun's calculated contribution to longevity is reduced by 1/3.",
+      "implementation": "Identify enemy houses for Sun and apply a 1/3 reduction to its longevity contribution if placed there.",
+      "confidence": "high"
+    },
+    {
+      "id": "reduction-satrukshetra-mars",
+      "page": 94,
+      "category": "longevity_class",
+      "condition": "Mars is placed in a house ruled by an enemy planet.",
+      "effect": "Mars' calculated contribution to longevity is reduced by 1/3.",
+      "implementation": "Identify enemy houses for Mars and apply a 1/3 reduction to its longevity contribution if placed there.",
+      "confidence": "high"
+    },
+    {
+      "id": "reduction-satrukshetra-mercury",
+      "page": 94,
+      "category": "longevity_class",
+      "condition": "Mercury is placed in a house ruled by an enemy planet.",
+      "effect": "Mercury's calculated contribution to longevity is reduced by 1/3.",
+      "implementation": "Identify enemy houses for Mercury and apply a 1/3 reduction to its longevity contribution if placed there.",
+      "confidence": "high"
+    },
+    {
+      "id": "reduction-satrukshetra-ketu",
+      "page": 94,
+      "category": "longevity_class",
+      "condition": "Ketu is placed in a house ruled by an enemy planet.",
+      "effect": "Ketu's calculated contribution to longevity is reduced by 1/3.",
+      "implementation": "Identify enemy houses for Ketu and apply a 1/3 reduction to its longevity contribution if placed there.",
+      "confidence": "high"
+    },
+    {
+      "id": "reduction-astangata-harana",
+      "page": 94,
+      "category": "method",
+      "condition": "A planet is combust (Astangata).",
+      "effect": "This type of reduction exists for longevity calculations, though it was not applicable in the provided example chart.",
+      "implementation": "Software should include a mechanism to check for planetary combustion and apply corresponding longevity reductions if defined by the system.",
+      "confidence": "medium"
+    },
+    {
+      "id": "reduction-krurdaya-malefic-cusp",
+      "page": 95,
+      "category": "longevity_class",
+      "condition": "A planet considered malefic (e.g., Sun, Saturn) is positioned near a house cusp.",
+      "effect": "The malefic planet's calculated contribution to longevity is reduced.",
+      "implementation": "Software should identify malefic planets near cusps and apply a calculated reduction to their longevity contribution.",
+      "confidence": "high"
+    },
+    {
+      "id": "reduction-maximum-application",
+      "page": 95,
+      "category": "method",
+      "condition": "Multiple reduction rules apply to the same planet's longevity contribution.",
+      "effect": "Only the reduction with the maximum value should be applied to that planet's contribution.",
+      "implementation": "When calculating reductions for a planet, compare all applicable reduction values and apply only the largest one.",
+      "confidence": "high"
+    },
+    {
+      "id": "method-gauri-jataka-nakshatrayurdaya",
+      "page": 95,
+      "category": "method",
+      "condition": "To calculate Nakshatra Ayu using the Gauri Jataka method.",
+      "effect": "The balance of the birth Nakshatra (Moon's constellation) in ghatis and vighatis is multiplied by 4, divided by 3, and then 40 years are added to the result to determine the calculated longevity period.",
+      "implementation": "Software should implement this specific calculation: (Nakshatra_Balance * 4 / 3) + 40 = Nakshatra_Ayu.",
+      "confidence": "high"
+    },
+    {
+      "id": "caution-panchanga-reliance",
+      "page": 95,
+      "category": "caution",
+      "condition": "Implementing the Gauri Jataka Nakshatrayurdaya method.",
+      "effect": "This method requires precise calculations based on Panchanga data.",
+      "implementation": "Ensure accurate Panchanga data and calculations are available for this method.",
+      "confidence": "high"
+    }
+  ]
+}

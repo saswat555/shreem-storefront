@@ -8,14 +8,14 @@ export const shreemCowBreeds = [
 export const shreemMascots = [
   {
     name: "Gauri",
-    imagePath: "/gauri.png",
+    imagePath: "/gauri.jpg",
     role: "The gentle keeper of nourishment",
     description:
       "Gauri is the desi-cow character behind Shreem: a warm brand symbol for nourishment, patience, and the care Indian homes associate with indigenous breeds.",
   },
   {
     name: "Mayur",
-    imagePath: "/mayur.png",
+    imagePath: "/mayur.jpg",
     role: "The bearer of color and devotion",
     description:
       "Mayur brings the peacock-feather color of the logo into the Shreem world, giving the brand a festive, recognisable visual language across the store.",
@@ -94,7 +94,7 @@ export const shreemAlbumScenes = [
     useCase: "Homepage banner or about section",
     summary:
       "A sunrise gaushala illustration that establishes the Shreem world through Gauri, Mayur, and warm temple light.",
-    imagePath: "/shreem-scenes/hero-scene.png",
+    imagePath: "/shreem-scenes/hero-scene.jpg",
     alt: "Illustrated sunrise gaushala scene with the Shreem world",
     prompt:
       "Create a non-photorealistic Indian storybook illustration with clean premium detailing. Keep the same two characters in every scene: Gauri, a copper-brown Gir-inspired cow with a soft white forehead tilak, brass bell, and marigold mala; and Mayur, a regal peacock with emerald-blue neck, vivid feather-eyes, and gold ornament accents. Scene: sunrise at a serene gaushala courtyard, warm temple-gold light, peacock teal shadows, cream parchment sky, premium handcrafted mood.",
@@ -104,7 +104,7 @@ export const shreemAlbumScenes = [
     useCase: "Product storytelling block",
     summary:
       "A stylized bilona process scene showing curd, churning, makkhan, and a glowing ghee vessel.",
-    imagePath: "/shreem-scenes/bilona-process.png",
+    imagePath: "/shreem-scenes/bilona-process.jpg",
     alt: "Illustrated bilona ghee making process for Shreem",
     prompt:
       "Illustrate Gauri beside a traditional clay-and-wood village kitchen while Mayur watches from a carved window. Show curd in a matka, hand-churning into makkhan, and a glowing pot of bilona ghee. Style must stay non-realistic, richly Indian, and consistent with peacock teal, maroon, and antique-gold accents.",
@@ -114,7 +114,7 @@ export const shreemAlbumScenes = [
     useCase: "Neem dhoop product page or feature card",
     summary:
       "An evening courtyard visual for neem dhoop with gentle smoke, lamp glow, and calm household energy.",
-    imagePath: "/shreem-scenes/neem-dhoop.png",
+    imagePath: "/shreem-scenes/neem-dhoop.jpg",
     alt: "Illustrated neem dhoop ritual at twilight",
     prompt:
       "Show Gauri resting peacefully near a veranda while Mayur guides a swirl of neem dhoop smoke through an evening courtyard. Keep the smoke gentle and decorative, not dark or harsh. Use illustrated textures, Vedic-lamp glow, brass details, and the same recurring mascot styling.",

@@ -6,7 +6,12 @@ import {
   isRazorpayLike,
   isStripeLike,
 } from "@lib/constants"
-import { placeOrder, updatePaymentSession } from "@lib/data/cart"
+import {
+  placeOrder,
+  safeInitiatePaymentSession,
+  updatePaymentSession,
+} from "@lib/data/cart"
+import { isDigitalOnlyCart } from "@lib/util/digital-cart"
 import { HttpTypes } from "@medusajs/types"
 import { Button } from "@medusajs/ui"
 import { useElements, useStripe } from "@stripe/react-stripe-js"
@@ -30,6 +35,27 @@ declare global {
 const CHECKOUT_ERROR_MESSAGE =
   "We could not place this order right now. Please confirm the payment and delivery details, then try again. If money was deducted, contact support with your phone number and cart details."
 
+const SESSION_KEY = "shreem_site_session_id"
+const LANDING_KEY = "shreem_site_landing_page"
+const REFERRER_KEY = "shreem_site_first_referrer"
+const UTM_KEY = "shreem_site_utm"
+
+const getStoredSessionId = () => {
+  try {
+    return window.localStorage.getItem(SESSION_KEY) || ""
+  } catch {
+    return ""
+  }
+}
+
+const readStoredJson = (key: string) => {
+  try {
+    return JSON.parse(window.localStorage.getItem(key) || "{}")
+  } catch {
+    return {}
+  }
+}
+
 const trackPaymentEvent = (
   eventType: string,
   metadata: Record<string, unknown>
@@ -47,7 +73,17 @@ const trackPaymentEvent = (
       event_type: eventType,
       path: `${window.location.pathname}${window.location.search}`,
       title: document.title,
-      metadata,
+      referrer: document.referrer,
+      session_id: getStoredSessionId(),
+      metadata: {
+        attribution: {
+          landing_page: window.localStorage.getItem(LANDING_KEY) || "",
+          first_referrer:
+            window.localStorage.getItem(REFERRER_KEY) || document.referrer || "",
+          utm: readStoredJson(UTM_KEY),
+        },
+        ...metadata,
+      },
     }),
     keepalive: true,
   }).catch(() => undefined)
@@ -89,16 +125,62 @@ const getActivePaymentSession = (cart: HttpTypes.StoreCart) =>
       session.status === "pending" || session.status === "authorized"
   ) || cart.payment_collection?.payment_sessions?.[0]
 
+const getPaymentSessionsFromResponse = (payload: any) => {
+  const candidates = [
+    payload?.payment_collection?.payment_sessions,
+    payload?.paymentCollection?.payment_sessions,
+    payload?.cart?.payment_collection?.payment_sessions,
+    payload?.payment_session ? [payload.payment_session] : null,
+    payload?.paymentSession ? [payload.paymentSession] : null,
+  ]
+
+  return candidates.find(Array.isArray) || []
+}
+
+const getRazorpaySessionDetails = (
+  session?: HttpTypes.StorePaymentSession | Record<string, any> | null,
+  cart?: HttpTypes.StoreCart
+) => {
+  const sessionData = (session?.data || {}) as Record<string, any>
+  const orderId =
+    sessionData.razorpay_order_id ||
+    sessionData.razorpayOrderId ||
+    sessionData.order_id
+  const amount =
+    sessionData.razorpay_amount ||
+    sessionData.amount ||
+    cart?.total ||
+    cart?.payment_collection?.amount
+  const currency =
+    sessionData.razorpay_currency ||
+    sessionData.currency ||
+    cart?.currency_code ||
+    "INR"
+  const key =
+    sessionData.razorpay_key_id ||
+    process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID ||
+    ""
+
+  return {
+    sessionData,
+    orderId,
+    amount,
+    currency,
+    key,
+  }
+}
+
 const PaymentButton: React.FC<PaymentButtonProps> = ({
   cart,
   "data-testid": dataTestId,
 }) => {
+  const digitalOnlyCart = isDigitalOnlyCart(cart)
   const notReady =
     !cart ||
     !cart.shipping_address ||
     !cart.billing_address ||
     !cart.email ||
-    (cart.shipping_methods?.length ?? 0) < 1
+    (!digitalOnlyCart && (cart.shipping_methods?.length ?? 0) < 1)
 
   const paymentSession = getActivePaymentSession(cart)
 
@@ -152,29 +234,12 @@ const RazorpayPaymentButton = ({
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   const session = getActivePaymentSession(cart)
-  const sessionData = (session?.data || {}) as Record<string, any>
-
-  const razorpayOrderId =
-    sessionData.razorpay_order_id ||
-    sessionData.razorpayOrderId ||
-    sessionData.order_id
-
-  const amount =
-    sessionData.razorpay_amount ||
-    sessionData.amount ||
-    cart.total ||
-    cart.payment_collection?.amount
-
-  const currency =
-    sessionData.razorpay_currency ||
-    sessionData.currency ||
-    cart.currency_code ||
-    "INR"
-
-  const key =
-    sessionData.razorpay_key_id ||
-    process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID ||
-    ""
+  const {
+    orderId: razorpayOrderId,
+    amount,
+    currency,
+    key,
+  } = getRazorpaySessionDetails(session, cart)
 
   const handlePayment = async () => {
     setSubmitting(true)
@@ -187,15 +252,47 @@ const RazorpayPaymentButton = ({
     })
 
     try {
-      if (!session?.id || !session?.provider_id || !cart.payment_collection?.id) {
+      let activeSession = session
+      let {
+        sessionData,
+        orderId: activeOrderId,
+        amount: activeAmount,
+        currency: activeCurrency,
+        key: activeKey,
+      } = getRazorpaySessionDetails(activeSession, cart)
+
+      if (!activeSession?.id || !activeSession?.provider_id || !cart.payment_collection?.id) {
         throw new Error("Razorpay payment session is not ready. Please select Razorpay again.")
       }
 
-      if (!razorpayOrderId) {
-        throw new Error("Razorpay order was not created. Go back to payment method and select Razorpay again.")
+      if (!activeOrderId) {
+        const refreshed = await safeInitiatePaymentSession(cart, {
+          provider_id: activeSession.provider_id,
+        })
+
+        if (!refreshed.ok) {
+          throw new Error(refreshed.error)
+        }
+
+        const refreshedSession = getPaymentSessionsFromResponse(refreshed.data)
+          .find((item: any) => item?.provider_id === activeSession?.provider_id)
+
+        if (refreshedSession) {
+          activeSession = refreshedSession
+          const details = getRazorpaySessionDetails(activeSession, cart)
+          sessionData = details.sessionData
+          activeOrderId = details.orderId
+          activeAmount = details.amount
+          activeCurrency = details.currency
+          activeKey = details.key
+        }
       }
 
-      if (!key) {
+      if (!activeOrderId) {
+        throw new Error("Razorpay order was refreshed but is still not ready. Please refresh checkout and try once more.")
+      }
+
+      if (!activeKey) {
         throw new Error("Razorpay key is missing on frontend.")
       }
 
@@ -214,12 +311,12 @@ const RazorpayPaymentButton = ({
 
       await new Promise<void>((resolve, reject) => {
         const razorpay = new window.Razorpay!({
-          key,
-          amount,
-          currency: String(currency).toUpperCase(),
+          key: activeKey,
+          amount: activeAmount,
+          currency: String(activeCurrency).toUpperCase(),
           name: "Shreem Farms",
           description: `Order payment for cart ${cart.id}`,
-          order_id: razorpayOrderId,
+          order_id: activeOrderId,
           prefill: {
             name: customerName,
             email: cart.email || "",
@@ -251,7 +348,7 @@ const RazorpayPaymentButton = ({
 
               await updatePaymentSession({
                 paymentCollectionId: cart.payment_collection!.id,
-                paymentSessionId: session.id,
+                paymentSessionId: activeSession.id,
                 data: {
                   ...sessionData,
                   provider: "razorpay",
@@ -325,7 +422,7 @@ const RazorpayPaymentButton = ({
   return (
     <>
       <Button
-        disabled={notReady || submitting || !razorpayOrderId || !key}
+        disabled={notReady || submitting || !key}
         onClick={handlePayment}
         size="large"
         isLoading={submitting}

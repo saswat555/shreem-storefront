@@ -1,0 +1,237 @@
+{
+  "pages": [
+    "013",
+    "014"
+  ],
+  "page_summary": {
+    "013": "This page introduces methods for assessing longevity, including the influence of Saturn's lordship and constellation for specific ascendants. It defines Yamaghanta Yoga based on Moon's nakshatra and weekday, and describes the calculation and inauspicious nature of Kulika Muhurta. It also lists specific sensitive zodiac points for the Moon.",
+    "014": "This page details various Arishta Yogas (combinations indicating early life challenges) involving Sun, Moon, Mars, and malefics in specific houses. It also provides numerous Arishta-Bhanga Yogas (cancellation combinations) involving strong benefics (Jupiter, Venus, Mercury), Vargottama planets, and specific placements of Rahu, Ketu, and Saturn, emphasizing the importance of considering mitigating factors."
+  },
+  "rules": [
+    {
+      "id": "longevity-saturn-influence-1",
+      "page": "013",
+      "category": "method",
+      "condition": "Saturn's lordship (6th, 5th, 8th, 12th, Lagna) and its constellation lord (e.g., Rahu, Sun) for specific ascendants (Virgo, Taurus, Gemini, Libra, Aquarius).",
+      "effect": "These factors are crucial for a comprehensive longevity assessment.",
+      "implementation": "Software should analyze Saturn's role and associated constellations for these specific Lagnas as a complex input for longevity calculations.",
+      "confidence": "high"
+    },
+    {
+      "id": "yamaghanta-yoga-1",
+      "page": "013",
+      "category": "maraka",
+      "condition": "Moon in Magha on Sunday; Vishakha on Monday; Aridra on Tuesday; Mula on Wednesday; Kritika on Thursday; Rohini on Friday; Hasta on Saturday.",
+      "effect": "Indicates a Yamaghanta Yoga, associated with early life challenges.",
+      "implementation": "Software should identify this yoga for early life affliction assessment.",
+      "confidence": "high"
+    },
+    {
+      "id": "kulika-muhurta-1",
+      "page": "013",
+      "category": "caution",
+      "condition": "Specific Muhurta numbers (14th, 12th, 10th, 8th, 6th, 4th, 2nd for Day; 13th, 11th, 9th, 7th, 5th, 3rd, 1st for Night) on specific weekdays.",
+      "effect": "Indicates an inauspicious Kulika Muhurta period.",
+      "implementation": "Software should identify these periods as generally inauspicious for initiating new activities.",
+      "confidence": "high"
+    },
+    {
+      "id": "kulika-muhurta-mitigation-1",
+      "page": "014",
+      "category": "mitigation",
+      "condition": "Weekday lord and Moon are strong, AND a benefic planet is in Lagna.",
+      "effect": "Mitigates the inauspiciousness of Kulika Muhurta.",
+      "implementation": "Software should check these conditions to determine if Kulika Muhurta's negative impact is reduced.",
+      "confidence": "high"
+    },
+    {
+      "id": "arishta-moon-sensitive-points-1",
+      "page": "014",
+      "category": "maraka",
+      "condition": "Moon's position at specific degrees in certain signs: Aries 8°, Taurus 25°, Gemini 22°, Cancer 22°, Leo 21°, Virgo 1°, Libra 4°, Scorpio 23°, Sagittarius 18°, Capricorn 20°, Aquarius 20°, Pisces 10°.",
+      "effect": "Indicates an inauspicious point for the Moon, potentially contributing to early life challenges.",
+      "implementation": "Software should identify if the natal Moon is in these specific degrees.",
+      "confidence": "high"
+    },
+    {
+      "id": "arishta-sun-moon-mars-1",
+      "page": "014",
+      "category": "maraka",
+      "condition": "(Sun OR Moon afflicted by Rahu in Lagna) OR (Sun OR Moon associated with Saturn in Lagna), AND Mars occupies the 8th house.",
+      "effect": "Indicates a severe early life challenge for the native and potential maternal health issues.",
+      "implementation": "Software should identify this combination as a significant early life challenge indicator.",
+      "confidence": "high"
+    },
+    {
+      "id": "arishta-malefics-6-8-12-1",
+      "page": "014",
+      "category": "maraka",
+      "condition": "Malefics in 6th, 8th, and 12th houses, AND no benefic influence on these houses or planets.",
+      "effect": "Indicates a severe early life challenge.",
+      "implementation": "Software should identify this combination as a significant early life challenge indicator.",
+      "confidence": "high"
+    },
+    {
+      "id": "arishta-mars-eclipse-1",
+      "page": "014",
+      "category": "maraka",
+      "condition": "(Mars in Lagna OR Mars in 8th house) AND (Sun OR Moon afflicted by eclipse effects).",
+      "effect": "Indicates a severe early life challenge.",
+      "implementation": "Software should identify this combination as a significant early life challenge indicator.",
+      "confidence": "high"
+    },
+    {
+      "id": "arishta-moon-malefics-7-8-1",
+      "page": "014",
+      "category": "maraka",
+      "condition": "Moon in 7th or 8th house, AND Moon is surrounded by malefic planets.",
+      "effect": "Indicates a severe early life challenge.",
+      "implementation": "Software should identify this combination as a significant early life challenge indicator.",
+      "confidence": "high"
+    },
+    {
+      "id": "arishta-malefics-2-6-8-12-1",
+      "page": "014",
+      "category": "maraka",
+      "condition": "Malefics in 2nd, 6th, 8th, and 12th houses.",
+      "effect": "Indicates a significant early life challenge.",
+      "implementation": "Software should identify this combination as a significant early life challenge indicator.",
+      "confidence": "high"
+    },
+    {
+      "id": "arishta-lagna-7th-hemmed-1",
+      "page": "014",
+      "category": "maraka",
+      "condition": "Lagna and 7th houses hemmed by malefics.",
+      "effect": "Indicates a significant early life challenge.",
+      "implementation": "Software should identify this combination as a significant early life challenge indicator.",
+      "confidence": "high"
+    },
+    {
+      "id": "arishta-sun-mars-7th-moon-1",
+      "page": "014",
+      "category": "maraka",
+      "condition": "Sun afflicted by Mars, in the 7th from Moon.",
+      "effect": "Indicates a severe early life challenge shortly after birth.",
+      "implementation": "Software should identify this combination as a significant early life challenge indicator.",
+      "confidence": "high"
+    },
+    {
+      "id": "maraka-houses-definition-1",
+      "page": "014",
+      "category": "method",
+      "condition": "Houses 2 and 7.",
+      "effect": "These houses are considered Marakasthanas (death-inflicting houses) due to their relationship with houses of longevity (12th from 3rd and 12th from 8th respectively).",
+      "implementation": "Software should recognize 2nd and 7th houses as primary Maraka houses in longevity assessment.",
+      "confidence": "high"
+    },
+    {
+      "id": "arishta-caution-mitigation-1",
+      "page": "014",
+      "category": "caution",
+      "condition": "Presence of Arishta Yogas.",
+      "effect": "Arishta Yogas should not be judged in isolation; Arishta-Bhanga (cancellation) Yogas and remedial measures (devotion, charity) must also be considered. Jupiter's auspicious placement is a key mitigating factor.",
+      "implementation": "Software should always check for Arishta-Bhanga yogas and strong benefics like Jupiter when Arishta yogas are present, and suggest general mitigation strategies.",
+      "confidence": "high"
+    },
+    {
+      "id": "arishta-bhanga-jupiter-kendra-trikona-1",
+      "page": "014",
+      "category": "mitigation",
+      "condition": "Jupiter in Lagna, or a Kendra house (4th, 7th, 10th), or a Trikona house (5th, 9th). Enhanced if Jupiter is in its own sign (Sagittarius, Pisces) or exaltation sign (Cancer).",
+      "effect": "Mitigates all Lagna-related early life challenges.",
+      "implementation": "Software should identify this as a strong protective factor against early life challenges.",
+      "confidence": "high"
+    },
+    {
+      "id": "arishta-bhanga-benefic-kendra-sun-11-1",
+      "page": "014",
+      "category": "mitigation",
+      "condition": "Any benefic planet in a Kendra house, AND Sun in 11th house.",
+      "effect": "Mitigates all Lagna-related inauspiciousness.",
+      "implementation": "Software should identify this as a strong protective factor against early life challenges.",
+      "confidence": "high"
+    },
+    {
+      "id": "arishta-bhanga-malefics-benefic-vargas-1",
+      "page": "014",
+      "category": "mitigation",
+      "condition": "Malefic planets are in benefic vargas (Navamsa), AND aspected by strong benefics, AND benefics are in benefic vargas (Navamsa).",
+      "effect": "Mitigates Lagna-related early life challenges.",
+      "implementation": "Software should check Navamsa positions and aspects for malefics and benefics to identify this mitigation.",
+      "confidence": "high"
+    },
+    {
+      "id": "arishta-bhanga-benefics-vargottama-1",
+      "page": "014",
+      "category": "mitigation",
+      "condition": "All benefic planets are Vargottama in Navamsa, AND malefic planets are in friendly or benefic signs.",
+      "effect": "Cancels all early life challenges.",
+      "implementation": "Software should check Vargottama status of benefics and sign placement of malefics to identify this strong mitigation.",
+      "confidence": "high"
+    },
+    {
+      "id": "arishta-bhanga-strong-benefic-kendra-1",
+      "page": "014",
+      "category": "mitigation",
+      "condition": "A strong benefic (Mercury, Jupiter, or Venus) occupies a Kendra house, AND is unafflicted by malefic aspects, conjunctions, or associations. (Note: Mercury is benefic only when unafflicted).",
+      "effect": "Cancels all early life challenges.",
+      "implementation": "Software should check strength, Kendra placement, and affliction status of these benefics.",
+      "confidence": "high"
+    },
+    {
+      "id": "arishta-bhanga-mercury-specific-1",
+      "page": "014",
+      "category": "mitigation",
+      "condition": "(Mercury in Moola Trikona or its own Navamsa, aspected by Venus) OR (Mercury in Lagna, aspected by Jupiter).",
+      "effect": "Mitigates early life challenges.",
+      "implementation": "Software should check these specific Mercury placements and aspects for mitigation.",
+      "confidence": "high"
+    },
+    {
+      "id": "arishta-bhanga-gandanta-benefics-trine-1",
+      "page": "014",
+      "category": "mitigation",
+      "condition": "Jupiter, Venus, and Mercury are in trine (5th and 9th houses) to each other.",
+      "effect": "Mitigates Gandanta-related early life challenges.",
+      "implementation": "Software should check the trine relationship between these three benefics.",
+      "confidence": "high"
+    },
+    {
+      "id": "arishta-bhanga-ketu-3-6-11-1",
+      "page": "014",
+      "category": "mitigation",
+      "condition": "Ketu in 3rd, 6th, or 11th house, in Libra, Capricorn, or Pisces signs.",
+      "effect": "Provides significant protection against early life challenges.",
+      "implementation": "Software should check Ketu's house and sign placement.",
+      "confidence": "high"
+    },
+    {
+      "id": "arishta-bhanga-rahu-3-6-11-1",
+      "page": "014",
+      "category": "mitigation",
+      "condition": "Rahu in 3rd, 6th, or 11th house, AND aspected by benefics.",
+      "effect": "Provides significant protection against early life challenges.",
+      "implementation": "Software should check Rahu's house placement and benefic aspects.",
+      "confidence": "high"
+    },
+    {
+      "id": "arishta-bhanga-rahu-lagna-1",
+      "page": "014",
+      "category": "mitigation",
+      "condition": "Rahu in Aries, Taurus, or Cancer, if that sign is the Lagna.",
+      "effect": "Provides significant protection against early life challenges.",
+      "implementation": "Software should check Rahu's sign and Lagna.",
+      "confidence": "high"
+    },
+    {
+      "id": "arishta-bhanga-saturn-lagna-3-6-11-1",
+      "page": "014",
+      "category": "mitigation",
+      "condition": "Saturn in Lagna, 3rd, 6th, or 11th house, in its own, exaltation, or Jupiter's sign.",
+      "effect": "Provides significant protection against early life challenges.",
+      "implementation": "Software should check Saturn's house and sign placement relative to its own/exaltation/Jupiter's signs.",
+      "confidence": "high"
+    }
+  ]
+}

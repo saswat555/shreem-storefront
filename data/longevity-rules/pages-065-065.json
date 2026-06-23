@@ -1,0 +1,161 @@
+{
+  "pages": [
+    65
+  ],
+  "page_summary": "This page details methods for calculating planetary longevity contributions and various 'Harana Samskaras' (reductions) that modify these contributions. It covers reductions based on a planet's position in the visible hemisphere (Chakrardha), its placement in an inimical house (Satrukshetra), and its combustion by the Sun (Astangata). The text also outlines conditions like Vargottama and retrograde motion that influence these longevity calculations, including specific exemptions and application order.",
+  "rules": [
+    {
+      "id": "vargottama-longevity-065",
+      "page": 65,
+      "category": "longevity_class",
+      "condition": "A planet is Vargottama (its Rasi in Navamsa is the same as its Rasi in the Rasi chart).",
+      "effect": "This condition indicates a strengthening of the planet's longevity contribution.",
+      "implementation": "Identify Vargottama planets to apply potential enhancements in longevity calculations.",
+      "confidence": "high"
+    },
+    {
+      "id": "rule-1-priority-065",
+      "page": 65,
+      "category": "caution",
+      "condition": "If both Rule 1 (Vargottama) and an unspecified Rule 2 are applicable to a planet.",
+      "effect": "Rule 1 (Vargottama) takes precedence and will be applied; Rule 2 will not be applied.",
+      "implementation": "Ensure Vargottama rule application takes priority over Rule 2 if both conditions are met.",
+      "confidence": "high"
+    },
+    {
+      "id": "retrograde-exaltation-vargottama-065",
+      "page": 65,
+      "category": "caution",
+      "condition": "A planet is retrograde in its sign of exaltation.",
+      "effect": "The application of Rule 1 (Vargottama) is limited to once. This also applies to Rule 2.",
+      "implementation": "Apply the Vargottama rule (Rule 1) only a single time for planets that are retrograde in exaltation.",
+      "confidence": "high"
+    },
+    {
+      "id": "chakrardha-harana-visible-half-065",
+      "page": 65,
+      "category": "longevity_class",
+      "condition": "A planet is located in the visible half of the horizon (houses 12th, 11th, 10th, 9th, 8th, 7th from the Ascendant).",
+      "effect": "The planet's calculated longevity contribution is reduced. The reduction amount varies by house and planet type.",
+      "implementation": "Apply the specified reduction fractions to the planet's longevity grant based on its house position and nature (Benefic/Malefic).",
+      "confidence": "high"
+    },
+    {
+      "id": "chakrardha-harana-nearness-ascendant-065",
+      "page": 65,
+      "category": "method",
+      "condition": "A planet is in the visible half of the horizon.",
+      "effect": "The reduction amount for Chakrardha Harana is influenced by the planet's proximity to the Ascendant.",
+      "implementation": "Factor in the planet's nearness to the Ascendant when calculating the Chakrardha Harana reduction.",
+      "confidence": "high"
+    },
+    {
+      "id": "chakrardha-harana-planet-nature-house-065",
+      "page": 65,
+      "category": "method",
+      "condition": "A planet is in the visible half of the horizon.",
+      "effect": "The reduction amount for Chakrardha Harana varies according to the planet's nature (Benefic/Malefic) and the specific house it occupies.",
+      "implementation": "Use the provided table (Benefic/Malefic, houses 12th-7th) to determine the specific reduction fraction for Chakrardha Harana.",
+      "confidence": "high"
+    },
+    {
+      "id": "chakrardha-harana-multiple-planets-065",
+      "page": 65,
+      "category": "method",
+      "condition": "More than one planet occupies the same house within the visible half of the horizon.",
+      "effect": "The Chakrardha Harana reduction should be applied only to the strongest planet in that specific house.",
+      "implementation": "For houses with multiple planets, identify the strongest planet and apply the Chakrardha Harana reduction solely to it.",
+      "confidence": "high"
+    },
+    {
+      "id": "satrukshetra-harana-inimical-house-065",
+      "page": 65,
+      "category": "longevity_class",
+      "condition": "A planet is positioned in an inimical house (the house lord is an enemy of the planet).",
+      "effect": "Reduces the planet's calculated longevity contribution by 1/3.",
+      "implementation": "Apply a 1/3 reduction to the longevity grant of planets located in inimical houses.",
+      "confidence": "high"
+    },
+    {
+      "id": "satrukshetra-harana-retrograde-exemption-065",
+      "page": 65,
+      "category": "mitigation",
+      "condition": "A planet is in retrograde motion (Vakra).",
+      "effect": "The planet is exempt from the Satrukshetra Harana reduction, regardless of whether its motion is direct or retrograde.",
+      "implementation": "Do not apply the Satrukshetra Harana reduction to planets that are in retrograde motion.",
+      "confidence": "high"
+    },
+    {
+      "id": "pindayurdaya-amsayurdaya-mars-exemption-065",
+      "page": 65,
+      "category": "caution",
+      "condition": "Applying reductions in Pindayurdaya and Amsayurdaya methods.",
+      "effect": "There is a difference of opinion regarding whether Mars is exempt from these reductions. Some sources exempt only Mars, while others do not exempt any planets.",
+      "implementation": "Note the differing views on Mars exemption for reductions in Pindayurdaya and Amsayurdaya methods.",
+      "confidence": "medium"
+    },
+    {
+      "id": "pindayurdaya-amsayurdaya-retrograde-exemption-065",
+      "page": 65,
+      "category": "mitigation",
+      "condition": "Applying reductions in Pindayurdaya and Amsayurdaya methods.",
+      "effect": "Reductions are not applied to planets that are in retrograde motion.",
+      "implementation": "Do not apply general reductions to retrograde planets when using Pindayurdaya and Amsayurdaya methods.",
+      "confidence": "high"
+    },
+    {
+      "id": "astangata-harana-combustion-065",
+      "page": 65,
+      "category": "longevity_class",
+      "condition": "A planet is combust (reaches near the Sun during transit).",
+      "effect": "Reduces the planet's calculated longevity contribution by half.",
+      "implementation": "Apply a 1/2 reduction to the longevity grant of planets that are combust.",
+      "confidence": "high"
+    },
+    {
+      "id": "astangata-harana-venus-saturn-exemption-065",
+      "page": 65,
+      "category": "mitigation",
+      "condition": "A planet is combust.",
+      "effect": "The Astangata Harana reduction due to combustion does not apply to Venus and Saturn.",
+      "implementation": "Do not apply the Astangata Harana reduction to Venus or Saturn when they are combust.",
+      "confidence": "high"
+    },
+    {
+      "id": "harana-application-order-065",
+      "page": 65,
+      "category": "method",
+      "condition": "Applying multiple Harana reductions.",
+      "effect": "Astangata Harana (combustion reduction) is applied after Chakrapatha and Satrukshetra haranas.",
+      "implementation": "Ensure the correct order of applying reductions: Chakrapatha and Satrukshetra first, then Astangata Harana.",
+      "confidence": "high"
+    },
+    {
+      "id": "krurodaya-harana-amsayu-applicability-065",
+      "page": 65,
+      "category": "caution",
+      "condition": "Calculating longevity using the Amsayu method.",
+      "effect": "No reductions are made on account of Krurodaya Harana in the Amsayu method.",
+      "implementation": "Do not apply Krurodaya Harana reductions when using the Amsayu method for longevity calculations.",
+      "confidence": "high"
+    },
+    {
+      "id": "krurodaya-harana-pindayu-applicability-065",
+      "page": 65,
+      "category": "method",
+      "condition": "Calculating longevity using the Pindayu method.",
+      "effect": "Krurodaya Harana reduction is applied only in the Pindayu method. (The specific reduction value is not provided on this page).",
+      "implementation": "Apply Krurodaya Harana reductions exclusively when using the Pindayu method. (Note: A specific reduction value needs to be sourced elsewhere).",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-increase-positional-strength-065",
+      "page": 65,
+      "category": "longevity_class",
+      "condition": "Planetary positions in Rasi, Drekkana, and Navamsa charts.",
+      "effect": "These positions contribute to some increase in the grant of planetary longevity period.",
+      "implementation": "Incorporate increases in planetary longevity contributions based on their strength and placement in divisional charts.",
+      "confidence": "high"
+    }
+  ]
+}

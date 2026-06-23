@@ -14,7 +14,7 @@
     "build": "next build",
     "start": "next start -p 8000",
     "lint": "next lint",
-    "test:astrology": "node scripts/astrology-regression.js",
+    "test:astrology": "node scripts/astrology-regression.js && NODE_OPTIONS='--require ./scripts/server-only-shim.cjs' npx tsx scripts/astrology-system-benchmark.ts",
     "analyze": "ANALYZE=true next build"
   },
   "dependencies": {

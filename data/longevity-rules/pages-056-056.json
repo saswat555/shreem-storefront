@@ -1,0 +1,162 @@
+{
+  "pages": [
+    104,
+    105
+  ],
+  "page_summary": "This document outlines Jaimini Ayurdaya as a primary method for determining longevity, categorizing life span into three classes based on specific planetary relationships. It clarifies the Hora Lagna and emphasizes the roles of Moon and Saturn. Additionally, it introduces other methods, including the significance of 7th and 8th lords and Atmakaraka, and provides rules for assessing planetary strength based on Rasi occupancy. It also notes the possibility of revising initial longevity classifications and offers cautions regarding the interpretation of Jaimini's concise sutras and the limited commentaries on some advanced methods.",
+  "rules": [
+    {
+      "id": "jaimini-longevity-classes",
+      "page": 104,
+      "category": "longevity_class",
+      "condition": "General assessment of life span duration.",
+      "effect": "Longevity is categorized into three classes: Alpayu (short span), Madhyamayu (medium span), or Deerghayu (long span).",
+      "implementation": "Software should use these categories for internal classification of potential life span ranges.",
+      "confidence": "high"
+    },
+    {
+      "id": "jaimini-factor-lagna-8th-lord",
+      "page": 104,
+      "category": "longevity_class",
+      "condition": "Analysis of the relationship between the Lagna and the 8th lord.",
+      "effect": "This planetary relationship is a primary factor in determining the longevity class.",
+      "implementation": "Software should analyze this specific planetary relationship as a key input for longevity assessment.",
+      "confidence": "high"
+    },
+    {
+      "id": "jaimini-factor-moon-ascendant-lord",
+      "page": 104,
+      "category": "longevity_class",
+      "condition": "Analysis of the relationship between the Moon and the ascendant lord.",
+      "effect": "This planetary relationship is a primary factor in determining the longevity class.",
+      "implementation": "Software should analyze this specific planetary relationship as a key input for longevity assessment.",
+      "confidence": "high"
+    },
+    {
+      "id": "jaimini-factor-ascendant-lord-hora-lagna",
+      "page": 104,
+      "category": "longevity_class",
+      "condition": "Analysis of the relationship between the Ascendant lord and the Hora Lagna.",
+      "effect": "This planetary relationship is a primary factor in determining the longevity class.",
+      "implementation": "Software should analyze this specific planetary relationship as a key input for longevity assessment.",
+      "confidence": "high"
+    },
+    {
+      "id": "hora-lagna-distinction",
+      "page": 104,
+      "category": "method",
+      "condition": "Calculation and interpretation of Hora Lagna.",
+      "effect": "Hora Lagna is distinct from the Hora used in Shadabalas or other planetary strength calculations; it may be referred to as Kaal Hora Lagna.",
+      "implementation": "Software must implement the specific Jaimini Hora Lagna calculation, ensuring it is not confused with other Hora types.",
+      "confidence": "high"
+    },
+    {
+      "id": "moon-longevity-significance",
+      "page": 104,
+      "category": "longevity_class",
+      "condition": "Assessment of the Moon's position and strength.",
+      "effect": "The Moon is considered an important factor for life and vitality.",
+      "implementation": "Software should include the Moon's assessment as a significant component in longevity calculations.",
+      "confidence": "high"
+    },
+    {
+      "id": "saturn-longevity-significator",
+      "page": 104,
+      "category": "longevity_class",
+      "condition": "Assessment of Saturn's position and strength.",
+      "effect": "Saturn is the primary significator of longevity (Ayushkaraka).",
+      "implementation": "Software should give significant weight to Saturn's assessment in longevity calculations.",
+      "confidence": "high"
+    },
+    {
+      "id": "jaimini-sutra-brevity",
+      "page": 104,
+      "category": "caution",
+      "condition": "Interpreting Jaimini's original writings.",
+      "effect": "Jaimini's texts are brief and in sutra form, requiring careful interpretation and understanding.",
+      "implementation": "Developers should be aware of the concise nature of Jaimini's original rules, which may require deeper study for accurate implementation.",
+      "confidence": "high"
+    },
+    {
+      "id": "other-method-7th-8th-lords-atmakaraka",
+      "page": 105,
+      "category": "longevity_class",
+      "condition": "Analysis of the 7th and 8th house lords and the Atmakaraka.",
+      "effect": "These factors are additional considerations for a comprehensive longevity assessment.",
+      "implementation": "Software should incorporate these planetary relationships as supplementary inputs for longevity determination.",
+      "confidence": "high"
+    },
+    {
+      "id": "other-method-additional-groups",
+      "page": 105,
+      "category": "longevity_class",
+      "condition": "Analysis of two additional groups: (1) lords of 7th and 8th houses, and (2) Atmakaraka with lords of 7th and 8th houses.",
+      "effect": "These groups provide further insights into longevity determination, complementing primary factors.",
+      "implementation": "Software should analyze these specific combinations as part of an extended longevity assessment.",
+      "confidence": "medium"
+    },
+    {
+      "id": "maraka-2nd-8th-lords-atmakaraka",
+      "page": 105,
+      "category": "maraka",
+      "condition": "A relationship (conjunction, association, or aspect) between the 2nd and 8th lords from Janma Lagna and the Atmakaraka planet.",
+      "effect": "This combination suggests a moderate span of life.",
+      "implementation": "Software should identify this configuration and flag it as a factor influencing the duration of the life span.",
+      "confidence": "high"
+    },
+    {
+      "id": "rasi-strength-occupancy",
+      "page": 105,
+      "category": "method",
+      "condition": "A Rasi (sign) is occupied by one or more planets.",
+      "effect": "An occupied Rasi is considered stronger than an unoccupied Rasi.",
+      "implementation": "Software should assign higher strength values to Rasis that contain planets.",
+      "confidence": "high"
+    },
+    {
+      "id": "rasi-strength-number-of-planets",
+      "page": 105,
+      "category": "method",
+      "condition": "Comparing two Rasis based on the number of planets occupying them.",
+      "effect": "A Rasi occupied by more planets is stronger than one with fewer planets.",
+      "implementation": "Software should rank Rasi strength based on the count of occupying planets.",
+      "confidence": "high"
+    },
+    {
+      "id": "rasi-strength-dignity",
+      "page": 105,
+      "category": "method",
+      "condition": "Two or more Rasis have an equal number of occupying planets, and one offers dignity (own sign, Moola Trikona, or exaltation) to its occupants.",
+      "effect": "The Rasi where planets achieve dignity is considered stronger.",
+      "implementation": "Software should prioritize Rasis where occupying planets are in dignity for strength assessment when planet counts are equal.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-class-revision-possibility",
+      "page": 105,
+      "category": "longevity_class",
+      "condition": "Further elements are considered in longevity determination after an initial classification.",
+      "effect": "An initial longevity classification (e.g., Alpayu) may be revised to another (e.g., Madhyayu) based on comprehensive analysis.",
+      "implementation": "Software should allow for dynamic adjustment of the longevity class based on a complete and nuanced assessment of all relevant factors.",
+      "confidence": "high"
+    },
+    {
+      "id": "other-methods-commentary-caution",
+      "page": 105,
+      "category": "caution",
+      "condition": "Using 'Other Methods of Ayurdaya' for longevity assessment.",
+      "effect": "Authoritative translations or commentaries for these specific methods are limited.",
+      "implementation": "Developers should be aware of potential interpretation challenges for these rules due to limited external resources.",
+      "confidence": "high"
+    },
+    {
+      "id": "rasi-strength-not-shadabalas",
+      "page": 105,
+      "category": "caution",
+      "condition": "Assessing planetary strength using Rasi occupancy.",
+      "effect": "The strength of planets based on Rasi occupancy ('Prana') is distinct from Shadabalas (six sources of strength).",
+      "implementation": "Software should not conflate these two different methods of planetary strength calculation; they must be treated as separate assessments.",
+      "confidence": "high"
+    }
+  ]
+}

@@ -1,0 +1,297 @@
+{
+  "pages": [
+    90,
+    91
+  ],
+  "page_summary": "This document outlines several methods for calculating longevity in Jyotish, including Pindayurdaya and a specific Nakshatrayu system. It details base planetary longevity grants, various reduction (Harana) rules, and a multi-step Ayurdaya calculation method. Key aspects include using Nirayana longitudes, specific exaltation points for Rahu and Ketu, and applying multipliers and reductions based on planetary positions.",
+  "rules": [
+    {
+      "id": "pindayurdaya-base-mars-90",
+      "page": 90,
+      "category": "longevity_class",
+      "condition": "Base Pindayurdaya calculation for Mars",
+      "effect": "Mars contributes 7 months, 7 days, 5.28 hours to the initial longevity grant.",
+      "implementation": "Use this value as the base longevity contribution for Mars in the Pindayurdaya system.",
+      "confidence": "high"
+    },
+    {
+      "id": "pindayurdaya-base-mercury-90",
+      "page": 90,
+      "category": "longevity_class",
+      "condition": "Base Pindayurdaya calculation for Mercury",
+      "effect": "Mercury contributes 7 years, 8 months, 19 days, 11.52 hours to the initial longevity grant.",
+      "implementation": "Use this value as the base longevity contribution for Mercury in the Pindayurdaya system.",
+      "confidence": "high"
+    },
+    {
+      "id": "pindayurdaya-base-jupiter-90",
+      "page": 90,
+      "category": "longevity_class",
+      "condition": "Base Pindayurdaya calculation for Jupiter",
+      "effect": "Jupiter contributes 7 years, 1 month, 26 days to the initial longevity grant.",
+      "implementation": "Use this value as the base longevity contribution for Jupiter in the Pindayurdaya system.",
+      "confidence": "high"
+    },
+    {
+      "id": "pindayurdaya-base-venus-90",
+      "page": 90,
+      "category": "longevity_class",
+      "condition": "Base Pindayurdaya calculation for Venus",
+      "effect": "Venus contributes 4 years, 7 months, 22 days, 13.68 hours to the initial longevity grant.",
+      "implementation": "Use this value as the base longevity contribution for Venus in the Pindayurdaya system.",
+      "confidence": "high"
+    },
+    {
+      "id": "pindayurdaya-base-saturn-90",
+      "page": 90,
+      "category": "longevity_class",
+      "condition": "Base Pindayurdaya calculation for Saturn",
+      "effect": "Saturn contributes 24 years, 1 month, 5 days to the initial longevity grant.",
+      "implementation": "Use this value as the base longevity contribution for Saturn in the Pindayurdaya system.",
+      "confidence": "high"
+    },
+    {
+      "id": "pindayurdaya-jupiter-venus-saturn-doubling-90",
+      "page": 90,
+      "category": "longevity_class",
+      "condition": "If 'Bharana remain the same' (context unclear from provided text)",
+      "effect": "The base longevity periods for Jupiter, Venus, and Saturn are doubled.",
+      "implementation": "Apply a doubling factor to the base longevity contributions of Jupiter, Venus, and Saturn if the specific condition 'Bharana remain the same' is met and understood from external context.",
+      "confidence": "low"
+    },
+    {
+      "id": "pindayurdaya-harana-reductions-90",
+      "page": 90,
+      "category": "mitigation",
+      "condition": "Application of Harana reductions in the Pindayurdaya system",
+      "effect": "Calculated longevity is subject to reduction based on specific Harana rules.",
+      "implementation": "Implement reduction rates as defined for Haranas in the Pindayurdaya system.",
+      "confidence": "high"
+    },
+    {
+      "id": "pindayurdaya-western-horizon-planets-90",
+      "page": 90,
+      "category": "maraka",
+      "condition": "Jupiter, Moon, Mars, and Venus are located in the western horizon from the Ascendant (Lagna).",
+      "effect": "This planetary configuration triggers specific Harana reductions. Mars is considered a malefic in this context.",
+      "implementation": "Identify these planets in the western horizon and apply the associated Harana reduction rules, treating Mars as a malefic.",
+      "confidence": "medium"
+    },
+    {
+      "id": "nakshatrayu-method-distinction-90",
+      "page": 90,
+      "category": "caution",
+      "condition": "N/A",
+      "effect": "This Nakshatrayu method should not be confused with Kalidas's Nakshatrayu method.",
+      "implementation": "Ensure the correct Nakshatrayu calculation method is applied, distinguishing it from other systems.",
+      "confidence": "high"
+    },
+    {
+      "id": "nakshatrayu-rahu-ketu-initial-exclusion-90",
+      "page": 90,
+      "category": "longevity_class",
+      "condition": "Initial understanding of Rahu and Ketu's role in Nakshatrayu",
+      "effect": "Rahu and Ketu are not considered to grant longevity periods.",
+      "implementation": "Do not assign longevity periods to Rahu and Ketu based on this general statement. (Note: This is contradicted by a later, more specific rule on the same page).",
+      "confidence": "low"
+    },
+    {
+      "id": "nakshatrayu-multipliers-vimsottari-link-90",
+      "page": 90,
+      "category": "method",
+      "condition": "Calculation using this specific Nakshatrayu method",
+      "effect": "Planetary multipliers for longevity calculation correspond to their respective Vimsottari Dasha periods in years.",
+      "implementation": "Use Vimsottari Dasha periods as the multipliers for planets and nodes in this Nakshatrayu system.",
+      "confidence": "high"
+    },
+    {
+      "id": "nakshatrayu-exaltation-multipliers-90",
+      "page": 90,
+      "category": "longevity_class",
+      "condition": "Planet is at its highest exaltation point",
+      "effect": "Specific multipliers are applied for longevity calculation: Sun 6, Moon 10, Mars 7, Mercury 17, Jupiter 16, Venus 20, Rahu 18, Ketu 7, Saturn 19.",
+      "implementation": "If a planet is at its highest exaltation, use its corresponding multiplier for calculating its longevity contribution in this Nakshatrayu system.",
+      "confidence": "high"
+    },
+    {
+      "id": "rahu-ketu-exaltation-points-91",
+      "page": 91,
+      "category": "method",
+      "condition": "N/A",
+      "effect": "Defines the highest exaltation points for Rahu (Virgo 21 degrees) and Ketu (Pisces 21 degrees).",
+      "implementation": "Use these specific degrees as the highest exaltation points for Rahu and Ketu in astrological calculations.",
+      "confidence": "high"
+    },
+    {
+      "id": "ayurdaya-nirayana-longitudes-91",
+      "page": 91,
+      "category": "method",
+      "condition": "Ayurdaya calculation method",
+      "effect": "Requires the use of Nirayana planetary longitudes.",
+      "implementation": "Ensure all planetary longitudes are based on the Nirayana system for this calculation method.",
+      "confidence": "high"
+    },
+    {
+      "id": "ayurdaya-exaltation-deduction-91",
+      "page": 91,
+      "category": "method",
+      "condition": "Step 2 of Ayurdaya calculation",
+      "effect": "Calculates an initial balance by subtracting the highest exaltation point from the planet's longitude.",
+      "implementation": "Subtract the planet's highest exaltation longitude from its Nirayana longitude to obtain a balance value.",
+      "confidence": "high"
+    },
+    {
+      "id": "ayurdaya-balance-adjustment-91",
+      "page": 91,
+      "category": "method",
+      "condition": "Balance value obtained from the exaltation deduction step",
+      "effect": "Adjusts the balance value based on its magnitude relative to 6 rasis.",
+      "implementation": "If the balance exceeds 6 rasis, retain it. If it is less than 6 rasis, subtract it from 12 rasis.",
+      "confidence": "high"
+    },
+    {
+      "id": "ayurdaya-madhyamayu-calculation-91",
+      "page": 91,
+      "category": "longevity_class",
+      "condition": "Adjusted balance from the previous step",
+      "effect": "Calculates the planet's contribution to 'madhyamayu' (mean longevity) in days. Conversion: 60 minutes = 1 degree, 60 ghatis = 1 day.",
+      "implementation": "Convert the adjusted balance to degrees, minutes, and seconds. Multiply this by the planet's specific multiplier. The result is the planet's madhyamayu contribution in days, using the specified conversion factors.",
+      "confidence": "high"
+    },
+    {
+      "id": "ayurdaya-no-bharana-samskaras-91",
+      "page": 91,
+      "category": "method",
+      "condition": "This specific Ayurdaya calculation method",
+      "effect": "No increases in longevity are granted by Bharana Samskaras in this method.",
+      "implementation": "Do not apply any longevity increases related to Bharana Samskaras when using this Ayurdaya method.",
+      "confidence": "high"
+    },
+    {
+      "id": "ayurdaya-haranas-applicable-91",
+      "page": 91,
+      "category": "mitigation",
+      "condition": "This specific Ayurdaya calculation method",
+      "effect": "All Harana (reduction) rules are applicable to the calculated longevity.",
+      "implementation": "Apply all relevant Harana reduction rules to the longevity calculated using this method.",
+      "confidence": "high"
+    },
+    {
+      "id": "chakrardha-harana-general-91",
+      "page": 91,
+      "category": "mitigation",
+      "condition": "Planets located in houses 12th through 7th from the Ascendant",
+      "effect": "Reduces the planet's contribution to 'madhyamayu' by specific rates.",
+      "implementation": "Apply the corresponding reduction factor based on the planet's nature (benefic/malefic) and its house position (12th to 7th) to its madhyamayu contribution.",
+      "confidence": "high"
+    },
+    {
+      "id": "chakrardha-harana-benefic-12th-91",
+      "page": 91,
+      "category": "mitigation",
+      "condition": "Benefic planet in the 12th house",
+      "effect": "Reduces the planet's madhyamayu contribution by 1/2.",
+      "implementation": "Multiply the benefic planet's madhyamayu contribution by 1/2.",
+      "confidence": "high"
+    },
+    {
+      "id": "chakrardha-harana-benefic-11th-91",
+      "page": 91,
+      "category": "mitigation",
+      "condition": "Benefic planet in the 11th house",
+      "effect": "Reduces the planet's madhyamayu contribution by 1/4.",
+      "implementation": "Multiply the benefic planet's madhyamayu contribution by 1/4.",
+      "confidence": "high"
+    },
+    {
+      "id": "chakrardha-harana-benefic-10th-91",
+      "page": 91,
+      "category": "mitigation",
+      "condition": "Benefic planet in the 10th house",
+      "effect": "Reduces the planet's madhyamayu contribution by 1/6.",
+      "implementation": "Multiply the benefic planet's madhyamayu contribution by 1/6.",
+      "confidence": "high"
+    },
+    {
+      "id": "chakrardha-harana-benefic-9th-91",
+      "page": 91,
+      "category": "mitigation",
+      "condition": "Benefic planet in the 9th house",
+      "effect": "Reduces the planet's madhyamayu contribution by 1/8.",
+      "implementation": "Multiply the benefic planet's madhyamayu contribution by 1/8.",
+      "confidence": "high"
+    },
+    {
+      "id": "chakrardha-harana-benefic-8th-91",
+      "page": 91,
+      "category": "mitigation",
+      "condition": "Benefic planet in the 8th house",
+      "effect": "Reduces the planet's madhyamayu contribution by 1/10.",
+      "implementation": "Multiply the benefic planet's madhyamayu contribution by 1/10.",
+      "confidence": "high"
+    },
+    {
+      "id": "chakrardha-harana-benefic-7th-91",
+      "page": 91,
+      "category": "mitigation",
+      "condition": "Benefic planet in the 7th house",
+      "effect": "Reduces the planet's madhyamayu contribution by 1/12.",
+      "implementation": "Multiply the benefic planet's madhyamayu contribution by 1/12.",
+      "confidence": "high"
+    },
+    {
+      "id": "chakrardha-harana-malefic-12th-91",
+      "page": 91,
+      "category": "mitigation",
+      "condition": "Malefic planet in the 12th house",
+      "effect": "Reduces the planet's madhyamayu contribution to zero.",
+      "implementation": "Set the malefic planet's madhyamayu contribution to 0.",
+      "confidence": "high"
+    },
+    {
+      "id": "chakrardha-harana-malefic-11th-91",
+      "page": 91,
+      "category": "mitigation",
+      "condition": "Malefic planet in the 11th house",
+      "effect": "Reduces the planet's madhyamayu contribution by 1/2.",
+      "implementation": "Multiply the malefic planet's madhyamayu contribution by 1/2.",
+      "confidence": "high"
+    },
+    {
+      "id": "chakrardha-harana-malefic-10th-91",
+      "page": 91,
+      "category": "mitigation",
+      "condition": "Malefic planet in the 10th house",
+      "effect": "Reduces the planet's madhyamayu contribution by 1/3.",
+      "implementation": "Multiply the malefic planet's madhyamayu contribution by 1/3.",
+      "confidence": "high"
+    },
+    {
+      "id": "chakrardha-harana-malefic-9th-91",
+      "page": 91,
+      "category": "mitigation",
+      "condition": "Malefic planet in the 9th house",
+      "effect": "Reduces the planet's madhyamayu contribution by 1/4.",
+      "implementation": "Multiply the malefic planet's madhyamayu contribution by 1/4.",
+      "confidence": "high"
+    },
+    {
+      "id": "chakrardha-harana-malefic-8th-91",
+      "page": 91,
+      "category": "mitigation",
+      "condition": "Malefic planet in the 8th house",
+      "effect": "Reduces the planet's madhyamayu contribution by 1/5.",
+      "implementation": "Multiply the malefic planet's madhyamayu contribution by 1/5.",
+      "confidence": "high"
+    },
+    {
+      "id": "chakrardha-harana-malefic-7th-91",
+      "page": 91,
+      "category": "mitigation",
+      "condition": "Malefic planet in the 7th house",
+      "effect": "Reduces the planet's madhyamayu contribution by 1/6.",
+      "implementation": "Multiply the malefic planet's madhyamayu contribution by 1/6.",
+      "confidence": "high"
+    }
+  ]
+}

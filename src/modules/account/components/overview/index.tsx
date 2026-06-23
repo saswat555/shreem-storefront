@@ -4,13 +4,236 @@ import ChevronDown from "@modules/common/icons/chevron-down"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import { convertToLocale } from "@lib/util/money"
 import { HttpTypes } from "@medusajs/types"
+import FamilyMembersManager from "../family-members-manager"
+import { getAiWallet, type AiWallet } from "@lib/data/ai-wallet"
+import { listAiUsage, type AiUsageRecord } from "@lib/data/ai-usage"
 
 type OverviewProps = {
   customer: HttpTypes.StoreCustomer | null
   orders: HttpTypes.StoreOrder[] | null
 }
 
-const Overview = ({ customer, orders }: OverviewProps) => {
+const formatAiDate = (value?: string | null) =>
+  value
+    ? new Intl.DateTimeFormat("en-IN", {
+        dateStyle: "medium",
+        timeStyle: "short",
+      }).format(new Date(value))
+    : "-"
+
+const formatCreditDelta = (value?: number) => {
+  const amount = Number(value || 0)
+
+  return `${amount > 0 ? "+" : ""}${amount}`
+}
+
+const getLedgerTitle = (item: NonNullable<AiWallet["recent_ledger"]>[number]) => {
+  if (item.type === "order_credit") {
+    return "Recharge credited"
+  }
+
+  if (item.type === "consume") {
+    return "AI reading charged"
+  }
+
+  if (item.type === "premium_usage") {
+    return "Premium AI reading"
+  }
+
+  if (item.type === "admin_adjustment") {
+    return "Admin adjustment"
+  }
+
+  return item.type.replace(/_/g, " ")
+}
+
+const getUsageTitle = (item: AiUsageRecord) =>
+  String(item.tool || "AI usage").replace(/_/g, " ")
+
+const getUsageCredits = (item: AiUsageRecord) => {
+  const metadata = (item.metadata || {}) as Record<string, any>
+  const response = (item.response || {}) as Record<string, any>
+  const input = (item.input || {}) as Record<string, any>
+  const walletCharge = metadata.wallet_charge || {}
+  const value =
+    walletCharge.credits ??
+    metadata.usage_units ??
+    metadata.billing_units ??
+    response.usage_units ??
+    response.billing_units ??
+    input.usage_units ??
+    input.billing_units
+  const credits = Number(value)
+
+  return Number.isFinite(credits) && credits >= 0 ? credits : null
+}
+
+const AiWalletHistory = ({
+  wallet,
+  usage,
+  synced,
+}: {
+  wallet: AiWallet | null
+  usage: AiUsageRecord[]
+  synced: boolean
+}) => {
+  const ledger = wallet?.recent_ledger || []
+
+  return (
+    <div className="brand-card px-4 py-4 small:px-6">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <p className="brand-kicker">AI wallet and billing</p>
+          <h2 className="mt-2 text-xl font-semibold text-[var(--shreem-ink)]">
+            {wallet
+              ? `${wallet.credit_balance || 0} credits available`
+              : synced
+              ? "No AI wallet yet"
+              : "AI wallet unavailable"}
+          </h2>
+          <p className="mt-2 text-sm leading-6 text-[var(--shreem-muted)]">
+            Recharge, usage, balance and billing history are kept here for audit
+            and support.
+          </p>
+        </div>
+        {wallet?.pro_active && (
+          <span className="rounded-full border border-[rgba(13,129,126,0.22)] bg-[rgba(240,248,246,0.8)] px-3 py-1 text-xs font-semibold text-[var(--shreem-accent-dark)]">
+            {wallet.plan} active
+          </span>
+        )}
+      </div>
+
+      <div className="mt-4 grid gap-3 small:grid-cols-3">
+        <div className="rounded-[16px] border border-[var(--shreem-border)] bg-white/70 px-3 py-3">
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--shreem-muted)]">
+            Balance
+          </p>
+          <p className="mt-1 text-2xl font-semibold text-[var(--shreem-ink)]">
+            {wallet?.credit_balance || 0}
+          </p>
+        </div>
+        <div className="rounded-[16px] border border-[var(--shreem-border)] bg-white/70 px-3 py-3">
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--shreem-muted)]">
+            Plan
+          </p>
+          <p className="mt-1 text-sm font-semibold text-[var(--shreem-ink)]">
+            {wallet?.plan || "free"}
+          </p>
+          {wallet?.plan_expires_at && (
+            <p className="mt-1 text-xs text-[var(--shreem-muted)]">
+              Until {formatAiDate(wallet.plan_expires_at)}
+            </p>
+          )}
+        </div>
+        <div className="rounded-[16px] border border-[var(--shreem-border)] bg-white/70 px-3 py-3">
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--shreem-muted)]">
+            Ledger rows
+          </p>
+          <p className="mt-1 text-2xl font-semibold text-[var(--shreem-ink)]">
+            {ledger.length}
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-5 grid gap-4 lg:grid-cols-2">
+        <div>
+          <p className="text-sm font-semibold text-[var(--shreem-ink)]">
+            Credit ledger
+          </p>
+          <div className="mt-3 grid max-h-[28rem] gap-2 overflow-y-auto pr-1">
+            {ledger.length ? (
+              ledger.map((item) => (
+                <div
+                  key={item.id}
+                  className="rounded-[16px] border border-[var(--shreem-border)] bg-white/76 px-3 py-3"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-[var(--shreem-ink)]">
+                        {getLedgerTitle(item)}
+                      </p>
+                      <p className="mt-1 text-xs leading-5 text-[var(--shreem-muted)]">
+                        {formatAiDate(item.created_at)}
+                      </p>
+                    </div>
+                    <span
+                      className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${
+                        Number(item.credits || 0) >= 0
+                          ? "bg-[rgba(240,248,246,0.85)] text-[var(--shreem-accent-dark)]"
+                          : "bg-[rgba(255,248,233,0.9)] text-[var(--shreem-gold-deep)]"
+                      }`}
+                    >
+                      {formatCreditDelta(item.credits)}
+                    </span>
+                  </div>
+                  <p className="mt-2 text-xs leading-5 text-[var(--shreem-muted)]">
+                    Balance after:{" "}
+                    <span className="font-semibold text-[var(--shreem-ink)]">
+                      {item.balance_after}
+                    </span>
+                    {item.order_id ? ` · Order ${item.order_id}` : ""}
+                    {item.usage_id ? ` · Usage ${item.usage_id}` : ""}
+                  </p>
+                  {(item.note || item.source) && (
+                    <p className="mt-1 text-xs leading-5 text-[var(--shreem-muted)]">
+                      {item.note || item.source}
+                    </p>
+                  )}
+                </div>
+              ))
+            ) : (
+              <p className="rounded-[16px] bg-white/66 px-3 py-3 text-sm leading-6 text-[var(--shreem-muted)]">
+                No credit recharge or charge has been recorded yet.
+              </p>
+            )}
+          </div>
+        </div>
+
+        <div>
+          <p className="text-sm font-semibold text-[var(--shreem-ink)]">
+            AI usage history
+          </p>
+          <div className="mt-3 grid max-h-[28rem] gap-2 overflow-y-auto pr-1">
+            {usage.length ? (
+              usage.map((item) => (
+                <div
+                  key={item.id || `${item.tool}-${item.created_at}`}
+                  className="rounded-[16px] border border-[var(--shreem-border)] bg-white/76 px-3 py-3"
+                >
+                  <p className="text-sm font-semibold capitalize text-[var(--shreem-ink)]">
+                    {getUsageTitle(item)}
+                  </p>
+                  <p className="mt-1 text-xs leading-5 text-[var(--shreem-muted)]">
+                    {formatAiDate(item.created_at)} · Model{" "}
+                    {item.model || "not recorded"}
+                  </p>
+                  <p className="mt-1 text-xs leading-5 text-[var(--shreem-muted)]">
+                    Credits charged{" "}
+                    <span className="font-semibold text-[var(--shreem-ink)]">
+                      {getUsageCredits(item) ?? "not charged"}
+                    </span>{" "}
+                    · Tokens {Number(item.total_tokens || 0)}
+                  </p>
+                </div>
+              ))
+            ) : (
+              <p className="rounded-[16px] bg-white/66 px-3 py-3 text-sm leading-6 text-[var(--shreem-muted)]">
+                No AI reading history is attached to this account yet.
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+const Overview = async ({ customer, orders }: OverviewProps) => {
+  const [walletResult, usageResult] = await Promise.all([
+    getAiWallet(),
+    listAiUsage({ limit: 30, toolPrefix: "astrology" }),
+  ])
+
   return (
     <div data-testid="overview-page-wrapper">
       <div className="small:hidden">
@@ -25,9 +248,18 @@ const Overview = ({ customer, orders }: OverviewProps) => {
               {customer?.email}
             </span>
           </p>
+          <div className="mt-4">
+            <FamilyMembersManager customer={customer} />
+          </div>
         </div>
 
         <div className="grid gap-3">
+          <AiWalletHistory
+            wallet={walletResult.wallet}
+            usage={usageResult.items || []}
+            synced={walletResult.synced}
+          />
+
           <div className="brand-card px-4 py-4">
             <p className="brand-kicker">Profile</p>
             <div className="mt-3 flex items-end justify-between gap-4">
@@ -125,6 +357,16 @@ const Overview = ({ customer, orders }: OverviewProps) => {
               {customer?.email}
             </span>
           </span>
+        </div>
+        <div className="mb-4">
+          <FamilyMembersManager customer={customer} />
+        </div>
+        <div className="mb-6">
+          <AiWalletHistory
+            wallet={walletResult.wallet}
+            usage={usageResult.items || []}
+            synced={walletResult.synced}
+          />
         </div>
         <div className="flex flex-col py-8 border-t border-gray-200">
           <div className="flex flex-col gap-y-4 h-full col-span-1 row-span-2 flex-1">

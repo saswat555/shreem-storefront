@@ -1,0 +1,80 @@
+{
+  "pages": [
+    73
+  ],
+  "page_summary": "This page discusses methods for determining longevity based on planetary periods and strength, and introduces the concept of accidents and unfortunate events as factors affecting life, categorized by their impact on individuals or groups.",
+  "rules": [
+    {
+      "id": "planetary-period-longevity-order",
+      "page": 73,
+      "category": "longevity_class",
+      "condition": "Planetary periods are considered for longevity calculation.",
+      "effect": "The order of planets (Sun, Moon, Lagna, Saturn, Jupiter, Venus, Mars, Mercury) can be used to determine longevity.",
+      "implementation": "Software should consider planetary dasha order as a factor in longevity assessment.",
+      "confidence": "high"
+    },
+    {
+      "id": "planet-strength-longevity-factor",
+      "page": 73,
+      "category": "longevity_class",
+      "condition": "Strength of Sun, Moon, and Lagna is assessed.",
+      "effect": "The strongest among these planets determines the primary period for longevity.",
+      "implementation": "Implement logic to compare the strength of Sun, Moon, and Lagna for longevity calculations.",
+      "confidence": "high"
+    },
+    {
+      "id": "multiple-strong-planets-longevity",
+      "page": 73,
+      "category": "longevity_class",
+      "condition": "Multiple planets (Sun, Moon, Lagna) are equally powerful.",
+      "effect": "The planet with the longest span will be considered the strongest for longevity.",
+      "implementation": "When Sun, Moon, and Lagna have equal strength, use the planet with the longest dasha period as the deciding factor.",
+      "confidence": "medium"
+    },
+    {
+      "id": "planetary-order-by-strength-and-position",
+      "page": 73,
+      "category": "longevity_class",
+      "condition": "Determining the order of planets for longevity.",
+      "effect": "Order is based on strength, then position in kendrasthan from the first dasha lord, then position in panapara houses, and finally by strength and horizon rising.",
+      "implementation": "Apply a multi-factor ranking system for planets to determine their influence on longevity, prioritizing strength, then specific house placements, and finally horizon rising.",
+      "confidence": "medium"
+    },
+    {
+      "id": "accident-classification-individual",
+      "page": 73,
+      "category": "caution",
+      "condition": "Events affecting individuals.",
+      "effect": "These events can be studied through the natal chart.",
+      "implementation": "Flag natal chart indicators that may correlate with individual-specific challenging events.",
+      "confidence": "high"
+    },
+    {
+      "id": "accident-classification-collective",
+      "page": 73,
+      "category": "caution",
+      "condition": "Events affecting groups or society.",
+      "effect": "These events are studied through the natal chart of the collective.",
+      "implementation": "Flag astrological factors that may indicate collective societal challenges or widespread difficult events.",
+      "confidence": "high"
+    },
+    {
+      "id": "accident-cause-life-ending",
+      "page": 73,
+      "category": "caution",
+      "condition": "Second type of accidents.",
+      "effect": "These can lead to the end of individual life and are major causes of disrepute.",
+      "implementation": "Identify astrological configurations associated with severe accidents that could have significant life-altering consequences.",
+      "confidence": "medium"
+    },
+    {
+      "id": "astrology-branches-hora-samhita",
+      "page": 73,
+      "category": "method",
+      "condition": "Two branches of astrology mentioned.",
+      "effect": "Hora is for natal chart study, Samhita for broader societal or political matters.",
+      "implementation": "Categorize astrological analysis based on whether it pertains to individual horoscopes (Hora) or broader societal trends (Samhita).",
+      "confidence": "high"
+    }
+  ]
+}

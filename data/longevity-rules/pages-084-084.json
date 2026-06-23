@@ -1,0 +1,116 @@
+{
+  "pages": [
+    84
+  ],
+  "page_summary": "This page describes the contents and calculation methods provided by an astrological ephemeris, covering planetary positions, ayanamsa, ascendant determination, tithi, nakshatra, yoga, and dasha systems like Vimsottari and Astottari, along with lunar phases and specific time calculations.",
+  "rules": [
+    {
+      "id": "ephemeris-system-ayanamsa-084",
+      "page": 84,
+      "category": "method",
+      "condition": "Astrological calculations are based on the Niryana system.",
+      "effect": "Planetary positions and other derived calculations will adhere to the Niryana framework, specifically using Chitra paksha (Lahiri) ayanamsa.",
+      "implementation": "Software should utilize the Niryana system with Lahiri Ayanamsa for all relevant astrological computations.",
+      "confidence": "high"
+    },
+    {
+      "id": "ephemeris-planetary-data-084",
+      "page": 84,
+      "category": "method",
+      "condition": "Daily motion and sidereal positions for all major planets (Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn, Rahu, Uranus, Neptune, Pluto) are provided.",
+      "effect": "Enables precise tracking of planetary movements and their positions over time.",
+      "implementation": "Software can integrate this data for accurate planetary position calculations and ephemeris generation.",
+      "confidence": "high"
+    },
+    {
+      "id": "ephemeris-lagna-sidereal-time-084",
+      "page": 84,
+      "category": "method",
+      "condition": "Daily Sidereal Time at Noon is indicated.",
+      "effect": "Facilitates the determination of the Lagna (Ascendant) for a given time and location.",
+      "implementation": "Software should use the provided Sidereal Time as a basis for calculating the Ascendant.",
+      "confidence": "high"
+    },
+    {
+      "id": "ephemeris-ascendant-calculation-084",
+      "page": 84,
+      "category": "method",
+      "condition": "Methods for calculating the Ascendant through Sidereal time are included.",
+      "effect": "Provides a computational approach for determining the rising sign.",
+      "implementation": "Software should implement Ascendant calculation routines following the specified Sidereal time methods.",
+      "confidence": "high"
+    },
+    {
+      "id": "ephemeris-local-mean-time-084",
+      "page": 84,
+      "category": "method",
+      "condition": "Local Mean Time for important cities and towns, including foreign locations, is available.",
+      "effect": "Supports accurate time conversions and adjustments for location-specific chart calculations.",
+      "implementation": "Software should incorporate this data for precise time zone and local time handling in astrological charts.",
+      "confidence": "high"
+    },
+    {
+      "id": "ephemeris-tithi-calculation-084",
+      "page": 84,
+      "category": "method",
+      "condition": "Methods for calculating Tithi (lunar day) are included.",
+      "effect": "Enables the determination of the specific lunar phase or day.",
+      "implementation": "Software should implement Tithi calculation based on the provided methodologies.",
+      "confidence": "high"
+    },
+    {
+      "id": "ephemeris-nakshatra-calculation-084",
+      "page": 84,
+      "category": "method",
+      "condition": "Methods for calculating Nakshatra (lunar mansion) are included.",
+      "effect": "Enables the determination of the specific lunar mansion occupied by the Moon.",
+      "implementation": "Software should implement Nakshatra calculation based on the provided methodologies.",
+      "confidence": "high"
+    },
+    {
+      "id": "ephemeris-yoga-calculation-084",
+      "page": 84,
+      "category": "method",
+      "condition": "Methods for calculating Yoga (planetary combination) are included.",
+      "effect": "Enables the determination of specific astrological Yogas.",
+      "implementation": "Software should implement Yoga calculation based on the provided methodologies.",
+      "confidence": "high"
+    },
+    {
+      "id": "ephemeris-vimsottari-dasha-084",
+      "page": 84,
+      "category": "method",
+      "condition": "Methods for Vimsottari Dasha calculation are included.",
+      "effect": "Provides a basis for computing the Vimsottari Dasha periods.",
+      "implementation": "Software should implement Vimsottari Dasha calculation based on the provided methodologies.",
+      "confidence": "high"
+    },
+    {
+      "id": "ephemeris-astottari-dasha-084",
+      "page": 84,
+      "category": "method",
+      "condition": "Methods for Astottari Dasha calculation are included.",
+      "effect": "Provides a basis for computing the Astottari Dasha periods.",
+      "implementation": "Software should implement Astottari Dasha calculation based on the provided methodologies.",
+      "confidence": "high"
+    },
+    {
+      "id": "ephemeris-lunar-phases-084",
+      "page": 84,
+      "category": "method",
+      "condition": "Dates for New Moon and Full Moon are provided.",
+      "effect": "Supports calculations and analysis related to lunar cycles and phases.",
+      "implementation": "Software can utilize this data for tracking and displaying lunar phases.",
+      "confidence": "high"
+    },
+    {
+      "id": "ephemeris-malmasa-rahukalam-084",
+      "page": 84,
+      "category": "method",
+      "condition": "Information on Malmasa (intercalary month) and Rahu Kalam (inauspicious period) is included.",
+      "effect": "Provides data for considerations regarding auspicious and inauspicious timings.",
+      "implementation": "Software can incorporate these calculations for timing assessments and panchang elements.",
+      "confidence": "high"
+    }
+  ]
+}

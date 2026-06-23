@@ -1,0 +1,135 @@
+{
+  "pages": [
+    120,
+    121
+  ],
+  "page_summary": "This section details methods for assessing longevity in Jyotish, primarily focusing on Varahamihira's and Satyacharya's Amsakayurdaya calculations. It outlines initial planetary and Lagna contributions, followed by reduction operations (Harana Samskaras) based on planetary placements, and increase operations (Bharana Samskaras) for exalted, retrograde, or well-placed planets. The text also notes variations and differing opinions on the Amsakayurdaya method.",
+  "rules": [
+    {
+      "id": "varahamihira-method-adoption",
+      "page": 120,
+      "category": "method",
+      "condition": "Lagna lord is strong (e.g., in own sign, aspected by benefic, no malefic aspect) and stronger than the Navamsa lord.",
+      "effect": "Varahamihira's method for longevity calculation is indicated for use.",
+      "implementation": "Software should apply Varahamihira's longevity calculation method when these specific astrological conditions for Lagna lord strength are met.",
+      "confidence": "high"
+    },
+    {
+      "id": "navamsa-rasi-contribution",
+      "page": 120,
+      "category": "method",
+      "condition": "Applying Varahamihira's longevity method.",
+      "effect": "Each Navamsa contributes one year, and each Rasi contributes nine years to the longevity assessment.",
+      "implementation": "Incorporate these specific time contributions (1 year per Navamsa, 9 years per Rasi) into the calculation of planetary and Lagna longevity contributions.",
+      "confidence": "high"
+    },
+    {
+      "id": "lagna-longevity-calc",
+      "page": 120,
+      "category": "method",
+      "condition": "Calculating Lagna's longevity contribution using Varahamihira's method.",
+      "effect": "Lagna's contribution is determined by multiplying 9 by the fraction of Navamsa portion passed by the Lagna.",
+      "implementation": "Calculate Lagna's longevity contribution based on its precise Navamsa position using the specified formula.",
+      "confidence": "high"
+    },
+    {
+      "id": "total-sphuta-ayurvarshas",
+      "page": 120,
+      "category": "method",
+      "condition": "After calculating individual planetary and Lagna longevity contributions.",
+      "effect": "The sum of all individual contributions yields the 'total sphuta ayurvarshas' for initial vitality assessment.",
+      "implementation": "Sum the calculated longevity contributions from each planet and the Lagna to establish the initial total vitality assessment.",
+      "confidence": "high"
+    },
+    {
+      "id": "harana-samskara-initiation",
+      "page": 120,
+      "category": "method",
+      "condition": "After determining the total sphuta ayurvarshas.",
+      "effect": "Reduction operations, known as Harana Samskaras, are required to adjust the initial longevity assessment.",
+      "implementation": "Initiate the Harana Samskara process immediately following the calculation of total sphuta ayurvarshas.",
+      "confidence": "high"
+    },
+    {
+      "id": "harana-samskara-planets",
+      "page": 120,
+      "category": "method",
+      "condition": "Applying Harana Samskaras for longevity reduction.",
+      "effect": "Moon, Mercury, and Jupiter are specifically identified as planets subject to these reduction operations.",
+      "implementation": "Focus the application of Harana Samskaras exclusively on the longevity contributions of Moon, Mercury, and Jupiter.",
+      "confidence": "high"
+    },
+    {
+      "id": "harana-moon-enemy-house",
+      "page": 120,
+      "category": "mitigation",
+      "condition": "Moon is positioned in a house ruled by an enemy planet (e.g., Saturn's house).",
+      "effect": "A reduction is applied to Moon's longevity contribution.",
+      "implementation": "Identify Moon's placement in inimical houses and apply the corresponding reduction to its calculated longevity contribution.",
+      "confidence": "high"
+    },
+    {
+      "id": "harana-benefic-12th",
+      "page": 120,
+      "category": "mitigation",
+      "condition": "A benefic planet (e.g., Mercury) occupies the 12th house.",
+      "effect": "The planet's longevity contribution is reduced by one-half.",
+      "implementation": "Apply a 50% reduction to the longevity contribution of any benefic planet found in the 12th house.",
+      "confidence": "high"
+    },
+    {
+      "id": "harana-benefic-9th",
+      "page": 120,
+      "category": "mitigation",
+      "condition": "A benefic planet (e.g., Jupiter) occupies the 9th house.",
+      "effect": "The planet's longevity contribution is reduced by one-eighth.",
+      "implementation": "Apply a 12.5% reduction to the longevity contribution of any benefic planet found in the 9th house.",
+      "confidence": "high"
+    },
+    {
+      "id": "net-longevity-final-calc",
+      "page": 120,
+      "category": "method",
+      "condition": "After all Harana Samskaras have been applied.",
+      "effect": "The final adjusted vitality assessment (Net Longevity or Suddha Ayu) is determined by subtracting the total reductions from the initial total sphuta ayurvarshas.",
+      "implementation": "Calculate the final adjusted vitality assessment by subtracting the sum of all reductions from the initial total longevity contribution.",
+      "confidence": "high"
+    },
+    {
+      "id": "amsakayurdaya-method-caution",
+      "page": 121,
+      "category": "caution",
+      "condition": "Considering Satyacharya's Amsakayurdaya method for longevity assessment.",
+      "effect": "This method has multiple variations (Prakramanugata, Kritavriddhika, Akritvriddhika) and differing expert opinions on its utility and application, particularly regarding the allowance of Bharana Samskaras.",
+      "implementation": "Software implementation should acknowledge the method's complexity and variations, ensuring clarity on which specific variant is being used and its implications.",
+      "confidence": "high"
+    },
+    {
+      "id": "satyacharya-amsakayurdaya-steps",
+      "page": 121,
+      "category": "method",
+      "condition": "Calculating planetary longevity contributions using Satyacharya's Amsakayurdaya.",
+      "effect": "The calculation involves converting nirayana longitude to minutes, dividing by 200 to find Navamsas passed, then using quotients and remainders to determine years and fractions. These initial contributions are then subject to Bharana and Harana Samskaras.",
+      "implementation": "Implement the specific multi-step calculation process for Satyacharya's Amsakayurdaya, including subsequent application of Bharana and Harana Samskaras.",
+      "confidence": "high"
+    },
+    {
+      "id": "bharana-exalted-retrograde",
+      "page": 121,
+      "category": "protection",
+      "condition": "A planet is either exalted or in retrograde motion.",
+      "effect": "Its longevity contribution (ayurvarshas) should be multiplied by 3.",
+      "implementation": "Apply a factor of 3 to the calculated longevity contribution of any planet that is exalted or retrograde.",
+      "confidence": "high"
+    },
+    {
+      "id": "bharana-own-rasi-drekkana-vargottama",
+      "page": 121,
+      "category": "protection",
+      "condition": "A planet is in its own Rasi, or its own Drekkana, or is Vargottama.",
+      "effect": "Its longevity contribution (ayurvarshas) should be doubled.",
+      "implementation": "Apply a factor of 2 to the calculated longevity contribution of any planet meeting these specific placement conditions.",
+      "confidence": "high"
+    }
+  ]
+}

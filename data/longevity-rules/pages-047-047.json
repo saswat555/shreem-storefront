@@ -1,0 +1,125 @@
+{
+  "pages": [
+    "047"
+  ],
+  "page_summary": "This page outlines methods for calculating 'Madhyam Rasmiayu' (middle longevity) and subsequent adjustments called Bharanas (increases) and Haranas (reductions). It details specific conditions for these adjustments, including planetary retrogradation, exaltation, friendship, enmity, and combustion. It also provides an example of Sun's Ayurdaya calculation.",
+  "rules": [
+    {
+      "id": "madhyam-rasmiayu-calculation-method",
+      "page": "047",
+      "category": "method",
+      "condition": "Calculating Madhyam Rasmiayu",
+      "effect": "Involves deducting from 12 signs, multiplying by 10 rasmis, and converting days to years/months/days. Specific rasmis for planets at highest exaltation are provided (Sun 10, Moon 9, Mars 5, Mercury 5, Jupiter 7, Venus 8, Saturn 5).",
+      "implementation": "Software should implement the Madhyam Rasmiayu calculation using the specified planetary rasmi values and conversion steps. This forms the base period for further adjustments.",
+      "confidence": "high"
+    },
+    {
+      "id": "bharana-harana-order",
+      "page": "047",
+      "category": "method",
+      "condition": "Applying longevity adjustments (Sanskaras)",
+      "effect": "Bharanas (increases) must be applied before Haranas (reductions).",
+      "implementation": "Software must process all Bharana rules first, then all Harana rules, to ensure correct sequence of longevity period modifications.",
+      "confidence": "high"
+    },
+    {
+      "id": "bharana-retrograde-planet",
+      "page": "047",
+      "category": "longevity_class",
+      "condition": "A planet is retrograde",
+      "effect": "The planet's calculated Madhyam Ayu period is doubled.",
+      "implementation": "If a planet's retrogradation status is true, apply a 2x multiplier to its Madhyam Ayu period during the Bharana phase of longevity calculation.",
+      "confidence": "high"
+    },
+    {
+      "id": "bharana-exalted-planet",
+      "page": "047",
+      "category": "longevity_class",
+      "condition": "A planet is in its sign of exaltation",
+      "effect": "The planet's calculated period is doubled.",
+      "implementation": "If a planet's position is in its exaltation sign, apply a 2x multiplier to its period during the Bharana phase of longevity calculation.",
+      "confidence": "high"
+    },
+    {
+      "id": "bharana-adhi-mitra-rasi",
+      "page": "047",
+      "category": "longevity_class",
+      "condition": "A planet is in its Adhi mitra's (great friend's) sign",
+      "effect": "The planet's calculated period is doubled.",
+      "implementation": "Determine Adhi mitra relationships considering temporal factors. If a planet is in an Adhi mitra's sign, apply a 2x multiplier to its period during the Bharana phase of longevity calculation.",
+      "confidence": "high"
+    },
+    {
+      "id": "adhi-mitra-temporal-consideration",
+      "page": "047",
+      "category": "caution",
+      "condition": "Determining Adhi mitra relationships",
+      "effect": "Temporal relationships must be taken into consideration.",
+      "implementation": "Software should use a comprehensive method for determining Adhi mitra that includes temporal factors, not just permanent friendships.",
+      "confidence": "high"
+    },
+    {
+      "id": "multiple-bharana-priority",
+      "page": "047",
+      "category": "method",
+      "condition": "A single planet qualifies for more than one Bharana (increase) rule",
+      "effect": "Only the highest Bharana (increase) is applied.",
+      "implementation": "Software should evaluate all applicable Bharana rules for a planet and apply only the most significant increase. If multiple Bharanas result in the same multiplier (e.g., all are 'doubled'), only one instance of that multiplier should be applied, not cumulatively.",
+      "confidence": "high"
+    },
+    {
+      "id": "harana-last-phase-retrogression",
+      "page": "047",
+      "category": "longevity_class",
+      "condition": "A planet is in the last phase of its retrogression (defined as the last degree before becoming direct/margi)",
+      "effect": "No Bharana (increase) is applied to its period, and its period is decreased by 1/8th.",
+      "implementation": "During the Harana phase, if a planet is in its last degree of retrogression, ensure no Bharana was applied and then reduce its calculated period by 1/8th.",
+      "confidence": "high"
+    },
+    {
+      "id": "harana-natural-enemy-rasi",
+      "page": "047",
+      "category": "longevity_class",
+      "condition": "A planet is in its natural enemy's sign",
+      "effect": "The planet's calculated period is decreased by 1/12th.",
+      "implementation": "During the Harana phase, if a planet is in a natural enemy's sign, reduce its calculated period by 1/12th.",
+      "confidence": "high"
+    },
+    {
+      "id": "harana-combustion",
+      "page": "047",
+      "category": "longevity_class",
+      "condition": "A planet is combust (does not apply to Venus and Saturn)",
+      "effect": "The planet's Madhyamayu period is reduced by half.",
+      "implementation": "During the Harana phase, if a planet (excluding Venus and Saturn) is combust, reduce its Madhyamayu period by 50%. This reduction applies specifically to the Madhyamayu value.",
+      "confidence": "high"
+    },
+    {
+      "id": "harana-combustion-scope",
+      "page": "047",
+      "category": "method",
+      "condition": "Applying combustion reductions",
+      "effect": "Reductions due to combustion must be applied to the Madhyamayu period.",
+      "implementation": "Software should ensure that the combustion reduction is applied to the initial Madhyamayu calculation before other Harana adjustments, or clearly specify the order of operations if multiple Haranas apply.",
+      "confidence": "high"
+    },
+    {
+      "id": "exaltation-points-prerequisite",
+      "page": "047",
+      "category": "method",
+      "condition": "Initiating Ayurdaya calculations",
+      "effect": "Knowledge of the points of highest exaltation for each planet is necessary.",
+      "implementation": "Software requires a database or lookup for the precise degrees of highest exaltation for all planets to perform Ayurdaya calculations.",
+      "confidence": "high"
+    },
+    {
+      "id": "sun-ayurdaya-deduction-limit",
+      "page": "047",
+      "category": "longevity_class",
+      "condition": "For Sun's Ayurdaya calculation, if the difference between Sun's longitude and its exaltation point is more than 6 signs",
+      "effect": "No further deduction is applied.",
+      "implementation": "When calculating Sun's Ayurdaya, if the specified longitudinal difference exceeds 6 signs, ensure no additional reduction factor is applied based on this specific condition.",
+      "confidence": "high"
+    }
+  ]
+}

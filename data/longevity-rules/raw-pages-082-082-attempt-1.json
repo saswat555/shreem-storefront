@@ -1,0 +1,35 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "text": "```json\n{\n  \"pages\": [\n    82\n  ],\n  \"page_summary\": \"Page 082 introduces the Bhrigu Nandi Nadi system, highlighting its methods for predicting life events, including longevity, through chart matching and planetary transits. It also mentions the provision of remedial measures for protection against adverse astrological influences.\",\n  \"rules\": [\n    {\n      \"id\": \"bnn-chart-matching-method\",\n      \"page\": 82,\n      \"category\": \"method\",\n      \"condition\": \"To ascertain an individual's life prospects, including longevity.\",\n      \"effect\": \"Requires comparing the individual's planetary disposition with reference charts provided in the text.\",\n      \"implementation\": \"Software could implement a feature for pattern matching natal charts against a database of archetypal planetary dispositions for predictive analysis.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"bnn-event-timing-transits\",\n      \"page\": 82,\n      \"category\": \"dasha_timing\",\n      \"condition\": \"For precise timing of life events.\",\n      \"effect\": \"Predictions are derived from the ongoing transit of planets.\",\n      \"implementation\": \"Software must calculate and interpret planetary transits to determine the timing of potential life events.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"bnn-general-prediction-natal\",\n      \"page\": 82,\n      \"category\": \"method\",\n      \"condition\": \"For predicting general life occurrences.\",\n      \"effect\": \"Predictions are based on the disposition of planets at the time of birth (natal chart).\",\n      \"implementation\": \"Software should analyze the natal chart's planetary placements for fundamental life predictions and character assessments.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"bnn-remedial-measures\",\n      \"page\": 82,\n      \"category\": \"mitigation\",\n      \"condition\": \"To address malevolent planetary influences responsible for significant adverse events.\",\n      \"effect\": \"Specific remedial measures are presented for protection.\",\n      \"implementation\": \"Software could suggest astrological remedies for identified challenging planetary configurations or periods to mitigate potential negative impacts.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"bnn-longevity-assessment\",\n      \"page\": 82,\n      \"category\": \"longevity_class\",\n      \"condition\": \"To assess an individual's lifespan.\",\n      \"effect\": \"The astrological system allows for the determination of longevity.\",\n      \"implementation\": \"Software should incorporate modules for longevity assessment based on the principles of this astrological system, providing an indication of lifespan potential.\",\n      \"confidence\": \"medium\"\n    }\n  ]\n}\n```"
+          }
+        ],
+        "role": "model"
+      },
+      "finishReason": "STOP",
+      "index": 0
+    }
+  ],
+  "usageMetadata": {
+    "promptTokenCount": 611,
+    "candidatesTokenCount": 620,
+    "totalTokenCount": 3431,
+    "promptTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 353
+      },
+      {
+        "modality": "IMAGE",
+        "tokenCount": 258
+      }
+    ],
+    "thoughtsTokenCount": 2200,
+    "serviceTier": "standard"
+  },
+  "modelVersion": "gemini-2.5-flash",
+  "responseId": "Xmk1aoHfAeybjuMPj7HX2AE"
+}

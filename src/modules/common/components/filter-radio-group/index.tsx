@@ -1,6 +1,3 @@
-import { EllipseMiniSolid } from "@medusajs/icons"
-import { Label, RadioGroup, Text, clx } from "@medusajs/ui"
-
 type FilterRadioGroupProps = {
   title: string
   items: {
@@ -21,50 +18,41 @@ const FilterRadioGroup = ({
 }: FilterRadioGroupProps) => {
   return (
     <div className="flex flex-col gap-y-3">
-      <Text className="brand-kicker">{title}</Text>
-      <RadioGroup
+      <p className="brand-kicker">{title}</p>
+      <div
         data-testid={dataTestId}
-        onValueChange={handleChange}
-        value={value}
         className="flex flex-wrap gap-2"
       >
         {items?.map((i) => (
-          <div
+          <label
             key={i.value}
-            className={clx(
+            className={[
               "flex items-center gap-x-2 rounded-full border px-4 py-2.5",
-              {
-                "border-[rgba(18,63,99,0.22)] bg-[rgba(255,252,247,0.96)] shadow-[0_12px_28px_rgba(12,47,73,0.08)]":
-                  i.value === value,
-                "border-transparent bg-[rgba(240,248,246,0.68)]":
-                  i.value !== value,
-              }
-            )}
+              i.value === value
+                ? "border-[rgba(18,63,99,0.22)] bg-[rgba(255,252,247,0.96)] text-[var(--shreem-ink)] shadow-[0_12px_28px_rgba(12,47,73,0.08)]"
+                : "border-transparent bg-[rgba(240,248,246,0.68)] text-[var(--shreem-muted)]",
+            ].join(" ")}
+            data-testid="radio-label"
+            data-active={i.value === value}
           >
-            {i.value === value && <EllipseMiniSolid />}
-            <RadioGroup.Item
+            {i.value === value && (
+              <span className="h-1.5 w-1.5 rounded-full bg-current" />
+            )}
+            <input
+              type="radio"
               checked={i.value === value}
-              className="hidden peer"
+              className="sr-only"
               id={i.value}
+              name={title}
               value={i.value}
+              onChange={() => handleChange(i.value)}
             />
-            <Label
-              htmlFor={i.value}
-              className={clx(
-                "!txt-compact-small !transform-none hover:cursor-pointer",
-                {
-                  "text-[var(--shreem-ink)]": i.value === value,
-                  "text-[var(--shreem-muted)]": i.value !== value,
-                }
-              )}
-              data-testid="radio-label"
-              data-active={i.value === value}
-            >
+            <span className="txt-compact-small hover:cursor-pointer">
               {i.label}
-            </Label>
-          </div>
+            </span>
+          </label>
         ))}
-      </RadioGroup>
+      </div>
     </div>
   )
 }

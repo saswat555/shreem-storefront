@@ -1,0 +1,35 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "text": "```json\n{\n  \"pages\": [134, 135],\n  \"page_summary\": \"These pages discuss the historical context and challenges of Jyotish longevity prediction. They highlight that many traditional methods have not consistently yielded accurate results and advise caution against over-reliance on purely mathematical calculations. The concept of 'Yogajayu' (life span from planetary combinations) is introduced, alongside 'Gandarishthas' as critical life indicators. Mathematical methods are presented as supplementary tools, conditional in their application, and secondary to broader astrological analysis, with a specific rule for applying the Bhinnayu method.\",\n  \"rules\": [\n    {\n      \"id\": \"P134-C1\",\n      \"page\": 134,\n      \"category\": \"caution\",\n      \"condition\": \"Attempting to determine life span solely through mathematical calculations.\",\n      \"effect\": \"Results may not align with actual outcomes.\",\n      \"implementation\": \"Avoid definitive life span predictions from mathematical methods.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"P134-M1\",\n      \"page\": 134,\n      \"category\": \"method\",\n      \"condition\": \"Assessing the span of life.\",\n      \"effect\": \"The concept of Yogajayu, based on planetary combinations, is used.\",\n      \"implementation\": \"When discussing life span indicators, refer to 'Yogajayu' as a holistic assessment.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"P134-C2\",\n      \"page\": 134,\n      \"category\": \"caution\",\n      \"condition\": \"Identifying critical periods related to life continuance.\",\n      \"effect\": \"Gandarishthas are points of reference for potentially challenging timings.\",\n      \"implementation\": \"Flag periods indicated by Gandarishthas as requiring careful consideration for well-being.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"P135-L1\",\n      \"page\": 135,\n      \"category\": \"longevity_class\",\n      \"condition\": \"Assessing factors influencing life span.\",\n      \"effect\": \"Analysis of 'arishtas' (afflictions) and 'arishta bhangas' (cancellation of afflictions) is a primary step.\",\n      \"implementation\": \"Prioritize identifying and analyzing 'arishtas' and their cancellations for vitality assessments.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"P135-M1\",\n      \"page\": 135,\n      \"category\": \"method\",\n      \"condition\": \"Applying mathematical methods for life span assessment.\",\n      \"effect\": \"These methods supplement insights from 'yogajayu' analysis.\",\n      \"implementation\": \"Integrate mathematical methods as secondary verification tools.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"P135-M2\",\n      \"page\": 135,\n      \"category\": \"method\",\n      \"condition\": \"Utilizing mathematical methods for life span assessment.\",\n      \"effect\": \"Application is conditional, yielding life span assessment.\",\n      \"implementation\": \"Apply methods only when astrological conditions are met.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"P135-M3\",\n      \"page\": 135,\n      \"category\": \"method\",\n      \"condition\": \"Interpreting the role of mathematical longevity methods.\",\n      \"effect\": \"They function as supporting factors.\",\n      \"implementation\": \"Present results as contributing factors to vitality assessment.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"P135-M4\",\n      \"page\": 135,\n      \"category\": \"method\",\n      \"condition\": \"10th house contains both malefic and benefic planets.\",\n      \"effect\": \"The Bhinnayu method is the appropriate technique for life span assessment.\",\n      \"implementation\": \"Trigger the Bhinnayu method for vitality assessment when this configuration is present.\",\n      \"confidence\": \"high\"\n    }\n  ]\n}\n```"
+          }
+        ],
+        "role": "model"
+      },
+      "finishReason": "STOP",
+      "index": 0
+    }
+  ],
+  "usageMetadata": {
+    "promptTokenCount": 550,
+    "candidatesTokenCount": 944,
+    "totalTokenCount": 5213,
+    "promptTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 292
+      },
+      {
+        "modality": "IMAGE",
+        "tokenCount": 258
+      }
+    ],
+    "thoughtsTokenCount": 3719,
+    "serviceTier": "standard"
+  },
+  "modelVersion": "gemini-2.5-flash",
+  "responseId": "HGc1ap67Me6_g8UP8c3lUQ"
+}

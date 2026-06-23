@@ -1,0 +1,189 @@
+{
+  "pages": [
+    46,
+    47
+  ],
+  "page_summary": "This section outlines principles for assessing longevity, identifying Maraka (critical influence) planets and houses, and detailing the role of transits and Up-grahas in timing significant life events. It provides specific rules for identifying malefic planetary combinations and calculation methods for certain sensitive points like Gulika and other sub-planets.",
+  "rules": [
+    {
+      "id": "mars-sun-saturn-relationships",
+      "page": 46,
+      "category": "longevity_class",
+      "condition": "Mars in 10th house, or Sun in Lagna/7th house, or Mars in 2nd house, or Saturn in 6th house, or planets in mutual trine/angle relationships.",
+      "effect": "These planetary positions and relationships indicate significant interactions that should be considered in longevity assessment.",
+      "implementation": "Identify and flag these specific planetary placements and mutual relationships for further analysis.",
+      "confidence": "high"
+    },
+    {
+      "id": "saturn-maraka-connection",
+      "page": 46,
+      "category": "maraka",
+      "condition": "Saturn is connected with Maraka planets.",
+      "effect": "Saturn's potential for creating challenging life events is significantly enhanced.",
+      "implementation": "Identify Saturn's connections to planets identified as Marakas and note this amplification.",
+      "confidence": "high"
+    },
+    {
+      "id": "nodes-influence-maraka",
+      "page": 46,
+      "category": "maraka",
+      "condition": "Rahu and Ketu (nodes) are conjoined with or aspected by other planets, or are in a sign whose lord is a Maraka.",
+      "effect": "The nodes can adopt and amplify the qualities of associated planets or their sign dispositors, potentially increasing malefic influence.",
+      "implementation": "Analyze the nodes' associations (conjunctions, aspects, sign dispositors) to determine their role in critical periods.",
+      "confidence": "high"
+    },
+    {
+      "id": "marakasthanas-houses",
+      "page": 46,
+      "category": "maraka",
+      "condition": "The 2nd and 7th houses are considered Marakasthanas (critical houses). The 7th house is considered more impactful than the 2nd.",
+      "effect": "Planets associated with these houses (as lords or occupants) are considered Marakas and can indicate periods of significant challenge.",
+      "implementation": "Identify the lords and occupants of the 2nd and 7th houses as primary Maraka indicators.",
+      "confidence": "high"
+    },
+    {
+      "id": "malefic-houses-connections",
+      "page": 46,
+      "category": "maraka",
+      "condition": "Planets connected with houses 3, 6, 8, 11, and 12.",
+      "effect": "These planets are considered malefic and can contribute to challenging life circumstances.",
+      "implementation": "Identify planets that are lords or occupants of houses 3, 6, 8, 11, and 12.",
+      "confidence": "high"
+    },
+    {
+      "id": "maraka-strength-assessment",
+      "page": 46,
+      "category": "method",
+      "condition": "For identifying planets with critical influence.",
+      "effect": "The strength and weakness of planets identified as Marakas should be carefully assessed.",
+      "implementation": "Implement a system to evaluate the strength (e.g., Shadbala, avastha) of Maraka-identified planets.",
+      "confidence": "high"
+    },
+    {
+      "id": "sixth-lord-malefic-priority",
+      "page": 46,
+      "category": "maraka",
+      "condition": "If all planets are considered to have equal strength.",
+      "effect": "The lord of the 6th house should be considered the most significant malefic.",
+      "implementation": "In cases of equal planetary strength, prioritize the 6th lord's malefic influence.",
+      "confidence": "high"
+    },
+    {
+      "id": "saturn-nodes-greatest-malefic",
+      "page": 46,
+      "category": "maraka",
+      "condition": "Saturn is connected with Maraka planets, or the nodes (Rahu/Ketu) are similarly connected.",
+      "effect": "This combination is considered to indicate the greatest potential for significant life challenges.",
+      "implementation": "Flag Saturn and the nodes when they are strongly connected to other Maraka indicators.",
+      "confidence": "high"
+    },
+    {
+      "id": "rahu-scorpio-capricorn-malefic",
+      "page": 46,
+      "category": "maraka",
+      "condition": "Rahu is posited in Scorpio or Capricorn, especially if Scorpio or Capricorn is the Lagna and Rahu is also in the Lagna.",
+      "effect": "Rahu in these positions becomes a significant malefic, indicating potential for major life transitions or health issues.",
+      "implementation": "Check Rahu's sign placement and its relationship to the Lagna.",
+      "confidence": "high"
+    },
+    {
+      "id": "gulika-maha-maraka",
+      "page": 46,
+      "category": "maraka",
+      "condition": "Gulika's position in the chart.",
+      "effect": "Gulika is considered a 'Maha Maraka' (major critical indicator).",
+      "implementation": "Include Gulika in the assessment of critical influences.",
+      "confidence": "high"
+    },
+    {
+      "id": "dasha-maraka-sixth-lord",
+      "page": 46,
+      "category": "dasha_timing",
+      "condition": "Multiple Maraka planets are active during major and minor Dasha periods, and the 6th lord is also a decisive factor.",
+      "effect": "This combination indicates a period of significant health challenges or major life transitions.",
+      "implementation": "Identify Dasha periods where multiple Maraka planets are active and note the influence of the 6th lord.",
+      "confidence": "high"
+    },
+    {
+      "id": "transit-dasha-interaction",
+      "page": 47,
+      "category": "dasha_timing",
+      "condition": "A particular transit occurs during a Dasha period that also indicates a significant event.",
+      "effect": "Transits can refine the timing of events indicated by Dashas. If a Maraka Dasha is active during a significant transit, the event's impact is heightened; otherwise, transits may indicate minor events or health issues.",
+      "implementation": "Integrate transit analysis with Dasha analysis. Flag periods where both indicate a significant event for heightened impact. For other transits, suggest minor events.",
+      "confidence": "high"
+    },
+    {
+      "id": "up-grahas-list",
+      "page": 47,
+      "category": "method",
+      "condition": "General astrological chart analysis.",
+      "effect": "Nine sub-planets (Up-grahas) are considered: Kala, Paridhi, Dhuma, Ardhyam, Yamkantak, Dhanu, Gulika, Mandi, Vyatipata, and Upketu.",
+      "implementation": "Ensure these Up-grahas are included in chart calculations and analysis.",
+      "confidence": "high"
+    },
+    {
+      "id": "dhuma-calculation",
+      "page": 47,
+      "category": "method",
+      "condition": "Calculation of Dhuma's longitude.",
+      "effect": "Dhuma's position is calculated as: Sun's longitude + 4 signs, 13 degrees, 20 minutes.",
+      "implementation": "Calculate Dhuma's longitude using the formula: Sun_longitude + 4s 13d 20m.",
+      "confidence": "high"
+    },
+    {
+      "id": "vyatipata-calculation",
+      "page": 47,
+      "category": "method",
+      "condition": "Calculation of Vyatipata's longitude.",
+      "effect": "Vyatipata's position is calculated as: 12 signs - Dhuma's longitude.",
+      "implementation": "Calculate Vyatipata's longitude using the formula: 12s - Dhuma_longitude.",
+      "confidence": "high"
+    },
+    {
+      "id": "paridhi-calculation",
+      "page": 47,
+      "category": "method",
+      "condition": "Calculation of Paridhi's longitude.",
+      "effect": "Paridhi's position is calculated as: 6 signs + Vyatipata's longitude.",
+      "implementation": "Calculate Paridhi's longitude using the formula: 6s + Vyatipata_longitude.",
+      "confidence": "high"
+    },
+    {
+      "id": "dhanu-calculation",
+      "page": 47,
+      "category": "method",
+      "condition": "Calculation of Dhanu's longitude.",
+      "effect": "Dhanu's position is calculated as: 12 signs - Paridhi's longitude.",
+      "implementation": "Calculate Dhanu's longitude using the formula: 12s - Paridhi_longitude.",
+      "confidence": "high"
+    },
+    {
+      "id": "upketu-calculation",
+      "page": 47,
+      "category": "method",
+      "condition": "Calculation of Upketu's longitude.",
+      "effect": "Upketu's position is calculated as: Dhanu's longitude + 0 signs, 16 degrees, 40 minutes.",
+      "implementation": "Calculate Upketu's longitude using the formula: Dhanu_longitude + 0s 16d 40m.",
+      "confidence": "high"
+    },
+    {
+      "id": "gulika-day-birth-calculation",
+      "page": 47,
+      "category": "method",
+      "condition": "For individuals born during the day.",
+      "effect": "Gulika's position is determined by dividing the day duration by 8 and multiplying by specific daily multipliers (Sunday 7, Monday 6, Tuesday 5, Wednesday 4, Thursday 3, Friday 2, Saturday 1). The calculated Ishta kala longitude of Gulika is then considered as the Lagna.",
+      "implementation": "Implement the specified calculation method for Gulika's position for day births, using the given multipliers. Note that the text states 'determined as the lagna' which might imply a specific interpretation or use case for this calculated point, not that it literally becomes the Lagna.",
+      "confidence": "high"
+    },
+    {
+      "id": "gulika-night-birth-calculation",
+      "page": 47,
+      "category": "method",
+      "condition": "For individuals born during the night.",
+      "effect": "Gulika's position is determined by dividing the night duration by 8 and multiplying by specific daily multipliers (multipliers not fully visible in the provided text).",
+      "implementation": "Implement the specified calculation method for Gulika's position for night births, using the appropriate multipliers (to be sourced if not fully visible).",
+      "confidence": "medium"
+    }
+  ]
+}

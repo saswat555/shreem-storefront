@@ -1,0 +1,89 @@
+{
+  "pages": [
+    128
+  ],
+  "page_summary": "Page 128 describes a method for calculating the Lagna's contribution to longevity based on Navamsa divisions and introduces a 'novel method' for longevity determination. This novel approach considers multiple Lagnas (Janma, Chandra, Aroodha, Pak) and focuses on the lords of the 1st, 3rd, 8th, and 10th houses, with a specific interpretation of the 8th house. The text emphasizes that this novel method is not classical and requires verification.",
+  "rules": [
+    {
+      "id": "longevity-lagna-navamsa-contribution",
+      "page": 128,
+      "category": "method",
+      "condition": "Lagna's longitude is known.",
+      "effect": "Lagna contributes one year for each full Navamsa it has passed. For the remaining portion of the current Navamsa, the contribution is calculated proportionally.",
+      "implementation": "Calculate full years from passed Navamsas (1 year per 3 degrees 20 minutes). Calculate fractional years for the balance within the current Navamsa. Sum these for Lagna's total contribution.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-total-calculation-example",
+      "page": 128,
+      "category": "method",
+      "condition": "Individual planetary longevity contributions and Lagna's contribution are determined.",
+      "effect": "The total potential life span is the sum of contributions from planets and the Lagna.",
+      "implementation": "Sum the calculated longevity contributions from all relevant planets and the Lagna to derive a total potential life span value.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-novel-method-introduction",
+      "page": 128,
+      "category": "method",
+      "condition": "Applying a non-classical approach to life span assessment.",
+      "effect": "This method is presented as a novel technique, not found in classical texts, and requires empirical verification.",
+      "implementation": "If implementing this method, flag it as experimental or requiring further validation. Do not present as a universally established classical rule.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-novel-method-lagnas-considered",
+      "page": 128,
+      "category": "method",
+      "condition": "Using the novel longevity determination method.",
+      "effect": "This method considers Janma Lagna, Chandra Lagna, Aroodha Lagna, and Pak Lagna as ascendants.",
+      "implementation": "For this specific method, ensure calculations are performed relative to all four specified Lagnas.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-novel-method-house-lords-focus",
+      "page": 128,
+      "category": "method",
+      "condition": "Using the novel longevity determination method.",
+      "effect": "The method focuses on the lords of the 1st, 3rd, 8th, and 10th houses from each considered Lagna.",
+      "implementation": "Identify and analyze the lords of the 1st, 3rd, 8th, and 10th houses for Janma, Chandra, Aroodha, and Pak Lagnas.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-novel-method-house-lord-significations",
+      "page": 128,
+      "category": "method",
+      "condition": "Interpreting house lords within the novel longevity method.",
+      "effect": "The 1st lord represents the individual, the 3rd lord indicates prowess, the 8th lord signifies life span potential, and the 10th lord relates to career and retirement.",
+      "implementation": "When analyzing these specific house lords within this method, use these assigned significations for interpretation.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-novel-method-eighth-house-interpretation",
+      "page": 128,
+      "category": "method",
+      "condition": "Using the novel longevity determination method.",
+      "effect": "This method does not consider the 8th house as entirely malefic or 'bad'.",
+      "implementation": "Avoid applying traditional negative interpretations of the 8th house when using this specific longevity method. Focus on its role in indicating life span potential.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-novel-method-exclusions",
+      "page": 128,
+      "category": "method",
+      "condition": "Using the novel longevity determination method.",
+      "effect": "This method does not consider the strength of the Sun, Moon, or Lagna.",
+      "implementation": "Ensure that the strength of Sun, Moon, or Lagna is not factored into calculations or interpretations when applying this specific novel method.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-novel-method-caution-verification",
+      "page": 128,
+      "category": "caution",
+      "condition": "Considering the novel longevity determination method for implementation.",
+      "effect": "This method requires experimentation and verification of results against factual data.",
+      "implementation": "Any software feature based on this method should include disclaimers about its experimental nature and the need for further validation. Do not present as a definitive or universally accepted prediction.",
+      "confidence": "high"
+    }
+  ]
+}

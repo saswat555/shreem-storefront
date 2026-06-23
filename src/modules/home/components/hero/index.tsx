@@ -1,4 +1,3 @@
-import { ArrowUpRightMini } from "@medusajs/icons"
 import { shreemCowBreeds } from "@lib/constants/shreem"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import Image from "next/image"
@@ -43,7 +42,7 @@ const Hero = ({
                     className="brand-secondary-button gap-2"
                   >
                     Try GrowBuddy AI
-                    <ArrowUpRightMini />
+                    <span aria-hidden="true">-&gt;</span>
                   </LocalizedClientLink>
                 )}
               </div>
@@ -51,11 +50,13 @@ const Hero = ({
             <div className="overflow-hidden rounded-[24px] border border-[var(--shreem-border)] bg-[linear-gradient(180deg,rgba(255,252,247,0.98),rgba(247,242,232,0.92))] p-2 shadow-[0_24px_70px_rgba(15,49,70,0.12)] small:rounded-[30px]">
               <div className="relative aspect-[16/10] overflow-hidden rounded-[18px] small:aspect-[16/11] small:rounded-[24px]">
                 <Image
-                  src="/shreem-scenes/hero-scene.png"
+                  src="/shreem-scenes/hero-scene.jpg"
                   alt="Illustrated Shreem gaushala hero scene with Gauri, Mayur, and bilona ghee"
                   fill
                   priority
-                  sizes="(max-width: 1279px) 100vw, 720px"
+                  fetchPriority="high"
+                  quality={60}
+                  sizes="(max-width: 767px) calc(100vw - 64px), (max-width: 1279px) 50vw, 640px"
                   className="object-cover object-center"
                 />
               </div>

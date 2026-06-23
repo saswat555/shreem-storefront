@@ -1,0 +1,35 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "text": "```json\n{\n  \"pages\": [\n    \"081\"\n  ],\n  \"page_summary\": \"This page discusses principles for judging longevity, identifying significant planets for marakasthana, and methods for timing events using natal and horary charts. It emphasizes caution and the probabilistic nature of astrological predictions. Examples of specific planetary combinations related to developmental stages and lifespan are provided from Suka Nadi doctrines.\",\n  \"rules\": [\n    {\n      \"id\": \"maraka-planets-identification-081\",\n      \"page\": \"081\",\n      \"category\": \"maraka\",\n      \"condition\": \"Planets associated with marakasthana.\",\n      \"effect\": \"Saturn, Mercury, and Venus are identified as significant for longevity assessment.\",\n      \"implementation\": \"Flag these planets for special analysis in longevity modules.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"transit-timing-method-081\",\n      \"page\": \"081\",\n      \"category\": \"dasha_timing\",\n      \"condition\": \"Examination of planetary transits from the Moon sign and the 7th house.\",\n      \"effect\": \"Relevant for timing significant life events.\",\n      \"implementation\": \"Incorporate Moon sign and 7th house transits in event timing calculations.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"chart-types-for-longevity-081\",\n      \"page\": \"081\",\n      \"category\": \"method\",\n      \"condition\": \"Assessing longevity potential.\",\n      \"effect\": \"Both natal (birth) and horary charts are applicable.\",\n      \"implementation\": \"Allow users to select either chart type for longevity analysis.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"caution-in-longevity-analysis-081\",\n      \"page\": \"081\",\n      \"category\": \"caution\",\n      \"condition\": \"Performing longevity analysis.\",\n      \"effect\": \"Requires extreme caution and careful interpretation.\",\n      \"implementation\": \"Display a caution message to internal users regarding the probabilistic nature of longevity predictions.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"astrology-as-probabilistic-081\",\n      \"page\": \"081\",\n      \"category\": \"caution\",\n      \"condition\": \"Any astrological prediction.\",\n      \"effect\": \"Outcomes are probabilistic, not absolute certainties.\",\n      \"implementation\": \"Ensure all predictive outputs are framed as indications or probabilities, not definitive statements.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"developmental-indicator-female-081\",\n      \"page\": \"081\",\n      \"category\": \"longevity_class\",\n      \"condition\": \"Lords of the 5th and 8th houses conjunct in the 7th house with Saturn and Rahu.\",\n      \"effect\": \"Indicates a potential for specific developmental challenges in females.\",\n      \"implementation\": \"Identify this combination for specific health or developmental indicators, avoiding fatalistic language.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"full-lifespan-indicator-081\",\n      \"page\": \"081\",\n      \"category\": \"longevity_class\",\n      \"condition\": \"Movable Rasi as the Ascendant, with the 8th house lord placed in the Ascendant.\",\n      \"effect\": \"Indicates a potential for a full lifespan.\",\n      \"implementation\": \"Flag this combination as a positive indicator for longevity potential.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"predictive-scope-timing-compatibility-081\",\n      \"page\": \"081\",\n      \"category\": \"method\",\n      \"condition\": \"General astrological analysis.\",\n      \"effect\": \"Provides methods for timing events and assessing marital compatibility.\",\n      \"implementation\": \"Note that the system should support event timing and compatibility modules.\",\n      \"confidence\": \"high\"\n    }\n  ]\n}\n```"
+          }
+        ],
+        "role": "model"
+      },
+      "finishReason": "STOP",
+      "index": 0
+    }
+  ],
+  "usageMetadata": {
+    "promptTokenCount": 611,
+    "candidatesTokenCount": 930,
+    "totalTokenCount": 5591,
+    "promptTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 353
+      },
+      {
+        "modality": "IMAGE",
+        "tokenCount": 258
+      }
+    ],
+    "thoughtsTokenCount": 4050,
+    "serviceTier": "standard"
+  },
+  "modelVersion": "gemini-2.5-flash",
+  "responseId": "Q2k1apT2KvidjuMP4O_wwQ8"
+}

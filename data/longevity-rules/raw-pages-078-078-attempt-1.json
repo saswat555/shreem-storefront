@@ -1,0 +1,35 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "text": "```json\n{\n  \"pages\": [\n    \"078\"\n  ],\n  \"page_summary\": \"This page outlines Maraka planet rules, specifically for Saturn in the 2nd house, and identifies auspicious and inauspicious houses for longevity assessment. It emphasizes the role of planets in health and external life events. The text also cautions about Dasha system limitations, the importance of transits, and the potential exemption of highly spiritual individuals from standard astrological rules.\",\n  \"rules\": [\n    {\n      \"id\": \"saturn-2nd-maraka\",\n      \"page\": \"078\",\n      \"category\": \"maraka\",\n      \"condition\": \"Saturn is posited in the 2nd house.\",\n      \"effect\": \"Saturn can function as a Maraka planet.\",\n      \"implementation\": \"Identify Saturn's potential Maraka role when placed in the 2nd house.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"longevity-key-factors\",\n      \"page\": \"078\",\n      \"category\": \"method\",\n      \"condition\": \"N/A\",\n      \"effect\": \"Sun, Moon, Atmakaraka, Lagna, Moon's sign are crucial for longevity assessment.\",\n      \"implementation\": \"Include these specific factors in longevity calculations and analysis.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"auspicious-houses-5-9\",\n      \"page\": \"078\",\n      \"category\": \"method\",\n      \"condition\": \"N/A\",\n      \"effect\": \"Houses 5 and 9 are generally considered auspicious.\",\n      \"implementation\": \"Assign benefic status to houses 5 and 9 in astrological interpretations.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"inauspicious-houses-3-6-8-12\",\n      \"page\": \"078\",\n      \"category\": \"method\",\n      \"condition\": \"N/A\",\n      \"effect\": \"Houses 3, 6, 8, and 12 are generally inauspicious.\",\n      \"implementation\": \"Assign malefic status to houses 3, 6, 8, and 12 in astrological interpretations.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"planets-health-vulnerabilities\",\n      \"page\": \"078\",\n      \"category\": \"method\",\n      \"condition\": \"N/A\",\n      \"effect\": \"Planets are associated with specific health vulnerabilities.\",\n      \"implementation\": \"Map planetary positions and conditions to potential health issues for analysis.\",\n      \"confidence\": \"medium\"\n    },\n    {\n      \"id\": \"external-longevity-factors\",\n      \"page\": \"078\",\n      \"category\": \"method\",\n      \"condition\": \"N/A\",\n      \"effect\": \"External events like accidents or violence considered in longevity.\",\n      \"implementation\": \"Incorporate indicators for external life-altering events into longevity analysis.\",\n      \"confidence\": \"medium\"\n    },\n    {\n      \"id\": \"concept-maraka-planets\",\n      \"page\": \"078\",\n      \"category\": \"maraka\",\n      \"condition\": \"N/A\",\n      \"effect\": \"The concept of planets influencing life's conclusion was developed.\",\n      \"implementation\": \"Identify and analyze planets designated as Marakas in the chart.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"dasha-longevity-alignment-caution\",\n      \"page\": \"078\",\n      \"category\": \"dasha_timing\",\n      \"condition\": \"Discrepancy between standard Dasha timing and longevity assessment.\",\n      \"effect\": \"Standard Dasha systems may not always align with predicted life span.\",\n      \"implementation\": \"Be aware that alternative Dasha systems might be necessary for specific longevity cases.\",\n      \"confidence\": \"medium\"\n    },\n    {\n      \"id\": \"transits-modify-dashas\",\n      \"page\": \"078\",\n      \"category\": \"dasha_timing\",\n      \"condition\": \"N/A\",\n      \"effect\": \"Transiting planets can significantly influence Dasha period results.\",\n      \"implementation\": \"Always consider current transits when evaluating Dasha period effects.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"multiple-astrology-methods\",\n      \"page\": \"078\",\n      \"category\": \"method\",\n      \"condition\": \"N/A\",\n      \"effect\": \"Multiple astrological methods and perspectives exist for comprehensive analysis.\",\n      \"implementation\": \"Support and integrate various analytical approaches for life event timing and assessment.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"spiritual-exemption-caution\",\n      \"page\": \"078\",\n      \"category\": \"caution\",\n      \"condition\": \"Subject is identified as a highly evolved spiritual individual.\",\n      \"effect\": \"Standard astrological rules may not apply conventionally.\",\n      \"implementation\": \"Flag that standard astrological predictions may not be applicable for individuals identified as highly spiritual.\",\n      \"confidence\": \"high\"\n    }\n  ]\n}\n```"
+          }
+        ],
+        "role": "model"
+      },
+      "finishReason": "STOP",
+      "index": 0
+    }
+  ],
+  "usageMetadata": {
+    "promptTokenCount": 611,
+    "candidatesTokenCount": 1196,
+    "totalTokenCount": 6560,
+    "promptTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 353
+      },
+      {
+        "modality": "IMAGE",
+        "tokenCount": 258
+      }
+    ],
+    "thoughtsTokenCount": 4753,
+    "serviceTier": "standard"
+  },
+  "modelVersion": "gemini-2.5-flash",
+  "responseId": "0Wg1asTRMK7UqfkP7InMiQE"
+}

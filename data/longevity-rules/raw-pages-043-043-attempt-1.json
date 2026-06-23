@@ -1,0 +1,35 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "text": "```json\n{\n  \"pages\": [78, 79],\n  \"page_summary\": \"These pages describe two distinct methods for calculating longevity potential in Jyotish. The first involves planetary periods and lagna calculations. The second, called Samudaya Ashtakavarga (S.A.V.) or Nakshatra Ayu, details a multi-step process including various sodhanas (reductions) and pinda calculations to arrive at a collective longevity potential.\",\n  \"rules\": [\n    {\n      \"id\": \"longevity-planetary-lagna-method\",\n      \"page\": 78,\n      \"category\": \"longevity_class\",\n      \"condition\": \"Calculating longevity potential based on planetary and lagna contributions.\",\n      \"effect\": \"Determines a component of the calculated longevity potential by summing periods granted by specific planets (e.g., Jupiter, Venus, Saturn) and a period derived from the lagna.\",\n      \"implementation\": \"Software should sum the net periods of specified planets after reductions. The lagna-derived period is calculated by multiplying a base value (e.g., 9.81 years) by 324, dividing by 365, adding a fixed value (e.g., 8.71 years), and further adjusting based on lagna longitude (e.g., 5°32' multiplied by 12 and converted to days). These components are then combined.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"longevity-samudaya-av-method\",\n      \"page\": 78,\n      \"category\": \"longevity_class\",\n      \"condition\": \"Calculating longevity potential using the Samudaya Ashtakavarga (S.A.V.) method.\",\n      \"effect\": \"Provides an alternative or complementary measure of longevity potential, termed Nakshatra Ayu.\",\n      \"implementation\": \"Software should prepare individual Ashtakavarga (A.V.) for all planets and the lagna, then consolidate them into a Sarva Ashtakavarga (S.A.V.) for further processing.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"samudaya-av-mandala-sodhana\",\n      \"page\": 78,\n      \"category\": \"method\",\n      \"condition\": \"During the Samudaya Ashtakavarga (S.A.V.) calculation, specifically for mandala sodhana.\",\n      \"effect\": \"If the total benefic points in any Rasi exceed that Rasi's figure divided by 12, the remainder is substituted for the original figure.\",\n      \"implementation\": \"Software must apply this substitution step to the S.A.V. figures as part of the mandala sodhana process.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"samudaya-av-trikona-ekadhipati-sodhana\",\n      \"page\": 78,\n      \"category\": \"method\",\n      \"condition\": \"After mandala sodhana in the Samudaya Ashtakavarga (S.A.V.) calculation.\",\n      \"effect\": \"Trikona and Ekadhipati sodhana rules are applied to the figures.\",\n      \"implementation\": \"Software should apply the established Trikona and Ekadhipati sodhana rules to the S.A.V. figures following mandala sodhana. (Specific rules for Trikona and Ekadhipati sodhana are not detailed on these pages).\",\n      \"confidence\": \"medium\"\n    },\n    {\n      \"id\": \"samudaya-av-pinda-calculation\",\n      \"page\": 78,\n      \"category\": \"method\",\n      \"condition\": \"After sodhana steps in the Samudaya Ashtakavarga (S.A.V.) calculation.\",\n      \"effect\": \"Rasi Pindas and Graha Pindas are calculated.\",\n      \"implementation\": \"Software should calculate Rasi Pindas and Graha Pindas based on the processed S.A.V. figures.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"samudaya-av-sodhya-pinda-final-step\",\n      \"page\": 78,\n      \"category\": \"method\",\n      \"condition\": \"To obtain the final 'sodhya pinda' for Samudaya Ashtakavarga (S.A.V.) longevity.\",\n      \"effect\": \"The sodhya pinda is multiplied by 7 and then divided by 27.\",\n      \"implementation\": \"Software should perform this final multiplication and division on the calculated sodhya pinda to determine the longevity potential.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"samudaya-av-table-components\",\n      \"page\": 79,\n      \"category\": \"method\",\n      \"condition\": \"Interpreting the Samudaya Ashtakavarga table structure.\",\n      \"effect\": \"Defines the meaning of the columns (A-F) in the Samudaya Ashtakavarga table.\",\n      \"implementation\": \"Software should correctly identify and process the data in each column: A (individual A.V. figures), B (after mandala sodhana), C (after Trinal reductions), D (after Ekadhipatya sodhana), E (Rasi Pindas), F (Graha Pindas).\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"samudaya-av-final-longevity-calculation\",\n      \"page\": 79,\n      \"category\": \"method\",\n      \"condition\": \"Final calculation of longevity potential using Sodhya Pindas from Samudaya Ashtakavarga (S.A.V.).\",\n      \"effect\": \"The sum of Rasi Pindas (E) and Graha Pindas (F) is multiplied by 7 and divided by 27 to yield the calculated longevity potential.\",\n      \"implementation\": \"Software should sum the Rasi Pindas and Graha Pindas, then apply the (multiplied by 7, divided by 27) factor to determine the final longevity potential (e.g., (126 + 104) * 7 / 27 = 59.63 years).\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"nakshatra-ayu-distinction\",\n      \"page\": 79,\n      \"category\": \"caution\",\n      \"condition\": \"Longevity potential calculated via the Samudaya Ashtakavarga (S.A.V.) method.\",\n      \"effect\": \"This specific longevity measure is termed 'Nakshatra Ayu' and is distinct from other Nakshatrayu calculation methods.\",\n      \"implementation\": \"Software should label this specific longevity calculation as 'Nakshatra Ayu (S.A.V. method)' to ensure clarity and avoid confusion with other Nakshatrayu systems.\",\n      \"confidence\": \"high\"\n    }\n  ]\n}\n```"
+          }
+        ],
+        "role": "model"
+      },
+      "finishReason": "STOP",
+      "index": 0
+    }
+  ],
+  "usageMetadata": {
+    "promptTokenCount": 550,
+    "candidatesTokenCount": 1570,
+    "totalTokenCount": 4732,
+    "promptTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 292
+      },
+      {
+        "modality": "IMAGE",
+        "tokenCount": 258
+      }
+    ],
+    "thoughtsTokenCount": 2612,
+    "serviceTier": "standard"
+  },
+  "modelVersion": "gemini-2.5-flash",
+  "responseId": "g2M1aojTKsHOg8UPlr3OeA"
+}

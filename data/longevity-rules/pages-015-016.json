@@ -1,0 +1,333 @@
+{
+  "pages": [
+    "015",
+    "016"
+  ],
+  "page_summary": "These pages outline astrological principles related to longevity, including yogas that mitigate negative influences (arishtas) and specific planetary combinations indicating different lifespan categories. They also define Maraka planets and houses, and provide cautions against absolute predictions of lifespan.",
+  "rules": [
+    {
+      "id": "mitigation-night-birth-moon-11th",
+      "page": "015",
+      "category": "mitigation",
+      "condition": "For night births (between sunset and sunrise), Moon occupies the 11th house.",
+      "effect": "Indicates an auspicious influence that can mitigate negative effects.",
+      "implementation": "Flag this combination as a positive mitigating factor in the chart analysis.",
+      "confidence": "high"
+    },
+    {
+      "id": "mitigation-day-birth-venus-kendra-trikona-11th",
+      "page": "015",
+      "category": "mitigation",
+      "condition": "For day births, Venus occupies a Kendra (1st, 4th, 7th, 10th), Trikona (5th, 9th), or 11th house.",
+      "effect": "Indicates an auspicious influence that can mitigate negative effects.",
+      "implementation": "Flag this combination as a positive mitigating factor in the chart analysis.",
+      "confidence": "high"
+    },
+    {
+      "id": "mitigation-full-moon-all-planets-aspect",
+      "page": "015",
+      "category": "mitigation",
+      "condition": "Full Moon is aspected by all other planets.",
+      "effect": "Contributes to the cancellation of negative influences (arishta-bhanga).",
+      "implementation": "Identify this yoga as a strong protective factor against adverse conditions.",
+      "confidence": "high"
+    },
+    {
+      "id": "mitigation-exalted-moon-venus-aspect",
+      "page": "015",
+      "category": "mitigation",
+      "condition": "Moon is in its highest exaltation position and is aspected by Venus.",
+      "effect": "Contributes to the cancellation of negative influences (arishta-bhanga).",
+      "implementation": "Identify this yoga as a strong protective factor against adverse conditions.",
+      "confidence": "high"
+    },
+    {
+      "id": "mitigation-weak-moon-benefic-navamsa-aspect",
+      "page": "015",
+      "category": "mitigation",
+      "condition": "A weak Moon is posited in the Navamsa of a benefic planet and aspected by benefics.",
+      "effect": "Contributes to the cancellation of negative influences (arishta-bhanga).",
+      "implementation": "Identify this yoga as a strong protective factor against adverse conditions.",
+      "confidence": "high"
+    },
+    {
+      "id": "mitigation-benefics-6-7-8-from-moon",
+      "page": "015",
+      "category": "mitigation",
+      "condition": "Unafflicted benefic planets occupy the 6th, 7th, and 8th houses from the Moon.",
+      "effect": "Produces strong cancellation of negative influences (arishta-bhanga).",
+      "implementation": "Identify this yoga as a strong protective factor against adverse conditions.",
+      "confidence": "high"
+    },
+    {
+      "id": "mitigation-moon-6-8-benefic-malefic-aspect",
+      "page": "015",
+      "category": "mitigation",
+      "condition": "Moon is posited in the 6th or 8th house, aspected by benefics (if birth is in bright fortnight) or by malefics (if birth is in dark fortnight).",
+      "effect": "Acts as a strong antidote for all negative influences (arishtas).",
+      "implementation": "Identify this yoga as a strong protective factor against adverse conditions.",
+      "confidence": "high"
+    },
+    {
+      "id": "caution-arishtas-not-always-manifest",
+      "page": "015",
+      "category": "caution",
+      "condition": "Presence of many arishtas in a birth chart, especially for childhood.",
+      "effect": "Does not always result in illness or adverse events; a child may not fall sick.",
+      "implementation": "Avoid making definitive negative predictions based solely on arishtas; consider mitigating factors and the overall chart strength.",
+      "confidence": "high"
+    },
+    {
+      "id": "dasha-timing-ashtottari-vimshottari-lifespan",
+      "page": "016",
+      "category": "dasha_timing",
+      "condition": "Reference to Ashtottari and Vimshottari Dasha systems for lifespan calculation.",
+      "effect": "Ashtottari system suggests 108 years, Vimshottari suggests 120 years. Practical long life is considered around 96 years with adjustments.",
+      "implementation": "Note these traditional lifespan benchmarks for context, but do not use them for precise predictions.",
+      "confidence": "high"
+    },
+    {
+      "id": "caution-dasha-lifespan-precision",
+      "page": "016",
+      "category": "caution",
+      "condition": "Classical texts often fix lifespan too precisely in mathematical terms.",
+      "effect": "It is not advisable to determine longevity in absolute terms based on yogas. An approximate idea is sufficient.",
+      "implementation": "Software should avoid generating precise lifespan predictions. Focus on indicating lifespan categories or potential periods of significant life transitions.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-class-definition-alpayu",
+      "page": "016",
+      "category": "longevity_class",
+      "condition": "The 'Alpayu' or 'short life' category.",
+      "effect": "Indicates a potential for significant life transitions up to the age of 32 years.",
+      "implementation": "Define this category for internal analysis, flagging charts that meet its criteria.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-class-definition-madhyayu",
+      "page": "016",
+      "category": "longevity_class",
+      "condition": "The 'Madhyayu' or 'medium life' category.",
+      "effect": "Indicates a potential for significant life transitions within a medium lifespan range.",
+      "implementation": "Define this category for internal analysis, flagging charts that meet its criteria.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-class-definition-deerghayu",
+      "page": "016",
+      "category": "longevity_class",
+      "condition": "The 'Deerghayu' or 'long life' category.",
+      "effect": "Indicates a potential for significant life transitions within a long lifespan range.",
+      "implementation": "Define this category for internal analysis, flagging charts that meet its criteria.",
+      "confidence": "high"
+    },
+    {
+      "id": "caution-arishtas-arishta-bhangas-study",
+      "page": "016",
+      "category": "caution",
+      "condition": "Judging the life span requires careful study of both arishtas (negative factors) and arishta bhangas (mitigating factors).",
+      "effect": "A balanced assessment is necessary; neither should be considered in isolation.",
+      "implementation": "Ensure the software considers both negative and positive astrological combinations when assessing longevity indicators.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-class-alpayu-yoga-1",
+      "page": "016",
+      "category": "longevity_class",
+      "condition": "Second lord in 9th house, Jupiter and Venus in 11th house, and Saturn in 7th house.",
+      "effect": "Indicates a potential for a shorter lifespan category (Alpayu).",
+      "implementation": "Flag this combination as a potential indicator for a shorter lifespan category.",
+      "confidence": "medium"
+    },
+    {
+      "id": "longevity-class-alpayu-yoga-2",
+      "page": "016",
+      "category": "longevity_class",
+      "condition": "Mars in 7th house, Venus in 8th house, and Sun in 9th house.",
+      "effect": "Indicates a potential for a shorter lifespan category (Alpayu).",
+      "implementation": "Flag this combination as a potential indicator for a shorter lifespan category.",
+      "confidence": "medium"
+    },
+    {
+      "id": "longevity-class-alpayu-yoga-3",
+      "page": "016",
+      "category": "longevity_class",
+      "condition": "Saturn in 7th house and Sun in 4th house.",
+      "effect": "Indicates a potential for a shorter lifespan category (Alpayu).",
+      "implementation": "Flag this combination as a potential indicator for a shorter lifespan category.",
+      "confidence": "medium"
+    },
+    {
+      "id": "longevity-class-alpayu-yoga-4",
+      "page": "016",
+      "category": "longevity_class",
+      "condition": "Malefic planets in Kendras (1st, 4th, 7th, 10th houses) without benefic influences, and the ascendant lord is weak.",
+      "effect": "Indicates a potential for a shorter lifespan category (Alpayu).",
+      "implementation": "Flag this combination as a potential indicator for a shorter lifespan category.",
+      "confidence": "medium"
+    },
+    {
+      "id": "longevity-class-alpayu-yoga-5",
+      "page": "016",
+      "category": "longevity_class",
+      "condition": "Out of the 8th lord, 10th lord, and ascendant lord, only one is strong while the other two are weak.",
+      "effect": "Indicates a potential for a shorter lifespan category (Alpayu).",
+      "implementation": "Flag this combination as a potential indicator for a shorter lifespan category.",
+      "confidence": "medium"
+    },
+    {
+      "id": "longevity-class-alpayu-yoga-6",
+      "page": "016",
+      "category": "longevity_class",
+      "condition": "All planets are posited in houses 9 to 12.",
+      "effect": "Indicates a potential for a shorter lifespan category (Alpayu).",
+      "implementation": "Flag this combination as a potential indicator for a shorter lifespan category.",
+      "confidence": "medium"
+    },
+    {
+      "id": "maraka-planets-houses-definition",
+      "page": "016",
+      "category": "maraka",
+      "condition": "Planets in the 2nd and 7th houses, and the lords of these houses.",
+      "effect": "These are considered 'Maraka planets' or planets associated with critical life events.",
+      "implementation": "Identify these planets and house lords as significant for analyzing life transitions.",
+      "confidence": "high"
+    },
+    {
+      "id": "maraka-analysis-factors",
+      "page": "016",
+      "category": "method",
+      "condition": "Analysis of Maraka planets.",
+      "effect": "Should also consider the ascendant lord, 8th lord, 10th lord, and Saturn (Ayush Karaka).",
+      "implementation": "Include these additional factors in the comprehensive analysis of critical life events.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-class-alpayu-yoga-7",
+      "page": "016",
+      "category": "longevity_class",
+      "condition": "The ascendant lord is an enemy of the Sun and is posited in the house of its enemy.",
+      "effect": "Indicates a potential for a shorter lifespan category (Alpayu).",
+      "implementation": "Flag this combination as a potential indicator for a shorter lifespan category.",
+      "confidence": "medium"
+    },
+    {
+      "id": "longevity-class-alpayu-yoga-8",
+      "page": "016",
+      "category": "longevity_class",
+      "condition": "All planets occupy houses 9 to 12.",
+      "effect": "Indicates a potential for a shorter lifespan category (Alpayu).",
+      "implementation": "Flag this combination as a potential indicator for a shorter lifespan category.",
+      "confidence": "medium"
+    },
+    {
+      "id": "longevity-class-alpayu-yoga-9",
+      "page": "016",
+      "category": "longevity_class",
+      "condition": "Moon is weak in the chart, Jupiter and Venus occupy Lagna, and Mars and Saturn occupy the 5th house.",
+      "effect": "Indicates a potential for a shorter lifespan category (Alpayu).",
+      "implementation": "Flag this combination as a potential indicator for a shorter lifespan category.",
+      "confidence": "medium"
+    },
+    {
+      "id": "longevity-class-alpayu-yoga-10",
+      "page": "016",
+      "category": "longevity_class",
+      "condition": "Saturn is in Aries (debilitated Ayush Karaka), Mercury in Taurus, Sun in Taurus/Virgo/Aquarius, and the 8th house is occupied by a malefic.",
+      "effect": "Indicates a potential for a shorter lifespan category (Alpayu).",
+      "implementation": "Flag this combination as a potential indicator for a shorter lifespan category.",
+      "confidence": "medium"
+    },
+    {
+      "id": "longevity-class-alpayu-yoga-11",
+      "page": "016",
+      "category": "longevity_class",
+      "condition": "The 8th lord is in a Kendra, and Jupiter and Sun are in Lagna (specifically if Lagna is Cancer).",
+      "effect": "Indicates a potential for a shorter lifespan category (Alpayu).",
+      "implementation": "Flag this combination as a potential indicator for a shorter lifespan category.",
+      "confidence": "medium"
+    },
+    {
+      "id": "longevity-class-alpayu-yoga-12",
+      "page": "016",
+      "category": "longevity_class",
+      "condition": "Jupiter is in Lagna, and Moon is with Rahu in the 7th or 8th house.",
+      "effect": "Indicates a potential for a shorter lifespan category (Alpayu).",
+      "implementation": "Flag this combination as a potential indicator for a shorter lifespan category.",
+      "confidence": "medium"
+    },
+    {
+      "id": "longevity-class-alpayu-yoga-13",
+      "page": "016",
+      "category": "longevity_class",
+      "condition": "The 8th lord is in a Kendra or the 12th house from Lagna or Moon.",
+      "effect": "Indicates a potential for a shorter lifespan category (Alpayu).",
+      "implementation": "Flag this combination as a potential indicator for a shorter lifespan category.",
+      "confidence": "medium"
+    },
+    {
+      "id": "longevity-class-alpayu-yoga-14",
+      "page": "016",
+      "category": "longevity_class",
+      "condition": "Weak Lagna lord and weak Moon.",
+      "effect": "Indicates a potential for a shorter lifespan category (Alpayu).",
+      "implementation": "Flag this combination as a potential indicator for a shorter lifespan category.",
+      "confidence": "medium"
+    },
+    {
+      "id": "longevity-class-alpayu-yoga-15",
+      "page": "016",
+      "category": "longevity_class",
+      "condition": "Lagna and Moon have malefic aspects over them.",
+      "effect": "Indicates a potential for a shorter lifespan category (Alpayu).",
+      "implementation": "Flag this combination as a potential indicator for a shorter lifespan category.",
+      "confidence": "medium"
+    },
+    {
+      "id": "longevity-class-alpayu-yoga-16",
+      "page": "016",
+      "category": "longevity_class",
+      "condition": "Lagna and Moon are associated with malefics.",
+      "effect": "Indicates a potential for a shorter lifespan category (Alpayu).",
+      "implementation": "Flag this combination as a potential indicator for a shorter lifespan category.",
+      "confidence": "medium"
+    },
+    {
+      "id": "longevity-class-alpayu-yoga-17",
+      "page": "016",
+      "category": "longevity_class",
+      "condition": "Lords of Lagna and Rasi (Moon sign) are combust.",
+      "effect": "Indicates a potential for a shorter lifespan category (Alpayu).",
+      "implementation": "Flag this combination as a potential indicator for a shorter lifespan category.",
+      "confidence": "medium"
+    },
+    {
+      "id": "longevity-class-alpayu-yoga-18",
+      "page": "016",
+      "category": "longevity_class",
+      "condition": "Solar or lunar eclipse at the time of birth.",
+      "effect": "Indicates a potential for a shorter lifespan category (Alpayu).",
+      "implementation": "Flag this combination as a potential indicator for a shorter lifespan category.",
+      "confidence": "medium"
+    },
+    {
+      "id": "longevity-class-alpayu-yoga-19",
+      "page": "016",
+      "category": "longevity_class",
+      "condition": "Moon is in the 8th house.",
+      "effect": "Indicates a potential for a shorter lifespan category (Alpayu).",
+      "implementation": "Flag this combination as a potential indicator for a shorter lifespan category.",
+      "confidence": "medium"
+    },
+    {
+      "id": "longevity-class-alpayu-yoga-20",
+      "page": "016",
+      "category": "longevity_class",
+      "condition": "Kendras (1st, 4th, 7th, 10th), Trikonas (5th, 9th), and the 8th house are occupied by malefics.",
+      "effect": "Indicates a potential for a shorter lifespan category (Alpayu).",
+      "implementation": "Flag this combination as a potential indicator for a shorter lifespan category.",
+      "confidence": "medium"
+    }
+  ]
+}

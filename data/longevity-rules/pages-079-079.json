@@ -1,0 +1,116 @@
+{
+  "pages": [
+    79
+  ],
+  "page_summary": "This page outlines methods for assessing longevity in Jyotish, emphasizing the role of the ascendant sublord for broad classification (short, medium, long life spans). It details how to identify Maraka planets and use Dasha periods and transits to narrow down critical life junctures. The text also cautions against purely mathematical approaches and highlights the importance of correct chart preparation and understanding the limitations of predictions.",
+  "rules": [
+    {
+      "id": "longevity-class-short-079",
+      "page": 79,
+      "category": "longevity_class",
+      "condition": "Ascendant sublord is in the star of a planet occupying a badhaka or marakasthana, AND the sublord is connected with houses 6, 8, or 12.",
+      "effect": "Indicates a potential for a shorter life duration.",
+      "implementation": "Calculate the ascendant sublord, its star lord, and their house connections. If these conditions are met, flag for potential shorter longevity.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-class-medium-079",
+      "page": 79,
+      "category": "longevity_class",
+      "condition": "Ascendant sublord signifies both benefic (e.g., 1, 5, 9, 10, 11) and malefic (e.g., 6, 8, 12) houses.",
+      "effect": "Indicates a potential for a medium life duration.",
+      "implementation": "Analyze the ascendant sublord's house significations. If both benefic and malefic influences are present, classify as medium longevity.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-class-long-079",
+      "page": 79,
+      "category": "longevity_class",
+      "condition": "Ascendant sublord is in the star of a planet situated in house 1, 5, 9, or 10, or owning these houses.",
+      "effect": "Indicates a potential for a longer life duration.",
+      "implementation": "Calculate the ascendant sublord and its star lord. If the star lord is in or owns houses 1, 5, 9, or 10, flag for potential longer longevity.",
+      "confidence": "high"
+    },
+    {
+      "id": "dasha-timing-maraka-identification-079",
+      "page": 79,
+      "category": "dasha_timing",
+      "condition": "After an initial assessment of approximate longevity.",
+      "effect": "Calculate which planets will have their Dasha during that age range to identify potential Maraka planets.",
+      "implementation": "Determine the Dasha periods that overlap with the estimated longevity range. Identify planets whose Dashas occur during this time as potential Maraka influences.",
+      "confidence": "high"
+    },
+    {
+      "id": "dasha-timing-critical-period-079",
+      "page": 79,
+      "category": "dasha_timing",
+      "condition": "A Dasha period is of a Maraka planet.",
+      "effect": "This period can indicate a critical juncture or significant life challenges.",
+      "implementation": "When a Maraka planet's Dasha is active, flag this period as potentially critical for the individual's well-being, requiring further analysis.",
+      "confidence": "high"
+    },
+    {
+      "id": "dasha-timing-transit-refinement-079",
+      "page": 79,
+      "category": "dasha_timing",
+      "condition": "Planets associated with critical life events transit key astrological points (e.g., Lagna, Lagna Lord, Ayush Karaka Saturn) receiving malefic aspects.",
+      "effect": "This can narrow down the period of a critical event.",
+      "implementation": "Identify planets associated with critical life events. Monitor their transits over key astrological points, especially when receiving malefic aspects. Flag such periods as highly sensitive.",
+      "confidence": "medium"
+    },
+    {
+      "id": "method-broad-longevity-079",
+      "page": 79,
+      "category": "method",
+      "condition": "Initial step in longevity assessment.",
+      "effect": "Ascertain longevity broadly in approximate terms.",
+      "implementation": "Begin with a high-level classification of longevity (e.g., short, medium, long) using established astrological indicators before proceeding to detailed timing.",
+      "confidence": "high"
+    },
+    {
+      "id": "method-detailed-longevity-factors-079",
+      "page": 79,
+      "category": "method",
+      "condition": "For a more detailed assessment of longevity.",
+      "effect": "Examine the progression of the Lagna, Lagna Lord, and Ayush Karaka Saturn, especially when receiving malefic aspects.",
+      "implementation": "Incorporate the analysis of progressed Lagna, Lagna Lord, and Ayush Karaka Saturn, noting periods when they are under malefic influence, as part of a refined longevity assessment.",
+      "confidence": "high"
+    },
+    {
+      "id": "method-chart-preparation-079",
+      "page": 79,
+      "category": "method",
+      "condition": "To achieve accurate astrological results.",
+      "effect": "The birth chart must be correctly prepared.",
+      "implementation": "Ensure robust and verified birth chart calculation processes, including accurate birth time rectification if necessary, as foundational for all subsequent analysis.",
+      "confidence": "high"
+    },
+    {
+      "id": "caution-longevity-concept-079",
+      "page": 79,
+      "category": "caution",
+      "condition": "Understanding the nature of longevity in Jyotish.",
+      "effect": "Longevity is determined by 'yogajayu' and planetary influences, not purely mathematical bias.",
+      "implementation": "Software interpretations should reflect that life duration is influenced by astrological yogas and planetary periods, rather than a deterministic mathematical calculation.",
+      "confidence": "high"
+    },
+    {
+      "id": "caution-transit-effectiveness-079",
+      "page": 79,
+      "category": "caution",
+      "condition": "Using transits for timing events.",
+      "effect": "Transits do not always manifest; they are effective only at opportune moments when other astrological factors align.",
+      "implementation": "Software should present transit interpretations as potential influences that are activated by underlying Dasha periods and other chart conditions, rather than as standalone deterministic events.",
+      "confidence": "high"
+    },
+    {
+      "id": "caution-maraka-dasha-duration-079",
+      "page": 79,
+      "category": "caution",
+      "condition": "Identifying a Dasha period of a Maraka planet.",
+      "effect": "Such periods, indicating potential critical junctures, can be quite long and require further refinement using transit rules.",
+      "implementation": "When a Maraka Dasha is identified, indicate that this is a broad period of potential challenge and that more precise timing requires integration with transit analysis.",
+      "confidence": "high"
+    }
+  ]
+}

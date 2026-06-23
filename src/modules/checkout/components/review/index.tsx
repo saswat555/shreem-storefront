@@ -2,9 +2,11 @@
 
 import { Heading } from "@medusajs/ui"
 import PaymentButton from "@modules/checkout/components/payment-button"
+import { isDigitalOnlyCart } from "@lib/util/digital-cart"
 
 const Review = ({ cart }: { cart: any }) => {
   const hasShipping =
+    isDigitalOnlyCart(cart) ||
     !cart?.shipping_address ||
     !Array.isArray(cart?.shipping_methods) ||
     cart.shipping_methods.length > 0
@@ -29,7 +31,8 @@ const Review = ({ cart }: { cart: any }) => {
 
       <div className="text-small-regular rounded-[18px] border border-[rgba(18,63,99,0.1)] bg-[rgba(255,248,233,0.72)] px-4 py-4">
         <p className="mb-4 text-sm leading-6 text-[var(--shreem-muted)]">
-          By placing the order, you confirm that your cart, address, shipping,
+          By placing the order, you confirm that your cart, address,
+          {isDigitalOnlyCart(cart) ? " digital delivery," : " shipping,"}
           and payment details are correct.
         </p>
 

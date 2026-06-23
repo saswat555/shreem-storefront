@@ -1,0 +1,90 @@
+{
+  "pages": [
+    78,
+    79
+  ],
+  "page_summary": "These pages describe two distinct methods for calculating longevity potential in Jyotish. The first involves planetary periods and lagna calculations. The second, called Samudaya Ashtakavarga (S.A.V.) or Nakshatra Ayu, details a multi-step process including various sodhanas (reductions) and pinda calculations to arrive at a collective longevity potential.",
+  "rules": [
+    {
+      "id": "longevity-planetary-lagna-method",
+      "page": 78,
+      "category": "longevity_class",
+      "condition": "Calculating longevity potential based on planetary and lagna contributions.",
+      "effect": "Determines a component of the calculated longevity potential by summing periods granted by specific planets (e.g., Jupiter, Venus, Saturn) and a period derived from the lagna.",
+      "implementation": "Software should sum the net periods of specified planets after reductions. The lagna-derived period is calculated by multiplying a base value (e.g., 9.81 years) by 324, dividing by 365, adding a fixed value (e.g., 8.71 years), and further adjusting based on lagna longitude (e.g., 5°32' multiplied by 12 and converted to days). These components are then combined.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-samudaya-av-method",
+      "page": 78,
+      "category": "longevity_class",
+      "condition": "Calculating longevity potential using the Samudaya Ashtakavarga (S.A.V.) method.",
+      "effect": "Provides an alternative or complementary measure of longevity potential, termed Nakshatra Ayu.",
+      "implementation": "Software should prepare individual Ashtakavarga (A.V.) for all planets and the lagna, then consolidate them into a Sarva Ashtakavarga (S.A.V.) for further processing.",
+      "confidence": "high"
+    },
+    {
+      "id": "samudaya-av-mandala-sodhana",
+      "page": 78,
+      "category": "method",
+      "condition": "During the Samudaya Ashtakavarga (S.A.V.) calculation, specifically for mandala sodhana.",
+      "effect": "If the total benefic points in any Rasi exceed that Rasi's figure divided by 12, the remainder is substituted for the original figure.",
+      "implementation": "Software must apply this substitution step to the S.A.V. figures as part of the mandala sodhana process.",
+      "confidence": "high"
+    },
+    {
+      "id": "samudaya-av-trikona-ekadhipati-sodhana",
+      "page": 78,
+      "category": "method",
+      "condition": "After mandala sodhana in the Samudaya Ashtakavarga (S.A.V.) calculation.",
+      "effect": "Trikona and Ekadhipati sodhana rules are applied to the figures.",
+      "implementation": "Software should apply the established Trikona and Ekadhipati sodhana rules to the S.A.V. figures following mandala sodhana. (Specific rules for Trikona and Ekadhipati sodhana are not detailed on these pages).",
+      "confidence": "medium"
+    },
+    {
+      "id": "samudaya-av-pinda-calculation",
+      "page": 78,
+      "category": "method",
+      "condition": "After sodhana steps in the Samudaya Ashtakavarga (S.A.V.) calculation.",
+      "effect": "Rasi Pindas and Graha Pindas are calculated.",
+      "implementation": "Software should calculate Rasi Pindas and Graha Pindas based on the processed S.A.V. figures.",
+      "confidence": "high"
+    },
+    {
+      "id": "samudaya-av-sodhya-pinda-final-step",
+      "page": 78,
+      "category": "method",
+      "condition": "To obtain the final 'sodhya pinda' for Samudaya Ashtakavarga (S.A.V.) longevity.",
+      "effect": "The sodhya pinda is multiplied by 7 and then divided by 27.",
+      "implementation": "Software should perform this final multiplication and division on the calculated sodhya pinda to determine the longevity potential.",
+      "confidence": "high"
+    },
+    {
+      "id": "samudaya-av-table-components",
+      "page": 79,
+      "category": "method",
+      "condition": "Interpreting the Samudaya Ashtakavarga table structure.",
+      "effect": "Defines the meaning of the columns (A-F) in the Samudaya Ashtakavarga table.",
+      "implementation": "Software should correctly identify and process the data in each column: A (individual A.V. figures), B (after mandala sodhana), C (after Trinal reductions), D (after Ekadhipatya sodhana), E (Rasi Pindas), F (Graha Pindas).",
+      "confidence": "high"
+    },
+    {
+      "id": "samudaya-av-final-longevity-calculation",
+      "page": 79,
+      "category": "method",
+      "condition": "Final calculation of longevity potential using Sodhya Pindas from Samudaya Ashtakavarga (S.A.V.).",
+      "effect": "The sum of Rasi Pindas (E) and Graha Pindas (F) is multiplied by 7 and divided by 27 to yield the calculated longevity potential.",
+      "implementation": "Software should sum the Rasi Pindas and Graha Pindas, then apply the (multiplied by 7, divided by 27) factor to determine the final longevity potential (e.g., (126 + 104) * 7 / 27 = 59.63 years).",
+      "confidence": "high"
+    },
+    {
+      "id": "nakshatra-ayu-distinction",
+      "page": 79,
+      "category": "caution",
+      "condition": "Longevity potential calculated via the Samudaya Ashtakavarga (S.A.V.) method.",
+      "effect": "This specific longevity measure is termed 'Nakshatra Ayu' and is distinct from other Nakshatrayu calculation methods.",
+      "implementation": "Software should label this specific longevity calculation as 'Nakshatra Ayu (S.A.V. method)' to ensure clarity and avoid confusion with other Nakshatrayu systems.",
+      "confidence": "high"
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "text": "```json\n{\n  \"pages\": [\n    76\n  ],\n  \"page_summary\": \"This section outlines methods for assessing longevity and timing significant life events. It details how Dasha periods are influenced by planetary transits and retrograde motion, introduces the Sudarshan Chakra for annual predictions, and identifies specific planetary degree ranges as sensitive indicators for challenging periods. The role of Saturn as Ayush Karaka and its interactions with Rahu are also highlighted.\",\n  \"rules\": [\n    {\n      \"id\": \"dasha-sun-min-duration\",\n      \"page\": 76,\n      \"category\": \"dasha_timing\",\n      \"condition\": \"Sun's minimum Dasha period.\",\n      \"effect\": \"The baseline duration is 6 years.\",\n      \"implementation\": \"Software should use 6 years as the minimum Dasha duration for Sun.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"dasha-shortening-gochar-retrograde\",\n      \"page\": 76,\n      \"category\": \"dasha_timing\",\n      \"condition\": \"A planet's Dasha period.\",\n      \"effect\": \"Its duration can be adjusted (shortened) by Gochar (transit) or retrograde motion.\",\n      \"implementation\": \"Software should incorporate Gochar and retrograde states to modify Dasha period calculations.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"transit-results-lagna-moon\",\n      \"page\": 76,\n      \"category\": \"dasha_timing\",\n      \"condition\": \"A planet transiting a Rasi.\",\n      \"effect\": \"The results are interpreted based on the Rasi's position relative to the Lagna or Moon sign.\",\n      \"implementation\": \"Software should evaluate transit results by considering the Rasi's angular relationship from both Lagna and Moon.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"sudarshan-chakra-annual-cycle\",\n      \"page\": 76,\n      \"category\": \"method\",\n      \"condition\": \"Application of the Sudarshan Chakra system.\",\n      \"effect\": \"A one-year period is assigned to each Rasi, commencing from the Lagna, with the cycle repeating every 12 years.\",\n      \"implementation\": \"Software should implement the Sudarshan Chakra for determining annual periods based on Lagna.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"sudarshan-chakra-year-lord-transits\",\n      \"page\": 76,\n      \"category\": \"method\",\n      \"condition\": \"Using the Sudarshan Chakra for annual event assessment.\",\n      \"effect\": \"The lord of the Rasi for the current year gains prominence, and its transits with other planets (considering malefic/benefic houses) influence annual outcomes.\",\n      \"implementation\": \"Software should identify the year lord and analyze its transits and relationships for annual event indications.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"saturn-ayush-karaka\",\n      \"page\": 76,\n      \"category\": \"longevity_class\",\n      \"condition\": \"Saturn's astrological role.\",\n      \"effect\": \"Saturn is considered the Ayush Karaka (significator of longevity), making its placement and associations crucial for longevity assessment.\",\n      \"implementation\": \"Software should identify Saturn as the Ayush Karaka and prioritize its analysis in longevity modules.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"saturn-rahu-6-8-caution\",\n      \"page\": 76,\n      \"category\": \"caution\",\n      \"condition\": \"Ayush Karaka (Saturn) and Rahu are positioned in a 6/8 relationship from each other.\",\n      \"effect\": \"This configuration indicates a challenging or inauspicious astrological influence.\",\n      \"implementation\": \"Software should flag this 6/8 relationship between Saturn and Rahu as a significant indicator for potential difficulties.\",\n      \"confidence\": \"medium\"\n    },\n    {\n      \"id\": \"moon-transit-ayush-karaka-compartment\",\n      \"page\": 76,\n      \"category\": \"dasha_timing\",\n      \"condition\": \"Moon transiting the Rasi compartment associated with the Ayush Karaka (Saturn).\",\n      \"effect\": \"This transit can coincide with periods of significant life events or challenges.\",\n      \"implementation\": \"Software should track Moon's transit through specific Rasi compartments related to the Ayush Karaka for event timing.\",\n      \"confidence\": \"medium\"\n    },\n    {\n      \"id\": \"rasi-compartments-equal-units\",\n      \"page\": 76,\n      \"category\": \"method\",\n      \"condition\": \"Calculation of planetary and Lagna positions within Rasis.\",\n      \"effect\": \"Each Rasi is considered to be divided into equal units for the placement of planets and Lagna.\",\n      \"implementation\": \"Software should define and utilize these equal unit compartments for detailed positional analysis.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"ashtakavarga-precise-timing\",\n      \"page\": 76,\n      \"category\": \"method\",\n      \"condition\": \"Need for precise timing of transit results.\",\n      \"effect\": \"Ashtakavarga tables can be utilized to achieve enhanced precision in timing.\",\n      \"implementation\": \"Software should integrate Ashtakavarga calculations for refining the timing of transit-based events.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"sensitive-degree-ranges-events\",\n      \"page\": 76,\n      \"category\": \"maraka\",\n      \"condition\": \"A planet or Lagna positioned within specific degree ranges in a Rasi (e.g., Saturn 00.00-3.45, Jupiter 3.45-7.30, Mars 7.30-11.15, Sun 11.15-15.00, Venus 15.00-18.45, Mercury 18.45-22.30, Moon 22.30-26.15, Lagna 26.15-30.00).\",\n      \"effect\": \"These defined degree ranges are associated with sensitive periods or challenging events.\",\n      \"implementation\": \"Software should identify and highlight planetary or Lagna positions falling within these specified sensitive degree ranges.\",\n      \"confidence\": \"high\"\n    }\n  ]\n}\n```"
+          }
+        ],
+        "role": "model"
+      },
+      "finishReason": "STOP",
+      "index": 0
+    }
+  ],
+  "usageMetadata": {
+    "promptTokenCount": 611,
+    "candidatesTokenCount": 1495,
+    "totalTokenCount": 7363,
+    "promptTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 353
+      },
+      {
+        "modality": "IMAGE",
+        "tokenCount": 258
+      }
+    ],
+    "thoughtsTokenCount": 5257,
+    "serviceTier": "standard"
+  },
+  "modelVersion": "gemini-2.5-flash",
+  "responseId": "kmg1av21AajPjuMP56WimQI"
+}

@@ -1,0 +1,35 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "text": "```json\n{\n  \"pages\": [72, 73],\n  \"page_summary\": \"Page 72 introduces Ashtaka Varga (AV), Trikona Shodhana (TS), and Ekadhipatya Shodhana (ES) values for Jupiter, Venus, Saturn, and Lagna across zodiac signs, noting their importance for longevity assessment. Page 73 defines planetary and zodiacal factors (Gunakaras) and outlines the process of multiplying Ashtaka Varga figures by the Rasi Gunakaras, specifically after Ekadhipatya Shodhana, as a step in longevity calculations.\",\n  \"rules\": [\n    {\n      \"id\": \"av-ts-es-longevity-basis\",\n      \"page\": 72,\n      \"category\": \"method\",\n      \"condition\": \"Initial calculation of Ashtaka Varga (AV), Trikona Shodhana (TS), and Ekadhipatya Shodhana (ES) values for planets and Lagna.\",\n      \"effect\": \"These values are foundational data points for longevity assessment.\",\n      \"implementation\": \"Software should store and utilize these calculated AV, TS, and ES values as initial inputs for longevity assessment modules.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"av-ts-es-further-processing-needed\",\n      \"page\": 72,\n      \"category\": \"caution\",\n      \"condition\": \"Initial AV, TS, and ES values are determined.\",\n      \"effect\": \"These values require further processing and weighting for a complete longevity assessment.\",\n      \"implementation\": \"Software should not present raw AV, TS, ES values as a final longevity indicator without applying subsequent calculation steps.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"define-gunakaras\",\n      \"page\": 73,\n      \"category\": \"method\",\n      \"condition\": \"Application of Ashtaka Varga principles for longevity assessment.\",\n      \"effect\": \"Specific numerical 'Planetary factors' and 'Zodiacal factors' (Rasi Gunakaras) are used as multipliers.\",\n      \"implementation\": \"Software should store and apply the provided constant values for Rasi Gunakaras and Planetary Gunakaras in relevant calculations.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"rasi-gunakara-values\",\n      \"page\": 73,\n      \"category\": \"method\",\n      \"condition\": \"Calculation involving Rasi Gunakaras.\",\n      \"effect\": \"Each Rasi has a predefined Gunakara value: Aries 7, Taurus 10, Gemini 8, Cancer 4, Leo 10, Virgo 5, Libra 7, Scorpio 8, Sagittarius 9, Capricorn 5, Aquarius 11, Pisces 12.\",\n      \"implementation\": \"Software should use these exact Rasi Gunakara values for the corresponding zodiac signs.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"planetary-gunakara-values\",\n      \"page\": 73,\n      \"category\": \"method\",\n      \"condition\": \"Calculation involving Planetary Gunakaras.\",\n      \"effect\": \"Each planet has a predefined Gunakara value: Sun 5, Moon 5, Mars 8, Mercury 5, Jupiter 10, Venus 7, Saturn 5.\",\n      \"implementation\": \"Software should use these exact Planetary Gunakara values for the corresponding planets.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"multiply-av-by-rasi-gunakara\",\n      \"page\": 73,\n      \"category\": \"method\",\n      \"condition\": \"Post-Ekadhipatya Shodhana Ashtaka Varga figures for planets and Lagna in each Rasi.\",\n      \"effect\": \"The AV figure for a Rasi is multiplied by its Rasi Gunakara.\",\n      \"implementation\": \"Software should implement a step where, after Ekadhipatya Shodhana, the AV value for each Rasi is multiplied by its respective Rasi Gunakara.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"multiplication-after-es\",\n      \"page\": 73,\n      \"category\": \"method\",\n      \"condition\": \"Application of Rasi Gunakara multiplication to Ashtaka Varga figures.\",\n      \"effect\": \"Ekadhipatya Shodhana must be completed before this multiplication.\",\n      \"implementation\": \"Software must ensure that the Ekadhipatya Shodhana calculation is performed on the Ashtaka Varga figures prior to applying the Rasi Gunakara multiplication.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"av-gunakara-longevity-assessment\",\n      \"page\": 73,\n      \"category\": \"longevity_class\",\n      \"condition\": \"Completion of Ashtaka Varga calculations, including Shodhana and Gunakara multiplication.\",\n      \"effect\": \"These refined figures contribute to the overall longevity assessment.\",\n      \"implementation\": \"The results of these calculations should feed into a broader longevity assessment module, contributing to a comprehensive analysis rather than a direct prediction.\",\n      \"confidence\": \"high\"\n    }\n  ]\n}\n```"
+          }
+        ],
+        "role": "model"
+      },
+      "finishReason": "STOP",
+      "index": 0
+    }
+  ],
+  "usageMetadata": {
+    "promptTokenCount": 550,
+    "candidatesTokenCount": 1173,
+    "totalTokenCount": 5241,
+    "promptTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 292
+      },
+      {
+        "modality": "IMAGE",
+        "tokenCount": 258
+      }
+    ],
+    "thoughtsTokenCount": 3518,
+    "serviceTier": "standard"
+  },
+  "modelVersion": "gemini-2.5-flash",
+  "responseId": "NmM1asreJIbbjuMPp9yXcQ"
+}

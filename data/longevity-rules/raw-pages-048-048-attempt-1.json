@@ -1,0 +1,35 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "text": "```json\n{\n  \"pages\": [\n    \"048\",\n    \"049\"\n  ],\n  \"page_summary\": \"This document outlines methods for calculating planetary contributions to longevity, including Bharana Samskaras (factors that increase a planet's contribution) and Harana Samskaras (factors that decrease it). It also introduces variations in longevity calculation methods, such as Rasmikayu, and provides examples of how planetary positions influence these contributions.\",\n  \"rules\": [\n    {\n      \"id\": \"bharana-retrograde-double\",\n      \"page\": \"048\",\n      \"category\": \"longevity_class\",\n      \"condition\": \"A planet is retrograde.\",\n      \"effect\": \"The planet's madhyamayu period (middle longevity contribution) is doubled.\",\n      \"implementation\": \"If a planet is retrograde, multiply its base madhyamayu contribution by 2.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"bharana-exalted-double\",\n      \"page\": \"048\",\n      \"category\": \"longevity_class\",\n      \"condition\": \"A planet is exalted.\",\n      \"effect\": \"The planet's madhyamayu period is doubled.\",\n      \"implementation\": \"If a planet is exalted, multiply its base madhyamayu contribution by 2.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"bharana-intimate-friend-double\",\n      \"page\": \"048\",\n      \"category\": \"longevity_class\",\n      \"condition\": \"A planet is in a house owned by an intimate friend (both natural and temporal friend).\",\n      \"effect\": \"The planet's madhyamayu period is doubled.\",\n      \"implementation\": \"If a planet is in an intimate friend's house, multiply its base madhyamayu contribution by 2.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"bharana-multiple-benefit-selection\",\n      \"page\": \"048\",\n      \"category\": \"method\",\n      \"condition\": \"Multiple Bharana Samskara rules apply to a single planet.\",\n      \"effect\": \"Only the benefit of one applicable rule is applied; benefits are not cumulative.\",\n      \"implementation\": \"When multiple Bharana Samskara conditions are met for a planet, apply only one doubling effect, not multiple.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"harana-enemy-house-reduction\",\n      \"page\": \"049\",\n      \"category\": \"longevity_class\",\n      \"condition\": \"A planet is in its natural enemy's house.\",\n      \"effect\": \"The planet's madhyamayu period is reduced by 1/12.\",\n      \"implementation\": \"If a planet is in its natural enemy's house, subtract 1/12 of its madhyamayu contribution.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"harana-bharana-application-order\",\n      \"page\": \"049\",\n      \"category\": \"method\",\n      \"condition\": \"A planet qualifies for both an increase (Bharana Samskara) and a decrease (Harana Samskara) in its longevity contribution.\",\n      \"effect\": \"Increases are applied to the planetary longevity contribution before decreases.\",\n      \"implementation\": \"First apply any doubling effects from Bharana Samskaras, then apply any reductions from Harana Samskaras.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"rasmikayu-paramochcha-rasmis\",\n      \"page\": \"049\",\n      \"category\": \"method\",\n      \"condition\": \"Calculating longevity using a specific Rasmikayu variation, particularly for planets in Paramochcha position.\",\n      \"effect\": \"Specific 'rasmis' values are assigned: Sun 16, Moon 20, Mars 1, Mercury 9, Jupiter 8, Venus 9, Saturn 25.\",\n      \"implementation\": \"When using this Rasmikayu variation, use these specified rasmis values for planets in Paramochcha.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"longevity-exaltation-distance-calculation\",\n      \"page\": \"049\",\n      \"category\": \"method\",\n      \"condition\": \"Calculating a planet's longevity contribution based on its distance from its exaltation point.\",\n      \"effect\": \"The longitudinal difference between the planet and its exaltation point is multiplied by a specific factor (e.g., 16 for Sun) to determine its contribution.\",\n      \"implementation\": \"Calculate the longitudinal difference from exaltation, then multiply by the planet-specific factor to get its longevity contribution.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"caution-longevity-method-variations\",\n      \"page\": \"049\",\n      \"category\": \"caution\",\n      \"condition\": \"Considering different traditional Jyotish longevity calculation methods (e.g., Pindayu, Rasmikayu).\",\n      \"effect\": \"There are multiple variations and methods for calculating longevity, which may yield slightly different results.\",\n      \"implementation\": \"Acknowledge that different traditional methods exist and may produce varying longevity estimates. Do not present a single, definitive 'life span prediction' to customers.\",\n      \"confidence\": \"high\"\n    }\n  ]\n}\n```"
+          }
+        ],
+        "role": "model"
+      },
+      "finishReason": "STOP",
+      "index": 0
+    }
+  ],
+  "usageMetadata": {
+    "promptTokenCount": 550,
+    "candidatesTokenCount": 1238,
+    "totalTokenCount": 5859,
+    "promptTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 292
+      },
+      {
+        "modality": "IMAGE",
+        "tokenCount": 258
+      }
+    ],
+    "thoughtsTokenCount": 4071,
+    "serviceTier": "standard"
+  },
+  "modelVersion": "gemini-2.5-flash",
+  "responseId": "-mM1arLAGJGHqfkPkP_SqQE"
+}

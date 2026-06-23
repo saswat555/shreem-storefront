@@ -1,0 +1,99 @@
+{
+  "pages": [
+    84,
+    85
+  ],
+  "page_summary": "This section outlines various Jyotish methods for calculating longevity, including Paramayu/Madhyamayu and Rasmikayurdaya. It details the steps for determining a planet's contribution to life span based on its Nirayan longitude, exaltation points, and assigned 'rasmis', along with conversion rules for the calculated duration.",
+  "rules": [
+    {
+      "id": "paramayu-madhyamayu-future-span",
+      "page": 84,
+      "category": "method",
+      "condition": "Paramayu, Madhyamayu, and the multiplier for the second lord (e.g., Saturn's multiplier is 11) are available.",
+      "effect": "Calculates a potential future span of life.",
+      "implementation": "Software should implement the formula: (Paramayu - Madhyamayu) * Second_Lord_Multiplier / Paramayu. The result should be presented as an astrological indicator of potential remaining life span.",
+      "confidence": "high"
+    },
+    {
+      "id": "rasmikayurdaya-overview",
+      "page": 84,
+      "category": "method",
+      "condition": "General method for longevity calculation.",
+      "effect": "Longevity is determined based on fixed 'rasmis' (rays) assigned to each planet, with adjustments for planetary circumstances.",
+      "implementation": "This rule describes a method. Software implementation requires detailed sub-rules for specific rasmi values and adjustment criteria, which are not fully provided here.",
+      "confidence": "medium"
+    },
+    {
+      "id": "ayurdaya-rasmi-ideal-condition",
+      "page": 85,
+      "category": "method",
+      "condition": "A planet is in its 'paramochcha' (highest exaltation) position.",
+      "effect": "The planet's rasmi value is considered to be its maximum or predefined value for this state.",
+      "implementation": "Software should use predefined rasmi values for planets when they are in their highest exaltation.",
+      "confidence": "high"
+    },
+    {
+      "id": "ayurdaya-rasmi-non-ideal-condition",
+      "page": 85,
+      "category": "method",
+      "condition": "A planet is not in its paramochcha position (e.g., in intermittent positions, deep debility, or approaching exaltation).",
+      "effect": "The planet's rasmi value is calculated proportionally.",
+      "implementation": "Software should implement a proportional calculation for rasmis based on the planet's current position relative to its exaltation or debility points, using the 'rule of three'.",
+      "confidence": "high"
+    },
+    {
+      "id": "ayurdaya-planetary-contribution-step1-longitude-difference",
+      "page": 85,
+      "category": "method",
+      "condition": "To determine a planet's contribution to longevity.",
+      "effect": "Calculates the difference between the planet's Nirayan longitude and the longitude of its highest exaltation.",
+      "implementation": "Software should calculate: Nirayan_Planet_Longitude - Highest_Exaltation_Longitude.",
+      "confidence": "high"
+    },
+    {
+      "id": "ayurdaya-planetary-contribution-step2-longitude-adjustment-less-than-6-rasis",
+      "page": 85,
+      "category": "method",
+      "condition": "The longitude difference calculated in the previous step is less than 6 rasis (signs).",
+      "effect": "The difference is further deducted from 12 rasis.",
+      "implementation": "If `longitude_difference < 6 rasis`, then `adjusted_difference = 12 rasis - longitude_difference`.",
+      "confidence": "high"
+    },
+    {
+      "id": "ayurdaya-planetary-contribution-step2-longitude-adjustment-more-than-6-rasis",
+      "page": 85,
+      "category": "method",
+      "condition": "The longitude difference calculated in the previous step is already more than 6 rasis (signs).",
+      "effect": "No further deductions are required for the longitude difference.",
+      "implementation": "If `longitude_difference > 6 rasis`, then `adjusted_difference = longitude_difference`.",
+      "confidence": "high"
+    },
+    {
+      "id": "ayurdaya-planetary-contribution-step3-final-calculation",
+      "page": 85,
+      "category": "method",
+      "condition": "The adjusted longitude difference (converted to degrees and minutes) and the planet's rasmi value are available.",
+      "effect": "Calculates the planet's total contribution to longevity in terms of days and parts of a day.",
+      "implementation": "Software should calculate: (Adjusted_Difference_in_Degrees_Minutes) * Planet_Rasmi. The total degrees represent days, and minutes represent parts of a day.",
+      "confidence": "high"
+    },
+    {
+      "id": "ayurdaya-conversion-days-to-time-units",
+      "page": 85,
+      "category": "method",
+      "condition": "A total number of days (and fraction) is obtained from a planetary contribution calculation.",
+      "effect": "Converts the calculated days into years, months, and days, and fractions of a day into ghatis.",
+      "implementation": "Software should use conversion factors: 30 days = 1 month (in this context), 1 degree = 1 day, 1 degree = 60 minutes, 1 day = 60 ghatis. For example, 30 minutes (fraction of a day) equals 30 ghatis or half a day.",
+      "confidence": "high"
+    },
+    {
+      "id": "ayurdaya-ideal-conditions-rarity-caution",
+      "page": 85,
+      "category": "caution",
+      "condition": "Considering planetary positions for rasmi calculations.",
+      "effect": "The ideal condition where all planets are in their highest exaltation simultaneously is extremely rare.",
+      "implementation": "Software should acknowledge that calculations based on ideal planetary positions are theoretical and rarely applicable in practice. This implies that proportional rasmi calculations (rule `ayurdaya-rasmi-non-ideal-condition`) will be more frequently used.",
+      "confidence": "high"
+    }
+  ]
+}

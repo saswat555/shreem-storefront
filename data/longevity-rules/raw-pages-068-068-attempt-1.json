@@ -1,0 +1,35 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "text": "```json\n{\n  \"pages\": [128],\n  \"page_summary\": \"Page 128 describes a method for calculating the Lagna's contribution to longevity based on Navamsa divisions and introduces a 'novel method' for longevity determination. This novel approach considers multiple Lagnas (Janma, Chandra, Aroodha, Pak) and focuses on the lords of the 1st, 3rd, 8th, and 10th houses, with a specific interpretation of the 8th house. The text emphasizes that this novel method is not classical and requires verification.\",\n  \"rules\": [\n    {\n      \"id\": \"longevity-lagna-navamsa-contribution\",\n      \"page\": 128,\n      \"category\": \"method\",\n      \"condition\": \"Lagna's longitude is known.\",\n      \"effect\": \"Lagna contributes one year for each full Navamsa it has passed. For the remaining portion of the current Navamsa, the contribution is calculated proportionally.\",\n      \"implementation\": \"Calculate full years from passed Navamsas (1 year per 3 degrees 20 minutes). Calculate fractional years for the balance within the current Navamsa. Sum these for Lagna's total contribution.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"longevity-total-calculation-example\",\n      \"page\": 128,\n      \"category\": \"method\",\n      \"condition\": \"Individual planetary longevity contributions and Lagna's contribution are determined.\",\n      \"effect\": \"The total potential life span is the sum of contributions from planets and the Lagna.\",\n      \"implementation\": \"Sum the calculated longevity contributions from all relevant planets and the Lagna to derive a total potential life span value.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"longevity-novel-method-introduction\",\n      \"page\": 128,\n      \"category\": \"method\",\n      \"condition\": \"Applying a non-classical approach to life span assessment.\",\n      \"effect\": \"This method is presented as a novel technique, not found in classical texts, and requires empirical verification.\",\n      \"implementation\": \"If implementing this method, flag it as experimental or requiring further validation. Do not present as a universally established classical rule.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"longevity-novel-method-lagnas-considered\",\n      \"page\": 128,\n      \"category\": \"method\",\n      \"condition\": \"Using the novel longevity determination method.\",\n      \"effect\": \"This method considers Janma Lagna, Chandra Lagna, Aroodha Lagna, and Pak Lagna as ascendants.\",\n      \"implementation\": \"For this specific method, ensure calculations are performed relative to all four specified Lagnas.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"longevity-novel-method-house-lords-focus\",\n      \"page\": 128,\n      \"category\": \"method\",\n      \"condition\": \"Using the novel longevity determination method.\",\n      \"effect\": \"The method focuses on the lords of the 1st, 3rd, 8th, and 10th houses from each considered Lagna.\",\n      \"implementation\": \"Identify and analyze the lords of the 1st, 3rd, 8th, and 10th houses for Janma, Chandra, Aroodha, and Pak Lagnas.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"longevity-novel-method-house-lord-significations\",\n      \"page\": 128,\n      \"category\": \"method\",\n      \"condition\": \"Interpreting house lords within the novel longevity method.\",\n      \"effect\": \"The 1st lord represents the individual, the 3rd lord indicates prowess, the 8th lord signifies life span potential, and the 10th lord relates to career and retirement.\",\n      \"implementation\": \"When analyzing these specific house lords within this method, use these assigned significations for interpretation.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"longevity-novel-method-eighth-house-interpretation\",\n      \"page\": 128,\n      \"category\": \"method\",\n      \"condition\": \"Using the novel longevity determination method.\",\n      \"effect\": \"This method does not consider the 8th house as entirely malefic or 'bad'.\",\n      \"implementation\": \"Avoid applying traditional negative interpretations of the 8th house when using this specific longevity method. Focus on its role in indicating life span potential.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"longevity-novel-method-exclusions\",\n      \"page\": 128,\n      \"category\": \"method\",\n      \"condition\": \"Using the novel longevity determination method.\",\n      \"effect\": \"This method does not consider the strength of the Sun, Moon, or Lagna.\",\n      \"implementation\": \"Ensure that the strength of Sun, Moon, or Lagna is not factored into calculations or interpretations when applying this specific novel method.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"longevity-novel-method-caution-verification\",\n      \"page\": 128,\n      \"category\": \"caution\",\n      \"condition\": \"Considering the novel longevity determination method for implementation.\",\n      \"effect\": \"This method requires experimentation and verification of results against factual data.\",\n      \"implementation\": \"Any software feature based on this method should include disclaimers about its experimental nature and the need for further validation. Do not present as a definitive or universally accepted prediction.\",\n      \"confidence\": \"high\"\n    }\n  ]\n}\n```"
+          }
+        ],
+        "role": "model"
+      },
+      "finishReason": "STOP",
+      "index": 0
+    }
+  ],
+  "usageMetadata": {
+    "promptTokenCount": 550,
+    "candidatesTokenCount": 1289,
+    "totalTokenCount": 3125,
+    "promptTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 292
+      },
+      {
+        "modality": "IMAGE",
+        "tokenCount": 258
+      }
+    ],
+    "thoughtsTokenCount": 1286,
+    "serviceTier": "standard"
+  },
+  "modelVersion": "gemini-2.5-flash",
+  "responseId": "wmY1aoSQI8T0g8UPu7HO6AY"
+}

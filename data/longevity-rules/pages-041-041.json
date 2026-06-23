@@ -1,0 +1,72 @@
+{
+  "pages": [
+    74,
+    75
+  ],
+  "page_summary": "These pages detail methods for calculating a 'gross span of life' using Rasi Pindas, Graha Pindas, and Sodhya Pindas. They describe two ways to convert these pindas into a time duration and include specific reduction rules based on Sambhu Hora for the calculated longevity period.",
+  "rules": [
+    {
+      "id": "sodhya-pinda-calculation",
+      "page": 74,
+      "category": "method",
+      "condition": "To determine a planet's Sodhya Pinda",
+      "effect": "The Sodhya Pinda is derived by summing a planet's Graha Pinda and Rasi Pinda.",
+      "implementation": "Software should calculate Graha Pindas and Rasi Pindas for each planet and the Lagna, then sum them to derive the Sodhya Pinda.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-conversion-method-1",
+      "page": 75,
+      "category": "method",
+      "condition": "To convert a planet's Sodhya Pinda into a time span (Method 1)",
+      "effect": "The Sodhya Pinda is multiplied by 3 for months, by 3 for days, and by 20 for ghatis. These results are then combined to determine a total duration.",
+      "implementation": "Software should apply the multiplications (Sodhya Pinda * 3 for months, Sodhya Pinda * 3 for days, Sodhya Pinda * 20 for ghatis) and convert these units to a total duration in years, months, days, and ghatis.",
+      "confidence": "high"
+    },
+    {
+      "id": "longevity-conversion-method-2",
+      "page": 75,
+      "category": "method",
+      "condition": "To convert a planet's Sodhya Pinda into a time span (Method 2, easier)",
+      "effect": "The Sodhya Pinda is multiplied by 7/27 to directly yield a longevity period in years.",
+      "implementation": "Software should calculate the Sodhya Pinda * (7/27) to get the longevity period in years.",
+      "confidence": "high"
+    },
+    {
+      "id": "sambhu-hora-reduction-1",
+      "page": 75,
+      "category": "mitigation",
+      "condition": "If the calculated longevity period (in years) is less than 27",
+      "effect": "The calculated period remains unchanged.",
+      "implementation": "If the calculated longevity value is < 27, no adjustment is needed.",
+      "confidence": "high"
+    },
+    {
+      "id": "sambhu-hora-reduction-2",
+      "page": 75,
+      "category": "mitigation",
+      "condition": "If the calculated longevity period (in years) is more than 27 but less than 54",
+      "effect": "27 years should be subtracted from the calculated period.",
+      "implementation": "If 27 < longevity value < 54, subtract 27 from the value.",
+      "confidence": "high"
+    },
+    {
+      "id": "sambhu-hora-reduction-3",
+      "page": 75,
+      "category": "mitigation",
+      "condition": "If the calculated longevity period (in years) is more than 54 but less than 81",
+      "effect": "54 years should be subtracted from the calculated period.",
+      "implementation": "If 54 < longevity value < 81, subtract 54 from the value.",
+      "confidence": "high"
+    },
+    {
+      "id": "sambhu-hora-reduction-4",
+      "page": 75,
+      "category": "mitigation",
+      "condition": "If the calculated longevity period (in years) is more than 81 but less than 108",
+      "effect": "81 years should be subtracted from the calculated period.",
+      "implementation": "If 81 < longevity value < 108, subtract 81 from the value.",
+      "confidence": "high"
+    }
+  ]
+}

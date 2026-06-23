@@ -1,0 +1,35 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "text": "```json\n{\n  \"pages\": [\n    \"032\"\n  ],\n  \"page_summary\": \"This page introduces the Ashtaka Varga system as a method for precise event timing and life span assessment. It details the fundamental calculation of benefic points (Bhinnashtaka Varga) for the Sun, Moon, and Mars, specifying the houses from various planetary and Lagna positions where these points are awarded.\",\n  \"rules\": [\n    {\n      \"id\": \"av-system-purpose-timing\",\n      \"page\": \"032\",\n      \"category\": \"method\",\n      \"condition\": \"Applying the Ashtaka Varga (A.V.) system for astrological analysis.\",\n      \"effect\": \"The system provides insights into precise dates and timing of events.\",\n      \"implementation\": \"Software can utilize Ashtaka Varga calculations to identify periods associated with specific life events or transitions.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"av-system-purpose-longevity\",\n      \"page\": \"032\",\n      \"category\": \"method\",\n      \"condition\": \"Utilizing the Ashtaka Varga (A.V.) system for life span assessment.\",\n      \"effect\": \"The system offers a methodology for analyzing potential life span or critical life periods.\",\n      \"implementation\": \"This system is a tool for internal life span analysis. Software should process these calculations for internal research or advanced user insights, but avoid direct life span predictions to customers.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"av-components-charts\",\n      \"page\": \"032\",\n      \"category\": \"method\",\n      \"condition\": \"Understanding the structure of the Ashtaka Varga system.\",\n      \"effect\": \"The system is composed of eight distinct charts, one for each of the seven classical planets (Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn) and one for the Lagna (ascendant).\",\n      \"implementation\": \"Software must generate and process eight individual charts as foundational components for Ashtaka Varga calculations.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"av-sun-benefic-points\",\n      \"page\": \"032\",\n      \"category\": \"method\",\n      \"condition\": \"Calculating benefic points for the Sun in the Ashtaka Varga system.\",\n      \"effect\": \"The Sun contributes benefic points when positioned in specific houses relative to itself, other planets, and the Lagna. The total benefic points for Sun are 48. Specific house positions are: from itself (1,2,4,7,8,9,10,11), from Moon (3,6,10,11), from Mars (3,5,6,10,11), from Mercury (5,6,9,10,11), from Jupiter (1,2,4,7,8,9,10,11), from Venus (3,4,6,10,11), from Saturn (3,4,6,10,11,12), and from Lagna (3,4,6,10,11,12).\",\n      \"implementation\": \"Software should implement these precise house positions for calculating the Sun's benefic points in the Bhinnashtaka Varga.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"av-moon-benefic-points\",\n      \"page\": \"032\",\n      \"category\": \"method\",\n      \"condition\": \"Calculating benefic points for the Moon in the Ashtaka Varga system.\",\n      \"effect\": \"The Moon contributes benefic points when positioned in specific houses relative to the Sun, itself, other planets, and the Lagna. The total benefic points for Moon are 49. Specific house positions are: from Sun (3,6,7,8,10,11), from itself (1,3,6,7,10,11), from Mars (2,3,5,6,9,10,11), from Mercury (1,3,4,5,7,8,10,11), from Jupiter (1,2,4,7,8,10,11), from Venus (3,4,5,7,9,10,11), from Saturn (3,5,6,11), and from Lagna (3,6,10,11).\",\n      \"implementation\": \"Software should implement these precise house positions for calculating the Moon's benefic points in the Bhinnashtaka Varga.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"av-mars-benefic-points-partial\",\n      \"page\": \"032\",\n      \"category\": \"method\",\n      \"condition\": \"Calculating benefic points for Mars in the Ashtaka Varga system.\",\n      \"effect\": \"Mars contributes benefic points when positioned in specific houses relative to the Sun and Moon. Specific house positions are: from Sun (3,5,6,10,11) and from Moon (3,6,11). (Note: The provided text only lists points from Sun and Moon for Mars).\",\n      \"implementation\": \"Software should implement these specified house positions for calculating Mars' benefic points. Acknowledge that the list may be incomplete based on this page.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"av-caution-sensitive-predictions\",\n      \"page\": \"032\",\n      \"category\": \"caution\",\n      \"condition\": \"When using Ashtaka Varga for sensitive predictions, such as life span assessment.\",\n      \"effect\": \"This area of prediction is considered highly sensitive and requires a thorough understanding and careful application of fundamental principles.\",\n      \"implementation\": \"Software should handle any life span related insights with extreme caution. Direct predictions to customers are prohibited. Internal analysis should be restricted to qualified personnel and used for research or advanced verification purposes only.\",\n      \"confidence\": \"high\"\n    }\n  ]\n}\n```"
+          }
+        ],
+        "role": "model"
+      },
+      "finishReason": "STOP",
+      "index": 0
+    }
+  ],
+  "usageMetadata": {
+    "promptTokenCount": 550,
+    "candidatesTokenCount": 1355,
+    "totalTokenCount": 4803,
+    "promptTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 292
+      },
+      {
+        "modality": "IMAGE",
+        "tokenCount": 258
+      }
+    ],
+    "thoughtsTokenCount": 2898,
+    "serviceTier": "standard"
+  },
+  "modelVersion": "gemini-2.5-flash",
+  "responseId": "RGI1asyvHMrEjuMPpcrYoA8"
+}

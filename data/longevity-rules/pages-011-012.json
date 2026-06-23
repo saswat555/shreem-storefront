@@ -1,0 +1,234 @@
+{
+  "pages": [
+    "011",
+    "012"
+  ],
+  "page_summary": "These pages introduce Jyotish longevity classifications (Alpayu, Madhyamayu, Deerghayu) and various Arishta (malefic combinations) types. They detail Gandarishtas (including Gandamoola, Tithi Ganda, Lagna Gandanta) and Visha Navamsas, outlining their conditions, timing, and potential effects. Cautionary notes on interpreting houses 6 & 8 and specific planets are also provided.",
+  "rules": [
+    {
+      "id": "longevity-classes-definition",
+      "page": "011",
+      "category": "longevity_class",
+      "condition": "Life span is categorized into three main classes.",
+      "effect": "These are Alpayu (short life), Madhyamayu (medium life), and Deerghayu (long life).",
+      "implementation": "Use these categories for internal classification of potential life span indications.",
+      "confidence": "high"
+    },
+    {
+      "id": "alpayu-period",
+      "page": "011",
+      "category": "longevity_class",
+      "condition": "The appropriate period for Alpayu.",
+      "effect": "Extends up to 32 years.",
+      "implementation": "Define the Alpayu range as up to 32 years for internal calculations.",
+      "confidence": "high"
+    },
+    {
+      "id": "arishta-types-general",
+      "page": "011",
+      "category": "longevity_class",
+      "condition": "Malefic combinations (Arishtas) that may indicate a reduced life span.",
+      "effect": "Divided into Saddyo Arishtas, Arishta Yogas, and Yogarishtas. These are collectively referred to as Alpayu Yogas.",
+      "implementation": "Identify and classify these Arishta types for internal analysis.",
+      "confidence": "high"
+    },
+    {
+      "id": "saddyo-arishta-timing",
+      "page": "011",
+      "category": "dasha_timing",
+      "condition": "Saddyo Arishtas are present.",
+      "effect": "Their indications manifest promptly, typically up to 8 years of age. Also known as Balarishtas.",
+      "implementation": "Associate Saddyo Arishtas with potential challenges in early childhood (up to 8 years).",
+      "confidence": "high"
+    },
+    {
+      "id": "arishta-yoga-timing",
+      "page": "011",
+      "category": "dasha_timing",
+      "condition": "Arishta Yogas are present.",
+      "effect": "Their indications manifest between the ages of 9 and 20 years.",
+      "implementation": "Associate Arishta Yogas with potential challenges during childhood and adolescence (9-20 years).",
+      "confidence": "high"
+    },
+    {
+      "id": "yogarishta-timing",
+      "page": "011",
+      "category": "dasha_timing",
+      "condition": "Yogarishtas are present.",
+      "effect": "Their indications manifest between the ages of 20 and 30 years.",
+      "implementation": "Associate Yogarishtas with potential challenges in early adulthood (20-30 years).",
+      "confidence": "high"
+    },
+    {
+      "id": "balarishta-subtypes",
+      "page": "011",
+      "category": "longevity_class",
+      "condition": "Balarishtas (Saddyo Arishtas) are present.",
+      "effect": "They are of three kinds: Gandarishtas, Graharishtas, and Pataki Vedha Arishtas.",
+      "implementation": "Further classify Balarishtas into these three sub-types for detailed analysis.",
+      "confidence": "high"
+    },
+    {
+      "id": "gandarishta-definition",
+      "page": "011",
+      "category": "maraka",
+      "condition": "Certain periods are considered inauspicious for birth.",
+      "effect": "These are called Gandarishtas, which include Gandarishtas, Tithi Arishtas, and Lagna-gandas (Lagna-ganda being an extension).",
+      "implementation": "Identify these specific inauspicious periods for internal risk assessment.",
+      "confidence": "high"
+    },
+    {
+      "id": "gandamoola-nakshatra",
+      "page": "011",
+      "category": "maraka",
+      "condition": "Moon is posited in one of the following constellations: Ashwini, Moola, Magha, Ashlesha, Jyeshtha, or Revati.",
+      "effect": "The birth is associated with indications of Gandamoola, which may suggest early life challenges.",
+      "implementation": "Flag births occurring with Moon in these nakshatras for internal review of early life indications.",
+      "confidence": "high"
+    },
+    {
+      "id": "gandarishta-subtypes-mukund",
+      "page": "011",
+      "category": "maraka",
+      "condition": "Gandarishtas are present.",
+      "effect": "Sub-divided into Dina-gandas (day gandas), Ratri-gandas (night gandas), and Sandhi-gandas.",
+      "implementation": "Further classify Gandarishtas based on these sub-types for more granular analysis.",
+      "confidence": "high"
+    },
+    {
+      "id": "dina-ganda-condition",
+      "page": "011",
+      "category": "maraka",
+      "condition": "Birth occurs when Moon is in Moola or Jyeshtha nakshatra.",
+      "effect": "This is classified as a Dina-ganda.",
+      "implementation": "Identify this specific combination for internal risk assessment.",
+      "confidence": "high"
+    },
+    {
+      "id": "ratri-ganda-condition",
+      "page": "011",
+      "category": "maraka",
+      "condition": "Birth occurs when Moon is in Ashlesha or Magha nakshatra.",
+      "effect": "This is classified as a Ratri-ganda.",
+      "implementation": "Identify this specific combination for internal risk assessment.",
+      "confidence": "high"
+    },
+    {
+      "id": "sandhya-ganda-condition",
+      "page": "011",
+      "category": "maraka",
+      "condition": "Birth occurs when Moon is in Revati or Ashwini nakshatra.",
+      "effect": "This is classified as a Sandhya-ganda.",
+      "implementation": "Identify this specific combination for internal risk assessment.",
+      "confidence": "high"
+    },
+    {
+      "id": "gandamoola-mitigation",
+      "page": "011",
+      "category": "mitigation",
+      "condition": "Child born in Gandarishta (Gandamoola).",
+      "effect": "Astrologers advise special poojas, havans, and charity to propitiate planets.",
+      "implementation": "Note that traditional remedies exist for these indications, but software should not recommend specific rituals.",
+      "confidence": "high"
+    },
+    {
+      "id": "tithi-ganda-ghatis",
+      "page": "012",
+      "category": "maraka",
+      "condition": "Birth occurs during the first ghati (24 minutes) of the 1st tithi OR the last ghati of the 15th tithi (of either Paksha).",
+      "effect": "This period forms a Tithi Ganda, considered inauspicious.",
+      "implementation": "Identify these specific tithi-ghati combinations for internal risk assessment.",
+      "confidence": "high"
+    },
+    {
+      "id": "lagna-gandanta-definition",
+      "page": "012",
+      "category": "maraka",
+      "condition": "Lagna falls in the Sandhis (junctions) of specific rasis associated with Ketu and Mercury constellations.",
+      "effect": "The period of one ghati on both sides of these rasi Sandhis is called Lagna-gandanta, considered inauspicious.",
+      "implementation": "Identify Lagna falling in the specified rasi Sandhis (one ghati on either side) for internal risk assessment.",
+      "confidence": "high"
+    },
+    {
+      "id": "lagna-gandanta-rasi-nakshatra",
+      "page": "012",
+      "category": "maraka",
+      "condition": "Ketu's constellations fall at the beginning of Aries, Leo, and Sagittarius rasis. Mercury's constellations fall at the end of Cancer, Scorpio, and Pisces rasis.",
+      "effect": "If Lagna is in the Sandhis of these rasis, it indicates Lagna-gandanta.",
+      "implementation": "Map Ketu's nakshatras (Ashwini, Magha, Moola) to Aries, Leo, Sagittarius beginnings. Map Mercury's nakshatras (Ashlesha, Jyeshtha, Revati) to Cancer, Scorpio, Pisces endings. Identify Lagna in these junction points.",
+      "confidence": "high"
+    },
+    {
+      "id": "lagna-gandanta-nuance",
+      "page": "012",
+      "category": "caution",
+      "condition": "Lagna-gandanta is present.",
+      "effect": "The author suggests that its inauspiciousness is not always absolute and depends on the position of the lords of the relevant signs/nakshatras.",
+      "implementation": "When flagging Lagna-gandanta, consider the strength and placement of the relevant planetary lords for a nuanced internal assessment.",
+      "confidence": "medium"
+    },
+    {
+      "id": "mercury-ketu-judgment-caution",
+      "page": "012",
+      "category": "caution",
+      "condition": "Evaluating Mercury and Ketu in a chart.",
+      "effect": "It is necessary to consider their constellation lord's position before making a judgment, as the lord significantly influences the planet's results. The author suggests not to single out Mercury and Ketu for maltreatment, implying Mars may be more malefic.",
+      "implementation": "Ensure that planetary strength and dignity, especially of constellation lords, are factored into the analysis of Mercury and Ketu. Avoid simplistic negative interpretations.",
+      "confidence": "high"
+    },
+    {
+      "id": "houses-6-8-interpretation-caution",
+      "page": "012",
+      "category": "caution",
+      "condition": "Interpreting houses 6 and 8.",
+      "effect": "These houses are not universally 'evil'. Their malefic nature is specific to matters concerning the Lagna. For other house affairs (e.g., 10th house), they can be auspicious (e.g., 8th is 11th from 10th, 6th is 9th from 10th).",
+      "implementation": "Avoid blanket negative interpretations for houses 6 and 8. Analyze their influence relative to the specific house/topic being considered (Bhavat Bhavam principle).",
+      "confidence": "high"
+    },
+    {
+      "id": "visha-navamsa-definition",
+      "page": "012",
+      "category": "maraka",
+      "condition": "Specific navamsa portions are classified as inauspicious.",
+      "effect": "These are termed Visha (poisonous) Navamsas, indicating potential challenges.",
+      "implementation": "Identify these specific navamsa divisions for internal risk assessment.",
+      "confidence": "high"
+    },
+    {
+      "id": "visha-navamsa-list-1",
+      "page": "012",
+      "category": "maraka",
+      "condition": "The 1st navamsa of Aries, Taurus, Virgo, and Sagittarius signs.",
+      "effect": "These are classified as Visha Navamsas.",
+      "implementation": "Mark these specific navamsa positions as Visha Navamsas.",
+      "confidence": "high"
+    },
+    {
+      "id": "visha-navamsa-list-2",
+      "page": "012",
+      "category": "maraka",
+      "condition": "The 5th navamsa of Libra, Gemini, Leo, and Aquarius signs.",
+      "effect": "These are classified as Visha Navamsas.",
+      "implementation": "Mark these specific navamsa positions as Visha Navamsas.",
+      "confidence": "high"
+    },
+    {
+      "id": "visha-navamsa-list-3",
+      "page": "012",
+      "category": "maraka",
+      "condition": "The 9th navamsa of Cancer, Scorpio, Capricorn, and Pisces signs.",
+      "effect": "These are classified as Visha Navamsas.",
+      "implementation": "Mark these specific navamsa positions as Visha Navamsas.",
+      "confidence": "high"
+    },
+    {
+      "id": "visha-navamsa-lord-effect",
+      "page": "012",
+      "category": "maraka",
+      "condition": "A planet is the lord of a Visha Navamsa.",
+      "effect": "The planet's influence may indicate challenges related to specific relatives: Sun (father), Moon (mother), Mars (maternal uncle), Saturn (brother), Mercury, Jupiter, and Venus (the native himself).",
+      "implementation": "If a planet is a Visha Navamsa lord, internally flag potential challenges related to the indicated relatives. For Mercury, Jupiter, Venus, it relates to the native's well-being.",
+      "confidence": "high"
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "text": "```json\n{\n  \"pages\": [057],\n  \"page_summary\": \"This section introduces the Kaala Hora Lagna (K.H.L.) calculation method and outlines rules for determining an individual's longevity potential based on the placement of specific astrological factors in movable, fixed, or dual signs. It details how to calculate K.H.L. from Ishta Kaala and then provides criteria for classifying longevity as long, medium, or short.\",\n  \"rules\": [\n    {\n      \"id\": \"khl-calculation-ishta-kaala\",\n      \"page\": 057,\n      \"category\": \"method\",\n      \"condition\": \"To calculate Kaala Hora Lagna (K.H.L.)\",\n      \"effect\": \"K.H.L. is derived from the Ishta Kaala (local mean time from previous sunrise to birth). Ishta Ghati is multiplied by 2, divided by 5 to get hours/minutes. If hours exceed 12, deduct 12. Minutes are divided by 2 for degrees, remainder for minutes. These converted values are added to the Lagna longitude if Lagna is an even sign, or to the Sun's longitude if Lagna is an odd sign.\",\n      \"implementation\": \"Software should implement the detailed K.H.L. calculation steps, ensuring correct conversions from Ishta Ghati to Rasi, degrees, and minutes, and applying the addition logic based on Lagna's sign parity.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"longevity-factor-1\",\n      \"page\": 057,\n      \"category\": \"method\",\n      \"condition\": \"For assessing longevity potential\",\n      \"effect\": \"One set of factors to consider is the Lagna and the 8th lord from the Lagna.\",\n      \"implementation\": \"Identify the Lagna and the lord of the 8th house from the Lagna for analysis.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"longevity-factor-2\",\n      \"page\": 057,\n      \"category\": \"method\",\n      \"condition\": \"For assessing longevity potential\",\n      \"effect\": \"Another set of factors to consider is the Moon sign and the ascendant lord.\",\n      \"implementation\": \"Identify the Moon's sign and the lord of the ascendant for analysis.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"longevity-factor-3\",\n      \"page\": 057,\n      \"category\": \"method\",\n      \"condition\": \"For assessing longevity potential\",\n      \"effect\": \"A third set of factors to consider is the ascendant lord and the Kaala Hora Lagna (K.H.L.).\",\n      \"implementation\": \"Identify the ascendant lord and the calculated K.H.L. for analysis.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"longevity-class-long-1\",\n      \"page\": 057,\n      \"category\": \"longevity_class\",\n      \"condition\": \"Both factors (from any of the three sets) are placed in movable signs.\",\n      \"effect\": \"Indicates a potential for long longevity.\",\n      \"implementation\": \"If both astrological points under consideration are in movable signs (Aries, Cancer, Libra, Capricorn), flag this as a 'long longevity' indicator.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"longevity-class-long-2\",\n      \"page\": 057,\n      \"category\": \"longevity_class\",\n      \"condition\": \"One factor is in a fixed sign and the other is in a dual sign.\",\n      \"effect\": \"Indicates a potential for long longevity.\",\n      \"implementation\": \"If one astrological point is in a fixed sign (Taurus, Leo, Scorpio, Aquarius) and the other is in a dual sign (Gemini, Virgo, Sagittarius, Pisces), flag this as a 'long longevity' indicator.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"longevity-class-medium-1\",\n      \"page\": 057,\n      \"category\": \"longevity_class\",\n      \"condition\": \"Both factors are placed in dual signs.\",\n      \"effect\": \"Indicates a potential for medium longevity.\",\n      \"implementation\": \"If both astrological points under consideration are in dual signs, flag this as a 'medium longevity' indicator.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"longevity-class-medium-2\",\n      \"page\": 057,\n      \"category\": \"longevity_class\",\n      \"condition\": \"One factor is in a movable sign and the other is in a fixed sign.\",\n      \"effect\": \"Indicates a potential for medium longevity.\",\n      \"implementation\": \"If one astrological point is in a movable sign and the other is in a fixed sign, flag this as a 'medium longevity' indicator.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"longevity-class-short-1\",\n      \"page\": 057,\n      \"category\": \"longevity_class\",\n      \"condition\": \"Both factors are placed in fixed signs.\",\n      \"effect\": \"Indicates a potential for short longevity.\",\n      \"implementation\": \"If both astrological points under consideration are in fixed signs, flag this as a 'short longevity' indicator.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"longevity-class-short-2\",\n      \"page\": 057,\n      \"category\": \"longevity_class\",\n      \"condition\": \"One factor is in a movable sign and the other is in a dual sign.\",\n      \"effect\": \"Indicates a potential for short longevity.\",\n      \"implementation\": \"If one astrological point is in a movable sign and the other is in a dual sign, flag this as a 'short longevity' indicator.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"longevity-class-judgment-priority\",\n      \"page\": 057,\n      \"category\": \"caution\",\n      \"condition\": \"When determining the overall longevity class from the three sets of factors.\",\n      \"effect\": \"If all three considerations indicate the same longevity class, that class is strongly confirmed. If two considerations indicate one class and the third differs, the class indicated by the two agreeing factors should be accepted.\",\n      \"implementation\": \"Software should evaluate all three factor sets independently. If there's a consensus (all three agree), report that. If there's a majority (two agree), report the majority's indication. If all three differ, this rule does not provide a clear resolution, requiring further astrological interpretation.\",\n      \"confidence\": \"high\"\n    }\n  ]\n}\n```"
+          }
+        ],
+        "role": "model"
+      },
+      "finishReason": "STOP",
+      "index": 0
+    }
+  ],
+  "usageMetadata": {
+    "promptTokenCount": 550,
+    "candidatesTokenCount": 1549,
+    "totalTokenCount": 2873,
+    "promptTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 292
+      },
+      {
+        "modality": "IMAGE",
+        "tokenCount": 258
+      }
+    ],
+    "thoughtsTokenCount": 774,
+    "serviceTier": "standard"
+  },
+  "modelVersion": "gemini-2.5-flash",
+  "responseId": "Z2U1aoqKM6ux4-EPp_Ka0AY"
+}

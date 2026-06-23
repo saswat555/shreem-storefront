@@ -1,0 +1,45 @@
+{
+  "pages": [
+    1,
+    2
+  ],
+  "page_summary": "This section introduces the methodology for constructing Ashtaka Varga charts, specifically detailing how benefic points are assigned by the Sun and Moon. It emphasizes that these initial Ashtaka Varga points are preliminary and require further processing before they can be used for longevity assessment.",
+  "rules": [
+    {
+      "id": "av-chart-structure",
+      "page": 1,
+      "category": "method",
+      "condition": "Constructing an Ashtaka Varga chart for benefic point calculation",
+      "effect": "Ashtaka Varga charts are structured with 12 Rasis as horizontal entries and 7 planets plus Lagna as vertical entries, indicating benefic points.",
+      "implementation": "Software should generate Ashtaka Varga charts with Rasis as rows and contributing entities (planets, Lagna) as columns, marking benefic points in the intersections.",
+      "confidence": "high"
+    },
+    {
+      "id": "av-sun-benefic-points",
+      "page": 1,
+      "category": "method",
+      "condition": "Calculating benefic points for Sun in its Ashtaka Varga",
+      "effect": "Sun contributes benefic points to the 1st, 2nd, 4th, 7th, 8th, 9th, 10th, and 11th Rasis when counted from its own natal position.",
+      "implementation": "When computing Sun's Ashtaka Varga, mark a benefic point in these specified Rasis relative to Sun's placement in the natal chart.",
+      "confidence": "high"
+    },
+    {
+      "id": "av-moon-benefic-points",
+      "page": 1,
+      "category": "method",
+      "condition": "Calculating benefic points for Moon in its Ashtaka Varga",
+      "effect": "Moon contributes benefic points to the 3rd, 6th, 10th, and 11th Rasis when counted from its own natal position.",
+      "implementation": "When computing Moon's Ashtaka Varga, mark a benefic point in these specified Rasis relative to Moon's placement in the natal chart.",
+      "confidence": "high"
+    },
+    {
+      "id": "av-reduction-prerequisite",
+      "page": 1,
+      "category": "caution",
+      "condition": "Using Ashtaka Varga points for longevity assessment",
+      "effect": "Raw Ashtaka Varga benefic points are not directly suitable for longevity calculation and require two subsequent reduction processes.",
+      "implementation": "Software should not use raw Ashtaka Varga totals for longevity predictions without implementing subsequent reduction steps. Flag this as an incomplete calculation stage for longevity assessment.",
+      "confidence": "high"
+    }
+  ]
+}

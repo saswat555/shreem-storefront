@@ -1,6 +1,5 @@
 import { Metadata } from "next"
 import Image from "next/image"
-import { ArrowUpRightMini } from "@medusajs/icons"
 
 import { listProducts } from "@lib/data/products"
 import { getRegion } from "@lib/data/regions"
@@ -11,7 +10,6 @@ import {
   shreemMascots,
   shreemRituals,
 } from "@lib/constants/shreem"
-import MotionReveal from "@modules/common/components/motion-reveal"
 import Hero from "@modules/home/components/hero"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import ProductPreview from "@modules/products/components/product-preview"
@@ -144,12 +142,9 @@ export default async function Home(props: {
           }}
         />
       )}
-      <MotionReveal>
-        <Hero prakritiGuideEnabled={prakritiGuideEnabled} />
-      </MotionReveal>
+      <Hero prakritiGuideEnabled={prakritiGuideEnabled} />
 
       {!!latestProducts.length && (
-        <MotionReveal delayMs={70}>
         <section className="content-container py-8 small:py-10">
           <div className="brand-surface px-5 py-6 small:px-8 small:py-8">
             <div className="flex flex-col gap-4 pb-6 small:flex-row small:items-end small:justify-between">
@@ -187,11 +182,9 @@ export default async function Home(props: {
             </div>
           </div>
         </section>
-        </MotionReveal>
       )}
 
       {prakritiGuideEnabled && (
-        <MotionReveal delayMs={110}>
         <section className="content-container py-8 small:py-10">
           <div className="brand-surface px-5 py-6 small:px-8 small:py-8">
             <div className="grid gap-6 xl:grid-cols-[0.98fr_1.02fr] xl:items-center">
@@ -212,7 +205,7 @@ export default async function Home(props: {
                     className="brand-primary-button gap-2"
                   >
                     Open GrowBuddy AI
-                    <ArrowUpRightMini />
+                    <span aria-hidden="true">-&gt;</span>
                   </LocalizedClientLink>
                   <LocalizedClientLink href="/blog" className="brand-secondary-button">
                     Read the Blog first
@@ -248,21 +241,19 @@ export default async function Home(props: {
             </div>
           </div>
         </section>
-        </MotionReveal>
       )}
 
-      <MotionReveal delayMs={140}>
       <section className="content-container py-8 small:py-10">
         <div className="brand-surface px-5 py-6 small:px-8 small:py-8">
           <div className="grid gap-6 xl:grid-cols-[1.08fr_0.92fr] xl:items-center">
             <div className="overflow-hidden rounded-[30px] border border-[var(--shreem-border)] bg-[linear-gradient(180deg,rgba(255,251,243,0.98),rgba(248,242,230,0.92))] p-2 shadow-[0_24px_70px_rgba(15,49,70,0.1)]">
               <div className="relative aspect-[5/4] overflow-hidden rounded-[24px] bg-[linear-gradient(180deg,rgba(251,242,222,0.85),rgba(255,252,246,0.95))] small:aspect-[16/11]">
                 <Image
-                  src="/shreem-scenes/bilona-process.png"
+                  src="/shreem-scenes/bilona-process.jpg"
                   alt="Shreem bilona ghee process with Gauri, Mayur, and the curd-to-ghee journey"
                   fill
-                  priority
-                  sizes="(max-width: 1280px) 100vw, 760px"
+                  quality={58}
+                  sizes="(max-width: 767px) calc(100vw - 64px), (max-width: 1279px) calc(100vw - 84px), 520px"
                   className="object-contain p-2 small:p-4"
                 />
               </div>
@@ -321,9 +312,7 @@ export default async function Home(props: {
           </div>
         </div>
       </section>
-      </MotionReveal>
 
-      <MotionReveal delayMs={170}>
       <section className="content-container py-8 small:py-10">
         <div className="grid gap-4 xl:grid-cols-[1.04fr_0.96fr]">
           <div className="brand-royal-surface px-5 py-6 text-white small:px-8 small:py-8">
@@ -341,10 +330,11 @@ export default async function Home(props: {
             <div className="mt-6 overflow-hidden rounded-[28px] border border-white/12 bg-white/6 p-2 shadow-[0_24px_60px_rgba(0,0,0,0.16)]">
               <div className="relative aspect-[16/11] overflow-hidden rounded-[22px]">
                 <Image
-                  src="/shreem-scenes/neem-dhoop.png"
+                  src="/shreem-scenes/neem-dhoop.jpg"
                   alt="Neem dhoop batti in an evening prayer courtyard with Gauri and Mayur"
                   fill
-                  sizes="(max-width: 1280px) 100vw, 720px"
+                  quality={58}
+                  sizes="(max-width: 767px) calc(100vw - 64px), (max-width: 1279px) calc(100vw - 84px), 600px"
                   className="object-cover object-center"
                 />
               </div>
@@ -390,9 +380,7 @@ export default async function Home(props: {
           </div>
         </div>
       </section>
-      </MotionReveal>
 
-      <MotionReveal delayMs={200}>
       <section className="content-container pb-16 pt-8 small:pb-20 small:pt-10">
         <div className="brand-surface px-5 py-6 small:px-8 small:py-8">
           <div className="grid gap-6 pb-6 xl:grid-cols-[0.92fr_1.08fr] xl:items-start">
@@ -421,7 +409,8 @@ export default async function Home(props: {
                       src={mascot.imagePath}
                       alt={`${mascot.name}, one of the Shreem brand mascots`}
                       fill
-                      sizes="(max-width: 1024px) 100vw, 260px"
+                      quality={58}
+                      sizes="(max-width: 767px) calc(100vw - 64px), 180px"
                       className="object-contain object-bottom p-4"
                     />
                   </div>
@@ -441,7 +430,6 @@ export default async function Home(props: {
           </div>
         </div>
       </section>
-      </MotionReveal>
     </>
   )
 }

@@ -1,0 +1,423 @@
+{
+  "pages": [
+    58,
+    59
+  ],
+  "page_summary": "These pages detail the calculation of benefic points for planets (Sun, Mercury, Jupiter, Venus, Saturn) and Lagna within the Ashtakavarga system. They list specific house positions from various reference points that contribute to each entity's total benefic score. This system is presented in the context of assessing planetary strength and potential for favorable outcomes, including general well-being and life span indicators.",
+  "rules": [
+    {
+      "id": "av-sun-self-points",
+      "page": 58,
+      "category": "method",
+      "condition": "When Sun is in the 1st, 2nd, 4th, 7th, 8th, 10th, or 11th house from its own position.",
+      "effect": "It contributes 7 benefic points to Sun's Ashtakavarga score.",
+      "implementation": "Calculate Sun's Ashtakavarga benefic points based on its placement relative to itself. These points are used in the assessment of planetary strength and potential for favorable outcomes, including general well-being and life span indicators.",
+      "confidence": "high"
+    },
+    {
+      "id": "av-sun-mercury-points",
+      "page": 58,
+      "category": "method",
+      "condition": "When Sun is in the 3rd, 5th, 6th, or 11th house from Mercury's position.",
+      "effect": "It contributes 4 benefic points to Sun's Ashtakavarga score.",
+      "implementation": "Calculate Sun's Ashtakavarga benefic points based on its placement relative to Mercury. These points are used in the assessment of planetary strength and potential for favorable outcomes, including general well-being and life span indicators.",
+      "confidence": "high"
+    },
+    {
+      "id": "av-sun-jupiter-points",
+      "page": 58,
+      "category": "method",
+      "condition": "When Sun is in the 6th, 10th, 11th, or 12th house from Jupiter's position.",
+      "effect": "It contributes 4 benefic points to Sun's Ashtakavarga score.",
+      "implementation": "Calculate Sun's Ashtakavarga benefic points based on its placement relative to Jupiter. These points are used in the assessment of planetary strength and potential for favorable outcomes, including general well-being and life span indicators.",
+      "confidence": "high"
+    },
+    {
+      "id": "av-sun-venus-points",
+      "page": 58,
+      "category": "method",
+      "condition": "When Sun is in the 6th, 8th, 11th, or 12th house from Venus's position.",
+      "effect": "It contributes 4 benefic points to Sun's Ashtakavarga score.",
+      "implementation": "Calculate Sun's Ashtakavarga benefic points based on its placement relative to Venus. These points are used in the assessment of planetary strength and potential for favorable outcomes, including general well-being and life span indicators.",
+      "confidence": "high"
+    },
+    {
+      "id": "av-sun-saturn-points",
+      "page": 58,
+      "category": "method",
+      "condition": "When Sun is in the 1st, 4th, 7th, 8th, 9th, or 10th house from Saturn's position.",
+      "effect": "It contributes 7 benefic points to Sun's Ashtakavarga score.",
+      "implementation": "Calculate Sun's Ashtakavarga benefic points based on its placement relative to Saturn. These points are used in the assessment of planetary strength and potential for favorable outcomes, including general well-being and life span indicators.",
+      "confidence": "high"
+    },
+    {
+      "id": "av-sun-lagna-points",
+      "page": 58,
+      "category": "method",
+      "condition": "When Sun is in the 1st, 3rd, 6th, 10th, or 11th house from Lagna.",
+      "effect": "It contributes 5 benefic points to Sun's Ashtakavarga score.",
+      "implementation": "Calculate Sun's Ashtakavarga benefic points based on its placement relative to Lagna. These points are used in the assessment of planetary strength and potential for favorable outcomes, including general well-being and life span indicators.",
+      "confidence": "high"
+    },
+    {
+      "id": "av-mercury-sun-points",
+      "page": 58,
+      "category": "method",
+      "condition": "When Mercury is in the 5th, 6th, 9th, 11th, or 12th house from Sun's position.",
+      "effect": "It contributes 5 benefic points to Mercury's Ashtakavarga score.",
+      "implementation": "Calculate Mercury's Ashtakavarga benefic points based on its placement relative to Sun. These points are used in the assessment of planetary strength and potential for favorable outcomes, including general well-being and life span indicators.",
+      "confidence": "high"
+    },
+    {
+      "id": "av-mercury-moon-points",
+      "page": 58,
+      "category": "method",
+      "condition": "When Mercury is in the 2nd, 4th, 6th, 8th, 10th, or 11th house from Moon's position.",
+      "effect": "It contributes 6 benefic points to Mercury's Ashtakavarga score.",
+      "implementation": "Calculate Mercury's Ashtakavarga benefic points based on its placement relative to Moon. These points are used in the assessment of planetary strength and potential for favorable outcomes, including general well-being and life span indicators.",
+      "confidence": "high"
+    },
+    {
+      "id": "av-mercury-self-points",
+      "page": 58,
+      "category": "method",
+      "condition": "When Mercury is in the 1st, 3rd, 5th, 6th, 9th, 10th, 11th, or 12th house from its own position.",
+      "effect": "It contributes 8 benefic points to Mercury's Ashtakavarga score.",
+      "implementation": "Calculate Mercury's Ashtakavarga benefic points based on its placement relative to itself. These points are used in the assessment of planetary strength and potential for favorable outcomes, including general well-being and life span indicators.",
+      "confidence": "high"
+    },
+    {
+      "id": "av-mercury-mars-points",
+      "page": 58,
+      "category": "method",
+      "condition": "When Mercury is in the 1st, 2nd, 4th, 7th, 8th, 9th, 10th, or 11th house from Mars's position.",
+      "effect": "It contributes 8 benefic points to Mercury's Ashtakavarga score.",
+      "implementation": "Calculate Mercury's Ashtakavarga benefic points based on its placement relative to Mars. These points are used in the assessment of planetary strength and potential for favorable outcomes, including general well-being and life span indicators.",
+      "confidence": "high"
+    },
+    {
+      "id": "av-mercury-jupiter-points",
+      "page": 58,
+      "category": "method",
+      "condition": "When Mercury is in the 6th, 8th, 11th, or 12th house from Jupiter's position.",
+      "effect": "It contributes 4 benefic points to Mercury's Ashtakavarga score.",
+      "implementation": "Calculate Mercury's Ashtakavarga benefic points based on its placement relative to Jupiter. These points are used in the assessment of planetary strength and potential for favorable outcomes, including general well-being and life span indicators.",
+      "confidence": "high"
+    },
+    {
+      "id": "av-mercury-venus-points",
+      "page": 58,
+      "category": "method",
+      "condition": "When Mercury is in the 1st, 2nd, 3rd, 4th, 5th, 8th, 9th, or 11th house from Venus's position.",
+      "effect": "It contributes 8 benefic points to Mercury's Ashtakavarga score.",
+      "implementation": "Calculate Mercury's Ashtakavarga benefic points based on its placement relative to Venus. These points are used in the assessment of planetary strength and potential for favorable outcomes, including general well-being and life span indicators.",
+      "confidence": "high"
+    },
+    {
+      "id": "av-mercury-saturn-points",
+      "page": 58,
+      "category": "method",
+      "condition": "When Mercury is in the 1st, 2nd, 4th, 7th, 8th, 9th, 10th, or 11th house from Saturn's position.",
+      "effect": "It contributes 8 benefic points to Mercury's Ashtakavarga score.",
+      "implementation": "Calculate Mercury's Ashtakavarga benefic points based on its placement relative to Saturn. These points are used in the assessment of planetary strength and potential for favorable outcomes, including general well-being and life span indicators.",
+      "confidence": "high"
+    },
+    {
+      "id": "av-mercury-lagna-points",
+      "page": 58,
+      "category": "method",
+      "condition": "When Mercury is in the 1st, 2nd, 4th, 6th, 8th, 10th, or 11th house from Lagna.",
+      "effect": "It contributes 7 benefic points to Mercury's Ashtakavarga score.",
+      "implementation": "Calculate Mercury's Ashtakavarga benefic points based on its placement relative to Lagna. These points are used in the assessment of planetary strength and potential for favorable outcomes, including general well-being and life span indicators.",
+      "confidence": "high"
+    },
+    {
+      "id": "av-jupiter-sun-points",
+      "page": 58,
+      "category": "method",
+      "condition": "When Jupiter is in the 1st, 2nd, 3rd, 4th, 7th, 8th, 9th, 10th, or 11th house from Sun's position.",
+      "effect": "It contributes 9 benefic points to Jupiter's Ashtakavarga score.",
+      "implementation": "Calculate Jupiter's Ashtakavarga benefic points based on its placement relative to Sun. These points are used in the assessment of planetary strength and potential for favorable outcomes, including general well-being and life span indicators.",
+      "confidence": "high"
+    },
+    {
+      "id": "av-jupiter-moon-points",
+      "page": 58,
+      "category": "method",
+      "condition": "When Jupiter is in the 2nd, 5th, 7th, 9th, or 11th house from Moon's position.",
+      "effect": "It contributes 5 benefic points to Jupiter's Ashtakavarga score.",
+      "implementation": "Calculate Jupiter's Ashtakavarga benefic points based on its placement relative to Moon. These points are used in the assessment of planetary strength and potential for favorable outcomes, including general well-being and life span indicators.",
+      "confidence": "high"
+    },
+    {
+      "id": "av-jupiter-mars-points",
+      "page": 58,
+      "category": "method",
+      "condition": "When Jupiter is in the 1st, 2nd, 4th, 7th, 8th, 10th, or 11th house from Mars's position.",
+      "effect": "It contributes 7 benefic points to Jupiter's Ashtakavarga score.",
+      "implementation": "Calculate Jupiter's Ashtakavarga benefic points based on its placement relative to Mars. These points are used in the assessment of planetary strength and potential for favorable outcomes, including general well-being and life span indicators.",
+      "confidence": "high"
+    },
+    {
+      "id": "av-jupiter-mercury-points",
+      "page": 58,
+      "category": "method",
+      "condition": "When Jupiter is in the 1st, 2nd, 4th, 5th, 6th, 9th, 10th, or 11th house from Mercury's position.",
+      "effect": "It contributes 8 benefic points to Jupiter's Ashtakavarga score.",
+      "implementation": "Calculate Jupiter's Ashtakavarga benefic points based on its placement relative to Mercury. These points are used in the assessment of planetary strength and potential for favorable outcomes, including general well-being and life span indicators.",
+      "confidence": "high"
+    },
+    {
+      "id": "av-jupiter-self-points",
+      "page": 58,
+      "category": "method",
+      "condition": "When Jupiter is in the 1st, 2nd, 3rd, 4th, 7th, 8th, 10th, or 11th house from its own position.",
+      "effect": "It contributes 8 benefic points to Jupiter's Ashtakavarga score.",
+      "implementation": "Calculate Jupiter's Ashtakavarga benefic points based on its placement relative to itself. These points are used in the assessment of planetary strength and potential for favorable outcomes, including general well-being and life span indicators.",
+      "confidence": "high"
+    },
+    {
+      "id": "av-jupiter-venus-points",
+      "page": 58,
+      "category": "method",
+      "condition": "When Jupiter is in the 2nd, 5th, 6th, 9th, 10th, or 11th house from Venus's position.",
+      "effect": "It contributes 6 benefic points to Jupiter's Ashtakavarga score.",
+      "implementation": "Calculate Jupiter's Ashtakavarga benefic points based on its placement relative to Venus. These points are used in the assessment of planetary strength and potential for favorable outcomes, including general well-being and life span indicators.",
+      "confidence": "high"
+    },
+    {
+      "id": "av-jupiter-saturn-points",
+      "page": 58,
+      "category": "method",
+      "condition": "When Jupiter is in the 3rd, 5th, 6th, or 12th house from Saturn's position.",
+      "effect": "It contributes 4 benefic points to Jupiter's Ashtakavarga score.",
+      "implementation": "Calculate Jupiter's Ashtakavarga benefic points based on its placement relative to Saturn. These points are used in the assessment of planetary strength and potential for favorable outcomes, including general well-being and life span indicators.",
+      "confidence": "high"
+    },
+    {
+      "id": "av-jupiter-lagna-points",
+      "page": 58,
+      "category": "method",
+      "condition": "When Jupiter is in the 1st, 2nd, 4th, 5th, 6th, 7th, 9th, 10th, or 11th house from Lagna.",
+      "effect": "It contributes 9 benefic points to Jupiter's Ashtakavarga score.",
+      "implementation": "Calculate Jupiter's Ashtakavarga benefic points based on its placement relative to Lagna. These points are used in the assessment of planetary strength and potential for favorable outcomes, including general well-being and life span indicators.",
+      "confidence": "high"
+    },
+    {
+      "id": "av-venus-sun-points",
+      "page": 58,
+      "category": "method",
+      "condition": "When Venus is in the 8th, 11th, or 12th house from Sun's position.",
+      "effect": "It contributes 3 benefic points to Venus's Ashtakavarga score.",
+      "implementation": "Calculate Venus's Ashtakavarga benefic points based on its placement relative to Sun. These points are used in the assessment of planetary strength and potential for favorable outcomes, including general well-being and life span indicators.",
+      "confidence": "high"
+    },
+    {
+      "id": "av-venus-moon-points",
+      "page": 58,
+      "category": "method",
+      "condition": "When Venus is in the 1st, 2nd, 3rd, 4th, 5th, 8th, 9th, 11th, or 12th house from Moon's position.",
+      "effect": "It contributes 9 benefic points to Venus's Ashtakavarga score.",
+      "implementation": "Calculate Venus's Ashtakavarga benefic points based on its placement relative to Moon. These points are used in the assessment of planetary strength and potential for favorable outcomes, including general well-being and life span indicators.",
+      "confidence": "high"
+    },
+    {
+      "id": "av-venus-mars-points",
+      "page": 58,
+      "category": "method",
+      "condition": "When Venus is in the 3rd, 4th, 6th, 9th, 11th, or 12th house from Mars's position.",
+      "effect": "It contributes 6 benefic points to Venus's Ashtakavarga score.",
+      "implementation": "Calculate Venus's Ashtakavarga benefic points based on its placement relative to Mars. These points are used in the assessment of planetary strength and potential for favorable outcomes, including general well-being and life span indicators.",
+      "confidence": "high"
+    },
+    {
+      "id": "av-venus-mercury-points",
+      "page": 58,
+      "category": "method",
+      "condition": "When Venus is in the 3rd, 5th, 6th, 9th, or 11th house from Mercury's position.",
+      "effect": "It contributes 5 benefic points to Venus's Ashtakavarga score.",
+      "implementation": "Calculate Venus's Ashtakavarga benefic points based on its placement relative to Mercury. These points are used in the assessment of planetary strength and potential for favorable outcomes, including general well-being and life span indicators.",
+      "confidence": "high"
+    },
+    {
+      "id": "av-venus-jupiter-points",
+      "page": 58,
+      "category": "method",
+      "condition": "When Venus is in the 5th, 6th, 9th, 10th, or 11th house from Jupiter's position.",
+      "effect": "It contributes 5 benefic points to Venus's Ashtakavarga score.",
+      "implementation": "Calculate Venus's Ashtakavarga benefic points based on its placement relative to Jupiter. These points are used in the assessment of planetary strength and potential for favorable outcomes, including general well-being and life span indicators.",
+      "confidence": "high"
+    },
+    {
+      "id": "av-venus-self-points",
+      "page": 58,
+      "category": "method",
+      "condition": "When Venus is in the 1st, 2nd, 3rd, 4th, 5th, 8th, 9th, 10th, or 11th house from its own position.",
+      "effect": "It contributes 9 benefic points to Venus's Ashtakavarga score.",
+      "implementation": "Calculate Venus's Ashtakavarga benefic points based on its placement relative to itself. These points are used in the assessment of planetary strength and potential for favorable outcomes, including general well-being and life span indicators.",
+      "confidence": "high"
+    },
+    {
+      "id": "av-saturn-sun-points",
+      "page": 59,
+      "category": "method",
+      "condition": "When Saturn is in the 1st, 2nd, 4th, 7th, 8th, 10th, or 11th house from Sun's position.",
+      "effect": "It contributes 7 benefic points to Saturn's Ashtakavarga score.",
+      "implementation": "Calculate Saturn's Ashtakavarga benefic points based on its placement relative to Sun. These points are used in the assessment of planetary strength and potential for favorable outcomes, including general well-being and life span indicators.",
+      "confidence": "high"
+    },
+    {
+      "id": "av-saturn-moon-points",
+      "page": 59,
+      "category": "method",
+      "condition": "When Saturn is in the 3rd, 6th, or 11th house from Moon's position.",
+      "effect": "It contributes 3 benefic points to Saturn's Ashtakavarga score.",
+      "implementation": "Calculate Saturn's Ashtakavarga benefic points based on its placement relative to Moon. These points are used in the assessment of planetary strength and potential for favorable outcomes, including general well-being and life span indicators.",
+      "confidence": "high"
+    },
+    {
+      "id": "av-saturn-mars-points",
+      "page": 59,
+      "category": "method",
+      "condition": "When Saturn is in the 3rd, 5th, 6th, 10th, 11th, or 12th house from Mars's position.",
+      "effect": "It contributes 6 benefic points to Saturn's Ashtakavarga score.",
+      "implementation": "Calculate Saturn's Ashtakavarga benefic points based on its placement relative to Mars. These points are used in the assessment of planetary strength and potential for favorable outcomes, including general well-being and life span indicators.",
+      "confidence": "high"
+    },
+    {
+      "id": "av-saturn-mercury-points",
+      "page": 59,
+      "category": "method",
+      "condition": "When Saturn is in the 6th, 8th, 9th, 10th, 11th, or 12th house from Mercury's position.",
+      "effect": "It contributes 6 benefic points to Saturn's Ashtakavarga score.",
+      "implementation": "Calculate Saturn's Ashtakavarga benefic points based on its placement relative to Mercury. These points are used in the assessment of planetary strength and potential for favorable outcomes, including general well-being and life span indicators.",
+      "confidence": "high"
+    },
+    {
+      "id": "av-saturn-jupiter-points",
+      "page": 59,
+      "category": "method",
+      "condition": "When Saturn is in the 5th, 6th, 11th, or 12th house from Jupiter's position.",
+      "effect": "It contributes 4 benefic points to Saturn's Ashtakavarga score.",
+      "implementation": "Calculate Saturn's Ashtakavarga benefic points based on its placement relative to Jupiter. These points are used in the assessment of planetary strength and potential for favorable outcomes, including general well-being and life span indicators.",
+      "confidence": "high"
+    },
+    {
+      "id": "av-saturn-venus-points",
+      "page": 59,
+      "category": "method",
+      "condition": "When Saturn is in the 6th, 11th, or 12th house from Venus's position.",
+      "effect": "It contributes 3 benefic points to Saturn's Ashtakavarga score.",
+      "implementation": "Calculate Saturn's Ashtakavarga benefic points based on its placement relative to Venus. These points are used in the assessment of planetary strength and potential for favorable outcomes, including general well-being and life span indicators.",
+      "confidence": "high"
+    },
+    {
+      "id": "av-saturn-self-points",
+      "page": 59,
+      "category": "method",
+      "condition": "When Saturn is in the 3rd, 5th, 6th, or 11th house from its own position.",
+      "effect": "It contributes 4 benefic points to Saturn's Ashtakavarga score.",
+      "implementation": "Calculate Saturn's Ashtakavarga benefic points based on its placement relative to itself. These points are used in the assessment of planetary strength and potential for favorable outcomes, including general well-being and life span indicators.",
+      "confidence": "high"
+    },
+    {
+      "id": "av-saturn-lagna-points",
+      "page": 59,
+      "category": "method",
+      "condition": "When Saturn is in the 1st, 3rd, 4th, 6th, 10th, or 11th house from Lagna.",
+      "effect": "It contributes 6 benefic points to Saturn's Ashtakavarga score.",
+      "implementation": "Calculate Saturn's Ashtakavarga benefic points based on its placement relative to Lagna. These points are used in the assessment of planetary strength and potential for favorable outcomes, including general well-being and life span indicators.",
+      "confidence": "high"
+    },
+    {
+      "id": "av-lagna-sun-points",
+      "page": 59,
+      "category": "method",
+      "condition": "When Lagna is in the 3rd, 4th, 6th, 10th, or 11th house from Sun's position.",
+      "effect": "It contributes 5 benefic points to Lagna's Ashtakavarga score.",
+      "implementation": "Calculate Lagna's Ashtakavarga benefic points based on its placement relative to Sun. These points are used in the assessment of planetary strength and potential for favorable outcomes, including general well-being and life span indicators.",
+      "confidence": "high"
+    },
+    {
+      "id": "av-lagna-moon-points",
+      "page": 59,
+      "category": "method",
+      "condition": "When Lagna is in the 3rd, 6th, 10th, 11th, or 12th house from Moon's position.",
+      "effect": "It contributes 5 benefic points to Lagna's Ashtakavarga score.",
+      "implementation": "Calculate Lagna's Ashtakavarga benefic points based on its placement relative to Moon. These points are used in the assessment of planetary strength and potential for favorable outcomes, including general well-being and life span indicators.",
+      "confidence": "high"
+    },
+    {
+      "id": "av-lagna-mars-points",
+      "page": 59,
+      "category": "method",
+      "condition": "When Lagna is in the 1st, 3rd, 6th, 10th, or 11th house from Mars's position.",
+      "effect": "It contributes 5 benefic points to Lagna's Ashtakavarga score.",
+      "implementation": "Calculate Lagna's Ashtakavarga benefic points based on its placement relative to Mars. These points are used in the assessment of planetary strength and potential for favorable outcomes, including general well-being and life span indicators.",
+      "confidence": "high"
+    },
+    {
+      "id": "av-lagna-mercury-points",
+      "page": 59,
+      "category": "method",
+      "condition": "When Lagna is in the 1st, 2nd, 4th, 6th, 8th, 10th, or 11th house from Mercury's position.",
+      "effect": "It contributes 7 benefic points to Lagna's Ashtakavarga score.",
+      "implementation": "Calculate Lagna's Ashtakavarga benefic points based on its placement relative to Mercury. These points are used in the assessment of planetary strength and potential for favorable outcomes, including general well-being and life span indicators.",
+      "confidence": "high"
+    },
+    {
+      "id": "av-lagna-jupiter-points",
+      "page": 59,
+      "category": "method",
+      "condition": "When Lagna is in the 1st, 2nd, 4th, 5th, 6th, 7th, 9th, 10th, or 11th house from Jupiter's position.",
+      "effect": "It contributes 9 benefic points to Lagna's Ashtakavarga score.",
+      "implementation": "Calculate Lagna's Ashtakavarga benefic points based on its placement relative to Jupiter. These points are used in the assessment of planetary strength and potential for favorable outcomes, including general well-being and life span indicators.",
+      "confidence": "high"
+    },
+    {
+      "id": "av-lagna-venus-points",
+      "page": 59,
+      "category": "method",
+      "condition": "When Lagna is in the 1st, 2nd, 3rd, 4th, 5th, 8th, or 9th house from Venus's position.",
+      "effect": "It contributes 7 benefic points to Lagna's Ashtakavarga score.",
+      "implementation": "Calculate Lagna's Ashtakavarga benefic points based on its placement relative to Venus. These points are used in the assessment of planetary strength and potential for favorable outcomes, including general well-being and life span indicators.",
+      "confidence": "high"
+    },
+    {
+      "id": "av-lagna-saturn-points",
+      "page": 59,
+      "category": "method",
+      "condition": "When Lagna is in the 1st, 3rd, 4th, 6th, 10th, or 11th house from Saturn's position.",
+      "effect": "It contributes 6 benefic points to Lagna's Ashtakavarga score.",
+      "implementation": "Calculate Lagna's Ashtakavarga benefic points based on its placement relative to Saturn. These points are used in the assessment of planetary strength and potential for favorable outcomes, including general well-being and life span indicators.",
+      "confidence": "high"
+    },
+    {
+      "id": "av-lagna-self-points",
+      "page": 59,
+      "category": "method",
+      "condition": "When Lagna is in the 3rd, 6th, 10th, or 11th house from its own position.",
+      "effect": "It contributes 4 benefic points to Lagna's Ashtakavarga score.",
+      "implementation": "Calculate Lagna's Ashtakavarga benefic points based on its placement relative to itself. These points are used in the assessment of planetary strength and potential for favorable outcomes, including general well-being and life span indicators.",
+      "confidence": "high"
+    },
+    {
+      "id": "av-system-rahu-ketu-exclusion",
+      "page": 59,
+      "category": "caution",
+      "condition": "Applying the Ashtakavarga system for benefic point calculations.",
+      "effect": "Rahu and Ketu are not considered in this system.",
+      "implementation": "Ensure that Rahu and Ketu are excluded from all Ashtakavarga calculations and interpretations within the software.",
+      "confidence": "high"
+    },
+    {
+      "id": "av-system-chart-requirement",
+      "page": 59,
+      "category": "method",
+      "condition": "To determine the specific house placements for benefic points in Ashtakavarga.",
+      "effect": "Separate charts for each planet and the Lagna are necessary.",
+      "implementation": "The software must generate or reference individual charts for each planet and Lagna to accurately identify the houses from which benefic points are contributed.",
+      "confidence": "high"
+    }
+  ]
+}

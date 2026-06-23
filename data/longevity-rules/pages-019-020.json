@@ -1,0 +1,189 @@
+{
+  "pages": [
+    19,
+    20
+  ],
+  "page_summary": "This document outlines principles for judging longevity and identifying 'Maraka' or death-inflicting planets in Jyotish. It defines Maraka, identifies key houses (2nd, 7th, 8th, 12th) and their lords as potential Marakas, and provides specific planetary combinations and dasha timings associated with these effects. It also includes important cautions regarding the interpretation of planetary roles, especially for Lagna lords.",
+  "rules": [
+    {
+      "id": "longevity-guru-chandra-lagna",
+      "page": 19,
+      "category": "longevity_class",
+      "condition": "Guru (Jupiter) and Chandra (Moon) form a yoga in the Lagna (Ascendant).",
+      "effect": "Indicates a potential for an extended lifespan.",
+      "implementation": "Flag this combination as a positive indicator for longevity assessment. Do not use for definitive predictions.",
+      "confidence": "medium"
+    },
+    {
+      "id": "longevity-strong-lagna-lord-quadrant",
+      "page": 19,
+      "category": "longevity_class",
+      "condition": "The Lagna lord is strong and positioned in a Kendra (quadrant) house (1st, 4th, 7th, 10th).",
+      "effect": "Indicates a potential for an extended lifespan.",
+      "implementation": "Flag this combination as a positive indicator for longevity assessment. Do not use for definitive predictions.",
+      "confidence": "medium"
+    },
+    {
+      "id": "maraka-definition",
+      "page": 19,
+      "category": "maraka",
+      "condition": "General astrological principle.",
+      "effect": "Planets that can influence the cessation of life are termed 'Marakas' or 'death-inflicting planets'.",
+      "implementation": "Use this definition internally to categorize specific planetary conditions. Do not display 'death-inflicting' terminology to users.",
+      "confidence": "high"
+    },
+    {
+      "id": "caution-planetary-nature-placement",
+      "page": 19,
+      "category": "caution",
+      "condition": "General astrological principle.",
+      "effect": "A planet's benefic or malefic nature is not universal but determined by its placement and associations in the birth chart.",
+      "implementation": "Ensure all planetary assessments consider house placement, lordship, aspects, and conjunctions rather than fixed significations. Avoid labeling planets as inherently 'good' or 'bad'.",
+      "confidence": "high"
+    },
+    {
+      "id": "method-identify-evil-houses",
+      "page": 20,
+      "category": "method",
+      "condition": "General astrological principle for longevity assessment.",
+      "effect": "Houses 2, 7, and 12 from the Lagna and the Moon sign are considered 'evil houses' or detrimental to longevity.",
+      "implementation": "Identify planets associated with these houses (lords, occupants, aspectors) as potential factors influencing lifespan.",
+      "confidence": "high"
+    },
+    {
+      "id": "method-saturn-ayush-karaka",
+      "page": 20,
+      "category": "method",
+      "condition": "General astrological principle.",
+      "effect": "Saturn, as the Ayush Karaka (significator of life), plays a significant role in matters of longevity.",
+      "implementation": "Include Saturn's position, strength, and associations in longevity assessments.",
+      "confidence": "high"
+    },
+    {
+      "id": "maraka-8th-lord-in-dusthana",
+      "page": 20,
+      "category": "maraka",
+      "condition": "The lord of the 8th house is placed in houses 6, 8, or 12.",
+      "effect": "The 8th lord becomes a potent Maraka planet.",
+      "implementation": "Identify this planet as a significant factor influencing lifespan. Do not use fatalistic language.",
+      "confidence": "high"
+    },
+    {
+      "id": "dasha-timing-8th-lord-dusthana",
+      "page": 20,
+      "category": "dasha_timing",
+      "condition": "The 8th lord is placed in houses 6, 8, or 12.",
+      "effect": "The period (Maha Dasha or Antar Dasha) of this 8th lord may correlate with critical life events.",
+      "implementation": "Highlight the dasha periods of such a planet for careful review in a client's chart. Avoid predictive statements about specific events.",
+      "confidence": "high"
+    },
+    {
+      "id": "maraka-lord-of-saturns-sign",
+      "page": 20,
+      "category": "maraka",
+      "condition": "The lord of the sign occupied by Saturn.",
+      "effect": "This planet becomes a Maraka.",
+      "implementation": "Identify this planet as a significant factor influencing lifespan.",
+      "confidence": "high"
+    },
+    {
+      "id": "dasha-timing-lord-of-saturns-sign",
+      "page": 20,
+      "category": "dasha_timing",
+      "condition": "The lord of the sign occupied by Saturn is identified as a Maraka.",
+      "effect": "The period (Maha Dasha or Antar Dasha) of the 8th lord may correlate with critical life events.",
+      "implementation": "Highlight the dasha periods of the 8th lord for careful review when this Maraka condition is present. Note the potential ambiguity in the text regarding which lord's dasha is indicated.",
+      "confidence": "medium"
+    },
+    {
+      "id": "maraka-planet-conjoining-8th-lord",
+      "page": 20,
+      "category": "maraka",
+      "condition": "A planet conjoins the 8th lord.",
+      "effect": "The conjoining planet also becomes a Maraka planet.",
+      "implementation": "Identify this conjoining planet as a significant factor influencing lifespan.",
+      "confidence": "high"
+    },
+    {
+      "id": "dasha-timing-conjoining-8th-lord",
+      "page": 20,
+      "category": "dasha_timing",
+      "condition": "A planet conjoins the 8th lord, making it a Maraka.",
+      "effect": "The concurrent periods (Maha Dasha and Antar Dasha) of the 8th lord and the conjoining planet may correlate with critical life events.",
+      "implementation": "Highlight the dasha periods of both the 8th lord and the conjoining planet for careful review.",
+      "confidence": "high"
+    },
+    {
+      "id": "maraka-8th-lord-from-lagna-moon-aspecting",
+      "page": 20,
+      "category": "maraka",
+      "condition": "The lord of the 8th house (from Lagna or Moon) occupies the 8th house and aspects the Lagna or Moon.",
+      "effect": "This planet becomes a Maraka.",
+      "implementation": "Identify this planet as a significant factor influencing lifespan.",
+      "confidence": "high"
+    },
+    {
+      "id": "dasha-timing-8th-lord-from-lagna-moon-aspecting",
+      "page": 20,
+      "category": "dasha_timing",
+      "condition": "The lord of the 8th house (from Lagna or Moon) occupies the 8th house and aspects the Lagna or Moon.",
+      "effect": "The periods of both 8th lords (from Lagna and Moon) may correlate with critical life events.",
+      "implementation": "Highlight the dasha periods of both the 8th lord from Lagna and the 8th lord from Moon for careful review.",
+      "confidence": "medium"
+    },
+    {
+      "id": "maraka-lagna-lord-evil-house-rahu-ketu",
+      "page": 20,
+      "category": "maraka",
+      "condition": "The Lagna lord occupies an 'evil house' (6th, 8th, or 12th) and is in conjunction or association with Rahu or Ketu.",
+      "effect": "The Lagna lord itself becomes a Maraka planet.",
+      "implementation": "Identify this Lagna lord as a significant factor influencing lifespan. Note that this overrides the general beneficence of the Lagna lord.",
+      "confidence": "high"
+    },
+    {
+      "id": "maraka-general-planets-in-evil-houses",
+      "page": 20,
+      "category": "maraka",
+      "condition": "Planets associated with the maintenance of life are placed in 'evil houses' (2nd, 7th, 12th, 6th, 8th).",
+      "effect": "These planets can become malefics and influence lifespan.",
+      "implementation": "Consider planets in or ruling 'evil houses' as potential factors influencing lifespan. This is a general principle.",
+      "confidence": "high"
+    },
+    {
+      "id": "maraka-general-sign-lords-of-evil-houses",
+      "page": 20,
+      "category": "maraka",
+      "condition": "The sign lords of 'evil houses' (2nd, 7th, 12th) or planets connected with these lords.",
+      "effect": "These can be potent Maraka planets.",
+      "implementation": "Identify these planets as significant factors influencing lifespan. This is a general principle.",
+      "confidence": "high"
+    },
+    {
+      "id": "caution-lagna-lord-beneficence",
+      "page": 20,
+      "category": "caution",
+      "condition": "General astrological principle.",
+      "effect": "The Lagna lord should generally be considered benefic unless it is severely afflicted by other planets or specific combinations.",
+      "implementation": "When a Lagna lord also rules a Maraka house, its benefic nature should be prioritized unless strong afflictions are present. This requires careful assessment.",
+      "confidence": "high"
+    },
+    {
+      "id": "mitigation-lagna-lord-capricorn",
+      "page": 20,
+      "category": "mitigation",
+      "condition": "For Capricorn ascendant, Saturn is the Lagna lord and also the 2nd lord (a Maraka house lord).",
+      "effect": "Saturn will generally remain benefic despite its 2nd lordship, unless it is afflicted by other planets.",
+      "implementation": "Apply the 'caution-lagna-lord-beneficence' rule specifically here. Do not automatically label Saturn as a Maraka for Capricorn ascendants without considering afflictions.",
+      "confidence": "high"
+    },
+    {
+      "id": "mitigation-lagna-lord-taurus",
+      "page": 20,
+      "category": "mitigation",
+      "condition": "For Taurus ascendant, Venus is the Lagna lord and also the 7th lord (a Maraka house lord).",
+      "effect": "Venus will generally remain benefic despite its 7th lordship, unless it is afflicted by other planets or its occupation/association.",
+      "implementation": "Apply the 'caution-lagna-lord-beneficence' rule specifically here. Do not automatically label Venus as a Maraka for Taurus ascendants without considering afflictions.",
+      "confidence": "high"
+    }
+  ]
+}

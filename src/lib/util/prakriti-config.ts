@@ -6,7 +6,6 @@ const GEMINI_FLASH_ALIASES = new Set([
   "gemini-flash",
   "gemini-flash-latest",
   "gemini-1.5-flash-latest",
-  "gemini-2.0-flash-latest",
   "gemini-2.5-flash-latest",
   "models/gemini-flash-latest",
 ])

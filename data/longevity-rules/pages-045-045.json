@@ -1,0 +1,107 @@
+{
+  "pages": [
+    45
+  ],
+  "page_summary": "This page describes Badarayana's method for estimating an individual's span of life using horary astrology. It details a multi-step calculation process involving planetary multipliers, house significations, and adjustments based on the querent's age and chart strength to derive a total longevity estimate.",
+  "rules": [
+    {
+      "id": "badarayana-method-overview",
+      "page": 45,
+      "category": "method",
+      "condition": "Application of Badarayana's horary system for longevity assessment.",
+      "effect": "Provides a systematic approach to estimate an individual's total span of life.",
+      "implementation": "Utilize this method as a structured calculation for longevity estimation within the software.",
+      "confidence": "high"
+    },
+    {
+      "id": "horary-house-significance",
+      "page": 45,
+      "category": "method",
+      "condition": "Within Badarayana's horary longevity system.",
+      "effect": "The 12th house from Lagna signifies the past duration of life, Lagna signifies the present, and the 2nd house signifies the future duration of life.",
+      "implementation": "Map these house significations for interpreting horary charts in longevity calculations.",
+      "confidence": "high"
+    },
+    {
+      "id": "planetary-multipliers-gunakas",
+      "page": 45,
+      "category": "method",
+      "condition": "For Badarayana's longevity calculation method.",
+      "effect": "Specific multipliers (gunakas) are assigned to planets: Sun 5, Moon 21, Mars 14, Mercury 9, Jupiter 8, Venus 3, Saturn 11.",
+      "implementation": "Store these fixed planetary multipliers and apply them in relevant calculation steps.",
+      "confidence": "high"
+    },
+    {
+      "id": "nirayana-lagna-determination",
+      "page": 45,
+      "category": "method",
+      "condition": "For Badarayana's longevity calculation.",
+      "effect": "Nirayana Lagna is determined based on the precise time and place of the horary question.",
+      "implementation": "Ensure accurate calculation of Nirayana Lagna for the horary chart as a foundational input.",
+      "confidence": "high"
+    },
+    {
+      "id": "madhyamayu-calculation-step1",
+      "page": 45,
+      "category": "method",
+      "condition": "Initial step in Badarayana's longevity calculation.",
+      "effect": "Calculates 'Madhyamayu' (intermediate life duration) using the formula: (Lagna longitude in minutes/seconds * Paramayu) / 21600. If Lagna longitude is reduced to minutes/seconds, the divisor is 21600 * 60. Paramayu for humans is 120 years and 5 days.",
+      "implementation": "Implement this specific formula to derive the initial Madhyamayu value.",
+      "confidence": "high"
+    },
+    {
+      "id": "madhyamayu-adjustment-step2",
+      "page": 45,
+      "category": "method",
+      "condition": "Following the initial Madhyamayu calculation.",
+      "effect": "Madhyamayu is adjusted by multiplying it by the multiplier of the 12th lord from Lagna, then dividing by Paramayu. The remainder from this division is deducted from Paramayu.",
+      "implementation": "Apply this adjustment to Madhyamayu using the identified 12th lord's multiplier and Paramayu.",
+      "confidence": "high"
+    },
+    {
+      "id": "present-age-judgment-step3",
+      "page": 45,
+      "category": "method",
+      "condition": "After Madhyamayu adjustments.",
+      "effect": "The querent's present age is assessed, and the closest approximate figure is accepted for further calculation.",
+      "implementation": "This step may require user input or a mechanism to accept an estimated age for calculation. Note the associated caution regarding its rarity.",
+      "confidence": "medium"
+    },
+    {
+      "id": "paramayu-age-adjustment-step4",
+      "page": 45,
+      "category": "method",
+      "condition": "If initial calculations do not align with the estimated age, requiring adjustment.",
+      "effect": "Paramayu is conceptually divided into three 40-year segments. Adjustments are applied based on the querent's age: +/- 3 years around 40, +/- 9 years between 40 and 80, and +/- 6 years above 80. This adjusted value contributes to the 'past span of life'.",
+      "implementation": "Implement these age-based adjustments to Paramayu to derive a component representing the 'past span of life'.",
+      "confidence": "high"
+    },
+    {
+      "id": "future-total-span-calculation",
+      "page": 45,
+      "category": "method",
+      "condition": "After Madhyamayu and 'past span of life' calculations.",
+      "effect": "Calculates the 'future span of life' by deducting Madhyamayu from Paramayu, multiplying the balance by the 2nd house lord's multiplier, and then dividing by Paramayu. The 'total span of life' is the sum of the 'future span of life' and the 'past span of life'.",
+      "implementation": "Implement these final calculations to determine the estimated total span of life.",
+      "confidence": "high"
+    },
+    {
+      "id": "chart-strength-basis",
+      "page": 45,
+      "category": "method",
+      "condition": "When performing longevity calculations from a horary chart.",
+      "effect": "If the Lagna is strong, calculations should proceed based on Lagna. Otherwise, calculations should be based on the Sun or the strongest planet in the horary chart.",
+      "implementation": "Include a check for Lagna strength. If Lagna is not strong, identify the strongest planet (Sun or other) in the horary chart and use it as the primary reference for calculations where Lagna is typically specified.",
+      "confidence": "high"
+    },
+    {
+      "id": "caution-age-judgment-rarity",
+      "page": 45,
+      "category": "caution",
+      "condition": "When judging the querent's present age (Step 3).",
+      "effect": "Accepting the nearest approximate figure for the querent's present age is noted as a very rare occurrence.",
+      "implementation": "Flag this step as potentially requiring careful manual input or validation, acknowledging the subjective and infrequent nature of such a precise match.",
+      "confidence": "high"
+    }
+  ]
+}

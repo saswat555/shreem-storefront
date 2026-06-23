@@ -9,6 +9,9 @@ type SiteAnalyticsTrackerProps = {
 }
 
 const SESSION_KEY = "shreem_site_session_id"
+const LANDING_KEY = "shreem_site_landing_page"
+const REFERRER_KEY = "shreem_site_first_referrer"
+const UTM_KEY = "shreem_site_utm"
 
 const getSessionId = () => {
   try {
@@ -36,6 +39,81 @@ const buildPath = (pathname: string) => {
   return query ? `${pathname}?${query}` : pathname
 }
 
+const readStoredJson = (key: string) => {
+  try {
+    return JSON.parse(window.localStorage.getItem(key) || "{}")
+  } catch {
+    return {}
+  }
+}
+
+const captureAttribution = (pathname: string) => {
+  const path = buildPath(pathname)
+  const query = new URLSearchParams(window.location.search)
+  const utm: Record<string, string> = {}
+
+  for (const key of [
+    "utm_source",
+    "utm_medium",
+    "utm_campaign",
+    "utm_content",
+    "utm_term",
+    "gclid",
+    "fbclid",
+  ]) {
+    const value = query.get(key)
+
+    if (value) {
+      utm[key] = value.slice(0, 180)
+    }
+  }
+
+  try {
+    if (!window.localStorage.getItem(LANDING_KEY)) {
+      window.localStorage.setItem(LANDING_KEY, path)
+    }
+
+    if (!window.localStorage.getItem(REFERRER_KEY) && document.referrer) {
+      window.localStorage.setItem(REFERRER_KEY, document.referrer.slice(0, 500))
+    }
+
+    if (Object.keys(utm).length) {
+      window.localStorage.setItem(UTM_KEY, JSON.stringify(utm))
+    }
+  } catch {
+    return {
+      landing_page: path,
+      first_referrer: document.referrer || "",
+      utm,
+    }
+  }
+
+  return {
+    landing_page: window.localStorage.getItem(LANDING_KEY) || path,
+    first_referrer: window.localStorage.getItem(REFERRER_KEY) || document.referrer || "",
+    utm: Object.keys(utm).length ? utm : readStoredJson(UTM_KEY),
+  }
+}
+
+const getDeviceInfo = () => {
+  const userAgent = window.navigator.userAgent
+  const isMobile = /android|iphone|ipad|ipod|mobile/i.test(userAgent)
+
+  return {
+    device_type: isMobile ? "mobile" : "desktop",
+    platform: window.navigator.platform || "",
+    language: window.navigator.language || "",
+    languages: window.navigator.languages || [],
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "",
+    screen: {
+      width: window.screen?.width,
+      height: window.screen?.height,
+      pixel_ratio: window.devicePixelRatio || 1,
+    },
+    browser: userAgent.slice(0, 260),
+  }
+}
+
 const sendAnalyticsEvent = ({
   eventType,
   pathname,
@@ -49,6 +127,7 @@ const sendAnalyticsEvent = ({
   customerEmail?: string | null
   metadata?: Record<string, unknown>
 }) => {
+  const attribution = captureAttribution(pathname)
   const payload = {
     event_type: eventType,
     path: buildPath(pathname),
@@ -64,6 +143,8 @@ const sendAnalyticsEvent = ({
         height: window.innerHeight,
       },
       visibility: document.visibilityState,
+      attribution,
+      device: getDeviceInfo(),
       ...metadata,
     },
   }
