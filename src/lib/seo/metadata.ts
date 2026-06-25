@@ -8,13 +8,15 @@ import {
   SEO_ENABLED_ROBOTS,
 } from "./config"
 
-const SITE_NAME = "Shreem Cow Products"
+const SITE_NAME = "Shreem Farms"
 const DEFAULT_TITLE =
-  "Shreem Cow Products | Bilona A2 Ghee, Neem Dhoop, Cow Dung Cakes"
+  "Shreem Farms | Bilona A2 Ghee, Neem Dhoop, Cow Dung Cakes"
 const DEFAULT_DESCRIPTION =
-  "Shop Shreem Cow Products for bilona ghee, neem dhoop, cow dung cakes, and Jeevamrut from naturally grazing desi cows."
+  "Shop Shreem Farms for bilona ghee, neem dhoop, cow dung cakes, and Jeevamrut from naturally grazing desi cows."
 const DEFAULT_KEYWORDS = [
+  "Shreem Farms",
   "Shreem",
+  "shreemfarms",
   "Shreem Cow Products",
   "bilona ghee",
   "neem dhoop",
@@ -57,7 +59,7 @@ export function buildRootMetadata(): Metadata {
     },
     title: {
       default: DEFAULT_TITLE,
-      template: "%s | Shreem",
+      template: "%s | Shreem Farms",
     },
     icons: {
       icon: [
@@ -76,7 +78,7 @@ export function buildRootMetadata(): Metadata {
       title: SITE_NAME,
       description: DEFAULT_DESCRIPTION,
       url: baseUrl,
-      siteName: "Shreem",
+      siteName: "Shreem Farms",
       images: [{ url: "/logo.jpeg", alt: "Shreem peacock-feather inspired logo" }],
       type: "website",
       locale: "en_IN",
@@ -85,7 +87,7 @@ export function buildRootMetadata(): Metadata {
       card: "summary_large_image",
       title: SITE_NAME,
       description:
-        "Shop bilona ghee, neem dhoop, cow dung cakes, and Jeevamrut from Shreem.",
+        "Shop bilona ghee, neem dhoop, cow dung cakes, and Jeevamrut from Shreem Farms.",
       images: ["/logo.jpeg"],
     },
     robots: indexable ? SEO_ENABLED_ROBOTS : SEO_DISABLED_ROBOTS,

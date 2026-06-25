@@ -111,7 +111,7 @@ export default function BrandLogo({
       <div
         className={[
           "flex min-w-0 flex-col",
-          size === "nav" ? "max-w-[84px] small:max-w-none" : "",
+          size === "nav" ? "max-w-[128px] small:max-w-none" : "",
           isCentered ? "items-center" : "",
         ].filter(Boolean).join(" ")}
       >
@@ -122,7 +122,7 @@ export default function BrandLogo({
             isDark ? "text-white" : "text-[var(--shreem-ink)]",
           ].join(" ")}
         >
-          Shreem
+          Shreem Farms
         </span>
         {showCaption && (
           <span

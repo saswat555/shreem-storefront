@@ -81,7 +81,7 @@ export default function Footer() {
           </div>
           <div className="flex flex-col gap-2 border-t border-white/10 pt-5 text-white/64 small:flex-row small:items-center small:justify-between">
             <Text className="text-xs leading-5">
-              © {new Date().getFullYear()} Shreem Cow Products. All rights reserved.
+              © {new Date().getFullYear()} Shreem Farms. All rights reserved.
             </Text>
             <Text className="text-xs leading-5 text-white/58">
               Support, shipping, returns, and payment details are available in the links above.

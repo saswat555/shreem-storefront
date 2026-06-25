@@ -5,7 +5,7 @@ import ErrorMessage from "@modules/checkout/components/error-message"
 import { setShippingMethod } from "@lib/data/cart"
 import { convertToLocale } from "@lib/util/money"
 import { useRouter, useSearchParams, usePathname } from "next/navigation"
-import { useState } from "react"
+import { useMemo, useState } from "react"
 
 type ShippingProps = {
   cart: any
@@ -20,6 +20,28 @@ const Shipping = ({ cart, availableShippingMethods, digitalOnly = false }: Shipp
 
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const isDigitalShippingOption = (option: any) => {
+    const haystack = `${option?.name || ""} ${JSON.stringify(
+      option?.metadata || {}
+    )}`.toLowerCase()
+
+    return (
+      haystack.includes("no shipping") ||
+      haystack.includes("no-shipping") ||
+      haystack.includes("digital")
+    )
+  }
+
+  const deliveryOptions = useMemo(
+    () =>
+      digitalOnly
+        ? availableShippingMethods || []
+        : (availableShippingMethods || []).filter(
+            (option) => !isDigitalShippingOption(option)
+          ),
+    [availableShippingMethods, digitalOnly]
+  )
+
   const [selectedMethodId, setSelectedMethodId] = useState(
     cart?.shipping_methods?.[0]?.shipping_option_id ||
       cart?.shipping_methods?.[0]?.shipping_option?.id ||
@@ -35,6 +57,11 @@ const Shipping = ({ cart, availableShippingMethods, digitalOnly = false }: Shipp
   const handleSubmit = async () => {
     if (!selectedMethodId) {
       setError("Please select a delivery option.")
+      return
+    }
+
+    if (!deliveryOptions.some((option) => option.id === selectedMethodId)) {
+      setError("Please select a valid physical delivery option.")
       return
     }
 
@@ -55,7 +82,7 @@ const Shipping = ({ cart, availableShippingMethods, digitalOnly = false }: Shipp
     }
   }
 
-  const selectedOption = availableShippingMethods?.find(
+  const selectedOption = deliveryOptions?.find(
     (m) => m.id === selectedMethodId
   )
 
@@ -100,9 +127,9 @@ const Shipping = ({ cart, availableShippingMethods, digitalOnly = false }: Shipp
 
       {isOpen ? (
         <div>
-          {!availableShippingMethods?.length ? (
+          {!deliveryOptions?.length ? (
             <div className="rounded-md border border-orange-200 bg-orange-50 p-4 text-sm text-orange-700">
-              No delivery option is available for this region. Add a normal Medusa shipping option in Admin → Settings → Regions.
+              No physical delivery option is available for this region. Add a normal Medusa shipping option in Admin → Settings → Regions.
             </div>
           ) : (
             <RadioGroup
@@ -110,7 +137,7 @@ const Shipping = ({ cart, availableShippingMethods, digitalOnly = false }: Shipp
               onValueChange={setSelectedMethodId}
               className="flex flex-col gap-y-3"
             >
-              {availableShippingMethods.map((option) => (
+              {deliveryOptions.map((option) => (
                 <div
                   key={option.id}
                   className="flex items-center justify-between rounded-md border p-4"
@@ -143,7 +170,7 @@ const Shipping = ({ cart, availableShippingMethods, digitalOnly = false }: Shipp
             size="large"
             className="mt-6"
             isLoading={isLoading}
-            disabled={isLoading || !selectedMethodId}
+            disabled={isLoading || !selectedMethodId || !deliveryOptions?.length}
             onClick={handleSubmit}
             data-testid="submit-delivery-option-button"
           >

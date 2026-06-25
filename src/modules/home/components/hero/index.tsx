@@ -25,7 +25,7 @@ const Hero = ({
           <div className="grid gap-6 small:grid-cols-[0.88fr_1.12fr] small:items-center">
             <div>
               <h1 className="mx-auto max-w-[14ch] text-center text-[1.95rem] leading-[1.06] text-balance text-[var(--shreem-ink)] small:mx-0 small:text-left small:text-[2.7rem] large:text-[3.05rem]">
-                Rooted in desi-cow care. Made for daily ritual.
+                Shreem Farms, rooted in desi-cow care.
               </h1>
               <p className="brand-page-copy mt-5 max-w-[38rem] text-center small:text-left">
                 Cultured bilona ghee, neem dhoop, cow-dung cakes, and Jeevamrut

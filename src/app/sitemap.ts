@@ -204,6 +204,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
                 : 0.55,
       }))
   )
+  const rootEntry: MetadataRoute.Sitemap = [
+    {
+      url: siteUrl,
+      lastModified: now,
+      changeFrequency: "daily",
+      priority: 1,
+    },
+  ]
 
   const productEntries: MetadataRoute.Sitemap = countryCodes.flatMap(
     (countryCode) =>
@@ -247,6 +255,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   )
 
   return uniqByUrl([
+    ...rootEntry,
     ...staticEntries,
     ...productEntries,
     ...categoryEntries,

@@ -29,6 +29,19 @@ const getActiveSession = (cart: any) =>
       session?.status === "pending" || session?.status === "authorized"
   ) || cart?.payment_collection?.payment_sessions?.[0]
 
+const hasValidPhysicalShipping = (cart: any) => {
+  const methods = Array.isArray(cart?.shipping_methods) ? cart.shipping_methods : []
+
+  if (!methods.length) {
+    return false
+  }
+
+  return methods.some((method: any) => {
+    const haystack = `${method?.name || ""} ${method?.shipping_option?.name || ""} ${JSON.stringify(method?.metadata || {})}`.toLowerCase()
+    return !haystack.includes("no shipping") && !haystack.includes("no-shipping") && !haystack.includes("digital")
+  })
+}
+
 const ManualUpiNotice = ({ data }: { data?: Record<string, unknown> | null }) => {
   const [liveConfig, setLiveConfig] = useState<ManualUpiLiveConfig | null>(null)
 
@@ -153,9 +166,10 @@ const Payment = ({
   const pathname = usePathname()
 
   const activeSession = useMemo(() => getActiveSession(cart), [cart])
-  const providerMethods = Array.isArray(availablePaymentMethods)
-    ? availablePaymentMethods
-    : []
+  const providerMethods = useMemo(
+    () => (Array.isArray(availablePaymentMethods) ? availablePaymentMethods : []),
+    [availablePaymentMethods]
+  )
 
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -185,9 +199,7 @@ const Payment = ({
   const digitalOnlyCart = isDigitalOnlyCart(cart)
   const hasShipping =
     digitalOnlyCart ||
-    !cart?.shipping_address ||
-    !Array.isArray(cart?.shipping_methods) ||
-    cart.shipping_methods.length > 0
+    Boolean(cart?.shipping_address && hasValidPhysicalShipping(cart))
 
   const paymentReady =
     paidByGiftcard ||

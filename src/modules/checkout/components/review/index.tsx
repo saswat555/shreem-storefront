@@ -4,12 +4,23 @@ import { Heading } from "@medusajs/ui"
 import PaymentButton from "@modules/checkout/components/payment-button"
 import { isDigitalOnlyCart } from "@lib/util/digital-cart"
 
+const hasValidPhysicalShipping = (cart: any) => {
+  const methods = Array.isArray(cart?.shipping_methods) ? cart.shipping_methods : []
+
+  if (!methods.length) {
+    return false
+  }
+
+  return methods.some((method: any) => {
+    const haystack = `${method?.name || ""} ${method?.shipping_option?.name || ""} ${JSON.stringify(method?.metadata || {})}`.toLowerCase()
+    return !haystack.includes("no shipping") && !haystack.includes("no-shipping") && !haystack.includes("digital")
+  })
+}
+
 const Review = ({ cart }: { cart: any }) => {
   const hasShipping =
     isDigitalOnlyCart(cart) ||
-    !cart?.shipping_address ||
-    !Array.isArray(cart?.shipping_methods) ||
-    cart.shipping_methods.length > 0
+    Boolean(cart?.shipping_address && hasValidPhysicalShipping(cart))
 
   const hasPayment =
     Array.isArray(cart?.payment_collection?.payment_sessions) &&

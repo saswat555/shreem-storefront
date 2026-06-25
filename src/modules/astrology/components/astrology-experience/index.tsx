@@ -2948,29 +2948,49 @@ const CustomerMarkeshTimeline = ({
     )
   }
 
+  const selectCustomerTimingRows = (
+    rows:
+      | KundliCriticalPeriodAnalysis["exact_timing_windows"]
+      | KundliCriticalPeriodAnalysis["retrospective_timing_windows"]
+      | undefined
+  ) => {
+    const sortedRows = [...(rows || [])].sort(
+      (a, b) => Number(b.score || 0) - Number(a.score || 0)
+    )
+    const strictRows = sortedRows.filter(
+      (row) => row.confidence === "high" && Number(row.score || 0) >= 24
+    )
+    if (strictRows.length) {
+      return strictRows
+    }
+
+    const highRows = sortedRows.filter((row) => row.confidence === "high")
+    if (highRows.length) {
+      return highRows
+    }
+
+    return sortedRows.filter((row) => Number(row.score || 0) >= 20)
+  }
+
   const groups = [
     {
       title: "Birth to today",
       description:
         "Past dates help you compare the timing calculation with events you remember.",
-      rows: (analysis.retrospective_timing_windows || []).filter(
-        (row) => row.confidence === "high" && Number(row.score || 0) >= 24
-      ),
+      rows: selectCustomerTimingRows(analysis.retrospective_timing_windows),
     },
     {
       title: "Today to the next 30 years",
       description:
         "Future dates are reminders for extra discipline, routine checks and careful decisions.",
-      rows: (analysis.exact_timing_windows || []).filter(
-        (row) => row.confidence === "high" && Number(row.score || 0) >= 24
-      ),
+      rows: selectCustomerTimingRows(analysis.exact_timing_windows),
     },
   ]
 
   return (
     <section className="rounded-[20px] border border-[var(--shreem-border)] bg-white/66 px-4 py-4">
       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
-        Lifetime prevention calendar
+        Markesh timing
       </p>
       <h3 className="mt-2 text-xl font-semibold text-[var(--shreem-ink)]">
         Strong Markesh watch periods across life
@@ -2980,6 +3000,37 @@ const CustomerMarkeshTimeline = ({
         predict death, disease or a certain harmful event. They are practical
         reminders to avoid unnecessary risk and look after health and routine.
       </p>
+      <div className="mt-4 grid gap-3 small:grid-cols-3">
+        <div className="rounded-[16px] border border-[var(--shreem-border)] bg-white/78 px-3 py-3">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--shreem-gold-deep)]">
+            Maraka lords
+          </p>
+          <p className="mt-2 text-sm font-semibold text-[var(--shreem-ink)]">
+            {analysis.maraka_lords?.filter(Boolean).join(", ") || "Not calculated"}
+          </p>
+        </div>
+        <div className="rounded-[16px] border border-[var(--shreem-border)] bg-white/78 px-3 py-3">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--shreem-gold-deep)]">
+            Badhaka house
+          </p>
+          <p className="mt-2 text-sm font-semibold text-[var(--shreem-ink)]">
+            {analysis.badhaka_house ? `House ${analysis.badhaka_house}` : "Not calculated"}
+          </p>
+        </div>
+        <div className="rounded-[16px] border border-[var(--shreem-border)] bg-white/78 px-3 py-3">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--shreem-gold-deep)]">
+            Badhakesh
+          </p>
+          <p className="mt-2 text-sm font-semibold text-[var(--shreem-ink)]">
+            {analysis.badhakesh || "Not calculated"}
+          </p>
+        </div>
+      </div>
+      {!!analysis.active_triggers?.length && (
+        <p className="mt-3 rounded-[14px] bg-[rgba(240,248,246,0.76)] px-3 py-2 text-xs leading-5 text-[var(--shreem-muted)]">
+          Active timing triggers: {analysis.active_triggers.slice(0, 4).join("; ")}
+        </p>
+      )}
       <div className="mt-4 grid gap-4 lg:grid-cols-2">
         {groups.map((group) => (
           <div
@@ -3020,8 +3071,9 @@ const CustomerMarkeshTimeline = ({
               ))}
               {!group.rows.length && (
                 <p className="rounded-[14px] bg-[rgba(240,248,246,0.72)] px-3 py-3 text-xs leading-5 text-[var(--shreem-muted)]">
-                  No period in this range met the strict display threshold.
-                  Weaker combinations are intentionally hidden.
+                  Markesh roles were calculated, but no short window in this
+                  range crossed the strict multi-factor display threshold.
+                  Weaker or single-factor combinations are intentionally hidden.
                 </p>
               )}
             </div>
@@ -3261,7 +3313,7 @@ const SavedKundliPanel = ({
           <button
             type="button"
             onClick={() => setOpen(true)}
-            className="rounded-full border border-[rgba(13,129,126,0.22)] bg-white px-4 py-2 text-xs font-semibold text-[var(--shreem-accent-dark)]"
+            className="rounded-full border border-[rgba(13,129,126,0.22)] bg-[var(--shreem-surface)] px-4 py-2 text-xs font-semibold text-[var(--shreem-accent-dark)] shadow-sm"
           >
             Manage saved Kundlis
           </button>
@@ -3290,7 +3342,7 @@ const SavedKundliPanel = ({
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="rounded-full border border-[var(--shreem-border)] bg-white px-3 py-2 text-xs font-semibold text-[var(--shreem-ink)]"
+                className="rounded-full border border-[var(--shreem-border)] bg-[rgba(255,255,255,0.10)] px-3 py-2 text-xs font-semibold text-[var(--shreem-ink)]"
               >
                 Close
               </button>
@@ -3302,7 +3354,7 @@ const SavedKundliPanel = ({
                   {visibleProfiles.map((profile) => (
                     <div
                       key={profile.id}
-                      className="rounded-[20px] border border-[var(--shreem-border)] bg-white/72 px-3 py-3"
+                      className="rounded-[20px] border border-[var(--shreem-border)] bg-[rgba(255,255,255,0.08)] px-3 py-3 shadow-sm"
                     >
                       <div className="flex flex-col gap-2 small:flex-row small:items-start small:justify-between">
                         <div className="min-w-0">
@@ -3325,7 +3377,7 @@ const SavedKundliPanel = ({
                         <button
                           type="button"
                           onClick={() => closeAfter(() => onUse(profile))}
-                          className="rounded-full border border-[rgba(13,129,126,0.18)] bg-white px-3 py-2 text-xs font-semibold text-[var(--shreem-accent-dark)]"
+                          className="rounded-full border border-[rgba(13,129,126,0.24)] bg-[rgba(13,129,126,0.10)] px-3 py-2 text-xs font-semibold text-[var(--shreem-accent-dark)]"
                         >
                           Use details
                         </button>
@@ -3333,7 +3385,7 @@ const SavedKundliPanel = ({
                           type="button"
                           onClick={() => closeAfter(() => onOpen(profile))}
                           disabled={!profile.lastResult?.chart}
-                          className="rounded-full border border-[rgba(18,63,99,0.16)] bg-white px-3 py-2 text-xs font-semibold text-[var(--shreem-ink)] disabled:cursor-not-allowed disabled:opacity-45"
+                          className="rounded-full border border-[var(--shreem-border)] bg-[rgba(255,255,255,0.10)] px-3 py-2 text-xs font-semibold text-[var(--shreem-ink)] disabled:cursor-not-allowed disabled:opacity-45"
                         >
                           Open chart
                         </button>
@@ -3356,7 +3408,7 @@ const SavedKundliPanel = ({
                   ))}
                 </div>
               ) : (
-                <p className="rounded-[18px] border border-dashed border-[rgba(13,129,126,0.2)] bg-white/64 px-4 py-4 text-sm leading-6 text-[var(--shreem-muted)]">
+                <p className="rounded-[18px] border border-dashed border-[rgba(13,129,126,0.24)] bg-[rgba(13,129,126,0.08)] px-4 py-4 text-sm leading-6 text-[var(--shreem-muted)]">
                   No saved Kundlis yet. Fill birth details and save them before
                   or after generating a chart.
                 </p>
@@ -3373,7 +3425,7 @@ const SavedKundliPanel = ({
                     type="button"
                     onClick={() => setPage(Math.max(0, safePage - 1))}
                     disabled={safePage === 0}
-                    className="rounded-full border border-[var(--shreem-border)] bg-white px-3 py-2 text-xs font-semibold text-[var(--shreem-ink)] disabled:cursor-not-allowed disabled:opacity-45"
+                    className="rounded-full border border-[var(--shreem-border)] bg-[rgba(255,255,255,0.10)] px-3 py-2 text-xs font-semibold text-[var(--shreem-ink)] disabled:cursor-not-allowed disabled:opacity-45"
                   >
                     Previous
                   </button>
@@ -3381,7 +3433,7 @@ const SavedKundliPanel = ({
                     type="button"
                     onClick={() => setPage(Math.min(totalPages - 1, safePage + 1))}
                     disabled={safePage >= totalPages - 1}
-                    className="rounded-full border border-[rgba(13,129,126,0.22)] bg-white px-3 py-2 text-xs font-semibold text-[var(--shreem-accent-dark)] disabled:cursor-not-allowed disabled:opacity-45"
+                    className="rounded-full border border-[rgba(13,129,126,0.22)] bg-[rgba(13,129,126,0.10)] px-3 py-2 text-xs font-semibold text-[var(--shreem-accent-dark)] disabled:cursor-not-allowed disabled:opacity-45"
                   >
                     Next
                   </button>
@@ -5198,7 +5250,9 @@ const KundliResultView = ({
             </p>
           </section>
         )}
+        <DashaCard chart={chart} />
         <CompactDashaPredictionList rows={result.analysis?.dasha_predictions} />
+        <DashaTimelineTable timeline={result.dasha_timeline} />
         <CustomerMarkeshTimeline analysis={result.critical_period_analysis} />
       </div>
 
@@ -6033,6 +6087,59 @@ const compactLocalAnalysis = (analysis?: KundliAnalysis): KundliAnalysis | undef
   }
 }
 
+const compactLocalDashaTimeline = (
+  timeline?: KundliDashaTimeline
+): KundliDashaTimeline | undefined => {
+  if (!timeline) {
+    return undefined
+  }
+
+  return {
+    range: timeline.range,
+    mahadashas: timeline.mahadashas?.slice(0, 12),
+    lifetime_antardashas: timeline.lifetime_antardashas?.slice(0, 36),
+    current_antardashas: timeline.current_antardashas?.slice(0, 12),
+    current_pratyantars: timeline.current_pratyantars?.slice(0, 12),
+    current_sookshmas: timeline.current_sookshmas?.slice(0, 12),
+    current_pranas: timeline.current_pranas?.slice(0, 12),
+  }
+}
+
+const compactLocalCriticalPeriodAnalysis = (
+  analysis?: KundliCriticalPeriodAnalysis
+): KundliCriticalPeriodAnalysis | undefined => {
+  if (!analysis) {
+    return undefined
+  }
+
+  const bestRows = <
+    T extends
+      | NonNullable<KundliCriticalPeriodAnalysis["exact_timing_windows"]>[number]
+      | NonNullable<KundliCriticalPeriodAnalysis["retrospective_timing_windows"]>[number],
+  >(
+    rows?: T[],
+    limit = 12
+  ) =>
+    [...(rows || [])]
+      .sort((a, b) => Number(b.score || 0) - Number(a.score || 0))
+      .slice(0, limit)
+
+  return {
+    maraka_lords: analysis.maraka_lords?.slice(0, 4),
+    badhaka_house: analysis.badhaka_house,
+    badhakesh: analysis.badhakesh,
+    active_triggers: analysis.active_triggers?.slice(0, 6),
+    watch_periods: analysis.watch_periods?.slice(0, 8),
+    retrospective_timing_windows: bestRows(
+      analysis.retrospective_timing_windows,
+      10
+    ),
+    exact_timing_windows: bestRows(analysis.exact_timing_windows, 12),
+    medical_watchlist: analysis.medical_watchlist?.slice(0, 6),
+    safety_note: analysis.safety_note,
+  }
+}
+
 const compactLocalKundliResult = (result?: KundliResult): KundliResult | undefined => {
   if (!result) {
     return undefined
@@ -6041,6 +6148,10 @@ const compactLocalKundliResult = (result?: KundliResult): KundliResult | undefin
   return {
     profile: result.profile,
     chart: result.chart,
+    dasha_timeline: compactLocalDashaTimeline(result.dasha_timeline),
+    critical_period_analysis: compactLocalCriticalPeriodAnalysis(
+      result.critical_period_analysis
+    ),
     detected_yogas: result.detected_yogas?.slice(0, 12),
     stones: result.stones,
     health_indicators: result.health_indicators?.slice(0, 8),
@@ -6795,6 +6906,41 @@ export default function AstrologyExperience({
         : [profile.subQuestions?.[0] || "", profile.subQuestions?.[1] || "", profile.subQuestions?.[2] || ""],
   })
 
+  const findSavedKundliResultInHistory = (profile: SavedKundliProfile) => {
+    const profileKey = `${profile.name}-${profile.birthDate}-${profile.birthTime}-${profile.cityId}`
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+
+    const matched = history.find((item) => {
+      if (item.type !== "Kundli") {
+        return false
+      }
+
+      const itemProfile = getKundliHistoryProfile(item)
+      const input = getHistoryInputRecord(item)
+      const itemCityId =
+        historyText(input.cityId) ||
+        findCityIdFromLabel(historyText(itemProfile.city, input.city)) ||
+        profile.cityId
+      const itemKey = `${historyText(itemProfile.name, input.name)}-${historyText(
+        itemProfile.birth_date,
+        input.birthDate,
+        input.birth_date
+      )}-${historyText(
+        itemProfile.birth_time,
+        input.birthTime,
+        input.birth_time
+      )}-${itemCityId}`
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+      const response = getHistoryResponseRecord(item)
+
+      return itemKey === profileKey && Boolean(response.chart && response.analysis)
+    })
+
+    return matched?.response as KundliResult | undefined
+  }
+
   const saveKundliProfile = (
     result?: KundliResult | null,
     options: { quiet?: boolean; form?: typeof kundliForm } = {}
@@ -6893,9 +7039,13 @@ export default function AstrologyExperience({
 
   const openSavedKundliProfile = (profile: SavedKundliProfile) => {
     applySavedKundliProfile(profile)
+    const reusableResult =
+      profile.lastResult?.chart
+        ? profile.lastResult
+        : findSavedKundliResultInHistory(profile)
 
-    if (profile.lastResult?.chart) {
-      setKundliResult(profile.lastResult)
+    if (reusableResult?.chart) {
+      setKundliResult(reusableResult)
       setActiveTab("kundli")
       setSavedKundliMessage(`${profile.name} chart opened without AI usage.`)
       return

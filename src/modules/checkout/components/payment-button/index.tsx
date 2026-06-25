@@ -7,9 +7,9 @@ import {
   isStripeLike,
 } from "@lib/constants"
 import {
+  completeRazorpayPayment,
   placeOrder,
   safeInitiatePaymentSession,
-  updatePaymentSession,
 } from "@lib/data/cart"
 import { isDigitalOnlyCart } from "@lib/util/digital-cart"
 import { HttpTypes } from "@medusajs/types"
@@ -125,6 +125,19 @@ const getActivePaymentSession = (cart: HttpTypes.StoreCart) =>
       session.status === "pending" || session.status === "authorized"
   ) || cart.payment_collection?.payment_sessions?.[0]
 
+const hasValidPhysicalShipping = (cart: HttpTypes.StoreCart) => {
+  const methods = cart.shipping_methods || []
+
+  if (!methods.length) {
+    return false
+  }
+
+  return methods.some((method: any) => {
+    const haystack = `${method?.name || ""} ${method?.shipping_option?.name || ""} ${JSON.stringify(method?.metadata || {})}`.toLowerCase()
+    return !haystack.includes("no shipping") && !haystack.includes("no-shipping") && !haystack.includes("digital")
+  })
+}
+
 const getPaymentSessionsFromResponse = (payload: any) => {
   const candidates = [
     payload?.payment_collection?.payment_sessions,
@@ -175,12 +188,13 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
   "data-testid": dataTestId,
 }) => {
   const digitalOnlyCart = isDigitalOnlyCart(cart)
+  const shippingReady = digitalOnlyCart || hasValidPhysicalShipping(cart)
   const notReady =
     !cart ||
     !cart.shipping_address ||
     !cart.billing_address ||
     !cart.email ||
-    (!digitalOnlyCart && (cart.shipping_methods?.length ?? 0) < 1)
+    !shippingReady
 
   const paymentSession = getActivePaymentSession(cart)
 
@@ -234,6 +248,7 @@ const RazorpayPaymentButton = ({
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   const session = getActivePaymentSession(cart)
+  const digitalOnlyCart = isDigitalOnlyCart(cart)
   const {
     orderId: razorpayOrderId,
     amount,
@@ -265,6 +280,8 @@ const RazorpayPaymentButton = ({
         throw new Error("Razorpay payment session is not ready. Please select Razorpay again.")
       }
 
+      let activeSessionId = activeSession.id
+
       if (!activeOrderId) {
         const refreshed = await safeInitiatePaymentSession(cart, {
           provider_id: activeSession.provider_id,
@@ -279,6 +296,7 @@ const RazorpayPaymentButton = ({
 
         if (refreshedSession) {
           activeSession = refreshedSession
+          activeSessionId = refreshedSession.id
           const details = getRazorpaySessionDetails(activeSession, cart)
           sessionData = details.sessionData
           activeOrderId = details.orderId
@@ -346,16 +364,13 @@ const RazorpayPaymentButton = ({
                 throw new Error("Razorpay payment response was incomplete.")
               }
 
-              await updatePaymentSession({
+              const completedOrder = await completeRazorpayPayment({
+                cartId: cart.id,
                 paymentCollectionId: cart.payment_collection!.id,
-                paymentSessionId: activeSession.id,
-                data: {
-                  ...sessionData,
-                  provider: "razorpay",
-                  razorpay_payment_id,
-                  razorpay_order_id,
-                  razorpay_signature,
-                },
+                paymentSessionId: activeSessionId,
+                razorpayOrderId: razorpay_order_id,
+                razorpayPaymentId: razorpay_payment_id,
+                razorpaySignature: razorpay_signature,
               })
               trackPaymentEvent("payment_authorized", {
                 provider: "razorpay",
@@ -363,15 +378,36 @@ const RazorpayPaymentButton = ({
                 razorpay_order_id,
               })
 
-              const completedCart = await placeOrder(cart.id)
+              const orderId =
+                (completedOrder as any)?.complete_response?.order?.id ||
+                (completedOrder as any)?.order?.id ||
+                (completedOrder as any)?.id ||
+                ""
+              const countryCode =
+                (completedOrder as any)?.complete_response?.order?.shipping_address?.country_code ||
+                (completedOrder as any)?.complete_response?.order?.billing_address?.country_code ||
+                (completedOrder as any)?.countryCode ||
+                cart.shipping_address?.country_code ||
+                cart.billing_address?.country_code ||
+                "in"
 
-              if (completedCart) {
-                throw new Error(
-                  "Payment was verified, but the order did not complete automatically. Please contact support before retrying payment."
+              if (orderId) {
+                trackPaymentEvent("order_completed", {
+                  provider: "razorpay",
+                  cart_id: cart.id,
+                  order_id: orderId,
+                })
+                const accountPath = digitalOnlyCart ? "account" : "account/orders"
+                window.location.assign(
+                  `/${String(countryCode).toLowerCase()}/${accountPath}`
                 )
+                resolve()
+                return
               }
 
-              resolve()
+              throw new Error(
+                "Payment was verified, but the order did not complete automatically. Please contact support before retrying payment."
+              )
             } catch (error) {
               reject(error)
             }

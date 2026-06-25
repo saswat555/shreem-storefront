@@ -163,12 +163,19 @@ const getGeminiModelFallbacks = (primaryModel: string) => {
     process.env.ASTROLOGY_AI_MODEL_FALLBACKS ||
       process.env.GEMINI_MODEL_FALLBACKS
   )
+  const defaultLadder = [
+    primaryModel,
+    "gemini-2.5-flash",
+    "gemini-2.5-flash-lite",
+    "gemini-3.1-flash-lite",
+    "gemini-3-flash",
+  ]
   const defaults = configured.length
-    ? configured
-    : [primaryModel, "gemini-2.5-flash-lite"]
+    ? [...configured, ...defaultLadder]
+    : defaultLadder
 
   return Array.from(new Set([primaryModel, ...defaults])).filter(
-    (model) => model !== "gemini-2.0-flash"
+    (model) => !model.startsWith("gemini-2.0")
   )
 }
 
@@ -199,6 +206,34 @@ const shouldRetryGemini = ({
       status === 429 ||
       (status && status >= 500)
   )
+
+const shouldAdvanceModelImmediately = ({
+  status,
+  error,
+  hasNextModel,
+  provider,
+}: {
+  status?: number
+  error?: string
+  hasNextModel: boolean
+  provider: "gemini" | "ollama"
+}) => {
+  if (provider !== "gemini" || !hasNextModel) {
+    return false
+  }
+
+  return Boolean(
+    status === 503 ||
+      status === 404 ||
+      status === 400 ||
+      /UNAVAILABLE|high demand|temporar(?:y|ily).*unavailable|model.*overloaded|server overloaded/i.test(
+        error || ""
+      ) ||
+      /not found|not supported|unsupported|model .*not available|model .*not found/i.test(
+        error || ""
+      )
+  )
+}
 
 const safeParseJson = (text: string) => {
   try {
@@ -232,6 +267,10 @@ const getDefaultGeminiRates = (model: string, promptTokens: number) => {
 
   if (!normalizedModel.includes("gemini")) {
     return { input: 0, output: 0, cachedInput: 0 }
+  }
+
+  if (normalizedModel.includes("3.1-flash-lite")) {
+    return { input: 0.25, output: 1.5, cachedInput: 0.025 }
   }
 
   if (normalizedModel.includes("3.5-flash")) {
@@ -508,6 +547,12 @@ export const generateGeminiJson = async ({
             timedOut,
             networkError: !response,
           })
+          const advanceModelNow = shouldAdvanceModelImmediately({
+            status: response?.status,
+            error: errorMessage,
+            hasNextModel: modelIndex < modelsToTry.length - 1,
+            provider,
+          })
 
           attemptLogs.push({
             provider,
@@ -539,7 +584,8 @@ export const generateGeminiJson = async ({
           }
 
           const willRetry =
-            retryable && (attempt < attempts || modelIndex < modelsToTry.length - 1)
+            retryable &&
+            (advanceModelNow || attempt < attempts || modelIndex < modelsToTry.length - 1)
           const logGenerationIssue = willRetry ? console.log : console.error
 
           logGenerationIssue(`[${label}] Gemini generation ${willRetry ? "retrying" : "failed"}`, {
@@ -547,6 +593,8 @@ export const generateGeminiJson = async ({
             attempts,
             model: currentModel,
             modelIndex,
+            nextModel: advanceModelNow ? modelsToTry[modelIndex + 1] : undefined,
+            advanceModelNow,
             queuedMs,
             status: response?.status,
             statusText: response?.statusText,
@@ -556,6 +604,9 @@ export const generateGeminiJson = async ({
 
           if (willRetry) {
             await sleep(getBackoffMs(attempt, modelIndex))
+            if (advanceModelNow) {
+              break
+            }
             continue
           }
 

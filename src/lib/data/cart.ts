@@ -366,6 +366,46 @@ export async function updatePaymentSession({
     .catch(medusaError)
 }
 
+export async function completeRazorpayPayment({
+  cartId,
+  paymentCollectionId,
+  paymentSessionId,
+  razorpayOrderId,
+  razorpayPaymentId,
+  razorpaySignature,
+}: {
+  cartId: string
+  paymentCollectionId: string
+  paymentSessionId: string
+  razorpayOrderId: string
+  razorpayPaymentId: string
+  razorpaySignature?: string
+}) {
+  const headers = {
+    ...(await getAuthHeaders()),
+  }
+
+  return sdk.client
+    .fetch("/store/razorpay/complete", {
+      method: "POST",
+      headers,
+      body: {
+        cart_id: cartId,
+        payment_collection_id: paymentCollectionId,
+        payment_session_id: paymentSessionId,
+        razorpay_order_id: razorpayOrderId,
+        razorpay_payment_id: razorpayPaymentId,
+        razorpay_signature: razorpaySignature,
+      },
+      cache: "no-store",
+    })
+    .then(async (resp: any) => {
+      await revalidateCartState()
+      return resp
+    })
+    .catch(medusaError)
+}
+
 export async function safeInitiatePaymentSession(
   cart: HttpTypes.StoreCart,
   data: HttpTypes.StoreInitializePaymentSession
@@ -588,6 +628,8 @@ export async function placeOrder(cartId?: string) {
   if (cartRes?.type === "order") {
     const countryCode =
       cartRes.order.shipping_address?.country_code?.toLowerCase()
+      || cartRes.order.billing_address?.country_code?.toLowerCase()
+      || "in"
 
     const orderCacheTag = await getCacheTag("orders")
     if (orderCacheTag) {
@@ -595,6 +637,15 @@ export async function placeOrder(cartId?: string) {
     }
 
     removeCartId()
+
+    if (cartId) {
+      return {
+        type: "order",
+        order: cartRes.order,
+        countryCode,
+      }
+    }
+
     redirect(`/${countryCode}/order/${cartRes?.order.id}/confirmed`)
   }
 

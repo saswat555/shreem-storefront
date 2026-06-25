@@ -19,9 +19,9 @@ export async function generateMetadata(props: {
 }): Promise<Metadata> {
   const { countryCode } = await props.params
   const title =
-    "Shreem Cow Products | Bilona A2 Ghee, Neem Dhoop & Natural Farming"
+    "Shreem Farms | Bilona A2 Ghee, Neem Dhoop & Natural Farming"
   const description =
-    "Shop Shreem Cow Products for bilona A2 ghee, neem dhoop batti, cow-dung cakes, Jeevamrut, and desi-cow inspired ritual essentials."
+    "Shop Shreem Farms for bilona A2 ghee, neem dhoop batti, cow-dung cakes, Jeevamrut, and desi-cow inspired ritual essentials."
 
   return {
     title,
@@ -36,7 +36,7 @@ export async function generateMetadata(props: {
       images: [
         {
           url: "/logo.jpeg",
-          alt: "Shreem Cow Products logo with peacock-feather colors",
+          alt: "Shreem Farms logo with peacock-feather colors",
         },
       ],
     },
@@ -78,39 +78,56 @@ export default async function Home(props: {
   const websiteSchema = {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    name: "Shreem Cow Products",
+    "@id": `${baseUrl}/#website`,
+    name: "Shreem Farms",
+    alternateName: ["Shreem", "Shreem Cow Products", "shreemfarms"],
     url: baseUrl,
     description:
-      "Shop bilona A2 ghee, neem dhoop batti, cow-dung cakes, and Jeevamrut farm input from desi-cow sources.",
+      "Shop Shreem Farms bilona A2 ghee, neem dhoop batti, cow-dung cakes, and Jeevamrut farm input from desi-cow sources.",
+    potentialAction: {
+      "@type": "SearchAction",
+      target: `${baseUrl}/${countryCode}/store?query={search_term_string}`,
+      "query-input": "required name=search_term_string",
+    },
   }
 
   const organizationSchema = {
     "@context": "https://schema.org",
     "@type": "Organization",
-    name: "Shreem Cow Products",
+    "@id": `${baseUrl}/#organization`,
+    name: "Shreem Farms",
+    alternateName: ["Shreem", "Shreem Cow Products", "shreemfarms.in"],
     url: baseUrl,
     logo: `${baseUrl}/logo.jpeg`,
     description:
-      "A desi-cow D2C brand focused on bilona A2 ghee, neem dhoop batti, cow-dung cakes, and Jeevamrut for natural-farming routines.",
+      "Shreem Farms is a desi-cow D2C brand focused on bilona A2 ghee, neem dhoop batti, cow-dung cakes, and Jeevamrut for natural-farming routines.",
+    brand: {
+      "@type": "Brand",
+      name: "Shreem Farms",
+      alternateName: "Shreem",
+    },
   }
   const storeSchema = {
     "@context": "https://schema.org",
     "@type": "Store",
-    name: "Shreem Cow Products",
+    "@id": `${baseUrl}/#store`,
+    name: "Shreem Farms",
+    alternateName: ["Shreem", "Shreem Cow Products"],
     url: `${baseUrl}/${countryCode}`,
     image: `${baseUrl}/logo.jpeg`,
     description:
-      "Shop bilona A2 ghee, neem dhoop batti, cow-dung cakes, Jeevamrut, and desi-cow inspired products for home, ritual, and natural farming.",
+      "Shop Shreem Farms bilona A2 ghee, neem dhoop batti, cow-dung cakes, Jeevamrut, and desi-cow inspired products for home, ritual, and natural farming.",
     brand: {
       "@type": "Brand",
-      name: "Shreem",
+      name: "Shreem Farms",
+      alternateName: "Shreem",
     },
   }
   const productItemListSchema = latestProducts.length
     ? {
         "@context": "https://schema.org",
         "@type": "ItemList",
-        name: "Featured Shreem Cow Products",
+        name: "Featured Shreem Farms products",
         itemListElement: latestProducts.map((product, index) => ({
           "@type": "ListItem",
           position: index + 1,
