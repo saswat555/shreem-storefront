@@ -174,6 +174,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticPaths = [
     "",
     "store",
+    "gemstones",
     "blog",
     "a2-bilona-ghee",
     "natural-pooja-dhoop",

@@ -8,6 +8,28 @@ export type ShreemJournalPost = {
   category: string
   readTime: string
   publishedAt: string
+  seoTitle?: string
+  metaTitle?: string
+  metaDescription?: string
+  targetKeyword?: string
+  relatedKeywords?: string[]
+  searchIntent?: string
+  focusedProduct?: {
+    name: string
+    href: string
+    handle?: string
+    category?: string
+  }
+  productCta?: {
+    midArticle?: string
+    final?: string
+  }
+  faq?: {
+    question: string
+    answer: string
+  }[]
+  socialCaption?: string
+  suggestedNextTopics?: string[]
   sections: {
     heading: string
     body: string[]

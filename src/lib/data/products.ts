@@ -10,6 +10,32 @@ import { getRegion, retrieveRegion } from "./regions"
 
 const PRODUCT_CACHE_TAG = "products"
 
+const isGemstoneMarketplaceProduct = (product: HttpTypes.StoreProduct) => {
+  const metadata = (product.metadata || {}) as Record<string, unknown>
+  const channel = String(
+    metadata.marketplace_channel ||
+      metadata.sales_channel ||
+      metadata.shreem_channel ||
+      metadata.product_channel ||
+      ""
+  ).toLowerCase()
+  const productType = String(
+    metadata.product_type || metadata.type || metadata.category || ""
+  ).toLowerCase()
+  const handle = String(product.handle || "").toLowerCase()
+  const tags = ((product as any).tags || [])
+    .map((tag: any) => String(tag?.value || tag?.name || tag || "").toLowerCase())
+    .join(" ")
+
+  return (
+    channel.includes("gemstone") ||
+    productType.includes("gemstone") ||
+    tags.includes("gemstone") ||
+    handle.startsWith("gemstone-") ||
+    handle.startsWith("ratna-")
+  )
+}
+
 const getProductCacheOptions = async (
   queryParams?: HttpTypes.FindParams & HttpTypes.StoreProductListParams
 ) => {
@@ -83,12 +109,15 @@ export const listProducts = async ({
       }
     )
     .then(({ products, count }) => {
+      const visibleProducts = products.filter(
+        (product) => !isGemstoneMarketplaceProduct(product)
+      )
       const nextPage = count > offset + limit ? pageParam + 1 : null
 
       return {
         response: {
-          products,
-          count,
+          products: visibleProducts,
+          count: Math.max(visibleProducts.length, count - (products.length - visibleProducts.length)),
         },
         nextPage: nextPage,
         queryParams,

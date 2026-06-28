@@ -8,6 +8,7 @@ export default function Footer() {
     { href: "/", label: "Home" },
     { href: "/store", label: "Shop" },
     { href: "/shreem-astrology", label: "Astrology" },
+    { href: "/gemstones", label: "Gemstones" },
     { href: "/blog", label: "Blog" },
     { href: "/customer-service", label: "Support" },
   ]

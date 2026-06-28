@@ -5,7 +5,6 @@ import { getRegion, listRegions } from "@lib/data/regions"
 import { getProductPrice } from "@lib/util/get-product-price"
 import { getBaseURL } from "@lib/util/env"
 import { toAbsoluteProductImageUrl } from "@lib/util/absolute-url"
-import { retrieveCustomer } from "@lib/data/customer"
 import ProductTemplate from "@modules/products/templates"
 import { HttpTypes } from "@medusajs/types"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
@@ -185,15 +184,6 @@ export default async function ProductPage(props: Props) {
   const fallbackImage = toAbsoluteProductImageUrl(
     getProductImageFallback(pricedProduct.handle)
   )
-  const customer = await retrieveCustomer().catch(() => null)
-  const defaultShippingAddress =
-    customer?.addresses?.find((address) => address.is_default_shipping) ||
-    customer?.addresses?.[0]
-  const metadata = (customer?.metadata || {}) as Record<string, unknown>
-  const initialDeliveryPincode =
-    typeof metadata.preferred_delivery_pincode === "string"
-      ? metadata.preferred_delivery_pincode
-      : defaultShippingAddress?.postal_code || ""
   const baseUrl = getBaseURL()
   const { cheapestPrice } = getProductPrice({ product: pricedProduct })
   const imageUrls = [
@@ -309,7 +299,6 @@ export default async function ProductPage(props: Props) {
         countryCode={params.countryCode}
         images={images}
         fallbackImage={fallbackImage}
-        initialDeliveryPincode={initialDeliveryPincode}
       />
     </>
   )

@@ -5332,25 +5332,45 @@ const KundliResultView = ({
       </div>
 
       {activeSection === "kundli-remedies" && (stoneCards?.length || 0) > 0 && (
-        <section className="grid gap-3 small:grid-cols-3">
-          {(stoneCards || []).slice(0, 3).map((stone, index) => (
-            <div
-              key={`${stone?.label || "stone"}-${stone?.primary || index}`}
-              className="rounded-[18px] border border-[var(--shreem-border)] bg-white/66 px-4 py-4"
-            >
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
-                {stone?.label || "Stone"}
-              </p>
-              <p className="mt-2 text-base font-semibold text-[var(--shreem-ink)]">
-                {stone?.primary}
-              </p>
-              {stone?.caution && (
-                <p className="mt-1 text-xs leading-5 text-[var(--shreem-muted)]">
-                  {compactKundliText(stone.caution, 160)}
+        <section className="space-y-3">
+          <div className="grid gap-3 small:grid-cols-3">
+            {(stoneCards || []).slice(0, 3).map((stone, index) => (
+              <div
+                key={`${stone?.label || "stone"}-${stone?.primary || index}`}
+                className="rounded-[18px] border border-[var(--shreem-border)] bg-white/66 px-4 py-4"
+              >
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
+                  {stone?.label || "Stone"}
                 </p>
-              )}
-            </div>
-          ))}
+                <p className="mt-2 text-base font-semibold text-[var(--shreem-ink)]">
+                  {stone?.primary}
+                </p>
+                {stone?.caution && (
+                  <p className="mt-1 text-xs leading-5 text-[var(--shreem-muted)]">
+                    {compactKundliText(stone.caution, 160)}
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+          <div className="rounded-[18px] border border-[rgba(13,129,126,0.18)] bg-[rgba(240,248,246,0.74)] px-4 py-4">
+            <p className="text-sm font-semibold text-[var(--shreem-ink)]">
+              Buy only after expert confirmation
+            </p>
+            <p className="mt-1 text-xs leading-5 text-[var(--shreem-muted)]">
+              Gemstone listings show weight, ratti/carat, metal, form, treatment and certificate details from Shreem vendor substores.
+            </p>
+            <LocalizedClientLink
+              href={`/gemstones${
+                stoneCards?.[0]?.primary
+                  ? `?stone=${encodeURIComponent(stoneCards[0].primary)}`
+                  : ""
+              }`}
+              className="mt-3 inline-flex rounded-full bg-[linear-gradient(135deg,#0d817e,#123f63)] px-4 py-2 text-xs font-semibold text-white"
+            >
+              View matching gemstone vendors
+            </LocalizedClientLink>
+          </div>
         </section>
       )}
 

@@ -23,6 +23,17 @@ const siteLanguageOptions: { value: SiteLanguage; label: string }[] = [
   { value: "hinglish", label: "Hinglish" },
 ]
 
+const MenuIcon = () => (
+  <span
+    aria-hidden="true"
+    className="flex h-5 w-5 flex-col justify-center gap-[4px]"
+  >
+    <span className="block h-[2px] w-5 rounded-full bg-current" />
+    <span className="block h-[2px] w-5 rounded-full bg-current" />
+    <span className="block h-[2px] w-5 rounded-full bg-current" />
+  </span>
+)
+
 const sideMenuItems: SideMenuItem[] = [
   {
     name: "Home",
@@ -47,6 +58,12 @@ const sideMenuItems: SideMenuItem[] = [
     href: "/shreem-astrology",
     description: "Muhurth, Prashna, and paid calls",
     marker: "A",
+  },
+  {
+    name: "Gemstones",
+    href: "/gemstones",
+    description: "Verified stone vendor substores",
+    marker: "R",
   },
   {
     name: "GrowBuddy AI",
@@ -194,7 +211,7 @@ const SideMenu = ({
         onClick={() => setOpen(true)}
         className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[rgba(245,199,96,0.32)] bg-[rgba(255,248,233,0.12)] p-0 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(245,199,96,0.7)] small:h-12 small:w-12"
       >
-        <span className="block h-3.5 w-5 border-y-2 border-current before:mt-[5px] before:block before:border-t-2 before:border-current" />
+        <MenuIcon />
       </button>
 
       {open && typeof document !== "undefined" && createPortal(

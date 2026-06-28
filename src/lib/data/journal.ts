@@ -13,6 +13,20 @@ type StoreJournalPost = Partial<ShreemJournalPost> & {
   imageUrl?: string
   read_time?: string
   status?: string
+  focusedProduct?: ShreemJournalPost["focusedProduct"]
+  focused_product?: ShreemJournalPost["focusedProduct"]
+  productCta?: ShreemJournalPost["productCta"]
+  product_cta?: ShreemJournalPost["productCta"]
+  relatedKeywords?: string[]
+  related_keywords?: string[]
+  targetKeyword?: string
+  target_keyword?: string
+  searchIntent?: string
+  search_intent?: string
+  metaTitle?: string
+  meta_title?: string
+  metaDescription?: string
+  meta_description?: string
 }
 
 export type BlogPostListResult = {
@@ -56,6 +70,25 @@ const normalizePost = (post: StoreJournalPost): ShreemJournalPost | null => {
     readTime: post.readTime || post.read_time || "4 min read",
     publishedAt:
       post.publishedAt || post.published_at || new Date().toISOString().slice(0, 10),
+    seoTitle: post.seoTitle || (post as any).seo_title,
+    metaTitle: post.metaTitle || post.meta_title,
+    metaDescription: post.metaDescription || post.meta_description,
+    targetKeyword: post.targetKeyword || post.target_keyword,
+    relatedKeywords: Array.isArray(post.relatedKeywords)
+      ? post.relatedKeywords
+      : Array.isArray(post.related_keywords)
+      ? post.related_keywords
+      : [],
+    searchIntent: post.searchIntent || post.search_intent,
+    focusedProduct: post.focusedProduct || post.focused_product,
+    productCta: post.productCta || post.product_cta,
+    faq: Array.isArray(post.faq) ? post.faq : [],
+    socialCaption: post.socialCaption || (post as any).social_caption,
+    suggestedNextTopics: Array.isArray(post.suggestedNextTopics)
+      ? post.suggestedNextTopics
+      : Array.isArray((post as any).suggested_next_topics)
+      ? (post as any).suggested_next_topics
+      : [],
     sections: Array.isArray(post.sections) && post.sections.length
       ? post.sections
       : [
@@ -73,6 +106,27 @@ const normalizePost = (post: StoreJournalPost): ShreemJournalPost | null => {
       : Array.isArray((post as any).related_links)
       ? (post as any).related_links
       : [],
+  }
+}
+
+export const getJournalPost = async (slug: string) => {
+  try {
+    const response = await sdk.client.fetch<{ posts: StoreJournalPost[] }>(
+      "/store/journal",
+      {
+        method: "GET",
+        cache: "no-store",
+      }
+    )
+    const posts = (response.posts || [])
+      .map(normalizePost)
+      .filter(Boolean) as ShreemJournalPost[]
+
+    return posts.find((post) => post.slug === slug) || null
+  } catch {
+    const posts = await listJournalPosts()
+
+    return posts.find((post) => post.slug === slug) || null
   }
 }
 
@@ -151,12 +205,6 @@ export const listJournalPostsPage = async ({
       hasMore: offset + limit < shreemJournalPosts.length,
     }
   }
-}
-
-export const getJournalPost = async (slug: string) => {
-  const posts = await listJournalPosts()
-
-  return posts.find((post) => post.slug === slug) || null
 }
 
 export const listBlogPosts = listJournalPosts
