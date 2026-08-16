@@ -4,9 +4,9 @@ import { policyPages } from "@lib/constants/policies"
 import PolicyPage from "@modules/policies/templates/policy-page"
 
 export const metadata: Metadata = {
-  title: "Refund Policy | Shreem Cow Products",
+  title: "Refund Policy | Shreem Farms",
   description:
-    "Read Shreem Cow Products refund policy for cancelled orders, failed payments, returns, and approved refund timelines.",
+    "Read Shreem Farms refund policy for cancelled orders, failed payments, returns, and approved refund timelines.",
 }
 
 export default function RefundPolicyPage() {

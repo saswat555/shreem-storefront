@@ -21,7 +21,7 @@ export async function generateMetadata(props: {
   const title =
     "Shreem Farms | Bilona A2 Ghee, Neem Dhoop & Natural Farming"
   const description =
-    "Shop Shreem Farms for bilona A2 ghee, neem dhoop batti, cow-dung cakes, Jeevamrut, and desi-cow inspired ritual essentials."
+    "Shop Shreem Farms for bilona A2 ghee, neem dhoop batti, cow-dung cakes, vermicompost, and desi-cow inspired ritual essentials."
 
   return {
     title,
@@ -80,10 +80,16 @@ export default async function Home(props: {
     "@type": "WebSite",
     "@id": `${baseUrl}/#website`,
     name: "Shreem Farms",
-    alternateName: ["Shreem", "Shreem Cow Products", "shreemfarms"],
+    alternateName: [
+      "Shreem",
+      "shreemfarms",
+      "shreemfarms.in",
+      "Shree Farms",
+      "shreem farns",
+    ],
     url: baseUrl,
     description:
-      "Shop Shreem Farms bilona A2 ghee, neem dhoop batti, cow-dung cakes, and Jeevamrut farm input from desi-cow sources.",
+      "Shop Shreem Farms bilona A2 ghee, neem dhoop batti, cow-dung cakes, vermicompost, and natural products from desi-cow sources.",
     potentialAction: {
       "@type": "SearchAction",
       target: `${baseUrl}/${countryCode}/store?query={search_term_string}`,
@@ -96,11 +102,17 @@ export default async function Home(props: {
     "@type": "Organization",
     "@id": `${baseUrl}/#organization`,
     name: "Shreem Farms",
-    alternateName: ["Shreem", "Shreem Cow Products", "shreemfarms.in"],
+    alternateName: [
+      "Shreem",
+      "shreemfarms.in",
+      "shreemfarms",
+      "Shree Farms",
+      "shreem farns",
+    ],
     url: baseUrl,
     logo: `${baseUrl}/logo.jpeg`,
     description:
-      "Shreem Farms is a desi-cow D2C brand focused on bilona A2 ghee, neem dhoop batti, cow-dung cakes, and Jeevamrut for natural-farming routines.",
+      "Shreem Farms is a desi-cow D2C brand focused on bilona A2 ghee, neem dhoop batti, cow-dung cakes, vermicompost, and natural-farming routines.",
     brand: {
       "@type": "Brand",
       name: "Shreem Farms",
@@ -112,11 +124,11 @@ export default async function Home(props: {
     "@type": "Store",
     "@id": `${baseUrl}/#store`,
     name: "Shreem Farms",
-    alternateName: ["Shreem", "Shreem Cow Products"],
+    alternateName: ["Shreem", "shreemfarms", "Shree Farms", "shreem farns"],
     url: `${baseUrl}/${countryCode}`,
     image: `${baseUrl}/logo.jpeg`,
     description:
-      "Shop Shreem Farms bilona A2 ghee, neem dhoop batti, cow-dung cakes, Jeevamrut, and desi-cow inspired products for home, ritual, and natural farming.",
+      "Shop Shreem Farms bilona A2 ghee, neem dhoop batti, cow-dung cakes, vermicompost, and desi-cow inspired products for home, ritual, and natural farming.",
     brand: {
       "@type": "Brand",
       name: "Shreem Farms",
@@ -370,14 +382,15 @@ export default async function Home(props: {
               </p>
             </article>
             <article className="brand-card px-5 py-5 small:px-6">
-              <p className="brand-kicker">{jeevamrut.title}</p>
+              <p className="brand-kicker">Our farming practice</p>
               <h3 className="brand-card-title mt-3">
-                Soil-care routines built around biological support.
+                Jeevamrut informs how we think about living soil.
               </h3>
               <p className="mt-3 text-sm leading-6 text-[var(--shreem-muted)]">
                 {jeevamrut.description} It belongs to a natural-farming
                 approach that focuses on soil biology, observation, and
-                input-conscious farm routines.
+                input-conscious farm routines. It is not currently listed as a
+                packaged product in our online store.
               </p>
             </article>
             <article className="brand-surface px-5 py-5 small:px-6">

@@ -6,6 +6,10 @@ export const metadata: Metadata = {
   title: "Gemstone Vendors | Shreem Farms Jyotish",
   description:
     "Shop astrology-guided gemstones from Shreem vendor substores with weight, metal, certification, treatment and vendor details.",
+  robots: {
+    index: false,
+    follow: false,
+  },
 }
 
 const GemstonesPage = async ({

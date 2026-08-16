@@ -60,7 +60,7 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
   if (!collection) {
     return {
       title: "Collection | Shreem",
-      description: "Browse Shreem Cow Products collections.",
+      description: "Browse Shreem Farms collections.",
     }
   }
 

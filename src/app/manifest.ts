@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: "Shreem Farms",
     short_name: "Shreem Farms",
     description:
-      "Shreem Farms bilona A2 ghee, neem dhoop, cow dung cakes, and Jeevamrut from desi cows.",
+      "Shreem Farms bilona A2 ghee, neem dhoop, cow dung cakes, vermicompost, and desi-cow products.",
     start_url: "/in?source=pwa",
     scope: "/",
     display: "standalone",

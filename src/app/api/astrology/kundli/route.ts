@@ -351,6 +351,7 @@ type KundliPayload = {
   language?: unknown
   panchangSystemId?: unknown
   subQuestions?: unknown
+  question?: unknown
 }
 
 const GEMSTONES_BY_LORD: Record<
@@ -524,7 +525,7 @@ const LANGUAGE_INSTRUCTIONS: Record<string, string> = {
   hindi:
     "Write the complete reading in natural Hindi using Devanagari, keeping astrology terms understandable.",
   hinglish:
-    "Write the complete reading in friendly Hinglish with common astrology words like lagna, rashi, dasha, upaay, and bhav.",
+    "Write the complete reading in Roman Hindi/Hinglish using English alphabets only. Do not use Devanagari. Example style: 'aap ka lagna strong hai'. Keep common astrology words like lagna, rashi, dasha, upaay, and bhav.",
 }
 
 const clipCompleteText = (value: string, maxLength: number) => {
@@ -594,10 +595,28 @@ const normalizeSubQuestions = (items: string[]) => {
   return questions.slice(0, 3)
 }
 
-const sanitizeSpecificHealthClaims = (value: string) =>
-  value
+const normalizePayloadSubQuestions = (payload: KundliPayload) =>
+  normalizeSubQuestions([
+    ...sanitizeStringArray(payload.subQuestions, 3, 320),
+    sanitizeString(payload.question, 1200),
+  ].filter(Boolean))
+
+const sanitizeSpecificHealthClaims = (value: string) => {
+  const protectedCancerSign = "__SHREEM_ZODIAC_CANCER__"
+  const protectedValue = value
+    .replace(
+      /\b(in|from|to|through|sign of|lord of|rashi of)\s+Cancer\b/g,
+      (match) => match.replace(/\bCancer\b/g, protectedCancerSign)
+    )
+    .replace(
+      /\bCancer\b(?=\s*(Lagna|Ascendant|Rashi|rashi|sign|house|zodiac|rising|Moon|moon|Sun|sun|:|,|;|\)|$))/g,
+      protectedCancerSign
+    )
+
+  return protectedValue
     .replace(/\b(cancer|cancerous)\s+(diagnosis|disease|risk|prediction|illness|condition)\b/gi, "serious health concern")
     .replace(/\b(diagnosis|disease|risk|prediction|illness|condition)\s+(of\s+)?cancer\b/gi, "serious health concern")
+    .replace(/\bcancer\b/g, "serious health concern")
     .replace(/\btumou?rs?\b/gi, "abnormal health concern")
     .replace(/\bdiabetes\b/gi, "metabolic imbalance")
     .replace(/\bthyroid\b/gi, "hormonal and throat-region")
@@ -606,6 +625,8 @@ const sanitizeSpecificHealthClaims = (value: string) =>
     .replace(/\bsurger(y|ies)\b/gi, "medical procedure")
     .replace(/\bhospitali[sz]ation(s)?\b/gi, "medical care")
     .replace(/\baccident(s)?\b/gi, "safe-travel caution")
+    .replace(new RegExp(protectedCancerSign, "g"), "Cancer")
+}
 
 const sanitizeKundliLanguage = <T,>(value: T): T => {
   if (typeof value === "string") {
@@ -2144,19 +2165,171 @@ const getHouseSummary = (chart: PrashnaChart, houseNumber: number) => {
   const house = chart.houses[houseNumber - 1]
   const lord = house?.signLord ? getPlanet(chart, house.signLord) : null
   const occupants = getHousePlanets(chart, houseNumber)
+  const aspects = (chart.aspects || []).filter((aspect) => aspect.toHouse === houseNumber)
   const lordText = lord
     ? `${lord.name} in H${lord.bhavaHouse || lord.house} ${lord.sign}`
     : `${house?.signLord || "lord"} placement unavailable`
+  const lordImpact =
+    lord && typeof lord.bhavaImpactPercent === "number"
+      ? `${lord.bhavaImpactPercent}% ${lord.bhavaImpactState || "bhava"} impact`
+      : "impact not measured"
 
   return {
     house,
     lord,
     occupants,
+    aspects,
     basis: `H${houseNumber} ${house?.sign || "-"} ruled by ${
       house?.signLord || "-"
-    }; lord ${lordText}; occupants ${
+    }; lord ${lordText} (${lord ? getPlanetDignity(lord) : "unknown dignity"}, ${lordImpact}); occupants ${
       occupants.map((planet) => planet.name).join(", ") || "none"
-    }.`,
+    }; drishti from ${aspects.map((aspect) => aspect.fromPlanet).join(", ") || "none"}.`,
+  }
+}
+
+const getDignityTilt = (planet?: PrashnaPlanet | null) => {
+  if (!planet) {
+    return 0
+  }
+
+  const dignity = getPlanetDignity(planet).toLowerCase()
+  if (/exalted|own sign|moolatrikona|friendly/.test(dignity)) {
+    return 2
+  }
+  if (/debilitated|enemy|combust/.test(dignity)) {
+    return -2
+  }
+  return 0
+}
+
+const getBhavaTilt = (planet?: PrashnaPlanet | null) => {
+  if (!planet || typeof planet.bhavaImpactPercent !== "number") {
+    return 0
+  }
+  if (planet.bhavaImpactPercent >= 75) {
+    return 2
+  }
+  if (planet.bhavaImpactPercent >= 45) {
+    return 1
+  }
+  if (planet.bhavaImpactState === "sandhi" || planet.bhavaImpactPercent < 25) {
+    return -2
+  }
+  return 0
+}
+
+const buildLifeAreaNet = (
+  chart: PrashnaChart,
+  area: string,
+  summaries: ReturnType<typeof getHouseSummary>[]
+) => {
+  const activePeriods = getActiveDashaPeriods(chart)
+  let support = 0
+  let pressure = 0
+  const causes: string[] = []
+  const protections: string[] = []
+  const cautions: string[] = []
+  const activeLinks: string[] = []
+
+  summaries.forEach((summary) => {
+    const houseNumber = summary.house?.house
+    const lord = summary.lord
+    const occupants = summary.occupants
+    const aspects = summary.aspects
+    const lordTilt = getDignityTilt(lord) + getBhavaTilt(lord)
+    const houseLabel = houseNumber ? `H${houseNumber}` : "this house"
+
+    if (lord) {
+      const lordHouse = lord.bhavaHouse || lord.house
+      const effect = PLANET_PLAIN_EFFECT[lord.name] || lord.name
+      causes.push(
+        `${houseLabel} lord ${lord.name} works from H${lordHouse} with ${getPlanetDignity(lord)} dignity and ${lord.bhavaImpactPercent ?? "-"}% Chalit delivery, so ${area.toLowerCase()} expresses through ${getHouseEventSignal(uniqueNumbers([lordHouse, ...getPlanetOwnedHouses(chart, lord.name)]))}`
+      )
+      if (lordTilt > 0) {
+        support += lordTilt
+        protections.push(`${lord.name} supports through ${effect}`)
+      } else if (lordTilt < 0) {
+        pressure += Math.abs(lordTilt)
+        cautions.push(`${lord.name} needs correction because its dignity/Chalit strength is weak or unstable`)
+      }
+    }
+
+    occupants.forEach((planet) => {
+      const effect = PLANET_PLAIN_EFFECT[planet.name] || planet.name
+      const occupantTilt =
+        (BENEFIC_PLANETS.includes(planet.name) ? 1 : 0) +
+        getDignityTilt(planet) +
+        getBhavaTilt(planet)
+      if (occupantTilt >= 1) {
+        support += occupantTilt
+        protections.push(`${planet.name} placed in ${houseLabel} adds ${effect}`)
+      } else {
+        const pressureTilt =
+          (PRESSURE_PLANETS.includes(planet.name) ? 1 : 0) +
+          Math.abs(Math.min(0, occupantTilt))
+        pressure += pressureTilt
+        if (pressureTilt > 0) {
+          cautions.push(`${planet.name} in ${houseLabel} brings ${effect}, so this area needs discipline`)
+        }
+      }
+    })
+
+    aspects.forEach((aspect) => {
+      const effect = PLANET_PLAIN_EFFECT[aspect.fromPlanet] || aspect.fromPlanet
+      if (BENEFIC_PLANETS.includes(aspect.fromPlanet)) {
+        support += aspect.aspectType === "special" || aspect.aspectType === "node-special" ? 2 : 1
+        protections.push(`${aspect.fromPlanet} drishti protects ${houseLabel} through ${effect}`)
+      }
+      if (PRESSURE_PLANETS.includes(aspect.fromPlanet)) {
+        pressure += aspect.aspectType === "special" || aspect.aspectType === "node-special" ? 2 : 1
+        cautions.push(`${aspect.fromPlanet} drishti pressures ${houseLabel} through ${effect}`)
+      }
+    })
+
+    activePeriods.forEach((period) => {
+      const periodPlanet = getPlanet(chart, period.lord)
+      const periodHouse = periodPlanet?.bhavaHouse || periodPlanet?.house
+      const ownedHouses = getPlanetOwnedHouses(chart, period.lord)
+      if (
+        houseNumber &&
+        (periodHouse === houseNumber ||
+          ownedHouses.includes(houseNumber) ||
+          occupants.some((planet) => planet.name === period.lord) ||
+          aspects.some((aspect) => aspect.fromPlanet === period.lord))
+      ) {
+        const tilt = getDignityTilt(periodPlanet) + getBhavaTilt(periodPlanet)
+        if (tilt >= 0) {
+          support += 1 + tilt
+        } else {
+          pressure += 1 + Math.abs(tilt)
+        }
+        activeLinks.push(`${period.lord} ${period.level} activates H${houseNumber} during ${getPeriodWindow(period)}`)
+      }
+    })
+  })
+
+  const net =
+    support >= pressure + 3
+      ? "supportive"
+      : pressure >= support + 3
+      ? "challenging"
+      : "mixed but usable"
+  const strongestCause = uniqueStrings(causes).slice(0, 2).join(" ")
+  const strongestProtection = uniqueStrings(protections).slice(0, 2).join("; ")
+  const strongestCaution = uniqueStrings(cautions).slice(0, 2).join("; ")
+  const timing = uniqueStrings(activeLinks).slice(0, 2).join("; ")
+
+  return {
+    net,
+    support,
+    pressure,
+    prediction: [
+      `${area} is ${net} in this chart after combining lordship, occupants, drishti, dignity and Bhava Chalit delivery.`,
+      strongestCause,
+      strongestProtection ? `Support: ${strongestProtection}.` : "",
+      strongestCaution ? `Caution: ${strongestCaution}.` : "",
+      timing ? `Timing: ${timing}.` : "Timing: this area is more background now and becomes stronger when its lord or occupied house enters dasha.",
+    ].filter(Boolean).join(" "),
   }
 }
 
@@ -2164,33 +2337,31 @@ const buildLifeAreaPredictionRows = (chart: PrashnaChart) => {
   const dashaText = chart.dasha
     ? `${chart.dasha.mahadasha.lord} Mahadasha, ${chart.dasha.antardasha.lord} Antardasha, ${chart.dasha.pratyantar.lord} Pratyantar`
     : "Vimshottari dasha unavailable"
-  const dashaGuide =
-    "Read the promise from the houses first, then time it through the active Mahadasha-Antardasha-Pratyantar."
   const row = ({
     area,
     houses,
-    prediction,
     advice,
   }: {
     area: string
     houses: number[]
-    prediction: string
     advice: string
   }) => {
     const summaries = houses.map((house) => getHouseSummary(chart, house))
+    const net = buildLifeAreaNet(chart, area, summaries)
     const planets = uniqueStrings(
       summaries.flatMap((summary) => [
         summary.house?.signLord || "",
         summary.lord?.name || "",
         ...summary.occupants.map((planet) => planet.name),
+        ...summary.aspects.map((aspect) => aspect.fromPlanet),
       ])
     ).filter(Boolean)
 
     return {
       area,
       chart_basis: `${summaries.map((summary) => summary.basis).join(" ")} Active period: ${dashaText}.`,
-      prediction,
-      advice: `${advice} Watch ${planets.slice(0, 4).join(", ") || "relevant lords"} periods for timing. ${dashaGuide} Use Gochar only as a trigger after dasha agrees.`,
+      prediction: net.prediction,
+      advice: `${advice} Watch ${planets.slice(0, 5).join(", ") || "relevant lords"} periods for timing. Net score support ${net.support}, pressure ${net.pressure}; use Gochar only as a trigger after dasha agrees.`,
     }
   }
 
@@ -2198,96 +2369,72 @@ const buildLifeAreaPredictionRows = (chart: PrashnaChart) => {
     row({
       area: "Life path, personality and decision style",
       houses: [1, 3, 5, 9],
-      prediction:
-        "This row explains how the person should make decisions: Lagna shows the body and lived identity, the 3rd shows courage and communication, the 5th shows judgement and intelligence, and the 9th shows dharma, teachers and fortune. Strong links here make life easier through self-directed learning, clean counsel and consistent execution; pressure here makes impulsive decisions expensive.",
       advice:
-        "Make big decisions only after checking whether the active dasha supports the 1st/5th/9th promise, and use the 3rd house for practical execution rather than emotional reaction.",
+        "Make big decisions through the strongest supported house in this group and avoid reacting from the pressured house.",
     }),
     row({
       area: "Current dasha and life direction",
       houses: [1, 6, 8, 10],
-      prediction:
-        "The current period is judged through the active dasha lords first: Mahadasha gives the background, Antardasha selects the active life area, and Pratyantar triggers short events. If the same houses repeat through lordship, placement, drishti and Bhava Chalit delivery, that theme should be treated as the main operating direction.",
       advice:
-        "Use the current Antardasha for decisions and the Pratyantar for short execution windows.",
+        "Use the current Antardasha for main decisions and the Pratyantar for short execution windows.",
     }),
     row({
       area: "Career and professional growth",
       houses: [10, 6, 11, 3],
-      prediction:
-        "Career direction comes from the 10th for work/status, 6th for service and competition, 11th for gains and networks, and 3rd for skills, sales, writing or communication. A good career prediction must name the practical work model these houses support instead of only saying success or struggle.",
       advice:
         "Build measurable skill, public proof, delivery discipline and network reach during supportive dasha windows; reduce career risk when 6th/8th/12th pressure dominates.",
     }),
     row({
       area: "Money, savings and wealth building",
       houses: [2, 5, 9, 11],
-      prediction:
-        "Money is judged by both earning and retention: 2nd for savings and family resources, 5th for intelligence and risk judgement, 9th for fortune and mentors, and 11th for income and fulfilment. Wealth improves when income houses and savings houses both receive dasha support; otherwise money may come but not stay.",
       advice:
         "Separate income, savings, risk capital and debt; avoid speculation when 6th/8th/12th pressure dominates.",
     }),
     row({
       area: "Business and entrepreneurship",
       houses: [3, 6, 7, 10, 11],
-      prediction:
-        "Business is read through the 3rd for initiative and marketing, 6th for operations and competition, 7th for customers and contracts, 10th for authority, and 11th for repeat gains. Strong business periods show customer-facing effort plus operational discipline, not only a lucky promise.",
       advice:
         "Use a weekly sales pipeline, clear contracts, and proof of demand before scaling expenses.",
     }),
     row({
       area: "Marriage, relationship and public dealing",
       houses: [2, 7, 8, 11],
-      prediction:
-        "Marriage and partnership are judged through family continuity, spouse/contracts, intimacy/shared assets and social fulfilment. The 7th house alone is not enough: the 2nd must support family life, the 8th must handle trust and shared vulnerability, and the 11th must show fulfilment.",
       advice:
         "For improvement, strengthen Venus/Jupiter conduct: respect, cleanliness, counsel, family transparency and patience before gemstones.",
     }),
     row({
       area: "Family, home, property and emotional base",
       houses: [2, 4, 8, 12],
-      prediction:
-        "Home and family outcomes depend on speech and savings, property and comfort, sudden family shifts, and expenses or settlement themes. If 4th house support is strong, the person can build a stable base; if 8th/12th pressure repeats, home matters need documents, emotional maturity and expense control.",
       advice:
         "Keep documents, family communication, property decisions and home expenses structured.",
     }),
     row({
       area: "Education, children, creativity and guidance",
       houses: [5, 9, 3, 11],
-      prediction:
-        "Learning, children, creativity, dharma, mentors and communication combine to show the growth path. Strong 5th/9th support makes teaching, study, advisory work, mantra and creative intelligence fruitful; weak support needs discipline and one chosen track instead of scattered experiments.",
       advice:
         "Choose one learning track and convert it into visible work, teaching, content or a useful skill.",
     }),
     row({
       area: "Status, reputation and public visibility",
       houses: [1, 7, 10, 11],
-      prediction:
-        "Public image is judged from the self, public dealing, career authority and network gains. When these houses support each other, the person can become visible through work, clients, leadership or community; when conflicted, reputation improves through consistency and cleaner commitments.",
       advice:
         "Avoid reputation shortcuts. Publish proof of work, keep commitments visible, and use supportive 10th/11th periods for launches or public moves.",
     }),
     row({
       area: "Health, routine and mental wellbeing",
       houses: [1, 6, 8, 12],
-      prediction:
-        "Health is shown as prevention only: vitality, routine, recovery, sudden pressure and sleep/rest themes. The system must not name diseases or create fear; it should show where routine, screening, safer travel or rest discipline is useful when the dasha and chart repeat the same pressure.",
       advice:
         "Use watch periods for sleep discipline, screening reminders, safer travel and doctor consultation for symptoms.",
     }),
     row({
       area: "Foreign links, spirituality, isolation and expenses",
       houses: [9, 12, 4, 10],
-      prediction:
-        "Foreign movement, spiritual retreat, long travel, home settlement and work direction must be judged together. Helpful periods can bring travel, remote work, inner discipline or higher learning; pressure periods can bring wasteful expense, isolation or divided attention.",
       advice:
         "Plan travel and expenses deliberately, and use spiritual practice as grounding rather than escapism.",
     }),
     row({
       area: "Remedies, conduct and improvement path",
       houses: [1, 5, 9, 12],
-      prediction:
-        "Remedy quality depends on the person's conduct, mantra discipline, trinal house strength, dharma and sleep/spiritual hygiene. Stones or pooja are useful only when the chart supports the graha and the active problem is clearly mapped to that graha.",
       advice:
         "Start with conduct, daan, mantra, seva, cleanliness and routine; use gemstones or major pooja only after expert review confirms the exact graha is safe to strengthen.",
     }),
@@ -3873,7 +4020,7 @@ const buildCuratedKundliKnowledgePassages = ({
         "Shreem curated Parashari synthesis: exact question answer using Lagna, Moon, dasha, relevant houses and detected yogas",
       keywords: ["question", "direct answer", "timing", "dasha", "action"],
       text: [
-        "Answer the user's exact question once. First identify the houses relevant to the question, then judge their lords, occupants, dignity, drishti, Bhava Chalit delivery, Moon condition and current Mahadasha-Antardasha-Pratyantar.",
+        "Answer each submitted user question separately. For every question, first identify the houses relevant to that question, then judge their lords, occupants, dignity, drishti, Bhava Chalit delivery, Moon condition and current Mahadasha-Antardasha-Pratyantar.",
         `User question(s): ${subQuestions.join(" | ") || "general Kundli reading"}.`,
         `Current dasha basis: ${activeDasha}.`,
         `Lagna basis: ${lagnaBasis}.`,
@@ -4188,7 +4335,7 @@ const buildKundliKnowledgePassages = ({
           {
             label: "question_pack",
             purpose:
-              "Use only for answering the user's exact question once at the top. Do not reuse this answer in other report sections.",
+              "Use only for answering each exact user question at the top. Do not merge multiple questions into one answer and do not reuse this answer in other report sections.",
             query: [
               "specific user question parashari prediction chart result timing action",
               subQuestions.join(" "),
@@ -4451,7 +4598,7 @@ const buildKundliAiDossier = ({
       structured: priorityCases.map((item) => ({
         name: item.subtype ? `${item.name}: ${item.subtype}` : item.name,
         status: item.status,
-        severity: item.severity,
+        strength: item.strength,
         chart_basis: compactDossierText(item.chart_basis, 260),
         effect: compactDossierText(item.combined_effect, 260),
         planets: item.planets,
@@ -4581,7 +4728,6 @@ const buildPrompt = ({
     })),
     life_area_rows: fullDossier.life_area_rows,
     priority_special_cases: fullDossier.special_cases.structured.slice(0, 4),
-    health_and_longevity_audit: fullDossier.health_and_longevity_audit,
     career_seed: fullDossier.career_seed,
     bphs_rule_proofs: fullDossier.bphs_rule_proofs.slice(0, 5),
   }
@@ -4599,7 +4745,7 @@ const buildPrompt = ({
     "For every review row, final_decision must contain: a clear positive/mixed/negative direction, the concrete real-life manifestation, and the relevant active-dasha timing when supplied. missing_or_weak_point must be one specific next action or limitation, not generic discipline advice and not a request for the customer to interpret data.",
     "Reject empty praise such as 'you can succeed', 'there is a strong foundation', or 'careful planning is needed' unless the same sentence names the exact field, mechanism, obstacle and timing. Write for a normal customer; technical proof is stored separately.",
     "Length discipline: each opening_profile paragraph is 3 to 5 complete sentences; summary 2 sentences; career/relationship/health/current period 2 to 3 sentences each; each deterministic review field one concise sentence. The server already owns tables, timing, remedies and citations, so do not recreate them.",
-    "Health and Markesh safety: never predict death, accident certainty, cancer, diabetes, thyroid, BP, arthritis, or any named disease. Use prevention, routine, screening, and expert-review language only.",
+    "Health safety: never predict death, accident certainty, cancer, diabetes, thyroid, BP, arthritis, or any named disease. Use prevention, routine, screening, and expert-review language only. Do not mention Markesh, Maraka, Badhakesh, longevity, death timing, or whole-life danger windows in customer-facing output.",
     "If evidence is weak, say so in deterministic_review and keep the user-facing answer cautious. Prefer fewer complete rows over long unfinished output.",
     "Set expert_call_recommended true for strong dosha, gemstone, marriage, health, serious remedy, or career-defining guidance, and recommend Sanjay Kumar Pandey in expert_call_reason.",
     LANGUAGE_INSTRUCTIONS[language] || LANGUAGE_INSTRUCTIONS.english,
@@ -4687,19 +4833,61 @@ const buildFallbackKundliAnalysis = ({
         chart.dasha.mahadasha,
         chart.dasha.antardasha,
         chart.dasha.pratyantar,
-      ].map((period) => ({
-        period: `${period.lord}: ${period.startLabel} to ${period.endLabel}`,
-        chart_basis:
-          planetPlacementText(chart, [period.lord]) ||
-          `${period.lord} is active in the Vimshottari sequence.`,
-        classical_basis:
-          knowledgePassages[0]?.citation ||
-          "BPHS reference retrieval was prepared for dasha interpretation.",
-        prediction:
-          `${period.lord} period gives results through its house placement, dignity, associations and owned houses. Treat this period as active for the themes shown in chart basis, with discipline where pressure houses are involved.`,
-        action:
-          "Keep decisions practical, strengthen the period lord through conduct, mantra and daan, and avoid fear-based conclusions.",
-      }))
+      ].map((period) => {
+        const planet = getPlanet(chart, period.lord)
+        const ownedHouses = getPlanetOwnedHouses(chart, period.lord)
+        const bhavaHouse = planet?.bhavaHouse || planet?.house
+        const receivedAspects = (chart.aspects || []).filter(
+          (aspect) => bhavaHouse && aspect.toHouse === bhavaHouse
+        )
+        const dignity = planet ? getPlanetDignity(planet) : "unknown dignity"
+        const tilt = getDignityTilt(planet) + getBhavaTilt(planet)
+        const supportAspects = receivedAspects
+          .filter((aspect) => BENEFIC_PLANETS.includes(aspect.fromPlanet))
+          .map((aspect) => aspect.fromPlanet)
+        const pressureAspects = receivedAspects
+          .filter((aspect) => PRESSURE_PLANETS.includes(aspect.fromPlanet))
+          .map((aspect) => aspect.fromPlanet)
+        const eventSignal = getHouseEventSignal(uniqueNumbers([bhavaHouse, ...ownedHouses]))
+        const pressureHouses = uniqueNumbers([bhavaHouse, ...ownedHouses]).filter((house) =>
+          DUSTHANA_HOUSES.includes(house)
+        )
+        const net =
+          tilt >= 2 && supportAspects.length >= pressureAspects.length
+            ? "supportive"
+            : tilt <= -2 || pressureAspects.length > supportAspects.length || pressureHouses.length
+            ? "pressure-bearing"
+            : "mixed but workable"
+
+        return {
+          period: `${period.lord}: ${period.startLabel} to ${period.endLabel}`,
+          chart_basis:
+            planetPlacementText(chart, [period.lord]) ||
+            `${period.lord} is active in the Vimshottari sequence.`,
+          classical_basis:
+            knowledgePassages.find((passage) =>
+              passage.keywords.some((tag) => /dasha|period|antar/i.test(tag))
+            )?.citation ||
+            knowledgePassages[0]?.citation ||
+            "BPHS reference retrieval was prepared for dasha interpretation.",
+          prediction:
+            `${period.lord} ${period.level} is ${net}: ${dignity}${
+              planet?.bhavaImpactPercent
+                ? ` with ${planet.bhavaImpactPercent}% ${planet.bhavaImpactState || "bhava"} Chalit delivery`
+                : ""
+            } in H${bhavaHouse || "-"}. It activates ${eventSignal}. ${
+              supportAspects.length
+                ? `Protection comes from ${supportAspects.join(", ")} drishti. `
+                : ""
+            }${
+              pressureAspects.length || pressureHouses.length
+                ? `Pressure comes from ${pressureAspects.join(", ") || "dusthana ownership/placement"}, so results need discipline and timing.`
+                : "This period can be used for planned action when the relevant house matters are handled cleanly."
+            }`,
+          action:
+            `Use ${getPeriodWindow(period)} for ${eventSignal}; strengthen ${period.lord} through conduct, mantra and daan only in ways that do not amplify existing pressure.`,
+        }
+      })
     : []
   const mainCases = selectPriorityCases(detectedCases).slice(0, 4)
 
@@ -5137,26 +5325,17 @@ const buildKundliUsageRecordPayload = ({
   stones: Array.isArray(result.stones) ? result.stones.slice(0, 12) : result.stones,
   health_indicators: healthIndicators.slice(0, 10),
   critical_period_analysis: {
-    maraka_lords: criticalPeriod.maraka_lords,
-    badhaka_house: criticalPeriod.badhaka_house,
-    badhakesh: criticalPeriod.badhakesh,
-    exact_timing_windows: criticalPeriod.exact_timing_windows.slice(0, 8),
-    retrospective_timing_windows: criticalPeriod.retrospective_timing_windows.slice(0, 4),
-    medical_watchlist: criticalPeriod.medical_watchlist.slice(0, 4),
+    maraka_lords: [],
+    badhaka_house: 0,
+    badhakesh: "",
+    exact_timing_windows: [],
+    retrospective_timing_windows: [],
+    medical_watchlist: [],
     safety_note: criticalPeriod.safety_note,
   },
   targeted_remedy_seeds: targetedRemedySeeds.slice(0, 8),
   bphs_rule_proofs: bphsRuleProofs.slice(0, 12),
-  longevity_assessment: {
-    classification: longevityAssessment.classification,
-    confidence: longevityAssessment.confidence,
-    score: longevityAssessment.score,
-    protective_factors: longevityAssessment.protective_factors.slice(0, 5),
-    pressure_factors: longevityAssessment.pressure_factors.slice(0, 5),
-    maraka_factors: longevityAssessment.maraka_factors.slice(0, 5),
-    safety_note: longevityAssessment.safety_note,
-    rule_proofs: longevityAssessment.rule_proofs.slice(0, 8),
-  },
+  longevity_assessment: undefined,
   analysis: compactKundliAnalysisForUsage(result.analysis),
   analysis_mode: result.analysis_mode,
   usage_units: result.usage_units,
@@ -5194,9 +5373,7 @@ export async function POST(request: NextRequest) {
       : "english"
   const usageUnits = 1
   const city = getCityById(sanitizeString(payload.cityId, 80))
-  const subQuestions = normalizeSubQuestions(
-    sanitizeStringArray(payload.subQuestions, 3, 320)
-  )
+  const subQuestions = normalizePayloadSubQuestions(payload)
   const panchangSystemId = sanitizeString(payload.panchangSystemId, 40)
   const normalizedBirthDate = parseBirthDateInput(birthDate)
 
@@ -5243,6 +5420,19 @@ export async function POST(request: NextRequest) {
   const stones = getStoneRecommendations(chart)
   const healthIndicators = buildHealthIndicators(chart, detectedYogas)
   const criticalPeriod = buildCriticalPeriodAnalysis(chart, birthDateTime)
+  const publicCriticalPeriod: CriticalPeriodAnalysis = {
+    ...criticalPeriod,
+    maraka_lords: [],
+    badhaka_house: 0,
+    badhakesh: "",
+    active_triggers: [],
+    watch_periods: [],
+    exact_timing_windows: [],
+    retrospective_timing_windows: [],
+    medical_watchlist: [],
+    safety_note:
+      "Whole-life Markesh and longevity windows are intentionally not shown because broad danger calendars are not reliable customer guidance.",
+  }
   const dashaTimeline = buildDashaTimeline(chart)
   const dashaDecisionTree = buildDashaDecisionTree({ chart, criticalPeriod })
   const houseOutcomes = buildHouseOutcomes(chart, detectedCases)
@@ -5283,8 +5473,8 @@ export async function POST(request: NextRequest) {
         detected_cases: detectedCases,
         stones,
         health_indicators: healthIndicators,
-        critical_period_analysis: criticalPeriod,
-        longevity_assessment: longevityAssessment,
+        critical_period_analysis: publicCriticalPeriod,
+        longevity_assessment: undefined,
         dasha_timeline: dashaTimeline,
         targeted_remedies: targetedRemedySeeds,
         bphs_rule_proofs: bphsRuleProofs,
@@ -5320,8 +5510,8 @@ export async function POST(request: NextRequest) {
         detected_cases: detectedCases,
         stones,
         health_indicators: healthIndicators,
-        critical_period_analysis: criticalPeriod,
-        longevity_assessment: longevityAssessment,
+        critical_period_analysis: publicCriticalPeriod,
+        longevity_assessment: undefined,
         dasha_timeline: dashaTimeline,
         targeted_remedies: targetedRemedySeeds,
         targeted_remedy_seeds: targetedRemedySeeds,
@@ -5496,8 +5686,8 @@ export async function POST(request: NextRequest) {
         detected_cases: detectedCases,
         stones,
         health_indicators: healthIndicators,
-        critical_period_analysis: criticalPeriod,
-        longevity_assessment: longevityAssessment,
+        critical_period_analysis: publicCriticalPeriod,
+        longevity_assessment: undefined,
         dasha_timeline: dashaTimeline,
         targeted_remedy_seeds: targetedRemedySeeds,
         bphs_rule_proofs: bphsRuleProofs,
@@ -5848,7 +6038,7 @@ export async function POST(request: NextRequest) {
   const ensuredSubQuestionAnswers =
     !hasSubQuestions
       ? []
-      : analysis.sub_question_answers.length > 0
+      : analysis.sub_question_answers.length >= subQuestions.filter(Boolean).length
       ? analysis.sub_question_answers
       : subQuestions.filter(Boolean).slice(0, 3).map((question) => {
           const currentDasha = chart.dasha
@@ -6296,7 +6486,9 @@ export async function POST(request: NextRequest) {
         "Return every house supplied in this batch. Do not skip any house.",
         "For every house return two fields: user_meaning and solution.",
         "For each house, combine its lord and lord placement, dignity, occupants, every received Parashari drishti, active dasha and every verified special case listed in the evidence. Resolve contradictions instead of trusting the supplied polarity or listing ingredients.",
-        "user_meaning must be two crisp sentences: first state whether the combined result is supportive, difficult or mixed and exactly what the graha combination causes; second state its most likely real-life manifestation for this person.",
+        "Use BPHS-style judgement: house lord strength is primary, occupants modify delivery, drishti can protect or afflict, Bhava Chalit impact decides how strongly the result manifests, and active dasha decides whether it is current or background.",
+        "If a lord is strong in dignity but weak/sandhi in Bhava Chalit, say the promise exists but delivery is inconsistent. If a malefic pressure is protected by Jupiter/Venus/Mercury/Moon, say what is protected and what still needs discipline.",
+        "user_meaning must be two crisp sentences: first state whether the combined result is supportive, difficult or mixed and exactly what the graha combination causes; second state its most likely real-life manifestation for this person, with no methodology language.",
         "Name a yoga or dosha only when it is explicitly present in deterministic_meaning or technical_evidence. Count cancellation and benefic protection before deciding the net effect.",
         "solution must be one crisp sentence with conduct, daan/seva/mantra/pooja where relevant, not vague homework.",
         "Ban generic phrases such as 'may affect', 'can modify', 'needs balance', 'depends on timing' or 'results vary' unless followed by a concrete outcome and reason.",
@@ -6312,7 +6504,7 @@ export async function POST(request: NextRequest) {
             theme: compactDossierText(row.theme, 120),
             prevailing_impact: compactDossierText(row.prevailing_impact, 180),
             deterministic_meaning: compactDossierText(row.user_meaning || row.outcome, 360),
-            technical_evidence: compactDossierText(row.evidence, 220),
+            technical_evidence: compactDossierText(row.evidence, 360),
           })),
         }),
       ].join("\n")
@@ -6606,7 +6798,7 @@ export async function POST(request: NextRequest) {
 
   const safeAnalysis = sanitizeKundliLanguage(analysis)
   const safeHealthIndicators = sanitizeKundliLanguage(healthIndicators)
-  const safeCriticalPeriod = sanitizeKundliLanguage(criticalPeriod)
+  const safeCriticalPeriod = sanitizeKundliLanguage(publicCriticalPeriod)
 
   const result = {
     profile: {
@@ -6628,7 +6820,7 @@ export async function POST(request: NextRequest) {
     stones,
     health_indicators: safeHealthIndicators,
     critical_period_analysis: safeCriticalPeriod,
-    longevity_assessment: longevityAssessment,
+    longevity_assessment: undefined,
     dasha_timeline: dashaTimeline,
     targeted_remedy_seeds: targetedRemedySeeds,
     bphs_rule_proofs: bphsRuleProofs,
@@ -6730,15 +6922,9 @@ export async function POST(request: NextRequest) {
       detected_cases_count: detectedCases.length,
       health_indicators: safeHealthIndicators.slice(0, 8),
       critical_period_summary: {
-        maraka_lords: safeCriticalPeriod.maraka_lords,
-        badhakesh: safeCriticalPeriod.badhakesh,
-        exact_timing_window_count: safeCriticalPeriod.exact_timing_windows?.length || 0,
-        medical_watchlist_count: safeCriticalPeriod.medical_watchlist?.length || 0,
-      },
-      longevity_assessment: {
-        classification: longevityAssessment.classification,
-        confidence: longevityAssessment.confidence,
-        score: longevityAssessment.score,
+        exact_timing_window_count: 0,
+        medical_watchlist_count: 0,
+        disabled_reason: "whole_life_markesh_removed_from_customer_flow",
       },
       targeted_remedy_count: targetedRemedySeeds.length,
       bphs_rule_proof_count: bphsRuleProofs.length,

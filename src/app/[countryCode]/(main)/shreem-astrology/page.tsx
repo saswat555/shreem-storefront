@@ -83,7 +83,7 @@ export default async function ShreemAstrologyPage(props: {
         url: pageUrl,
         provider: {
           "@type": "Organization",
-          name: "Shreem Cow Products",
+          name: "Shreem Farms",
           url: baseUrl,
           logo: `${baseUrl}/logo.jpeg`,
         },

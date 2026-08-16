@@ -118,7 +118,7 @@ export default function SupportContactForm() {
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm leading-6 text-[var(--shreem-muted)]">
-          Messages go to brajsavitrikrishisansthan@gmail.com. When a mail
+          Messages go to brajsavitrikrishisanshtan@gmail.com. When a mail
           service is not configured on the server, we prepare the message in
           your default mail client as a fallback.
         </p>

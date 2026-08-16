@@ -6,7 +6,7 @@ import { isGeminiEnabled } from "@lib/util/prakriti-config"
 import { generateGeminiJson } from "@lib/util/gemini"
 import { shreemAssurances, shreemRituals } from "@lib/constants/shreem"
 
-const SUPPORT_TO_EMAIL = "brajsavitrikrishisansthan@gmail.com"
+const SUPPORT_TO_EMAIL = "brajsavitrikrishisanshtan@gmail.com"
 
 const PRODUCT_KNOWLEDGE = JSON.stringify({
   assurances: shreemAssurances,
@@ -86,7 +86,7 @@ const buildPrompt = ({
   language: string
 }) => {
   return [
-    "You are Shreem Support AI, a warm, concise support assistant for Shreem Cow Products.",
+    "You are Shreem Support AI, a warm, concise support assistant for Shreem Farms.",
     "Help with order guidance, account navigation, payment concerns, product selection, cart/checkout questions, and basic care guidance.",
     "Do not pretend to access tracking, payment gateways, private orders, or backend data you were not given.",
     `Use only this Shreem product knowledge for product advice: ${PRODUCT_KNOWLEDGE}.`,

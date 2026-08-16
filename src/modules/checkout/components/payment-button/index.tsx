@@ -119,11 +119,28 @@ const loadRazorpayScript = () =>
     document.body.appendChild(script)
   })
 
-const getActivePaymentSession = (cart: HttpTypes.StoreCart) =>
-  cart.payment_collection?.payment_sessions?.find(
-    (session) =>
-      session.status === "pending" || session.status === "authorized"
-  ) || cart.payment_collection?.payment_sessions?.[0]
+const getActivePaymentSession = (cart: HttpTypes.StoreCart) => {
+  const sessions = cart.payment_collection?.payment_sessions || []
+
+  return (
+    sessions.find(
+      (session) =>
+        (session.status === "pending" || session.status === "authorized") &&
+        (!isRazorpayLike(session.provider_id) ||
+          razorpaySessionMatchesCart(session, cart))
+    ) ||
+    sessions.find(
+      (session) =>
+        session.status === "pending" || session.status === "authorized"
+    ) ||
+    sessions.find(
+      (session) =>
+        !isRazorpayLike(session.provider_id) ||
+        razorpaySessionMatchesCart(session, cart)
+    ) ||
+    sessions[0]
+  )
+}
 
 const hasValidPhysicalShipping = (cart: HttpTypes.StoreCart) => {
   const methods = cart.shipping_methods || []
@@ -150,6 +167,41 @@ const getPaymentSessionsFromResponse = (payload: any) => {
   return candidates.find(Array.isArray) || []
 }
 
+const readNumber = (value: any) => {
+  const parsed = Number(value)
+  return Number.isFinite(parsed) ? parsed : 0
+}
+
+const getCartRazorpayMinorAmount = (cart?: HttpTypes.StoreCart) => {
+  const total = readNumber((cart as any)?.total ?? (cart as any)?.payment_collection?.amount)
+  return total > 0 ? Math.round(total * 100) : 0
+}
+
+const getSessionRazorpayMinorAmount = (
+  session?: HttpTypes.StorePaymentSession | Record<string, any> | null
+) => {
+  const data = (session?.data || {}) as Record<string, any>
+  const explicit = readNumber(
+    data.razorpay_amount || data.razorpayAmount || data.razorpay_order_amount
+  )
+
+  return explicit > 0 ? Math.round(explicit) : 0
+}
+
+const razorpaySessionMatchesCart = (
+  session?: HttpTypes.StorePaymentSession | Record<string, any> | null,
+  cart?: HttpTypes.StoreCart
+) => {
+  if (!session || !cart || !isRazorpayLike((session as any)?.provider_id)) {
+    return true
+  }
+
+  const sessionAmount = getSessionRazorpayMinorAmount(session)
+  const cartAmount = getCartRazorpayMinorAmount(cart)
+
+  return sessionAmount > 0 && cartAmount > 0 && sessionAmount === cartAmount
+}
+
 const getRazorpaySessionDetails = (
   session?: HttpTypes.StorePaymentSession | Record<string, any> | null,
   cart?: HttpTypes.StoreCart
@@ -161,7 +213,8 @@ const getRazorpaySessionDetails = (
     sessionData.order_id
   const amount =
     sessionData.razorpay_amount ||
-    sessionData.amount ||
+    sessionData.razorpayAmount ||
+    getCartRazorpayMinorAmount(cart) ||
     cart?.total ||
     cart?.payment_collection?.amount
   const currency =
@@ -282,7 +335,7 @@ const RazorpayPaymentButton = ({
 
       let activeSessionId = activeSession.id
 
-      if (!activeOrderId) {
+      if (!activeOrderId || !razorpaySessionMatchesCart(activeSession, cart)) {
         const refreshed = await safeInitiatePaymentSession(cart, {
           provider_id: activeSession.provider_id,
         })
@@ -292,7 +345,10 @@ const RazorpayPaymentButton = ({
         }
 
         const refreshedSession = getPaymentSessionsFromResponse(refreshed.data)
-          .find((item: any) => item?.provider_id === activeSession?.provider_id)
+          .find((item: any) =>
+            item?.provider_id === activeSession?.provider_id &&
+            razorpaySessionMatchesCart(item, cart)
+          )
 
         if (refreshedSession) {
           activeSession = refreshedSession
@@ -308,6 +364,10 @@ const RazorpayPaymentButton = ({
 
       if (!activeOrderId) {
         throw new Error("Razorpay order was refreshed but is still not ready. Please refresh checkout and try once more.")
+      }
+
+      if (!razorpaySessionMatchesCart(activeSession, cart)) {
+        throw new Error("Razorpay order amount did not match the cart total. Please refresh checkout and try again.")
       }
 
       if (!activeKey) {

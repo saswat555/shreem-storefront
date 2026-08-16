@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 
-const SUPPORT_TO_EMAIL = "brajsavitrikrishisansthan@gmail.com"
+const SUPPORT_TO_EMAIL = "brajsavitrikrishisanshtan@gmail.com"
 
 const sanitize = (value: unknown) =>
   typeof value === "string" ? value.trim() : ""

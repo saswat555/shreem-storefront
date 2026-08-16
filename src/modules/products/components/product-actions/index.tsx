@@ -27,6 +27,11 @@ const optionsAsKeymap = (
   }, {})
 }
 
+const isPurchasable = (variant: HttpTypes.StoreProductVariant) =>
+  !variant.manage_inventory ||
+  Boolean(variant.allow_backorder) ||
+  Number(variant.inventory_quantity || 0) > 0
+
 export default function ProductActions({
   product,
   disabled,
@@ -35,7 +40,16 @@ export default function ProductActions({
   const pathname = usePathname()
   const searchParams = useSearchParams()
 
-  const [options, setOptions] = useState<Record<string, string | undefined>>({})
+  const [options, setOptions] = useState<Record<string, string | undefined>>(() => {
+    const requestedVariantId = searchParams.get("v_id")
+    const requestedVariant = product.variants?.find(
+      (variant) => variant.id === requestedVariantId
+    )
+    const defaultVariant =
+      requestedVariant || product.variants?.find(isPurchasable) || product.variants?.[0]
+
+    return defaultVariant ? optionsAsKeymap(defaultVariant.options) || {} : {}
+  })
   const [isAdding, setIsAdding] = useState(false)
   const countryCode = useParams().countryCode as string
 
@@ -51,17 +65,7 @@ export default function ProductActions({
       return
     }
 
-    const firstPurchasableVariant = product.variants.find((variant) => {
-      if (!variant.manage_inventory) {
-        return true
-      }
-
-      if (variant.allow_backorder) {
-        return true
-      }
-
-      return (variant.inventory_quantity || 0) > 0
-    })
+    const firstPurchasableVariant = product.variants.find(isPurchasable)
 
     if (firstPurchasableVariant) {
       const variantOptions = optionsAsKeymap(firstPurchasableVariant.options)
@@ -173,11 +177,15 @@ export default function ProductActions({
             </p>
           </div>
           <span className="brand-pill min-h-9 shrink-0 px-3 py-1.5 text-[10px]">
-            {inStock ? "In stock" : "Unavailable"}
+            {!selectedVariant
+              ? "Choose an option"
+              : inStock
+              ? "In stock"
+              : "Out of stock"}
           </span>
         </div>
 
-        {selectedVariant?.title && (
+        {selectedVariant?.title && selectedVariant.title !== "Default variant" && (
           <div className="rounded-[16px] border border-[rgba(18,63,99,0.1)] bg-white/58 px-3 py-2 text-sm font-medium text-[var(--shreem-ink)]">
             {selectedVariant.title}
           </div>

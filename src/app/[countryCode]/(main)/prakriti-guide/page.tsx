@@ -58,7 +58,7 @@ export default async function PrakritiGuidePage(props: {
       "Plant and animal photo-care assistant that gives cautious first-pass guidance and Shreem product suggestions only when relevant.",
     publisher: {
       "@type": "Organization",
-      name: "Shreem Cow Products",
+      name: "Shreem Farms",
       url: baseUrl,
       logo: `${baseUrl}/logo.jpeg`,
     },

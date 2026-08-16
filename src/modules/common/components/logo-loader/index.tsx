@@ -8,6 +8,7 @@ type LogoLoaderProps = {
   detail?: string
   compact?: boolean
   inverse?: boolean
+  animated?: boolean
   className?: string
 }
 
@@ -16,6 +17,7 @@ export default function LogoLoader({
   detail,
   compact = false,
   inverse = false,
+  animated = true,
   className,
 }: LogoLoaderProps) {
   return (
@@ -24,7 +26,7 @@ export default function LogoLoader({
         "flex items-center gap-3 rounded-[22px] border px-4 py-3",
         inverse
           ? "border-white/12 bg-white/8 text-white"
-          : "border-[rgba(212,161,38,0.2)] bg-[rgba(255,249,235,0.95)] text-[var(--shreem-ink)]",
+          : "border-[rgba(212,161,38,0.24)] bg-[var(--shreem-card)] text-[var(--shreem-ink)] shadow-sm",
         className
       )}
       role="status"
@@ -36,16 +38,19 @@ export default function LogoLoader({
           compact ? "h-11 w-11" : "h-14 w-14",
           inverse
             ? "border-white/15 bg-white/10"
-            : "border-[rgba(212,161,38,0.25)] bg-white"
+            : "border-[rgba(212,161,38,0.28)] bg-[rgba(255,255,255,0.18)]"
         )}
       >
         <div
           className={clx(
             "absolute inset-[-5px] rounded-[22px] border-2 border-transparent",
-            inverse
-              ? "border-t-[#f5dd9c] border-r-white/20"
-              : "border-t-[var(--shreem-gold)] border-r-[rgba(13,129,126,0.24)]",
-            "animate-spin"
+            animated
+              ? inverse
+                ? "border-t-[#f5dd9c] border-r-white/20 animate-spin"
+                : "border-t-[var(--shreem-gold)] border-r-[rgba(13,129,126,0.24)] animate-spin"
+              : inverse
+              ? "border-[#f5dd9c]/60"
+              : "border-[rgba(212,161,38,0.36)]"
           )}
         />
         <Image

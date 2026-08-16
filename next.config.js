@@ -153,11 +153,21 @@ const nextConfig = {
         value: "public, max-age=31536000, immutable",
       },
     ]
+    const noStoreHeaders = [
+      {
+        key: "Cache-Control",
+        value: "no-store, no-cache, must-revalidate, proxy-revalidate",
+      },
+    ]
 
     return [
       {
         source: "/:path*",
         headers: securityHeaders,
+      },
+      {
+        source: "/:countryCode/shreem-astrology",
+        headers: noStoreHeaders,
       },
       {
         source: "/_next/image",
@@ -179,6 +189,11 @@ const nextConfig = {
   },
   async redirects() {
     return [
+      {
+        source: "/:countryCode/products/organic-neem-dhoob",
+        destination: "/:countryCode/products/organic-neem-dhoop",
+        permanent: true,
+      },
       {
         source: "/:path*",
         has: [

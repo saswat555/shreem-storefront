@@ -361,6 +361,20 @@ export async function updatePaymentSession({
     })
     .then(async (resp: any) => {
       await revalidateCartState()
+      const order =
+        resp?.complete_response?.order ||
+        resp?.order ||
+        resp?.completeResponse?.order ||
+        null
+
+      if (order?.id || resp?.completed) {
+        const orderCacheTag = await getCacheTag("orders")
+        if (orderCacheTag) {
+          revalidateTag(orderCacheTag)
+        }
+        removeCartId()
+      }
+
       return resp
     })
     .catch(medusaError)

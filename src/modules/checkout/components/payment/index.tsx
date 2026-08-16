@@ -8,7 +8,7 @@ import PaymentContainer, {
 } from "@modules/checkout/components/payment-container"
 import ManualUpiQrImage from "@modules/common/components/manual-upi-qr-image"
 import Divider from "@modules/common/components/divider"
-import { getPaymentInfo, isStripeLike, paymentInfoMap } from "@lib/constants"
+import { getPaymentInfo, isRazorpayLike, isStripeLike } from "@lib/constants"
 import { safeInitiatePaymentSession } from "@lib/data/cart"
 import { isDigitalOnlyCart } from "@lib/util/digital-cart"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
@@ -23,11 +23,55 @@ type ManualUpiLiveConfig = {
 const isManualUpiProvider = (providerId?: string | null) =>
   Boolean(providerId?.toLowerCase().includes("manual_upi"))
 
-const getActiveSession = (cart: any) =>
-  cart?.payment_collection?.payment_sessions?.find(
-    (session: any) =>
-      session?.status === "pending" || session?.status === "authorized"
-  ) || cart?.payment_collection?.payment_sessions?.[0]
+const getActiveSession = (cart: any) => {
+  const sessions = Array.isArray(cart?.payment_collection?.payment_sessions)
+    ? cart.payment_collection.payment_sessions
+    : []
+
+  return (
+    sessions.find(
+      (session: any) =>
+        (session?.status === "pending" || session?.status === "authorized") &&
+        sessionMatchesCartAmount(session, cart)
+    ) ||
+    sessions.find(
+      (session: any) =>
+        session?.status === "pending" || session?.status === "authorized"
+    ) ||
+    sessions.find((session: any) => sessionMatchesCartAmount(session, cart)) ||
+    sessions[0]
+  )
+}
+
+const readNumber = (value: any) => {
+  const parsed = Number(value)
+  return Number.isFinite(parsed) ? parsed : 0
+}
+
+const getCartRazorpayMinorAmount = (cart: any) => {
+  const total = readNumber(cart?.total ?? cart?.payment_collection?.amount)
+  return total > 0 ? Math.round(total * 100) : 0
+}
+
+const getSessionRazorpayMinorAmount = (session: any) => {
+  const data = session?.data || {}
+  const explicit = readNumber(
+    data.razorpay_amount || data.razorpayAmount || data.razorpay_order_amount
+  )
+
+  return explicit > 0 ? Math.round(explicit) : 0
+}
+
+const sessionMatchesCartAmount = (session: any, cart: any) => {
+  if (!session || !isRazorpayLike(session?.provider_id)) {
+    return true
+  }
+
+  const sessionAmount = getSessionRazorpayMinorAmount(session)
+  const cartAmount = getCartRazorpayMinorAmount(cart)
+
+  return sessionAmount > 0 && cartAmount > 0 && sessionAmount === cartAmount
+}
 
 const hasValidPhysicalShipping = (cart: any) => {
   const methods = Array.isArray(cart?.shipping_methods) ? cart.shipping_methods : []
@@ -235,7 +279,9 @@ const Payment = ({
       }
 
       const latestSession = getActiveSession(cart)
-      const sessionMatches = latestSession?.provider_id === selectedPaymentMethod
+      const sessionMatches =
+        latestSession?.provider_id === selectedPaymentMethod &&
+        sessionMatchesCartAmount(latestSession, cart)
 
       if (!paidByGiftcard && !sessionMatches) {
         const result = await safeInitiatePaymentSession(cart, {

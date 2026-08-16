@@ -269,7 +269,7 @@ const LANGUAGE_INSTRUCTIONS: Record<string, string> = {
   hindi:
     "Write in natural Hindi using Devanagari, keeping astrology terms understandable.",
   hinglish:
-    "Write in friendly Hinglish with common astrology words like kundli, guna, mangal, dasha, and upaay.",
+    "Write in Roman Hindi/Hinglish using English alphabets only. Do not use Devanagari. Example style: 'yeh match sambhal kar aage badhne layak hai'. Keep common astrology words like kundli, guna, mangal, dasha, and upaay.",
 }
 
 const sanitizeString = (value: unknown, maxLength: number) =>
@@ -629,7 +629,7 @@ const getManglikProfile = (chart: PrashnaChart, label: string) => {
 
 const buildRelationshipAxisScore = (chart: PrashnaChart, label: string): DeepMatchScore => {
   const seventhHouse = getHouse(chart, 7)
-  const seventhLord = seventhHouse?.signLord ? getPlanet(chart, seventhHouse.signLord) : null
+  const seventhLord = seventhHouse?.signLord ? getPlanet(chart, seventhHouse.signLord) : undefined
   const seventhPlanets = getHousePlanets(chart, 7)
   const seventhAspects = getAspectsToHouse(chart, 7)
   const seventhLordAspects = getAspectsToPlanet(chart, seventhLord)
@@ -745,21 +745,23 @@ const buildVenusJupiterScore = (girl: PrashnaChart, boy: PrashnaChart): DeepMatc
     ["Boy Jupiter", boyJupiter],
     ["Boy Venus", boyVenus],
   ].forEach(([name, planet]) => {
-    const dignity = getPlanetDignity(planet as ReturnType<typeof getPlanet>)
+    const planetName = String(name || "Planet")
+    const safePlanet = planet || undefined
+    const dignity = getPlanetDignity(safePlanet as ReturnType<typeof getPlanet>)
     const cancellation = getDebilityCancellationFactors(
-      name.toString().startsWith("Girl") ? girl : boy,
-      planet as ReturnType<typeof getPlanet>
+      planetName.startsWith("Girl") ? girl : boy,
+      safePlanet as ReturnType<typeof getPlanet>
     )
     if (["own", "exalted"].includes(dignity)) score += 1
     if (dignity === "debilitated") {
       score -= cancellation.length ? 0.5 : 2
       if (!cancellation.length) {
-        flags.push(`${name} is debilitated without clear cancellation`)
+        flags.push(`${planetName} is debilitated without clear cancellation`)
       }
     }
-    if (planet && DUSTHANA_HOUSES.includes((planet as any).bhavaHouse || (planet as any).house)) {
+    if (safePlanet && DUSTHANA_HOUSES.includes((safePlanet as any).bhavaHouse || (safePlanet as any).house)) {
       score -= 1
-      flags.push(`${name} is in dusthana house ${(planet as any).bhavaHouse || (planet as any).house}`)
+      flags.push(`${planetName} is in dusthana house ${(safePlanet as any).bhavaHouse || (safePlanet as any).house}`)
     }
   })
 
@@ -774,7 +776,7 @@ const buildVenusJupiterScore = (girl: PrashnaChart, boy: PrashnaChart): DeepMatc
 
 const scoreSingleHouse = (chart: PrashnaChart, houseNumber: number) => {
   const house = getHouse(chart, houseNumber)
-  const lord = house?.signLord ? getPlanet(chart, house.signLord) : null
+  const lord = house?.signLord ? getPlanet(chart, house.signLord) : undefined
   const placed = getHousePlanets(chart, houseNumber)
   const aspects = getAspectsToHouse(chart, houseNumber)
   const lordAspects = getAspectsToPlanet(chart, lord)
@@ -1195,6 +1197,8 @@ const buildPrompt = ({
     "When a planet is debilitated but the deterministic audit shows cancellation/support, call it mitigated rather than raw failure.",
     "Never use fatalistic BPHS wording such as premature death, guaranteed divorce, guaranteed discord, or certain harm. Convert classical risk language into practical family discussion points and expert-review advice.",
     "Strengths must include real support factors from the deterministic deep audit, not only Nadi/Gana.",
+    "The reading must clearly cover: overall verdict, Ashtakoota meaning, deep 7th-house marriage promise, Moon/Venus-based Manglik balance, family/value compatibility, dasha readiness, special cases actually present, practical remedies, and whether expert review is needed.",
+    "If no major special case is proven, say that no major special-case blocker is strongly proven instead of leaving the section vague.",
     "If Nadi, Bhakoot, Manglik, severe 7th house, Venus/Mars, Saturn/Rahu/Ketu, health, or family concerns appear, recommend an expert call with Sanjay Kumar Pandey before final decision.",
     LANGUAGE_INSTRUCTIONS[language] || LANGUAGE_INSTRUCTIONS.english,
     "Return JSON only.",

@@ -17,9 +17,9 @@ export async function generateMetadata(props: {
   params: Promise<{ countryCode: string }>
 }): Promise<Metadata> {
   const { countryCode } = await props.params
-  const title = "Store | Bilona Ghee, Neem Dhoop, Jeevamrut & Cow Products"
+  const title = "Store | Bilona Ghee, Neem Dhoop & Cow Products"
   const description =
-    "Browse Shreem Cow Products including bilona A2 ghee, neem dhoop batti, cow dung cakes, Jeevamrut, and desi-cow inspired home and farm essentials."
+    "Browse live Shreem products including bilona A2 ghee, neem dhoop batti, cow dung cakes, vermicompost, natural foods, and Jyotish services."
 
   return {
     title,

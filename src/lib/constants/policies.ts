@@ -11,8 +11,8 @@ export type PolicyPage = {
   sections: PolicySection[]
 }
 
-const supportEmail = "brajsavitrikrishisansthan@gmail.com"
-const brandName = "Shreem Cow Products"
+const supportEmail = "brajsavitrikrishisanshtan@gmail.com"
+const brandName = "Shreem Farms"
 const siteUrl = "https://www.shreemfarms.in"
 
 export const policyPages = {
@@ -20,7 +20,7 @@ export const policyPages = {
     title: "Terms and Conditions",
     eyebrow: "Customer terms",
     summary:
-      "These terms explain how orders, payments, product use, accounts, and support work on Shreem Cow Products.",
+      "These terms explain how orders, payments, product use, accounts, and support work on Shreem Farms.",
     lastUpdated: "20 May 2026",
     sections: [
       {

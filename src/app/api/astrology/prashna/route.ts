@@ -154,7 +154,7 @@ const LANGUAGE_INSTRUCTIONS: Record<string, string> = {
   hindi:
     "Write the answer in natural Hindi using Devanagari, keeping astrology terms understandable.",
   hinglish:
-    "Write the answer in friendly Hinglish with common astrology terms like lagna, rashi, bhav, and upaay.",
+    "Write the answer in Roman Hindi/Hinglish using English alphabets only. Do not use Devanagari. Example style: 'aap ka prashna strong hai'. Keep common astrology terms like lagna, rashi, bhav, and upaay.",
 }
 
 const knowledgeTrace = (passages: RetrievedAstrologyPassage[]) =>

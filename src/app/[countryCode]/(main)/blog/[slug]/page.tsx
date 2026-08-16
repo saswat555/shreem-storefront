@@ -62,6 +62,14 @@ const archivedBlogRedirects: Record<string, string> = {
     "from-farm-to-family-shreem-farms-honest-indian-food",
 }
 
+const absoluteImageUrl = (baseUrl: string, image: string) => {
+  if (/^https?:\/\//i.test(image)) {
+    return image
+  }
+
+  return `${baseUrl}${image.startsWith("/") ? image : `/${image}`}`
+}
+
 export async function generateMetadata(props: Props): Promise<Metadata> {
   const { countryCode, slug } = await props.params
   const post = await getBlogPost(slug)
@@ -111,16 +119,16 @@ export default async function BlogArticlePage(props: Props) {
     "@type": "BlogPosting",
     headline: post.title,
     description: post.description,
-    image: `${baseUrl}${post.image}`,
+    image: absoluteImageUrl(baseUrl, post.image),
     datePublished: post.publishedAt,
     dateModified: post.publishedAt,
     author: {
       "@type": "Organization",
-      name: "Shreem Cow Products",
+      name: "Shreem Farms",
     },
     publisher: {
       "@type": "Organization",
-      name: "Shreem Cow Products",
+      name: "Shreem Farms",
       logo: {
         "@type": "ImageObject",
         url: `${baseUrl}/logo.jpeg`,

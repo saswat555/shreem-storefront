@@ -27,7 +27,7 @@ type EmailDraft = {
   message: string
 }
 
-const SUPPORT_EMAIL = "brajsavitrikrishisansthan@gmail.com"
+const SUPPORT_EMAIL = "brajsavitrikrishisanshtan@gmail.com"
 const LANGUAGE_KEY = "shreem_site_language_v1"
 
 const getSavedLanguage = () => {
@@ -233,8 +233,8 @@ export default function SupportChat({
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#e8c364]">
                 Email
               </p>
-              <a href="mailto:brajsavitrikrishisansthan@gmail.com" className="mt-1 block text-sm font-medium text-white hover:text-[#e8c364] transition-colors">
-                brajsavitrikrishisansthan@gmail.com
+              <a href="mailto:brajsavitrikrishisanshtan@gmail.com" className="mt-1 block text-sm font-medium text-white hover:text-[#e8c364] transition-colors">
+                brajsavitrikrishisanshtan@gmail.com
               </a>
             </div>
             <div className="mt-2">

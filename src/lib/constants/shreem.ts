@@ -41,7 +41,7 @@ export const shreemAssurances = [
   {
     title: "For home and soil",
     description:
-      "From dhoop batti and gobar cakes to Jeevamrut, each Shreem product is made for home rituals, daily use, or living-soil routines.",
+      "From dhoop batti and gobar cakes to vermicompost, each listed Shreem product is made for home rituals, daily use, or living-soil routines.",
   },
 ]
 

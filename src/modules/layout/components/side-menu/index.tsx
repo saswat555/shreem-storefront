@@ -44,7 +44,7 @@ const sideMenuItems: SideMenuItem[] = [
   {
     name: "Store",
     href: "/store",
-    description: "Shop ghee, dhoop, gobar, and Jeevamrut",
+    description: "Shop ghee, dhoop, gobar, and natural farm inputs",
     marker: "S",
   },
   {
@@ -58,12 +58,6 @@ const sideMenuItems: SideMenuItem[] = [
     href: "/shreem-astrology",
     description: "Muhurth, Prashna, and paid calls",
     marker: "A",
-  },
-  {
-    name: "Gemstones",
-    href: "/gemstones",
-    description: "Verified stone vendor substores",
-    marker: "R",
   },
   {
     name: "GrowBuddy AI",

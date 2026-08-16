@@ -120,20 +120,20 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
   if (!product) {
     return {
       title: "Product | Shreem",
-      description: "Shop Shreem Cow Products.",
+      description: "Shop Shreem Farms.",
     }
   }
 
   const description =
     product.description?.slice(0, 155) ||
-    `Shop ${product.title} from Shreem Cow Products with live pricing, product details, and secure checkout.`
+    `Shop ${product.title} from Shreem Farms with live pricing, product details, and secure checkout.`
   const canonical = `/${countryCode}/products/${handle}`
   const productImage = toAbsoluteProductImageUrl(
     product.thumbnail || product.images?.[0]?.url
   )
 
   return {
-    title: `${product.title} | Shreem Cow Products`,
+    title: `${product.title} | Shreem Farms`,
     description,
     alternates: {
       canonical,
@@ -202,7 +202,7 @@ export default async function ProductPage(props: Props) {
     name: pricedProduct.title,
     description:
       pricedProduct.description ||
-      `Shop ${pricedProduct.title} from Shreem Cow Products.`,
+      `Shop ${pricedProduct.title} from Shreem Farms.`,
     image: imageUrls,
     sku: pricedProduct.variants?.[0]?.sku || pricedProduct.id,
     brand: {

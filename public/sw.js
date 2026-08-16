@@ -1,4 +1,4 @@
-const CACHE_NAME = "shreem-pwa-v4"
+const CACHE_NAME = "shreem-pwa-v6-astrology-no-store"
 const STATIC_ASSETS = [
   "/",
   "/in",
@@ -12,11 +12,13 @@ const NETWORK_ONLY_PREFIXES = [
   "/app",
   "/admin",
   "/in/account",
+  "/in/shreem-astrology",
   "/in/cart",
   "/in/checkout",
   "/in/order",
   "/in/auth",
   "/account",
+  "/shreem-astrology",
   "/cart",
   "/checkout",
   "/order",
@@ -62,6 +64,19 @@ self.addEventListener("fetch", (event) => {
   }
 
   if (NETWORK_ONLY_PREFIXES.some((prefix) => url.pathname.startsWith(prefix))) {
+    event.respondWith(
+      fetch(request, {
+        cache: "no-store",
+      }).catch(() =>
+        new Response("Network required for this secure page.", {
+          status: 503,
+          headers: {
+            "Content-Type": "text/plain; charset=utf-8",
+            "Cache-Control": "no-store",
+          },
+        })
+      )
+    )
     return
   }
 

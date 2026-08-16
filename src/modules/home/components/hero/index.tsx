@@ -28,9 +28,9 @@ const Hero = ({
                 Shreem Farms, rooted in desi-cow care.
               </h1>
               <p className="brand-page-copy mt-5 max-w-[38rem] text-center small:text-left">
-                Cultured bilona ghee, neem dhoop, cow-dung cakes, and Jeevamrut
-                come together as one practical shelf for food, fragrance, fire,
-                and farm care.
+                Shop cultured bilona ghee, neem dhoop, cow-dung cakes, and
+                vermicompost, backed by our practical work in desi-cow care and
+                natural farming.
               </p>
               <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row small:justify-start">
                 <LocalizedClientLink href="/store" className="brand-primary-button">

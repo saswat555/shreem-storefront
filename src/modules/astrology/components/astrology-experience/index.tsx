@@ -18,7 +18,15 @@ import {
 import { updateCustomer } from "@lib/data/customer"
 import LogoLoader from "@modules/common/components/logo-loader"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
-import { type CSSProperties, useEffect, useMemo, useState, useTransition } from "react"
+import {
+  type CSSProperties,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useTransition,
+} from "react"
+import { createPortal } from "react-dom"
 
 type PrashnaResult = {
   chart?: PrashnaChart
@@ -368,6 +376,14 @@ type MatchmakingResult = {
     max?: number
     percentage?: number
     deterministicRecommendation?: "go" | "caution" | "avoid"
+    deep_scores?: {
+      name: string
+      score: number
+      max: number
+      reason: string
+    }[]
+    case_registry?: string[]
+    red_flags?: string[]
   }
   analysis?: {
     summary?: string
@@ -601,6 +617,7 @@ const astrologyTabs: { id: AstrologyTab; label: string; description: string }[] 
 const HISTORY_KEY = "shreem_astrology_history_v1"
 const SAVED_KUNDLI_KEY = "shreem_saved_kundlis_v1"
 const LANGUAGE_KEY = "shreem_site_language_v1"
+const ASTROLOGY_CITY_KEY = "shreem_astrology_default_city_v1"
 const THEME_KEY = "shreem_astrology_theme_v1"
 const LOCAL_HISTORY_LIMIT = 12
 const LOCAL_SAVED_KUNDLI_LIMIT = 24
@@ -633,7 +650,7 @@ const emptyMatchPerson = () => ({
   name: "",
   birthDate: "",
   birthTime: "",
-  cityId: "rewa",
+  cityId: "",
 })
 
 const getCurrentLocalTimeString = () => {
@@ -778,14 +795,56 @@ const CityPicker = ({
   value: string
   onChange: (cityId: string) => void
 }) => {
-  const selectedCity = getCityById(value)
-  const selectedLabel = cityLabel(selectedCity)
+  const selectedCity = value ? getCityById(value) : null
+  const selectedLabel = selectedCity ? cityLabel(selectedCity) : ""
   const [query, setQuery] = useState(selectedLabel)
   const [open, setOpen] = useState(false)
+  const [mounted, setMounted] = useState(false)
+  const [dropdownStyle, setDropdownStyle] = useState<CSSProperties>({})
+  const inputRef = useRef<HTMLInputElement | null>(null)
 
   useEffect(() => {
     setQuery(selectedLabel)
   }, [selectedLabel])
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  useEffect(() => {
+    if (!open || typeof window === "undefined") {
+      return
+    }
+
+    const updatePosition = () => {
+      const rect = inputRef.current?.getBoundingClientRect()
+
+      if (!rect) {
+        return
+      }
+
+      const viewportHeight = window.visualViewport?.height || window.innerHeight
+      const spaceBelow = Math.max(160, viewportHeight - rect.bottom - 14)
+      const maxHeight = Math.min(320, spaceBelow)
+
+      setDropdownStyle({
+        position: "fixed",
+        top: rect.bottom + 6,
+        left: rect.left,
+        width: rect.width,
+        maxHeight,
+      })
+    }
+
+    updatePosition()
+    window.addEventListener("resize", updatePosition)
+    window.addEventListener("scroll", updatePosition, true)
+
+    return () => {
+      window.removeEventListener("resize", updatePosition)
+      window.removeEventListener("scroll", updatePosition, true)
+    }
+  }, [open, query])
 
   const normalizedQuery = normalizeCitySearch(query)
   const matches = useMemo(() => {
@@ -811,6 +870,7 @@ const CityPicker = ({
       </span>
       <div className="relative">
         <input
+          ref={inputRef}
           value={query}
           onChange={(event) => {
             setQuery(event.target.value)
@@ -820,14 +880,17 @@ const CityPicker = ({
           onBlur={() => {
             window.setTimeout(() => {
               setOpen(false)
-              setQuery(cityLabel(getCityById(value)))
+              setQuery(value ? cityLabel(getCityById(value)) : "")
             }, 120)
           }}
-          className="h-12 w-full rounded-[16px] border border-[var(--shreem-border)] bg-white/82 px-3 text-sm text-[var(--shreem-ink)] outline-none"
-          placeholder="Search city"
+          className="h-12 w-full rounded-[16px] border border-[var(--shreem-border)] bg-[var(--shreem-card)] px-3 text-sm text-[var(--shreem-ink)] shadow-sm outline-none placeholder:text-[var(--shreem-muted)]"
+          placeholder="Search and select your city"
         />
-        {open && (
-          <div className="absolute left-0 right-0 top-[calc(100%+6px)] z-30 max-h-64 overflow-auto rounded-[16px] border border-[var(--shreem-border)] bg-white py-1 shadow-[0_18px_40px_rgba(18,63,99,0.16)]">
+        {open && mounted && createPortal(
+          <div
+            style={dropdownStyle}
+            className="z-[9999] overflow-auto rounded-[16px] border border-[var(--shreem-border)] bg-[var(--shreem-card)] py-1 shadow-[0_22px_60px_rgba(2,8,23,0.34)] backdrop-blur"
+          >
             {matches.length ? (
               matches.map((city) => (
                 <button
@@ -837,8 +900,8 @@ const CityPicker = ({
                     event.preventDefault()
                     chooseCity(city)
                   }}
-                  className={`flex w-full flex-col px-3 py-2 text-left text-sm transition hover:bg-[rgba(13,129,126,0.08)] ${
-                    city.id === value ? "bg-[rgba(13,129,126,0.1)]" : ""
+                  className={`flex w-full flex-col px-3 py-2 text-left text-sm transition hover:bg-[rgba(13,129,126,0.12)] ${
+                    city.id === value ? "bg-[rgba(212,161,38,0.18)]" : ""
                   }`}
                 >
                   <span className="font-semibold text-[var(--shreem-ink)]">
@@ -854,7 +917,8 @@ const CityPicker = ({
                 No matching city
               </p>
             )}
-          </div>
+          </div>,
+          document.body
         )}
       </div>
     </label>
@@ -1155,7 +1219,7 @@ const DashaTimelineTable = ({
                 <table className="w-full min-w-0 small:min-w-[620px] text-left text-xs">
                   <thead className="bg-[rgba(255,248,233,0.9)] text-[var(--shreem-gold-deep)]">
                     <tr>
-                      {["Period", "Lord", "From", "To", "Years"].map((head) => (
+                      {["Period", "Lord", "From", "To", "Impact"].map((head) => (
                         <th
                           key={head}
                           className="px-3 py-2 font-semibold uppercase tracking-[0.05em] small:tracking-[0.12em]"
@@ -1182,9 +1246,11 @@ const DashaTimelineTable = ({
                           {row.endLabel}
                         </td>
                         <td className="break-words px-3 py-2 text-[var(--shreem-muted)]">
-                          {Number(row.durationYears).toFixed(
-                            row.durationYears < 0.1 ? 4 : 2
-                          )}
+                          {row.focus ||
+                            row.role ||
+                            `Approx ${Number(row.durationYears).toFixed(
+                              row.durationYears < 0.1 ? 4 : 2
+                            )} years`}
                         </td>
                       </tr>
                     ))}
@@ -1206,7 +1272,7 @@ const DashaTimelineTable = ({
           <div className="overflow-x-auto border-t border-[var(--shreem-border)]">
             <table className="w-full min-w-0 small:min-w-[620px] text-left text-xs">
               <thead className="bg-[rgba(255,248,233,0.9)] text-[var(--shreem-gold-deep)]">
-                <tr>{["Mahadasha", "Antardasha", "From", "To"].map((head) => <th key={head} className="px-3 py-2 font-semibold uppercase tracking-[0.05em] small:tracking-[0.12em]">{head}</th>)}</tr>
+                <tr>{["Mahadasha", "Antardasha", "From", "To", "Impact"].map((head) => <th key={head} className="px-3 py-2 font-semibold uppercase tracking-[0.05em] small:tracking-[0.12em]">{head}</th>)}</tr>
               </thead>
               <tbody className="divide-y divide-[var(--shreem-border)]">
                 {timeline.lifetime_antardashas.map((row, index) => (
@@ -1215,6 +1281,7 @@ const DashaTimelineTable = ({
                     <td className="break-words px-3 py-2 font-medium text-[var(--shreem-ink)]">{row.lord}</td>
                     <td className="break-words px-3 py-2 text-[var(--shreem-muted)]">{row.startLabel}</td>
                     <td className="break-words px-3 py-2 text-[var(--shreem-muted)]">{row.endLabel}</td>
+                    <td className="break-words px-3 py-2 text-[var(--shreem-muted)]">{row.focus || row.role || "Period effect depends on its lord, house ownership, placement, drishti and active sub-period."}</td>
                   </tr>
                 ))}
               </tbody>
@@ -1883,7 +1950,7 @@ const PrashnaChartView = ({ result }: { result: PrashnaResult }) => {
       />
       <KundliGuideModal open={guideOpen} onClose={() => setGuideOpen(false)} />
       <div className="flex justify-center mb-4">
-        <LogoLoader compact label="Shreem Prashna Kundli" />
+        <LogoLoader compact animated={false} label="Shreem Prashna Kundli" />
       </div>
 
       <div className="rounded-[24px] border border-[rgba(13,129,126,0.16)] bg-[linear-gradient(135deg,rgba(13,129,126,0.08),rgba(254,248,233,0.78))] px-4 py-4">
@@ -3602,6 +3669,176 @@ const getStoneCards = (stones?: KundliResult["stones"]) => {
 const cleanKundliText = (value?: string | null) =>
   typeof value === "string" ? value.trim() : ""
 
+const legacyText = (value: unknown, fallback = "") =>
+  typeof value === "string"
+    ? value
+    : typeof value === "number" || typeof value === "boolean"
+    ? String(value)
+    : fallback
+
+const legacyTextArray = (value: unknown): string[] =>
+  Array.isArray(value)
+    ? value
+        .map((item) =>
+          typeof item === "string"
+            ? item
+            : typeof item === "number"
+            ? String(item)
+            : item && typeof item === "object"
+            ? legacyText(
+                (item as Record<string, unknown>).text,
+                legacyText(
+                  (item as Record<string, unknown>).reason,
+                  legacyText((item as Record<string, unknown>).summary)
+                )
+              )
+            : ""
+        )
+        .filter(Boolean)
+    : typeof value === "string"
+    ? [value]
+    : []
+
+const legacyNumber = (value: unknown, fallback = 0) => {
+  const parsed = Number(value)
+  return Number.isFinite(parsed) ? parsed : fallback
+}
+
+const legacyRecord = (value: unknown): Record<string, unknown> => {
+  if (typeof value === "string") {
+    try {
+      const parsed = JSON.parse(value)
+      return parsed && typeof parsed === "object"
+        ? (parsed as Record<string, unknown>)
+        : {}
+    } catch {
+      return {}
+    }
+  }
+
+  return value && typeof value === "object" ? (value as Record<string, unknown>) : {}
+}
+
+const legacyScoreRows = (value: unknown) =>
+  Array.isArray(value)
+    ? value
+        .map((item, index) => {
+          if (typeof item === "string") {
+            return {
+              name: `Point ${index + 1}`,
+              score: 0,
+              max: 0,
+              reason: item,
+            }
+          }
+
+          if (!item || typeof item !== "object") {
+            return null
+          }
+
+          const row = item as Record<string, unknown>
+          return {
+            name: legacyText(row.name, legacyText(row.layer, `Point ${index + 1}`)),
+            score: legacyNumber(row.score),
+            max: legacyNumber(row.max),
+            reason: legacyText(row.reason, legacyText(row.meaning, legacyText(row.text))),
+          }
+        })
+        .filter(Boolean)
+    : []
+
+const normalizeMatchmakingResultForUi = (value: unknown): MatchmakingResult => {
+  const result = legacyRecord(value) as MatchmakingResult & Record<string, unknown>
+  const compatibility = legacyRecord(
+    result.compatibility || result.match || result.compatibility_result || result.result
+  ) as NonNullable<MatchmakingResult["compatibility"]> & Record<string, unknown>
+  const analysis = legacyRecord(
+    result.analysis || result.reading || result.ai_analysis
+  ) as NonNullable<MatchmakingResult["analysis"]> & Record<string, unknown>
+  const girl = legacyRecord(result.girl || result.female || result.bride)
+  const boy = legacyRecord(result.boy || result.male || result.groom)
+
+  return {
+    ...result,
+    girl: {
+      ...(girl as MatchmakingResult["girl"]),
+      profile: legacyRecord(girl.profile) as MatchmakingResult["girl"]["profile"],
+      chart: (girl.chart || result.girl_chart) as PrashnaChart | undefined,
+    },
+    boy: {
+      ...(boy as MatchmakingResult["boy"]),
+      profile: legacyRecord(boy.profile) as MatchmakingResult["boy"]["profile"],
+      chart: (boy.chart || result.boy_chart) as PrashnaChart | undefined,
+    },
+    compatibility: {
+      ...compatibility,
+      scores: legacyScoreRows(compatibility.scores || compatibility.koota_scores || result.scores) as NonNullable<
+        MatchmakingResult["compatibility"]
+      >["scores"],
+      deep_scores: legacyScoreRows(compatibility.deep_scores || compatibility.deepScores || result.deep_scores) as NonNullable<
+        MatchmakingResult["compatibility"]
+      >["deep_scores"],
+      case_registry: legacyTextArray(compatibility.case_registry || compatibility.caseRegistry || result.case_registry),
+      red_flags: legacyTextArray(compatibility.red_flags || compatibility.redFlags || result.red_flags),
+      total: legacyNumber(compatibility.total, legacyNumber(compatibility.score)),
+      max: legacyNumber(compatibility.max, legacyNumber(compatibility.maximum)),
+      percentage: legacyNumber(
+        compatibility.percentage,
+        legacyNumber(compatibility.compatibility_percentage, legacyNumber(analysis.percentage_suggestion))
+      ),
+      deterministicRecommendation:
+        compatibility.deterministicRecommendation === "go" ||
+        compatibility.deterministicRecommendation === "avoid"
+          ? compatibility.deterministicRecommendation
+          : "caution",
+    },
+    analysis: {
+      ...analysis,
+      summary: legacyText(analysis.summary, legacyText(result.summary, legacyText(result.message))),
+      decision_reason: legacyText(
+        analysis.decision_reason,
+        legacyText(analysis.summary, legacyText(result.summary))
+      ),
+      strengths: legacyTextArray(analysis.strengths || result.strengths),
+      concerns: legacyTextArray(analysis.concerns || result.concerns),
+      family_discussion_points: legacyTextArray(
+        analysis.family_discussion_points || result.family_discussion_points
+      ),
+      remedies: legacyTextArray(analysis.remedies || result.remedies),
+      marriage_timing_note: legacyText(analysis.marriage_timing_note, legacyText(result.marriage_timing_note)),
+      book_citations: Array.isArray(analysis.book_citations)
+        ? analysis.book_citations
+            .map((item, index) => {
+              if (typeof item === "string") {
+                return { citation: `Reference ${index + 1}`, relevance: item }
+              }
+              if (!item || typeof item !== "object") {
+                return null
+              }
+              const row = item as Record<string, unknown>
+              return {
+                citation: legacyText(row.citation, `Reference ${index + 1}`),
+                relevance: legacyText(row.relevance, legacyText(row.reason)),
+              }
+            })
+            .filter(Boolean) as BookCitation[]
+        : [],
+      recommendation:
+        analysis.recommendation === "go" || analysis.recommendation === "avoid"
+          ? analysis.recommendation
+          : "caution",
+      percentage_suggestion: legacyNumber(
+        analysis.percentage_suggestion,
+        legacyNumber(compatibility.percentage)
+      ),
+      expert_call_recommended: Boolean(analysis.expert_call_recommended),
+      expert_call_reason: legacyText(analysis.expert_call_reason),
+    },
+    message: legacyText(result.message),
+    retryable: Boolean(result.retryable),
+  }
+}
+
 const KUNDLI_SCAFFOLD_PATTERNS = [
   /no direct planet placed/i,
   /no direct graha sits/i,
@@ -4316,9 +4553,9 @@ const KundliGuideModal = ({
             <ol className="mt-2 list-decimal space-y-2 pl-5">
               <li>Direct answer appears only when you asked a question. It should answer each question separately.</li>
               <li>Predictions gives the practical life areas: life path, career, money, business, marriage, family, education, reputation, health, foreign/spiritual and remedies.</li>
-              <li>Timing shows Vimshottari dasha, the full Mahadasha life map, current nested periods and Markesh prevention windows.</li>
+              <li>Timing shows the current Vimshottari dasha branch and practical period guidance.</li>
               <li>Houses shows which house impact is actually prevailing after lordship, placement, occupants and Bhava Chalit delivery.</li>
-              <li>For Astrologers is the final technical audit: Lagna, Bhava Chalit, Chandra chart, drishti, yogas, rule evidence and timing calculations.</li>
+              <li>Remedies combines pooja, mantra, daan, daily discipline and gemstone caution where supported.</li>
             </ol>
           </div>
 
@@ -4331,7 +4568,7 @@ const KundliGuideModal = ({
             <div className="rounded-[18px] border border-[var(--shreem-border)] bg-white px-4 py-4">
               <p className="text-sm font-semibold text-[#123f63]">Timing rules</p>
               <p className="mt-2">Mahadasha is the background, Antardasha selects the active life area, and Pratyantar often triggers the event. Gochar is only a trigger; it should not override natal promise and active dasha.</p>
-              <p className="mt-2">Markesh windows are prevention periods, not death or disease predictions. Use them for caution, medical screening when needed, safer travel and expert review.</p>
+              <p className="mt-2">We do not show whole-life Markesh calendars because broad danger lists become misleading. The timing tab focuses on periods where dasha guidance is useful for action.</p>
             </div>
           </div>
 
@@ -4725,6 +4962,43 @@ const FocusedPredictionCards = ({ result }: { result: KundliResult }) => {
             </p>
           </article>
         ))}
+      </div>
+    </section>
+  )
+}
+
+const CurrentGocharImpactCard = ({ result }: { result: KundliResult }) => {
+  const gocharRow = (result.analysis?.prediction_table || []).find((row) =>
+    /gochar|transit|current planet/i.test(`${row.area} ${row.chart_basis}`)
+  )
+
+  if (!gocharRow) {
+    return null
+  }
+
+  return (
+    <section className="rounded-[20px] border border-[rgba(13,129,126,0.18)] bg-[rgba(240,248,246,0.76)] px-4 py-4">
+      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
+        Current Gochar impact
+      </p>
+      <p className="mt-2 text-sm leading-7 text-[var(--shreem-muted)]">
+        {gocharRow.prediction}
+      </p>
+      <div className="mt-3 rounded-[16px] bg-white/72 px-3 py-3 text-xs leading-5 text-[var(--shreem-muted)]">
+        <p>
+          <span className="font-semibold text-[var(--shreem-ink)]">
+            Chart basis:
+          </span>{" "}
+          {gocharRow.chart_basis}
+        </p>
+        {gocharRow.advice && (
+          <p className="mt-2">
+            <span className="font-semibold text-[var(--shreem-ink)]">
+              How to use it:
+            </span>{" "}
+            {gocharRow.advice}
+          </p>
+        )}
       </div>
     </section>
   )
@@ -5143,7 +5417,6 @@ const KundliResultView = ({
       result.analysis?.sub_question_answers?.length
   )
   const [guideOpen, setGuideOpen] = useState(false)
-  const [astrologerNoticeOpen, setAstrologerNoticeOpen] = useState(false)
   const [activeSection, setActiveSection] = useState(
     hasQuestionAnswers ? "kundli-answer" : "kundli-predictions"
   )
@@ -5157,6 +5430,8 @@ const KundliResultView = ({
   if (!chart) {
     return null
   }
+
+  const kundliChart = chart
 
   const showGeneralText =
     !hasQuestionAnswers &&
@@ -5173,7 +5448,6 @@ const KundliResultView = ({
     { id: "kundli-predictions", label: "Predictions" },
     { id: "kundli-houses", label: "Houses" },
     { id: "kundli-remedies", label: "Remedies" },
-    { id: "kundli-proof", label: "For Astrologers" },
   ]
 
   return (
@@ -5181,24 +5455,10 @@ const KundliResultView = ({
       <ResultAnchorNav
         items={tocItems}
         activeId={activeSection}
-        onSelect={(sectionId) => {
-          if (sectionId === "kundli-proof") {
-            setAstrologerNoticeOpen(true)
-            return
-          }
-          setActiveSection(sectionId)
-        }}
+        onSelect={(sectionId) => setActiveSection(sectionId)}
         onOpenInfo={() => setGuideOpen(true)}
       />
       <KundliGuideModal open={guideOpen} onClose={() => setGuideOpen(false)} />
-      <AstrologerProofWarningModal
-        open={astrologerNoticeOpen}
-        onClose={() => setAstrologerNoticeOpen(false)}
-        onConfirm={() => {
-          setActiveSection("kundli-proof")
-          setAstrologerNoticeOpen(false)
-        }}
-      />
       <div className="rounded-[20px] border border-[var(--shreem-border)] bg-white/62 px-4 py-3">
         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
           {isInterruptedReading ? "Kundli not completed" : "Kundli reading"}
@@ -5250,10 +5510,11 @@ const KundliResultView = ({
             </p>
           </section>
         )}
+        <CurrentGocharImpactCard result={result} />
         <DashaCard chart={chart} />
         <CompactDashaPredictionList rows={result.analysis?.dasha_predictions} />
         <DashaTimelineTable timeline={result.dasha_timeline} />
-        <CustomerMarkeshTimeline analysis={result.critical_period_analysis} />
+        <DashaDecisionTreeTable rows={result.analysis?.dasha_decision_tree} />
       </div>
 
       {activeSection === "kundli-predictions" && showGeneralText && (
@@ -5454,15 +5715,13 @@ const KundliResultView = ({
           </p>
         </div>
         <HouseOutcomeTable rows={result.analysis?.house_outcomes} />
+        <GrahaDrishtiCard chart={chart} outcomes={result.analysis?.house_outcomes} />
       </section>
 
+      {false && (
       <section
         id="kundli-proof"
-        className={
-          activeSection === "kundli-proof"
-            ? "grid gap-4 scroll-mt-28"
-            : "hidden"
-        }
+        className="hidden"
       >
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
@@ -5480,31 +5739,31 @@ const KundliResultView = ({
           className="grid gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(280px,0.65fr)]"
         >
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
-            <NorthIndianChart chart={chart} mode="lagna" title="Lagna chart" />
-            <NorthIndianChart chart={chart} mode="bhava" title="Bhava Chalit chart" />
-            <NorthIndianChart chart={chart} mode="moon" title="Chandra chart" />
+            <NorthIndianChart chart={kundliChart} mode="lagna" title="Lagna chart" />
+            <NorthIndianChart chart={kundliChart} mode="bhava" title="Bhava Chalit chart" />
+            <NorthIndianChart chart={kundliChart} mode="moon" title="Chandra chart" />
           </div>
           <div className="grid gap-3">
             <ChartMiniCard
               label="Lagna"
-              value={`${chart.ascendant} ${formatDegree(chart.ascendantDegree)}`}
-              detail={`${chart.ascendantNakshatra} pada ${chart.ascendantPada}`}
+              value={`${kundliChart.ascendant} ${formatDegree(kundliChart.ascendantDegree)}`}
+              detail={`${kundliChart.ascendantNakshatra} pada ${kundliChart.ascendantPada}`}
             />
             <ChartMiniCard
               label="Rashi"
-              value={`${chart.moonSign} ${formatDegree(chart.moonDegree)}`}
-              detail={`${chart.nakshatra} pada ${chart.nakshatraPada}`}
+              value={`${kundliChart.moonSign} ${formatDegree(kundliChart.moonDegree)}`}
+              detail={`${kundliChart.nakshatra} pada ${kundliChart.nakshatraPada}`}
             />
             <ChartMiniCard
               label="Birth panchang"
-              value={chart.tithi}
-              detail={`${chart.yoga} yoga · ${chart.karana} karana`}
+              value={kundliChart.tithi}
+              detail={`${kundliChart.yoga} yoga · ${kundliChart.karana} karana`}
             />
           </div>
         </div>
 
-        <BhavaChalitSummary chart={chart} />
-        <DashaCard chart={chart} />
+        <BhavaChalitSummary chart={kundliChart} />
+        <DashaCard chart={kundliChart} />
         <DashaTimelineTable timeline={result.dasha_timeline} />
         <DashaDecisionTreeTable rows={result.analysis?.dasha_decision_tree} />
         <CriticalTimingWindowList analysis={result.critical_period_analysis} />
@@ -5532,7 +5791,7 @@ const KundliResultView = ({
         )}
         <CompactSpecialCaseSummary result={result} />
         <SpecialCaseReadingList rows={result.analysis?.special_case_readings} />
-        <GrahaDrishtiCard chart={chart} outcomes={result.analysis?.house_outcomes} />
+        <GrahaDrishtiCard chart={kundliChart} outcomes={result.analysis?.house_outcomes} />
         {Boolean(result.analysis?.house_outcomes?.length) && (
           <section className="rounded-[20px] border border-[var(--shreem-border)] bg-white/66 px-4 py-4">
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
@@ -5551,10 +5810,10 @@ const KundliResultView = ({
             </div>
           </section>
         )}
-        <GrahaProofGrid chart={chart} />
-        <PlanetEffectList chart={chart} effects={result.analysis?.planet_effects} />
+        <GrahaProofGrid chart={kundliChart} />
+        <PlanetEffectList chart={kundliChart} effects={result.analysis?.planet_effects} />
         <BphsRuleProofList proofs={result.bphs_rule_proofs} />
-        <AstrologerAuditTables chart={chart} />
+        <AstrologerAuditTables chart={kundliChart} />
         <BookCitationList items={result.analysis?.book_citations} />
         <CompactInsightList title="Generated upaay audit" items={result.analysis?.upaay} limit={8} />
         {Boolean(result.analysis?.targeted_remedies?.length) && (
@@ -5588,6 +5847,7 @@ const KundliResultView = ({
           </section>
         )}
       </section>
+      )}
 
       <button
         type="button"
@@ -5614,7 +5874,7 @@ const MatchPersonFields = ({
   value: ReturnType<typeof emptyMatchPerson>
   onChange: (value: ReturnType<typeof emptyMatchPerson>) => void
 }) => (
-  <div className="rounded-[22px] border border-[var(--shreem-border)] bg-white/60 px-4 py-4">
+  <div className="rounded-[22px] border border-[var(--shreem-border)] bg-[var(--shreem-card)] px-4 py-4">
     <p className="text-sm font-semibold text-[var(--shreem-ink)]">{title}</p>
     <div className="mt-4 grid gap-3">
       <label className="grid gap-2">
@@ -5624,7 +5884,7 @@ const MatchPersonFields = ({
         <input
           value={value.name}
           onChange={(event) => onChange({ ...value, name: event.target.value })}
-          className="h-12 rounded-[16px] border border-[var(--shreem-border)] bg-white/82 px-3 text-sm text-[var(--shreem-ink)] outline-none"
+          className="h-12 rounded-[16px] border border-[var(--shreem-border)] bg-[var(--shreem-card)] px-3 text-sm text-[var(--shreem-ink)] outline-none placeholder:text-[var(--shreem-muted)]"
           placeholder={`${title} name`}
         />
       </label>
@@ -5639,7 +5899,7 @@ const MatchPersonFields = ({
             onChange={(event) =>
               onChange({ ...value, birthDate: event.target.value })
             }
-            className="h-12 rounded-[16px] border border-[var(--shreem-border)] bg-white/82 px-3 text-sm text-[var(--shreem-ink)] outline-none"
+            className="h-12 rounded-[16px] border border-[var(--shreem-border)] bg-[var(--shreem-card)] px-3 text-sm text-[var(--shreem-ink)] outline-none"
           />
         </label>
         <label className="grid gap-2">
@@ -5652,7 +5912,7 @@ const MatchPersonFields = ({
             onChange={(event) =>
               onChange({ ...value, birthTime: event.target.value })
             }
-            className="h-12 rounded-[16px] border border-[var(--shreem-border)] bg-white/82 px-3 text-sm text-[var(--shreem-ink)] outline-none"
+            className="h-12 rounded-[16px] border border-[var(--shreem-border)] bg-[var(--shreem-card)] px-3 text-sm text-[var(--shreem-ink)] outline-none"
           />
         </label>
       </div>
@@ -5665,6 +5925,12 @@ const MatchPersonFields = ({
 )
 
 const MatchmakingResultView = ({ result }: { result: MatchmakingResult }) => {
+  const kootaScores = Array.isArray(result.compatibility?.scores)
+    ? result.compatibility.scores.filter((score) => score && score.name)
+    : []
+  const deepScores = Array.isArray(result.compatibility?.deep_scores)
+    ? result.compatibility.deep_scores.filter((score) => score && score.name)
+    : []
   const percentage =
     result.analysis?.percentage_suggestion ?? result.compatibility?.percentage ?? 0
   const recommendation =
@@ -5680,7 +5946,7 @@ const MatchmakingResultView = ({ result }: { result: MatchmakingResult }) => {
 
   return (
     <div className="grid gap-4">
-      <div className="rounded-[24px] border border-[rgba(212,161,38,0.26)] bg-[rgba(255,248,233,0.82)] px-5 py-5">
+      <div className="rounded-[24px] border border-[rgba(212,161,38,0.26)] bg-[var(--shreem-card)] px-5 py-5">
         <p className="brand-kicker">Marriage compatibility</p>
         <div className="mt-3 flex flex-col gap-4 small:flex-row small:items-end small:justify-between">
           <div>
@@ -5691,7 +5957,7 @@ const MatchmakingResultView = ({ result }: { result: MatchmakingResult }) => {
               {recommendationLabel}
             </p>
           </div>
-          <div className="rounded-full border border-[var(--shreem-border)] bg-white/70 px-4 py-2 text-sm font-semibold capitalize text-[var(--shreem-ink)]">
+          <div className="rounded-full border border-[var(--shreem-border)] bg-[rgba(13,129,126,0.12)] px-4 py-2 text-sm font-semibold capitalize text-[var(--shreem-ink)]">
             {recommendation}
           </div>
         </div>
@@ -5715,10 +5981,29 @@ const MatchmakingResultView = ({ result }: { result: MatchmakingResult }) => {
         />
       </div>
 
-      <div className="overflow-hidden rounded-[20px] border border-[var(--shreem-border)] bg-white/70">
+      <div className="grid gap-3 xl:grid-cols-2">
+        <InsightList
+          title="Special cases checked"
+          items={
+            result.compatibility?.case_registry?.length
+              ? result.compatibility.case_registry
+              : ["No major special-case blocker is strongly proven from the deterministic match audit."]
+          }
+        />
+        <InsightList
+          title="Deep match risks"
+          items={
+            result.compatibility?.red_flags?.length
+              ? result.compatibility.red_flags
+              : ["No severe combined red flag is strongly proven. Still verify family, values, consent, health and practical compatibility."]
+          }
+        />
+      </div>
+
+      <div className="overflow-hidden rounded-[20px] border border-[var(--shreem-border)] bg-[var(--shreem-card)]">
         <div className="overflow-x-auto">
           <table className="w-full min-w-0 small:min-w-[620px] text-left text-sm">
-            <thead className="bg-[rgba(255,248,233,0.92)] text-xs uppercase tracking-[0.06em] small:tracking-[0.14em] text-[var(--shreem-gold-deep)]">
+            <thead className="bg-[rgba(13,129,126,0.12)] text-xs uppercase tracking-[0.06em] small:tracking-[0.14em] text-[var(--shreem-gold-deep)]">
               <tr>
                 <th className="break-words px-4 py-3">Koota</th>
                 <th className="break-words px-4 py-3">Score</th>
@@ -5726,7 +6011,7 @@ const MatchmakingResultView = ({ result }: { result: MatchmakingResult }) => {
               </tr>
             </thead>
             <tbody>
-              {(result.compatibility?.scores || []).map((score) => (
+              {kootaScores.map((score, index) => (
                 <tr key={score.name} className="border-t border-[var(--shreem-border)]">
                   <td className="break-words px-4 py-3 font-semibold text-[var(--shreem-ink)]">
                     {score.name}
@@ -5744,6 +6029,43 @@ const MatchmakingResultView = ({ result }: { result: MatchmakingResult }) => {
         </div>
       </div>
 
+      {Boolean(deepScores.length) && (
+        <div className="overflow-hidden rounded-[20px] border border-[var(--shreem-border)] bg-[var(--shreem-card)]">
+          <div className="border-b border-[var(--shreem-border)] px-4 py-3">
+            <p className="brand-kicker">Deep relationship audit</p>
+            <p className="mt-1 text-xs leading-5 text-[var(--shreem-muted)]">
+              This goes beyond guna and checks 7th house promise, Moon/Venus Manglik balance, family houses, conflict houses, dasha readiness and graha pressure.
+            </p>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-0 small:min-w-[700px] text-left text-sm">
+              <thead className="bg-[rgba(13,129,126,0.12)] text-xs uppercase tracking-[0.06em] small:tracking-[0.14em] text-[var(--shreem-gold-deep)]">
+                <tr>
+                  <th className="break-words px-4 py-3">Layer</th>
+                  <th className="break-words px-4 py-3">Score</th>
+                  <th className="break-words px-4 py-3">Meaning</th>
+                </tr>
+              </thead>
+              <tbody>
+                {deepScores.map((score) => (
+                  <tr key={score.name} className="border-t border-[var(--shreem-border)]">
+                    <td className="break-words px-4 py-3 font-semibold text-[var(--shreem-ink)]">
+                      {score.name}
+                    </td>
+                    <td className="break-words px-4 py-3 text-[var(--shreem-muted)]">
+                      {score.score}/{score.max}
+                    </td>
+                    <td className="break-words px-4 py-3 text-[var(--shreem-muted)]">
+                      {score.reason}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
       <div className="grid gap-3 xl:grid-cols-2">
         <InsightList title="Strengths" items={result.analysis?.strengths} />
         <InsightList title="Concerns" items={result.analysis?.concerns} />
@@ -5757,7 +6079,7 @@ const MatchmakingResultView = ({ result }: { result: MatchmakingResult }) => {
       <BookCitationList items={result.analysis?.book_citations} />
 
       {result.analysis?.marriage_timing_note && (
-        <div className="rounded-[20px] border border-[var(--shreem-border)] bg-white/60 px-4 py-4">
+        <div className="rounded-[20px] border border-[var(--shreem-border)] bg-[var(--shreem-card)] px-4 py-4">
           <p className="brand-kicker">Timing note</p>
           <p className="mt-2 text-sm leading-7 text-[var(--shreem-muted)]">
             {result.analysis.marriage_timing_note}
@@ -5766,7 +6088,7 @@ const MatchmakingResultView = ({ result }: { result: MatchmakingResult }) => {
       )}
 
       {result.analysis?.expert_call_recommended && (
-        <div className="rounded-[20px] border border-[rgba(212,161,38,0.32)] bg-[rgba(255,248,233,0.84)] px-4 py-4">
+        <div className="rounded-[20px] border border-[rgba(212,161,38,0.32)] bg-[var(--shreem-card)] px-4 py-4">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--shreem-gold-deep)]">
             Expert review suggested
           </p>
@@ -5842,7 +6164,6 @@ const printKundliReport = (result: KundliResult) => {
       const dashaTimelineHtml = dashaTimeline
     ? [
         ["Mahadasha context", dashaTimeline.mahadashas],
-        ["Full-life Antardasha map", dashaTimeline.lifetime_antardashas],
         ["Current Antardasha", dashaTimeline.current_antardashas],
         ["Current Pratyantar", dashaTimeline.current_pratyantars],
         ["Current Sookshma", dashaTimeline.current_sookshmas],
@@ -5934,7 +6255,6 @@ const printKundliReport = (result: KundliResult) => {
   <h2>Analysis</h2>
   ${(analysis?.opening_profile || []).length ? `<h2>Who You Are and Where You Can Thrive</h2><div class="card">${(analysis?.opening_profile || []).map((paragraph) => `<p>${escapeHtml(paragraph)}</p>`).join("")}</div>` : ""}
   <div class="card"><p>${escapeHtml(analysis?.summary)}</p><p>${escapeHtml(analysis?.person_information)}</p><p>${escapeHtml(analysis?.temperament)}</p><p>${escapeHtml(analysis?.career_direction)}</p><p>${escapeHtml(analysis?.relationship_pattern)}</p><p><strong>Health caution:</strong> ${escapeHtml(analysis?.health_caution)}</p><p>${escapeHtml(analysis?.current_period_analysis)}</p><p>${escapeHtml(analysis?.spiritual_guidance)}</p></div>
-  ${((result.critical_period_analysis?.retrospective_timing_windows || []).length || (result.critical_period_analysis?.exact_timing_windows || []).length) ? `<h2>Lifetime Markesh Prevention Windows</h2><div class="card"><p class="small">Only high-confidence multi-factor windows are shown. These are prevention periods, not guaranteed events.</p>${[["Birth to today", result.critical_period_analysis?.retrospective_timing_windows || []], ["Today to next 30 years", result.critical_period_analysis?.exact_timing_windows || []]].map(([label, rows]) => `<h3>${escapeHtml(String(label))}</h3><ul>${(rows as NonNullable<KundliCriticalPeriodAnalysis["exact_timing_windows"]>).filter((row) => row.confidence === "high" && row.score >= 24).map((row) => `<li><strong>${escapeHtml(row.window)} · ${escapeHtml(row.period)}</strong><br/>${escapeHtml(row.role)}<br/><span class="small">Avoid: ${escapeHtml(row.avoid)}<br/>Preventive action: ${escapeHtml(row.do)}</span></li>`).join("") || "<li>No high-confidence window met the display threshold.</li>"}</ul>`).join("")}</div>` : ""}
   <h2>Health Watchlist</h2>
   <div class="card"><ul>${(analysis?.health_indicators || result.health_indicators || []).map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul></div>
   <h2>Traits, Issues, and Solutions</h2>
@@ -6027,8 +6347,7 @@ const safeSetLocalStorage = (key: string, value: string, fallbackValue = "") => 
     }
 
     try {
-      window.localStorage.removeItem(HISTORY_KEY)
-      window.localStorage.removeItem(SAVED_KUNDLI_KEY)
+      window.localStorage.removeItem(key)
       window.localStorage.setItem(key, fallbackValue || value)
       return true
     } catch {
@@ -6206,6 +6525,16 @@ const serializeLocalSavedKundlis = (profiles: SavedKundliProfile[]) =>
   JSON.stringify(
     profiles
       .slice(0, LOCAL_SAVED_KUNDLI_LIMIT)
+      .map(({ lastResult, ...profile }) => ({
+        ...profile,
+        lastResult: compactLocalKundliResult(lastResult),
+      }))
+  )
+
+const serializeLocalSavedKundliDetails = (profiles: SavedKundliProfile[]) =>
+  JSON.stringify(
+    profiles
+      .slice(0, LOCAL_SAVED_KUNDLI_LIMIT)
       .map(({ lastResult, ...profile }) => profile)
   )
 
@@ -6236,6 +6565,157 @@ const historyText = (...values: unknown[]) => {
   }
 
   return ""
+}
+
+const historyStringArray = (value: unknown) =>
+  Array.isArray(value)
+    ? value
+        .map((item) =>
+          typeof item === "string"
+            ? item
+            : historyText(
+                asRecord(item).reason,
+                asRecord(item).text,
+                asRecord(item).summary,
+                asRecord(item).description
+              )
+        )
+        .filter(Boolean)
+    : []
+
+const historyScoreRows = (value: unknown) =>
+  Array.isArray(value)
+    ? value
+        .map((item, index) => {
+          const record = asRecord(item)
+          const score = Number(record.score ?? record.value ?? record.points ?? 0)
+          const max = Number(record.max ?? record.maximum ?? record.total ?? 0)
+
+          return {
+            name: historyText(record.name, record.label, record.koota, `Score ${index + 1}`),
+            score: Number.isFinite(score) ? score : 0,
+            max: Number.isFinite(max) && max > 0 ? max : 0,
+            reason: historyText(
+              record.reason,
+              record.meaning,
+              record.note,
+              record.description,
+              "Saved compatibility score."
+            ),
+          }
+        })
+        .filter((row) => row.name)
+    : []
+
+const historyBookCitations = (value: unknown): BookCitation[] =>
+  Array.isArray(value)
+    ? value
+        .map((item) => {
+          if (typeof item === "string") {
+            return { citation: item, relevance: "Saved matchmaking reference." }
+          }
+
+          const record = asRecord(item)
+          const citation = historyText(record.citation, record.title, record.source)
+
+          if (!citation) {
+            return null
+          }
+
+          return {
+            citation,
+            relevance: historyText(
+              record.relevance,
+              record.reason,
+              record.text,
+              "Used for compatibility reading."
+            ),
+          }
+        })
+        .filter((item): item is BookCitation => Boolean(item))
+    : []
+
+const normalizeMatchmakingResult = (value: unknown): MatchmakingResult => {
+  const source = parseHistoryRecord(value)
+  const compatibilitySource = parseHistoryRecord(
+    source.compatibility || source.match || source.result || source.compatibility_result
+  )
+  const analysisSource = parseHistoryRecord(source.analysis || source.reading || source.ai_analysis)
+  const girlSource = parseHistoryRecord(source.girl || source.female || source.bride)
+  const boySource = parseHistoryRecord(source.boy || source.male || source.groom)
+  const percentage = Number(
+    compatibilitySource.percentage ??
+      compatibilitySource.compatibility_percentage ??
+      analysisSource.percentage_suggestion ??
+      source.percentage
+  )
+  const recommendation = historyText(
+    analysisSource.recommendation,
+    compatibilitySource.deterministicRecommendation,
+    source.recommendation
+  ).toLowerCase()
+  const safeRecommendation =
+    recommendation === "go" || recommendation === "avoid" || recommendation === "caution"
+      ? (recommendation as "go" | "caution" | "avoid")
+      : "caution"
+
+  return {
+    ...(source as MatchmakingResult),
+    girl: {
+      ...(girlSource as MatchmakingResult["girl"]),
+      profile: asRecord(girlSource.profile) as MatchmakingResult["girl"]["profile"],
+      chart: (girlSource.chart || source.girl_chart) as PrashnaChart | undefined,
+    },
+    boy: {
+      ...(boySource as MatchmakingResult["boy"]),
+      profile: asRecord(boySource.profile) as MatchmakingResult["boy"]["profile"],
+      chart: (boySource.chart || source.boy_chart) as PrashnaChart | undefined,
+    },
+    compatibility: {
+      ...(compatibilitySource as MatchmakingResult["compatibility"]),
+      scores: historyScoreRows(
+        compatibilitySource.scores || compatibilitySource.koota_scores || source.scores
+      ),
+      deep_scores: historyScoreRows(
+        compatibilitySource.deep_scores || compatibilitySource.deepScores || source.deep_scores
+      ),
+      total: Number(compatibilitySource.total ?? compatibilitySource.score ?? source.total) || undefined,
+      max: Number(compatibilitySource.max ?? compatibilitySource.maximum ?? source.max) || undefined,
+      percentage: Number.isFinite(percentage) ? percentage : Number(compatibilitySource.percentage) || 0,
+      deterministicRecommendation: safeRecommendation,
+      case_registry: historyStringArray(
+        compatibilitySource.case_registry || compatibilitySource.caseRegistry || source.case_registry
+      ),
+      red_flags: historyStringArray(
+        compatibilitySource.red_flags || compatibilitySource.redFlags || source.red_flags
+      ),
+    },
+    analysis: {
+      ...(analysisSource as MatchmakingResult["analysis"]),
+      summary: historyText(
+        analysisSource.summary,
+        analysisSource.decision_reason,
+        source.summary,
+        source.message,
+        "Saved matchmaking reading."
+      ),
+      recommendation: safeRecommendation,
+      percentage_suggestion: Number.isFinite(percentage) ? percentage : undefined,
+      decision_reason: historyText(analysisSource.decision_reason, analysisSource.summary, source.summary),
+      strengths: historyStringArray(analysisSource.strengths || source.strengths),
+      concerns: historyStringArray(analysisSource.concerns || source.concerns),
+      family_discussion_points: historyStringArray(
+        analysisSource.family_discussion_points || source.family_discussion_points
+      ),
+      marriage_timing_note: historyText(analysisSource.marriage_timing_note, source.marriage_timing_note),
+      remedies: historyStringArray(analysisSource.remedies || source.remedies),
+      book_citations: historyBookCitations(analysisSource.book_citations || source.book_citations),
+      expert_call_recommended: Boolean(analysisSource.expert_call_recommended),
+      expert_call_reason: historyText(analysisSource.expert_call_reason),
+    },
+    message: historyText(source.message) || undefined,
+    retryable: Boolean(source.retryable),
+  }
 }
 
 const historyQuestionArray = (...values: unknown[]) => {
@@ -6414,7 +6894,13 @@ const parseLocalHistory = (value: string | null): AstrologyHistoryItem[] => {
             const record = asRecord(item)
 
             if (record.type && record.title && record.createdAt) {
-              return record as AstrologyHistoryItem
+              const historyItem = record as AstrologyHistoryItem
+              return historyItem.type === "Matchmaking"
+                ? {
+                    ...historyItem,
+                    response: normalizeMatchmakingResultForUi(historyItem.response),
+                  }
+                : historyItem
             }
 
             return normalizeUsageHistory(item)
@@ -6578,12 +7064,14 @@ const normalizeUsageHistory = (item: unknown): AstrologyHistoryItem | null => {
     synced: true,
     input: finalInput,
     raw: source,
-    response: responseValue as
-      | PrashnaResult
-      | KundliResult
-      | MatchmakingResult
-      | LostItemResult
-      | undefined,
+    response:
+      type === "Matchmaking"
+        ? normalizeMatchmakingResultForUi(responseValue)
+        : (responseValue as
+            | PrashnaResult
+            | KundliResult
+            | LostItemResult
+            | undefined),
   }
 }
 
@@ -6619,7 +7107,7 @@ export default function AstrologyExperience({
   const [language, setLanguage] = useState<AstrologyLanguage>("english")
   const [languageReady, setLanguageReady] = useState(false)
   const [panchangSystemId, setPanchangSystemId] = useState("lahiri-mean")
-  const [cityId, setCityId] = useState("rewa")
+  const [cityId, setCityId] = useState("")
   const [date, setDate] = useState(() => getTodayDateString())
   const [question, setQuestion] = useState("")
   const [prashnaDate, setPrashnaDate] = useState(() => getTodayDateString())
@@ -6661,7 +7149,7 @@ export default function AstrologyExperience({
     gender: "",
     birthDate: "",
     birthTime: "",
-    cityId: "rewa",
+    cityId: "",
     subQuestions: ["", "", ""],
   })
   const [kundliResult, setKundliResult] = useState<KundliResult | null>(null)
@@ -6674,7 +7162,32 @@ export default function AstrologyExperience({
   const [matchmakingResult, setMatchmakingResult] =
     useState<MatchmakingResult | null>(null)
   const [loadingMatchmaking, setLoadingMatchmaking] = useState(false)
-  const city = getCityById(cityId)
+
+  useEffect(() => {
+    if (prashna) {
+      setLoadingPrashna(false)
+    }
+  }, [prashna])
+
+  useEffect(() => {
+    if (lostItemResult) {
+      setLoadingLostItem(false)
+    }
+  }, [lostItemResult])
+
+  useEffect(() => {
+    if (kundliResult) {
+      setLoadingKundli(false)
+    }
+  }, [kundliResult])
+
+  useEffect(() => {
+    if (matchmakingResult) {
+      setLoadingMatchmaking(false)
+    }
+  }, [matchmakingResult])
+
+  const city = getCityById(cityId || "rewa")
   const calendarMonthKey = getCalendarMonthKey(date)
   const muhurat = useMemo(
     () => calculateDailyMuhurat({ city, date }),
@@ -6706,8 +7219,29 @@ export default function AstrologyExperience({
       setAstrologyTheme("night")
     }
 
+    const savedCity = window.localStorage.getItem(ASTROLOGY_CITY_KEY) || ""
+
+    if (savedCity && ASTROLOGY_CITIES.some((city) => city.id === savedCity)) {
+      setCityId(savedCity)
+      setKundliForm((current) => ({
+        ...current,
+        cityId: current.cityId || savedCity,
+      }))
+      setMatchmakingForm((current) => ({
+        girl: { ...current.girl, cityId: current.girl.cityId || savedCity },
+        boy: { ...current.boy, cityId: current.boy.cityId || savedCity },
+      }))
+    }
+
     setLanguageReady(true)
   }, [])
+
+  const rememberAstrologyCity = (nextCityId: string) => {
+    setCityId(nextCityId)
+    if (nextCityId) {
+      safeSetLocalStorage(ASTROLOGY_CITY_KEY, nextCityId, nextCityId)
+    }
+  }
 
   useEffect(() => {
     document.body.classList.toggle(
@@ -6833,7 +7367,7 @@ export default function AstrologyExperience({
       safeSetLocalStorage(
         SAVED_KUNDLI_KEY,
         serializeLocalSavedKundlis(metadataSaved),
-        "[]"
+        serializeLocalSavedKundliDetails(metadataSaved)
       )
     }
 
@@ -6882,7 +7416,7 @@ export default function AstrologyExperience({
     safeSetLocalStorage(
       SAVED_KUNDLI_KEY,
       serializeLocalSavedKundlis(nextProfiles),
-      "[]"
+      serializeLocalSavedKundliDetails(nextProfiles)
     )
 
     const compactProfiles = nextProfiles.map(({ lastResult, ...profile }) => ({
@@ -7094,70 +7628,78 @@ export default function AstrologyExperience({
     setLoadingPrashna(true)
     setPrashna(null)
 
-    const response = await fetch("/api/astrology/prashna", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        question,
-        cityId,
-        questionDate: prashnaDate,
-        questionTime: prashnaTime,
-        language,
-        panchangSystemId,
-      }),
-      cache: "no-store",
-    }).catch(() => null)
-    const data = (await response?.json().catch(() => null)) as PrashnaResult | null
-
-    if (!data?.answer) {
-      const retryHint = data?.retryable
-        ? " This looks temporary — wait a few seconds and try again."
-        : ""
-      setPrashna({
-        message:
-          data?.message ||
-          `Prashna AI could not answer right now. Please try again.${retryHint}`,
-        retryable: data?.retryable,
-      })
-      setLoadingPrashna(false)
-      return
-    }
-
-    const result = data
-
-    setPrashna(result)
-    if (result.wallet) {
-      setAiWallet(result.wallet)
-    }
-    if (result.quota) {
-      setAiQuota(result.quota)
-    }
-
-    if (result.chart && result.answer) {
-      rememberHistory({
-        id: `prashna-${Date.now()}`,
-        type: "Prashna",
-        title: question.trim().slice(0, 56),
-        createdAt: new Date().toISOString(),
-        summary: result.answer,
-        input: {
+    try {
+      const response = await fetch("/api/astrology/prashna", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
           question,
           cityId,
           questionDate: prashnaDate,
           questionTime: prashnaTime,
           language,
           panchangSystemId,
-        },
-        response: result,
-      }, {
-        persistLocal: !result.usage_synced,
-      })
-    }
+        }),
+        cache: "no-store",
+      }).catch(() => null)
+      const data = (await response?.json().catch(() => null)) as PrashnaResult | null
 
-    setLoadingPrashna(false)
-    refreshWallet()
+      if (!data?.answer) {
+        const retryHint = data?.retryable
+          ? " This looks temporary; wait a few seconds and try again."
+          : ""
+        setPrashna({
+          message:
+            data?.message ||
+            `Prashna AI could not answer right now. Please try again.${retryHint}`,
+          retryable: data?.retryable,
+        })
+        return
+      }
+
+      const result = data
+
+      setPrashna(result)
+      if (result.wallet) {
+        setAiWallet(result.wallet)
+      }
+      if (result.quota) {
+        setAiQuota(result.quota)
+      }
+
+      if (result.chart && result.answer) {
+        rememberHistory({
+          id: `prashna-${Date.now()}`,
+          type: "Prashna",
+          title: question.trim().slice(0, 56),
+          createdAt: new Date().toISOString(),
+          summary: result.answer,
+          input: {
+            question,
+            cityId,
+            questionDate: prashnaDate,
+            questionTime: prashnaTime,
+            language,
+            panchangSystemId,
+          },
+          response: result,
+        }, {
+          persistLocal: !result.usage_synced,
+        })
+      }
+
+      refreshWallet()
+    } catch (error) {
+      console.error("Prashna generation failed", error)
+      setPrashna({
+        message: "Prashna failed unexpectedly on this browser. Please refresh once and try again.",
+        retryable: true,
+      })
+    } finally {
+      setLoadingPrashna(false)
+    }
   }
 
   const askLostItemPrashna = async () => {
@@ -7310,7 +7852,7 @@ export default function AstrologyExperience({
           },
           response: result,
         }, {
-          persistLocal: !result.usage_synced,
+          persistLocal: true,
         })
       }
 
@@ -7335,70 +7877,86 @@ export default function AstrologyExperience({
   }
 
   const generateMatchmaking = async () => {
+    if (loadingMatchmaking) {
+      return
+    }
+
     setLoadingMatchmaking(true)
     setMatchmakingResult(null)
 
-    const response = await fetch("/api/astrology/matchmaking", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        girl: { ...matchmakingForm.girl, panchangSystemId },
-        boy: { ...matchmakingForm.boy, panchangSystemId },
-        language,
-        panchangSystemId,
-      }),
-      cache: "no-store",
-    }).catch(() => null)
-    const data = (await response?.json().catch(() => null)) as
-      | MatchmakingResult
-      | null
-    const result =
-      data || ({
-        message:
-          "Matchmaking AI could not generate the compatibility reading right now.",
-      } satisfies MatchmakingResult)
-
-    setMatchmakingResult(result)
-    if (result.wallet) {
-      setAiWallet(result.wallet)
-    }
-    if (result.quota) {
-      setAiQuota(result.quota)
-    }
-    if (Array.isArray(result.packs)) {
-      setAiPacks(result.packs)
-    }
-
-    if (result.compatibility && result.analysis?.summary && !result.message) {
-      rememberHistory(
-        {
-          id: `matchmaking-${Date.now()}`,
-          type: "Matchmaking",
-          title: `${matchmakingForm.girl.name || "Girl"} + ${
-            matchmakingForm.boy.name || "Boy"
-          }`,
-          createdAt: new Date().toISOString(),
-          summary:
-            result.analysis?.summary ||
-            result.analysis?.decision_reason ||
-            `Compatibility ${result.compatibility.percentage || 0}%`,
-          response: result,
+    try {
+      const response = await fetch("/api/astrology/matchmaking", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-        {
-          persistLocal: !result.usage_synced,
-        }
+        body: JSON.stringify({
+          girl: { ...matchmakingForm.girl, panchangSystemId },
+          boy: { ...matchmakingForm.boy, panchangSystemId },
+          language,
+          panchangSystemId,
+        }),
+        cache: "no-store",
+      }).catch(() => null)
+      const data = (await response?.json().catch(() => null)) as
+        | MatchmakingResult
+        | null
+      const result = normalizeMatchmakingResultForUi(
+        data || ({
+          message:
+            "Matchmaking AI could not generate the compatibility reading right now.",
+          retryable: true,
+        } satisfies MatchmakingResult)
       )
-    }
 
-    setLoadingMatchmaking(false)
-    refreshWallet()
+      setMatchmakingResult(result)
+      if (result.wallet) {
+        setAiWallet(result.wallet)
+      }
+      if (result.quota) {
+        setAiQuota(result.quota)
+      }
+      if (Array.isArray(result.packs)) {
+        setAiPacks(result.packs)
+      }
+
+      if (result.compatibility && result.analysis?.summary && !result.message) {
+        rememberHistory(
+          {
+            id: `matchmaking-${Date.now()}`,
+            type: "Matchmaking",
+            title: `${matchmakingForm.girl.name || "Girl"} + ${
+              matchmakingForm.boy.name || "Boy"
+            }`,
+            createdAt: new Date().toISOString(),
+            summary:
+              result.analysis?.summary ||
+              result.analysis?.decision_reason ||
+              `Compatibility ${result.compatibility.percentage || 0}%`,
+            response: result,
+          },
+          {
+            persistLocal: !result.usage_synced,
+          }
+        )
+      }
+
+      refreshWallet()
+    } catch (error) {
+      console.error("Matchmaking generation failed", error)
+      setMatchmakingResult({
+        message:
+          "Matchmaking failed unexpectedly on this browser. Please refresh once and try again.",
+        retryable: true,
+      })
+    } finally {
+      setLoadingMatchmaking(false)
+    }
   }
 
   const selectHistoryItem = (item: AstrologyHistoryItem) => {
     if (item.type === "Matchmaking") {
-      setMatchmakingResult(item.response as MatchmakingResult)
+      setMatchmakingResult(normalizeMatchmakingResultForUi(item.response))
       setActiveTab("matchmaking")
       return
     }
@@ -7491,7 +8049,7 @@ export default function AstrologyExperience({
     }
 
     if (restoredCityId) {
-      setCityId(restoredCityId)
+      rememberAstrologyCity(restoredCityId)
     }
 
     if (restoredQuestionDate) {
@@ -7520,7 +8078,7 @@ export default function AstrologyExperience({
 
   const LocationDateControls = ({ showDate = true }: { showDate?: boolean }) => (
     <div className="brand-card grid gap-3 px-4 py-4 small:grid-cols-2">
-      <CityPicker label="City" value={cityId} onChange={setCityId} />
+      <CityPicker label="City" value={cityId} onChange={rememberAstrologyCity} />
       {showDate && (
         <label className="grid gap-2">
           <span className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--shreem-gold-deep)]">
@@ -7548,14 +8106,22 @@ export default function AstrologyExperience({
             key={option.value}
             type="button"
             onClick={() => setLanguage(option.value)}
-            className={`min-w-0 rounded-[16px] border px-3 py-3 text-left transition ${
+            className={`relative min-w-0 rounded-[16px] border px-3 py-3 text-left transition ${
               language === option.value
-                ? "border-[rgba(212,161,38,0.45)] bg-[rgba(255,248,233,0.88)] text-[var(--shreem-ink)]"
+                ? "border-[rgba(212,161,38,0.9)] bg-[linear-gradient(135deg,#0d817e_0%,#123f63_62%,#6f211f_100%)] text-white shadow-[0_12px_26px_rgba(18,63,99,0.24)] ring-2 ring-[rgba(212,161,38,0.42)]"
                 : "border-[var(--shreem-border)] bg-white/62 text-[var(--shreem-muted)]"
             }`}
           >
-            <span className="block text-sm font-semibold">{option.label}</span>
-            <span className="mt-1 block text-[0.68rem] leading-4">
+            <span className="flex items-center justify-between gap-2 text-sm font-semibold">
+              <span>{option.label}</span>
+              {language === option.value && (
+                <span
+                  aria-hidden="true"
+                  className="h-2.5 w-2.5 shrink-0 rounded-full bg-[var(--shreem-gold)] shadow-[0_0_0_4px_rgba(255,255,255,0.16)]"
+                />
+              )}
+            </span>
+            <span className={`mt-1 block text-[0.68rem] leading-4 ${language === option.value ? "text-white/82" : ""}`}>
               {option.detail}
             </span>
           </button>
@@ -8147,7 +8713,8 @@ export default function AstrologyExperience({
                   loadingPrashna ||
                   question.trim().length < 8 ||
                   !prashnaDate ||
-                  !prashnaTime
+                  !prashnaTime ||
+                  !cityId
                 }
                 onClick={askPrashna}
                 className="mt-4 w-full rounded-full border-0 bg-[linear-gradient(135deg,#0d817e_0%,#123f63_52%,#6f211f_100%)] px-5 py-3 text-sm font-semibold text-white shadow-[0_18px_34px_rgba(18,63,99,0.26)] disabled:cursor-not-allowed disabled:opacity-45 small:w-auto"
@@ -8159,7 +8726,7 @@ export default function AstrologyExperience({
             <div className="grid gap-4">
               <div className="brand-card px-4 py-5 small:px-6">
                 <p className="brand-kicker">Result</p>
-                {loadingPrashna && (
+                {loadingPrashna && !prashna && (
                   <LogoLoader
                     label="Reading the Prashna chart..."
                     detail="Calculating the moment chart, then asking Shreem AI for a concise Vedic interpretation."
@@ -8329,7 +8896,7 @@ export default function AstrologyExperience({
                   </label>
                 </div>
 
-                <CityPicker label="Question city" value={cityId} onChange={setCityId} />
+                <CityPicker label="Question city" value={cityId} onChange={rememberAstrologyCity} />
                 <div className="rounded-[20px] border border-[var(--shreem-border)] bg-white/52 px-3 py-3">
                   <PanchangControls compact />
                 </div>
@@ -8350,7 +8917,8 @@ export default function AstrologyExperience({
                     loadingLostItem ||
                     (!lostItemForm.itemName.trim() &&
                       !lostItemForm.itemType.trim()) ||
-                    !lostItemForm.lastSeenPlace.trim()
+                    !lostItemForm.lastSeenPlace.trim() ||
+                    !cityId
                   }
                   onClick={askLostItemPrashna}
                   className="mt-2 w-full rounded-full border-0 bg-[linear-gradient(135deg,#0d817e_0%,#123f63_52%,#6f211f_100%)] px-5 py-3 text-sm font-semibold text-white shadow-[0_18px_34px_rgba(18,63,99,0.26)] disabled:cursor-not-allowed disabled:opacity-45"
@@ -8363,7 +8931,7 @@ export default function AstrologyExperience({
             <div className="grid gap-4">
               <div className="brand-card px-4 py-5 small:px-6">
                 <p className="brand-kicker">Lost item result</p>
-                {loadingLostItem && (
+                {loadingLostItem && !lostItemResult && (
                   <LogoLoader
                     label="Reading Lochan Nakshatra..."
                     detail="Casting the moment chart, checking Moon nakshatra, Bhava Chalit houses, direction, timing, and search sequence."
@@ -8486,12 +9054,13 @@ export default function AstrologyExperience({
                 </div>
                 <CityPicker
                   value={kundliForm.cityId}
-                  onChange={(cityId) =>
+                  onChange={(cityId) => {
+                    rememberAstrologyCity(cityId)
                     setKundliForm((current) => ({
                       ...current,
                       cityId,
                     }))
-                  }
+                  }}
                 />
                 <div className="rounded-[20px] border border-[var(--shreem-border)] bg-white/52 px-3 py-3">
                   <LanguageControls />
@@ -8533,7 +9102,7 @@ export default function AstrologyExperience({
                 <div className="mt-2 grid gap-2 small:grid-cols-[0.72fr_1fr]">
                   <button
                     type="button"
-                    disabled={!kundliForm.name || !kundliForm.birthDate || !kundliForm.birthTime}
+                    disabled={!kundliForm.name || !kundliForm.birthDate || !kundliForm.birthTime || !kundliForm.cityId}
                     onClick={() => saveKundliProfile(null)}
                     className="w-full rounded-full border border-[rgba(13,129,126,0.22)] bg-white px-5 py-3 text-sm font-semibold text-[var(--shreem-accent-dark)] disabled:cursor-not-allowed disabled:opacity-45"
                   >
@@ -8544,7 +9113,8 @@ export default function AstrologyExperience({
                     disabled={
                       loadingKundli ||
                       !kundliForm.birthDate ||
-                      !kundliForm.birthTime
+                      !kundliForm.birthTime ||
+                      !kundliForm.cityId
                     }
                     onClick={() => generateKundli()}
                     className="w-full rounded-full border-0 bg-[linear-gradient(135deg,#0d817e_0%,#123f63_52%,#6f211f_100%)] px-5 py-3 text-sm font-semibold text-white shadow-[0_18px_34px_rgba(18,63,99,0.26)] disabled:cursor-not-allowed disabled:opacity-45"
@@ -8571,7 +9141,7 @@ export default function AstrologyExperience({
               />
               <div className="brand-card px-4 py-5 small:px-6">
                 <p className="brand-kicker">Generated chart</p>
-                {loadingKundli && (
+                {loadingKundli && !kundliResult && (
                   <div className="grid gap-2">
                     <LogoLoader
                       label={`Generating your Kundli... ${Math.floor(kundliProgress)}%`}
@@ -8611,7 +9181,8 @@ export default function AstrologyExperience({
                         disabled={
                           loadingKundli ||
                           !kundliForm.birthDate ||
-                          !kundliForm.birthTime
+                          !kundliForm.birthTime ||
+                          !kundliForm.cityId
                         }
                         className="mt-3 rounded-full bg-white px-4 py-2 text-xs font-semibold text-rose-700 shadow-sm disabled:cursor-not-allowed disabled:opacity-50"
                       >
@@ -8661,16 +9232,22 @@ export default function AstrologyExperience({
                 <MatchPersonFields
                   title="Girl"
                   value={matchmakingForm.girl}
-                  onChange={(girl) =>
+                  onChange={(girl) => {
+                    if (girl.cityId) {
+                      safeSetLocalStorage(ASTROLOGY_CITY_KEY, girl.cityId, girl.cityId)
+                    }
                     setMatchmakingForm((current) => ({ ...current, girl }))
-                  }
+                  }}
                 />
                 <MatchPersonFields
                   title="Boy"
                   value={matchmakingForm.boy}
-                  onChange={(boy) =>
+                  onChange={(boy) => {
+                    if (boy.cityId) {
+                      safeSetLocalStorage(ASTROLOGY_CITY_KEY, boy.cityId, boy.cityId)
+                    }
                     setMatchmakingForm((current) => ({ ...current, boy }))
-                  }
+                  }}
                 />
                 <div className="rounded-[20px] border border-[var(--shreem-border)] bg-white/52 px-3 py-3">
                   <LanguageControls />
@@ -8685,9 +9262,11 @@ export default function AstrologyExperience({
                     !matchmakingForm.girl.name ||
                     !matchmakingForm.girl.birthDate ||
                     !matchmakingForm.girl.birthTime ||
+                    !matchmakingForm.girl.cityId ||
                     !matchmakingForm.boy.name ||
                     !matchmakingForm.boy.birthDate ||
-                    !matchmakingForm.boy.birthTime
+                    !matchmakingForm.boy.birthTime ||
+                    !matchmakingForm.boy.cityId
                   }
                   onClick={generateMatchmaking}
                   className="w-full rounded-full border-0 bg-[linear-gradient(135deg,#0d817e_0%,#123f63_52%,#6f211f_100%)] px-5 py-3 text-sm font-semibold text-white shadow-[0_18px_34px_rgba(18,63,99,0.26)] disabled:cursor-not-allowed disabled:opacity-45"
@@ -8707,7 +9286,7 @@ export default function AstrologyExperience({
             <div className="grid gap-4">
               <div className="brand-card px-4 py-5 small:px-6">
                 <p className="brand-kicker">Compatibility result</p>
-                {loadingMatchmaking && (
+                {loadingMatchmaking && !matchmakingResult && (
                   <LogoLoader
                     label="Matching both Kundlis..."
                     detail="Calculating Moon, nakshatra, guna score, dasha context, and the AI recommendation."
@@ -8738,7 +9317,12 @@ export default function AstrologyExperience({
                     )}
                   </div>
                 )}
-                {matchmakingResult?.compatibility && (
+                {matchmakingResult?.compatibility &&
+                  !matchmakingResult.message &&
+                  (Boolean(matchmakingResult.analysis?.summary) ||
+                    Boolean(matchmakingResult.analysis?.decision_reason) ||
+                    Boolean(matchmakingResult.compatibility?.scores?.length) ||
+                    Boolean(matchmakingResult.compatibility?.deep_scores?.length)) && (
                   <div className="mt-4">
                     <MatchmakingResultView result={matchmakingResult} />
                   </div>

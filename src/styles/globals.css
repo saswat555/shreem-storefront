@@ -507,6 +507,21 @@
     color: var(--shreem-muted) !important;
   }
 
+  body.astrology-night-mode .astrology-realm input,
+  body.astrology-night-mode .astrology-realm select,
+  body.astrology-night-mode .astrology-realm textarea {
+    background: rgba(9, 22, 43, 0.84) !important;
+    border-color: rgba(190, 211, 255, 0.22) !important;
+    color: #f7fbff !important;
+    color-scheme: dark;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  }
+
+  body.astrology-night-mode .astrology-realm input::placeholder,
+  body.astrology-night-mode .astrology-realm textarea::placeholder {
+    color: rgba(200, 214, 231, 0.74) !important;
+  }
+
   .astrology-realm::before {
     content: "";
     position: absolute;
